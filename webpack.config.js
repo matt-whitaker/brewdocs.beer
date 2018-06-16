@@ -3,15 +3,14 @@ const HTMLWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
 
 module.exports = {
-    entry: './src/jsx/App.jsx',
+    entry: './src/App',
+    devtool: 'source-map',
     output: {
         path: path.resolve(__dirname, 'lib'),
         filename: 'app.js'
     },
     plugins: [
-        new HTMLWebpackPlugin({
-            template: path.resolve(__dirname, 'src/index.html')
-        }),
+        new HTMLWebpackPlugin({template: './src/index.html'}),
         new ExtractTextPlugin("app.css")
     ],
     module: {
@@ -29,11 +28,14 @@ module.exports = {
                 use: ExtractTextPlugin.extract({
                     fallback: "style-loader",
                     use: [
-                        { loader: 'css-loader' },
-                        { loader: 'less-loader' }
+                        {loader: 'css-loader'},
+                        {loader: 'less-loader'}
                     ]
                 })
             }
         ]
+    },
+    resolve: {
+        extensions: ['.js', '.jsx', '.json']
     }
 };
