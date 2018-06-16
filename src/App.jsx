@@ -7,6 +7,4 @@ export default function App () {
     return <AppLayout><Routes/></AppLayout>;
 }
 
-document.body.prependEle
-
 ReactDOM.render(<App/>, document.getElementById('app'));
