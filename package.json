@@ -4,7 +4,9 @@
   "description": "A (currently) web-based application for building homebrew beer recipes for.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "npm run transpile && electron ./lib",
+    "transpile": "babel src --out-dir lib"
   },
   "repository": {
     "type": "git",
@@ -17,6 +19,14 @@
   },
   "homepage": "https://github.com/matt-whitaker/hometap#readme",
   "dependencies": {
-    "ramda": "^0.25.0"
+    "electron": "^2.0.2",
+    "ramda": "^0.25.0",
+    "react": "^16.4.1",
+    "react-dom": "^16.4.1"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-latest": "^6.24.1",
+    "babel-preset-react": "^6.24.1"
   }
 }
