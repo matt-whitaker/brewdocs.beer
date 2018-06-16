@@ -1,0 +1,22 @@
+{
+  "name": "hometap",
+  "version": "1.0.0",
+  "description": "A (currently) web-based application for building homebrew beer recipes for.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/matt-whitaker/hometap.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/matt-whitaker/hometap/issues"
+  },
+  "homepage": "https://github.com/matt-whitaker/hometap#readme",
+  "dependencies": {
+    "ramda": "^0.25.0"
+  }
+}
