@@ -62,6 +62,7 @@ typings/
 
 # IntelliJ
 .idea
+Close
 
 # Build files
 lib
