@@ -5,7 +5,7 @@ import styles from '../../jss/styles';
 function AppBody({ classes, children }) {
     return (
         <main className={classes.content}>
-            {/*<div className={classes.toolbar} />*/}
+            <div className={classes.toolbar} />
             {children}
         </main>
     );

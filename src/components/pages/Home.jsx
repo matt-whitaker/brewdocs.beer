@@ -1,5 +1,5 @@
 import React from 'react';
-import {when, map} from 'ramda';
+import {Link} from 'react-router-dom';
 import {Button, Typography} from '@material-ui/core';
 import {Add} from '@material-ui/icons';
 import { withStyles } from '@material-ui/core/styles';
@@ -25,7 +25,7 @@ class Home extends React.Component {
                     Recent Recipes
                 </Typography>
                 <CardDeck children={[...recipes.values()].map(renderCard)}/>
-                <Button className={classes.createButton}>
+                <Button className={classes.createButton} component={Link} to="/recipe/new">
                     <Add className={classes.createButtonIcon}/>New Recipe
                 </Button>
             </div>

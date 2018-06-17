@@ -17,7 +17,7 @@ export default (theme) => ({
         flexGrow: 1,
         backgroundColor: theme.palette.background.default,
         padding: theme.spacing.unit * 3,
-        minWidth: 0, // So the Typography noWrap works
+        minWidth: 0
     },
     toolbar: theme.mixins.toolbar,
     button: {
