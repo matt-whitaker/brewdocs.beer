@@ -1,13 +1,12 @@
 import React from 'react';
-import AppHeaderBar from '../containers/AppHeaderBar';
-import AppNavDrawer from '../containers/AppNavDrawer';
-import AppBody from '../containers/AppBody';
+import AppHeaderBar from '../../containers/app/AppHeaderBar';
+import AppNavDrawer from '../../containers/app/AppNavDrawer';
+import AppBody from '../../containers/app/AppBody';
 
 export default function AppLayout ({ classes, children }) {
-    console.log("lksdjfs");
     return (
         <div className={classes.root}>
-            <AppHeaderBar/>
+            {/*<AppHeaderBar/>*/}
             <AppNavDrawer/>
             <AppBody>
                 {children}

@@ -7,11 +7,11 @@ module.exports = {
     devtool: 'source-map',
     output: {
         path: path.resolve(__dirname, 'lib'),
-        filename: 'app.js'
+        filename: 'app.min.js'
     },
     plugins: [
         new HTMLWebpackPlugin({template: './src/index.html'}),
-        new ExtractTextPlugin("app.css")
+        new ExtractTextPlugin("app.min.css")
     ],
     module: {
         rules: [
@@ -28,7 +28,7 @@ module.exports = {
                 use: ExtractTextPlugin.extract({
                     fallback: "style-loader",
                     use: [
-                        {loader: 'css-loader'},
+                        {loader: 'css-loader', options: {minimize: true}},
                         {loader: 'less-loader'}
                     ]
                 })

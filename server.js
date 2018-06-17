@@ -1,24 +1,33 @@
 const path = require('path');
 const {app, BrowserWindow} = require('electron');
 
-let win;
+require('dotenv').config({});
 
-app.on('ready', () => {
-    win = new BrowserWindow({
-        show: true,
+const windows = {};
+
+function createWindow () {
+    windows.main = new BrowserWindow({
+        show: false,
+        fullscreen: process.env.FULLSCREEN === 'true',
         width: 1300,
         height: 800,
         webPreferences: {
-            webSecurity: false
+            webSecurity: false // todo: look into this
         }
     });
 
-    win.loadFile(path.resolve(__dirname, 'lib/index.html'));
+    windows.main.loadFile(path.resolve(__dirname, 'lib/index.html'));
 
-    win.on('closed', () => {
-        win = null;
+    windows.main.on('closed', () => {
+        windows.main = null;
     });
-});
+
+    windows.main.on('ready', () => {
+        windows.main.show();
+    });
+}
+
+app.on('ready', createWindow);
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
@@ -27,7 +36,7 @@ app.on('window-all-closed', () => {
 });
 
 app.on('activate', () => {
-    if (win === null) {
+    if (!windows.main.main) {
         createWindow();
     }
 });

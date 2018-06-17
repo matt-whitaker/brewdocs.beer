@@ -1,10 +1,20 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import AppLayout from './containers/AppLayout';
+import { Provider } from 'react-redux';
+import AppLayout from './containers/app/AppLayout';
 import Routes from './Routes';
+import Store from './dux';
+
+import './less/app.less';
 
 export default function App () {
-    return <AppLayout><Routes/></AppLayout>;
+    return (
+        <Provider store={Store}>
+            <AppLayout>
+                <Routes/>
+            </AppLayout>
+        </Provider>
+    );
 }
 
 ReactDOM.render(<App/>, document.getElementById('app'));
