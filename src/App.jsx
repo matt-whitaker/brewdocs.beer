@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import {MemoryRouter} from 'react-router';
 import { Provider } from 'react-redux';
 import AppLayout from './components/app/AppLayout';
 import Routes from './Routes';
@@ -10,9 +11,11 @@ import './less/app.less';
 export default function App () {
     return (
         <Provider store={Store}>
-            <AppLayout>
-                <Routes/>
-            </AppLayout>
+            <MemoryRouter>
+                <AppLayout>
+                    <Routes/>
+                </AppLayout>
+            </MemoryRouter>
         </Provider>
     );
 }

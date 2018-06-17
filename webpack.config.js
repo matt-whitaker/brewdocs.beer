@@ -1,6 +1,7 @@
 const path = require('path');
 const HTMLWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
+const Dotenv = require('dotenv-webpack');
 
 module.exports = {
     entry: './src/App',
@@ -11,7 +12,8 @@ module.exports = {
     },
     plugins: [
         new HTMLWebpackPlugin({template: './src/index.html'}),
-        new ExtractTextPlugin("app.min.css")
+        new ExtractTextPlugin("app.min.css"),
+        new Dotenv()
     ],
     module: {
         rules: [

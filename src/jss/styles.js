@@ -20,17 +20,36 @@ export default (theme) => ({
         minWidth: 0, // So the Typography noWrap works
     },
     toolbar: theme.mixins.toolbar,
-    card: {
-        maxWidth: 345,
-    },
-    media: {
-        height: 0,
-        paddingTop: '56.25%', // 16:9
-    },
     button: {
         margin: theme.spacing.unit,
     },
     input: {
         display: 'none',
-    }
+    },
+    cardDeck: {
+        display: 'flex',
+        justifyContent: 'center'
+    },
+    card: {
+        margin: theme.spacing.unit
+    },
+    createButton: {
+        margin: theme.spacing.unit
+    },
+    media: {
+        height: 0,
+        paddingTop: '56.25%', // 16:9
+    },
+    bullet: {
+        display: 'inline-block',
+        margin: '0 2px',
+        transform: 'scale(0.8)',
+    },
+    title: {
+        marginBottom: 16,
+        fontSize: 14,
+    },
+    pos: {
+        marginBottom: 12,
+    },
 });

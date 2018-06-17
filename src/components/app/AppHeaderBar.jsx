@@ -8,7 +8,7 @@ function AppHeaderBar ({ classes }) {
         <AppBar position="absolute" className={classes.appBar}>
             <Toolbar>
                 <Typography variant="title" color="inherit" noWrap>
-                    Clipped drawer
+                    BrewNotes
                 </Typography>
             </Toolbar>
         </AppBar>

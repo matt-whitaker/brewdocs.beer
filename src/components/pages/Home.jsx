@@ -1,16 +1,19 @@
 import React from 'react';
 import {when, map} from 'ramda';
-import {Button} from '@material-ui/core';
+import {Button, Typography} from '@material-ui/core';
 import {Add} from '@material-ui/icons';
-import RecipeCard from '../../containers/shared/RecipeCard';
+import { withStyles } from '@material-ui/core/styles';
+import styles from '../../jss/styles';
+import RecipeCard from '../../components/shared/RecipeCard';
+import CardDeck from '../../components/shared/CardDeck';
 
-export default class Home extends React.Component {
+class Home extends React.Component {
     componentDidMount () {
         this.props.loadRecipes();
     }
 
     render () {
-        const { recipes } = this.props;
+        const {recipes, classes} = this.props;
 
         if (!recipes) return 'Loading...';
 
@@ -18,13 +21,14 @@ export default class Home extends React.Component {
 
         return (
             <div>
-                <div>
-                    {map(renderCard)(recipes.values())}
-                </div>
-                <div>
-                    <Button><Add/> New Recipe</Button>
-                </div>
+                <Typography className={classes.createButton} variant="headline" component="h1">
+                    Recent Recipes
+                </Typography>
+                <CardDeck children={[...recipes.values()].map(renderCard)}/>
+                <Button className={classes.createButton}><Add/> New Recipe</Button>
             </div>
         );
     }
 }
+
+export default withStyles(styles)(Home);
