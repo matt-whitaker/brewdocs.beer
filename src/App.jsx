@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
-import AppLayout from './containers/app/AppLayout';
+import AppLayout from './components/app/AppLayout';
 import Routes from './Routes';
 import Store from './dux';
 

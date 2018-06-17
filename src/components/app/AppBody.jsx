@@ -1,6 +1,8 @@
 import React from 'react';
+import { withStyles } from '@material-ui/core/styles';
+import styles from '../../jss/styles';
 
-export default function ({ classes, children }) {
+function AppBody({ classes, children }) {
     return (
         <main className={classes.content}>
             {/*<div className={classes.toolbar} />*/}
@@ -8,3 +10,5 @@ export default function ({ classes, children }) {
         </main>
     );
 }
+
+export default withStyles(styles)(AppBody);

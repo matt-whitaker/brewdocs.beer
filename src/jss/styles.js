@@ -27,4 +27,10 @@ export default (theme) => ({
         height: 0,
         paddingTop: '56.25%', // 16:9
     },
+    button: {
+        margin: theme.spacing.unit,
+    },
+    input: {
+        display: 'none',
+    }
 });

@@ -1,7 +1,9 @@
 import React from 'react';
 import {AppBar, Toolbar, Typography} from '@material-ui/core';
+import { withStyles } from '@material-ui/core/styles';
+import styles from '../../jss/styles';
 
-export default function AppHeaderBar ({ classes }) {
+function AppHeaderBar ({ classes }) {
     return (
         <AppBar position="absolute" className={classes.appBar}>
             <Toolbar>
@@ -12,3 +14,5 @@ export default function AppHeaderBar ({ classes }) {
         </AppBar>
     );
 }
+
+export default withStyles(styles)(AppHeaderBar);

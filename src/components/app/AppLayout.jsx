@@ -1,9 +1,11 @@
 import React from 'react';
-import AppHeaderBar from '../../containers/app/AppHeaderBar';
-import AppNavDrawer from '../../containers/app/AppNavDrawer';
-import AppBody from '../../containers/app/AppBody';
+import { withStyles } from '@material-ui/core/styles';
+import styles from '../../jss/styles';
+// import AppHeaderBar from '../../components/app/AppHeaderBar';
+import AppNavDrawer from '../../components/app/AppNavDrawer';
+import AppBody from '../../components/app/AppBody';
 
-export default function AppLayout ({ classes, children }) {
+function AppLayout ({ classes, children }) {
     return (
         <div className={classes.root}>
             {/*<AppHeaderBar/>*/}
@@ -14,3 +16,5 @@ export default function AppLayout ({ classes, children }) {
         </div>
     );
 }
+
+export default withStyles(styles)(AppLayout);

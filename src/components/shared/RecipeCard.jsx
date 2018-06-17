@@ -1,8 +1,9 @@
 import React from 'react';
 import {Card, CardActions, CardContent, CardMedia, Button, Typography} from '@material-ui/core';
+import { withStyles } from '@material-ui/core/styles';
+import styles from '../../jss/styles';
 
-function SimpleMediaCard(props) {
-    const { classes } = props;
+function RecipeCard({ classes }) {
     return (
         <div>
             <Card className={classes.card}>
@@ -32,3 +33,5 @@ function SimpleMediaCard(props) {
         </div>
     );
 }
+
+export default withStyles(styles)(RecipeCard);

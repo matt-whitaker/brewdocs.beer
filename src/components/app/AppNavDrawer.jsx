@@ -1,7 +1,9 @@
 import React from 'react';
 import {Drawer, List, Divider} from '@material-ui/core';
+import { withStyles } from '@material-ui/core/styles';
+import styles from '../../jss/styles';
 
-export default function AppNavDrawer ({ classes }) {
+function AppNavDrawer ({ classes }) {
     return (
         <Drawer variant="permanent" classes={{paper: classes.drawerPaper}}>
             {/*<div className={classes.toolbar} />*/}
@@ -11,3 +13,5 @@ export default function AppNavDrawer ({ classes }) {
         </Drawer>
     );
 }
+
+export default withStyles(styles)(AppNavDrawer);
