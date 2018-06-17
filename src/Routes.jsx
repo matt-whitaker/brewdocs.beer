@@ -3,9 +3,7 @@ import { Route } from 'react-router'
 import Home from './containers/pages/Home';
 
 export default function Routes () {
-    return (
-        <div>
-            <Route exact path="/" component={Home} />
-        </div>
-    );
+    return [
+        <Route exact path="/" component={Home} />
+    ];
 }

@@ -24,7 +24,6 @@ function createWindow () {
 
     windows.main.on('ready', () => {
         windows.main.show();
-        windows.main.toggleDevTools();
     });
 }
 

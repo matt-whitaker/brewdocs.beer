@@ -25,7 +25,9 @@ class Home extends React.Component {
                     Recent Recipes
                 </Typography>
                 <CardDeck children={[...recipes.values()].map(renderCard)}/>
-                <Button className={classes.createButton}><Add/> New Recipe</Button>
+                <Button className={classes.createButton}>
+                    <Add className={classes.createButtonIcon}/>New Recipe
+                </Button>
             </div>
         );
     }

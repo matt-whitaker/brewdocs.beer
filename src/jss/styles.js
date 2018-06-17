@@ -36,6 +36,9 @@ export default (theme) => ({
     createButton: {
         margin: theme.spacing.unit
     },
+    createButtonIcon: {
+        marginRight: theme.spacing.unit
+    },
     media: {
         height: 0,
         paddingTop: '56.25%', // 16:9
