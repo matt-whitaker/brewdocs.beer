@@ -1,18 +1,27 @@
 const path = require('path');
 const HTMLWebpackPlugin = require('html-webpack-plugin');
-const ExtractTextPlugin = require("extract-text-webpack-plugin");
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const Dotenv = require('dotenv-webpack');
+
+require('dotenv').config({});
+
+const IS_PROD = process.env.NODE_ENV === 'production';
+const JS_EXT = IS_PROD ? '.min.js' : '.js';
+const CSS_EXT = IS_PROD ? '.min.css' : '.css';
 
 module.exports = {
     entry: './src/App',
     devtool: 'source-map',
     output: {
         path: path.resolve(__dirname, 'lib'),
-        filename: 'app.min.js'
+        filename: `app${JS_EXT}`
+    },
+    optimization: {
+        minimize: IS_PROD
     },
     plugins: [
         new HTMLWebpackPlugin({template: './src/index.html'}),
-        new ExtractTextPlugin("app.min.css"),
+        new ExtractTextPlugin(`app${CSS_EXT}`),
         new Dotenv()
     ],
     module: {
@@ -25,12 +34,15 @@ module.exports = {
             {
                 test: /\.less$/,
                 include: [
-                    path.resolve(__dirname, "src/less")
+                    path.resolve(__dirname, 'src/less')
                 ],
                 use: ExtractTextPlugin.extract({
-                    fallback: "style-loader",
+                    fallback: 'style-loader',
                     use: [
-                        {loader: 'css-loader', options: {minimize: true}},
+                        {
+                            loader: 'css-loader',
+                            options: {minimize: IS_PROD}
+                        },
                         {loader: 'less-loader'}
                     ]
                 })

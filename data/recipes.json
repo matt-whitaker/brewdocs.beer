@@ -1,5 +1,16 @@
 [
-  [1, {"id": 1, "name": "Golden Ale", "description": "The first beer I tried brewing. Didn't turn out that great."}],
-  [2, {"id": 2, "name": "Pale Ale", "description": "A slightly hoppy, citrusy pale style with big Cascade presence."}],
-  [3, {"id": 3, "name": "Amber Ale", "description": "Third beer, had some issues with DME so low gravity."}]
+  {
+    "id": 1,
+    "name": "Golden Ale",
+    "description": "The first beer I tried brewing. Didn't turn out that great."
+  },
+  {"id": 2,
+    "name": "Pale Ale",
+    "description": "A slightly hoppy, citrusy pale style with big Cascade presence."
+  },
+  {
+    "id": 3,
+    "name": "Amber Ale",
+    "description": "Third beer, had some issues with DME so low gravity."
+  }
 ]

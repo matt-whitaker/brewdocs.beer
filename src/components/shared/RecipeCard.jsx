@@ -1,8 +1,12 @@
 import React from 'react';
 import {Card, CardActions, CardContent, CardMedia, Button, Typography} from '@material-ui/core';
-
 import { withStyles } from '@material-ui/core/styles';
-import styles from '../../jss/styles';
+
+const styles = (theme) => ({
+    card: {
+        margin: theme.spacing.unit
+    }
+});
 
 function RecipeCard({ classes, recipe }) {
     return (

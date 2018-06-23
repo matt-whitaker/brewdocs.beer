@@ -3,9 +3,17 @@ import {Link} from 'react-router-dom';
 import {Button, Typography} from '@material-ui/core';
 import {Add} from '@material-ui/icons';
 import { withStyles } from '@material-ui/core/styles';
-import styles from '../../jss/styles';
 import RecipeCard from '../../components/shared/RecipeCard';
 import CardDeck from '../../components/shared/CardDeck';
+
+const styles = (theme) => ({
+    createButton: {
+        margin: theme.spacing.unit
+    },
+    createButtonIcon: {
+        marginRight: theme.spacing.unit
+    }
+});
 
 class Home extends React.Component {
     componentDidMount () {
@@ -17,7 +25,7 @@ class Home extends React.Component {
 
         if (!recipes) return 'Loading...';
 
-        const renderCard = (recipe) => <RecipeCard recipe={recipe}/>;
+        const renderCard = (recipe) => <RecipeCard key={recipe.id} recipe={recipe}/>;
 
         return (
             <div>

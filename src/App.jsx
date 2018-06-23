@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import {MemoryRouter} from 'react-router';
 import { Provider } from 'react-redux';
 import AppLayout from './components/app/AppLayout';
+import AppWrapper from './components/app/AppWrapper';
 import Routes from './Routes';
 import Store from './dux';
 
@@ -12,9 +13,11 @@ export default function App () {
     return (
         <Provider store={Store}>
             <MemoryRouter>
-                <AppLayout>
-                    <Routes/>
-                </AppLayout>
+                <AppWrapper>
+                    <AppLayout>
+                        <Routes/>
+                    </AppLayout>
+                </AppWrapper>
             </MemoryRouter>
         </Provider>
     );

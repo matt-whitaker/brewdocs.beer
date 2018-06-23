@@ -1,10 +1,18 @@
 import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
-import styles from '../../jss/styles';
-// import AppHeaderBar from '../../components/app/AppHeaderBar';
 import AppNavDrawer from './AppNavDrawer';
 import AppBody from './AppBody';
-import AppHeaderBar from './AppHeaderBar'
+import AppHeaderBar from './AppHeaderBar';
+
+const styles = (theme) => ({
+    root: {
+        flexGrow: 1,
+        zIndex: 1,
+        overflow: 'hidden',
+        position: 'relative',
+        display: 'flex',
+    }
+});
 
 function AppLayout ({ classes, children }) {
     return (

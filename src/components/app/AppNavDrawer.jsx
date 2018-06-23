@@ -1,22 +1,21 @@
 import React from 'react';
-import {Link} from 'react-router-dom';
-import {Drawer, List, ListItem, ListItemIcon, ListItemText, Divider} from '@material-ui/core';
-import {Home} from '@material-ui/icons';
+import {Drawer} from '@material-ui/core';
+import AppNavDrawerList from './AppNavDrawerList';
 import { withStyles } from '@material-ui/core/styles';
-import styles from '../../jss/styles';
+
+const styles = (theme) => ({
+    drawerPaper: {
+        position: 'relative',
+        width: 240
+    },
+    spacer: theme.mixins.toolbar
+});
 
 function AppNavDrawer ({ classes }) {
     return (
         <Drawer variant="permanent" classes={{paper: classes.drawerPaper}}>
-            <div className={classes.toolbar} />
-            <List>
-                <ListItem button component={Link} to="/">
-                    <ListItemIcon>
-                        <Home/>
-                    </ListItemIcon>
-                    <ListItemText primary="Home" />
-                </ListItem>
-            </List>
+            <div className={classes.spacer} />
+            <AppNavDrawerList/>
             {/*<Divider />*/}
             {/*<List>{[]}</List>*/}
         </Drawer>

@@ -16,6 +16,7 @@ export default {
     get (key) {
         return Promise
             .resolve(localStorage.getItem(key))
+            .tap((_) => console.log(typeof _, _))
             .then((data) => !data ? keyMissError(key) : JSON.parse(data))
     },
 

@@ -1,3 +1,4 @@
+import Promise from 'bluebird';
 import recipes from '../services/recipes';
 
 export const LOAD_RECIPES = 'LOAD_RECIPES';
@@ -23,9 +24,14 @@ export function loadRecipes () {
         if (!getState().recipes) {
             dispatch({ type: LOAD_RECIPES });
 
-            recipes.get()
+            const promise = (`${process.env.SEED_DATA}`.includes('recipes')
+                ? Promise.map(require('../../data/recipes'), (recipe) => recipes.create(recipe))
+                : Promise.resolve());
+
+            promise.then(() => recipes.get()
                 .then((data) => dispatch({data, type: LOAD_RECIPES_SUCCESS}))
-                .catch((error) => dispatch({error, type: LOAD_RECIPES_ERROR}));
+                .catch((error) => dispatch({error, type: LOAD_RECIPES_ERROR})))
+
         }
     };
 }
@@ -34,7 +40,7 @@ export function createRecipe (recipe) {
     return (dispatch) => {
         dispatch({ type: CREATE_RECIPE });
 
-        recipes.add(recipe)
+        recipes.create(recipe)
             .then((data) => dispatch({data, type: CREATE_RECIPE_SUCCESS}))
             .catch((error) => dispatch({error, type: CREATE_RECIPE_ERROR}));
     };
