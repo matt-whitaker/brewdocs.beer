@@ -24,14 +24,9 @@ export function loadRecipes () {
         if (!getState().recipes) {
             dispatch({ type: LOAD_RECIPES });
 
-            const promise = (`${process.env.SEED_DATA}`.includes('recipes')
-                ? Promise.map(require('../../data/recipes'), (recipe) => recipes.create(recipe))
-                : Promise.resolve());
-
-            promise.then(() => recipes.get()
+            recipes.get()
                 .then((data) => dispatch({data, type: LOAD_RECIPES_SUCCESS}))
-                .catch((error) => dispatch({error, type: LOAD_RECIPES_ERROR})))
-
+                .catch((error) => dispatch({error, type: LOAD_RECIPES_ERROR}));
         }
     };
 }

@@ -4,8 +4,8 @@
   "description": "A (currently) web-based application for building homebrew beer recipes for.",
   "main": "index.js",
   "scripts": {
+    "seed": "mkdir -p lib && cp -R data lib/data",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prestart": "npm run clean",
     "start": "npm run build && npm-run-all --parallel build:watch server",
     "build": "webpack",
     "build:watch": "chokidar 'src/**/(*.js|*.jsx)'  -c 'npm run build'",
@@ -47,6 +47,7 @@
     "babel-preset-latest": "^6.24.1",
     "babel-preset-react": "^6.24.1",
     "chokidar-cli": "^1.2.0",
+    "copy-webpack-plugin": "^4.5.2",
     "css-loader": "^0.28.11",
     "dotenv": "^6.0.0",
     "dotenv-webpack": "^1.5.7",

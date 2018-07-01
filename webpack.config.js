@@ -1,6 +1,7 @@
 const path = require('path');
 const HTMLWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const Dotenv = require('dotenv-webpack');
 
 require('dotenv').config({});
@@ -10,6 +11,7 @@ const JS_EXT = IS_PROD ? '.min.js' : '.js';
 const CSS_EXT = IS_PROD ? '.min.css' : '.css';
 
 module.exports = {
+    target: 'electron-main',
     entry: './src/App',
     devtool: 'source-map',
     output: {
