@@ -9,9 +9,12 @@ const styles = (theme) => ({
         marginRight: theme.spacing.unit
     },
     recipeImage: {
-        display: 'inline-block'
+        display: 'inline-block',
+        float: 'left'
     }
 });
+
+const placeholderPicture = 'http://placekitten.com/220/300';
 
 class Home extends React.Component {
     constructor (...args) {
@@ -22,7 +25,7 @@ class Home extends React.Component {
         const {recipe, classes} = this.props;
 
         return (
-            <Grid container spacing={12} component="form" noValidate autoComplete="off">
+            <Grid container spacing={16} component="form" noValidate autoComplete="off">
                 <Grid item xs={8}>
                     <TextField
                         id="name"
@@ -31,9 +34,7 @@ class Home extends React.Component {
                         value={this.state.fields.name}
                         onChange={this.handleInput('name')}
                         margin="normal"/>
-                </Grid>
-                <Grid item xs={4}>
-                    <img src="http://placekitten.com/200/300" classes={classes.recipeImage}/>
+                    <img src={this.state.fields.picture || placeholderPicture} className={classes.recipeImage}/>
                 </Grid>
                 <Grid item xs={12}>
                     Note Bar
