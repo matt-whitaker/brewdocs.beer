@@ -4,9 +4,10 @@ import Recipe from '../../components/pages/Recipe';
 import * as recipeActions from '../../dux/recipes';
 
 const mapStateToProps = ({recipes}, {match}) => {
-    const id = match.params.recipeId;
+    const id = parseInt(match.params.recipeId, 10);
+
     return {
-        recipe: id ? recipes.get(match.params.recipeId) : null
+        recipe: id ? recipes.get(id) : null
     };
 };
 

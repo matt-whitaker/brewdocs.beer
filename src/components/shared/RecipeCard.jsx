@@ -1,10 +1,15 @@
 import React from 'react';
+import {Create} from '@material-ui/icons';
+import {Link} from 'react-router-dom';
 import {Card, CardActions, CardContent, CardMedia, Button, Typography} from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles';
 
 const styles = (theme) => ({
     card: {
         margin: theme.spacing.unit
+    },
+    editButtonIcon: {
+        marginRight: theme.spacing.unit
     }
 });
 
@@ -20,11 +25,11 @@ function RecipeCard({ classes, recipe }) {
                 </Typography>
             </CardContent>
             <CardActions>
-                {/*<Button size="small" color="primary">*/}
-                    {/*View*/}
-                {/*</Button>*/}
-                <Button size="small" color="primary">
-                    Edit
+                <Button size="small"
+                        color="primary"
+                        component={Link}
+                        to={`/recipe/${recipe.id}`}>
+                    <Create className={classes.editButtonIcon} />Edit
                 </Button>
             </CardActions>
         </Card>
