@@ -12,6 +12,7 @@ export const CREATE_RECIPE_ERROR = 'CREATE_RECIPE_ERROR';
 export default function (state = null, { type, data }) {
     switch (type) {
         case LOAD_RECIPES_SUCCESS:
+        case CREATE_RECIPE_SUCCESS:
             state = data;
             break;
     }
