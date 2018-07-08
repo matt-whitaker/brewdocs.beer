@@ -2,7 +2,7 @@
 
 Brain dump for future refinement
 
-## Breaking recipes up into three components
+## Breaking recipes up into entities
 
 - Recipe: The planned recipe, includes targets numbers, steps and equipment, and overview of ingredients.
 - Variation: Alternative versions of the planned recipe. Mainly for describing partial mash or extract substitutions.
