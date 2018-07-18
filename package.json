@@ -10,6 +10,8 @@
     "build": "webpack",
     "build:watch": "chokidar 'src/**/(*.js|*.jsx)'  -c 'npm run build'",
     "server": "electron server.js",
+    "mariadb:start": "./bin/mysql-start.sh",
+    "mariadb:stop": "./bin/mysql-stop.sh",
     "clean": "rm -rf lib"
   },
   "repository": {
