@@ -11,7 +11,7 @@ const JS_EXT = IS_PROD ? '.min.js' : '.js';
 const CSS_EXT = IS_PROD ? '.min.css' : '.css';
 
 module.exports = {
-    target: 'electron-main',
+    target: 'web',
     entry: './src/App',
     devtool: 'source-map',
     output: {
