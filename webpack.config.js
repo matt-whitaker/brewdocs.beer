@@ -12,18 +12,18 @@ const CSS_EXT = IS_PROD ? '.min.css' : '.css';
 
 module.exports = {
     target: 'web',
-    entry: './src/App',
+    entry: './app/src/App',
     devtool: 'source-map',
     output: {
         path: path.resolve(__dirname, 'lib'),
-        filename: `app${JS_EXT}`
+        filename: `static/assets/app${JS_EXT}`
     },
     optimization: {
         minimize: IS_PROD
     },
     plugins: [
-        new HTMLWebpackPlugin({template: './src/index.html'}),
-        new ExtractTextPlugin(`app${CSS_EXT}`),
+        new HTMLWebpackPlugin({template: './app/src/index.html', filename:'static/index.html'}),
+        new ExtractTextPlugin(`static/assets/app${CSS_EXT}`),
         new Dotenv()
     ],
     module: {
@@ -36,7 +36,7 @@ module.exports = {
             {
                 test: /\.less$/,
                 include: [
-                    path.resolve(__dirname, 'src/less')
+                    path.resolve(__dirname, 'app/src/less')
                 ],
                 use: ExtractTextPlugin.extract({
                     fallback: 'style-loader',
