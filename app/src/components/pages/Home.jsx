@@ -3,7 +3,7 @@ import {Link} from 'react-router-dom';
 import {Button, Typography} from '@material-ui/core';
 import {Add} from '@material-ui/icons';
 import { withStyles } from '@material-ui/core/styles';
-import RecipeCard from '../../components/shared/RecipeCard';
+import RecipeCard from '../shared/RecipeCard';
 import CardDeck from '../../components/shared/CardDeck';
 
 const styles = (theme) => ({

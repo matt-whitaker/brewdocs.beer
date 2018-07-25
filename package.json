@@ -6,10 +6,13 @@
   "scripts": {
     "seed": "mkdir -p lib && cp -R data lib/data",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "npm run build && npm-run-all --parallel build:watch server",
-    "build": "webpack",
-    "build:watch": "chokidar 'src/**/(*.js|*.jsx)'  -c 'npm run build'",
-    "server": "electron server.js",
+    "start": "npm run server",
+    "dev": "npm run build:server && npm run build:static && npm run dev:watch",
+    "dev:watch": "npm-run-all --parallel build:watch dev:server",
+    "dev:server": "node --require dotenv/config lib/server.js",
+    "build:server": "babel app --out-dir lib --ignore app/src",
+    "build:static": "webpack",
+    "build:watch": "chokidar 'app/src/**/(*.js|*.jsx)'  -c 'npm run build:static'",
     "mariadb:start": "./bin/mysql-start.sh",
     "mariadb:stop": "./bin/mysql-stop.sh",
     "clean": "rm -rf lib"
@@ -29,8 +32,9 @@
     "@material-ui/icons": "^1.1.0",
     "bluebird": "^3.5.1",
     "classnames": "^2.2.6",
+    "cluster": "^0.7.7",
     "deep-equal": "^1.0.1",
-    "electron": "^2.0.2",
+    "express": "^4.16.3",
     "ramda": "^0.25.0",
     "react": "^16.4.1",
     "react-dom": "^16.4.1",
@@ -39,7 +43,8 @@
     "react-router-dom": "^4.3.1",
     "redux": "^4.0.0",
     "redux-logger": "^3.0.6",
-    "redux-thunk": "^2.3.0"
+    "redux-thunk": "^2.3.0",
+    "superagent": "^3.8.3"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
