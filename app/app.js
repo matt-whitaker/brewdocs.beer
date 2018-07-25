@@ -2,7 +2,7 @@ import path from 'path';
 import express from 'express'
 
 function createApp () {
-    return new Promise((res, rej) => {
+    return new Promise((res) => {
         const app = express();
         const port = process.env.PORT;
 
