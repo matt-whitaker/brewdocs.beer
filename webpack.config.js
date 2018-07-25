@@ -1,25 +1,27 @@
 const path = require('path');
 const HTMLWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
 const Dotenv = require('dotenv-webpack');
 
 require('dotenv').config({});
 
-const IS_PROD = process.env.NODE_ENV === 'production';
-const JS_EXT = IS_PROD ? '.min.js' : '.js';
-const CSS_EXT = IS_PROD ? '.min.css' : '.css';
+const nodeEnv = process.env.NODE_ENV;
+const isProd = nodeEnv === 'production';
+
+const JS_EXT = isProd ? '.min.js' : '.js';
+const CSS_EXT = isProd ? '.min.css' : '.css';
 
 module.exports = {
     target: 'web',
     entry: './app/src/App',
+    mode: nodeEnv,
     devtool: 'source-map',
     output: {
         path: path.resolve(__dirname, 'lib'),
         filename: `static/assets/app${JS_EXT}`
     },
     optimization: {
-        minimize: IS_PROD
+        minimize: isProd
     },
     plugins: [
         new HTMLWebpackPlugin({template: './app/src/index.html', filename:'static/index.html'}),
@@ -43,7 +45,7 @@ module.exports = {
                     use: [
                         {
                             loader: 'css-loader',
-                            options: {minimize: IS_PROD}
+                            options: {minimize: isProd}
                         },
                         {loader: 'less-loader'}
                     ]
