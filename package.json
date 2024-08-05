@@ -7,12 +7,12 @@
   },
   "author": "",
   "license": "ISC",
-  "bugs": {
-
-  },
   "dependencies": {
   },
   "devDependencies": {
 
-  }
+  },
+  "workspaces": [
+    "packages/brewdocs"
+  ]
 }
