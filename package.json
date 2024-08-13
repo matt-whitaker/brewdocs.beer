@@ -3,14 +3,11 @@
   "version": "0.0.0",
   "description": "An (offline) web app prototype of a standard brew day application",
   "main": "index.js",
-  "scripts": {
-  },
+  "scripts": {},
   "author": "",
   "license": "ISC",
   "dependencies": {
-  },
-  "devDependencies": {
-
+    "daisyui": "^4.12.10"
   },
   "workspaces": [
     "packages/brewdocs"
