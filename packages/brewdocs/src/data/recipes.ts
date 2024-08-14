@@ -4,7 +4,7 @@ const recipes: Recipe[] = [
     {
         id: 0,
         brewer: "matt whitaker",
-        description: "a model recipe with a big impact. you'll want to drink the whole batch, but don't!",
+        description: "a model recipeId with a big impact. you'll want to drink the whole batch, but don't!",
         batchSize: 5,
         boilTime: 60,
         name: "beer",

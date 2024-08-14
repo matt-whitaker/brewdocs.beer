@@ -1,7 +1,9 @@
 
-import PrepList, { PrepListProps } from "@brewdocs/components/prep-list";
+import PrepList from "../screen/prep-list";
 import {Meta, StoryObj} from "@storybook/react";
 import recipes from "@brewdocs/data/recipes";
+import AppWrapper from "../components/app-wrapper";
+import preparations from "@brewdocs/data/preparations";
 
 const meta = {
     title: 'Screens/PrepList',
@@ -13,6 +15,9 @@ const meta = {
     argTypes: {
     },
     args: { },
+    decorators: [
+        (Story) => <AppWrapper><Story /></AppWrapper>
+    ]
 } satisfies Meta<typeof PrepList>;
 
 export default meta;
@@ -20,6 +25,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Development: Story = {
     args: {
-        recipe: recipes[0]
+        recipe: recipes[0],
+        preparations
     }
 };

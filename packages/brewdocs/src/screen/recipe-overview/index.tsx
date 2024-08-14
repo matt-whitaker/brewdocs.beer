@@ -1,5 +1,6 @@
 import Recipe from "@brewdocs/model/recipe";
 import SrmAvatar from "@brewdocs/components/srm-avatar";
+import Container from "@brewdocs/components/common/container";
 
 export interface RecipeOverviewProps {
     recipe: Recipe;
@@ -7,11 +8,11 @@ export interface RecipeOverviewProps {
 
 export default function RecipeOverview({ recipe }: RecipeOverviewProps) {
     return (
-        <div className="w-full h-full p-5">
+        <Container>
             <div className="flex">
                 <div className="flex-grow">
                     <h2 className="text-xl capitalize">{recipe.name}</h2>
-                    <p className="text-lg capitalize">By {recipe.brewer}</p>
+                    <h3 className="text-lg capitalize">By {recipe.brewer}</h3>
                     <p className="text-sm">{recipe.description}</p>
                     <div className="flex pt-3 w-full justify-evenly [&>p]:grow [&>p]:text-left">
                         <p>ABV {recipe.targets.abv}</p>
@@ -22,12 +23,12 @@ export default function RecipeOverview({ recipe }: RecipeOverviewProps) {
                     <SrmAvatar srm={recipe.targets.srm} />
                 </div>
             </div>
-            <div className="pt-5">
+            <div className="pt-5 sm:hidden">
                 <p><b>Grain:</b> {recipe.grain.map(({ name }) => name).join(", ")}</p>
                 <p><b>Hops:</b> {recipe.hops.map(({ name }) => name).join(", ")}</p>
                 <p><b>Yeast:</b> {recipe.yeast.map(({ name }) => name).join(", ")}</p>
             </div>
-        </div>
+        </Container>
 
     );
 }

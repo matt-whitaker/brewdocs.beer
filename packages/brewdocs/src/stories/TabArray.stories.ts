@@ -1,10 +1,10 @@
 
-import SrmAvatar from "@brewdocs/components/srm-avatar";
+import TabArray from "@brewdocs/components/tab-array";
 import {Meta, StoryObj} from "@storybook/react";
 
 const meta = {
-    title: 'Components/SrmAvatar',
-    component: SrmAvatar,
+    title: 'Components/TabArray',
+    component: TabArray,
     parameters: {
         layout: 'centered',
     },
@@ -12,13 +12,17 @@ const meta = {
     argTypes: {
     },
     args: { },
-} satisfies Meta<typeof SrmAvatar>;
+} satisfies Meta<typeof TabArray>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Development: Story = {
     args: {
-        srm: 26
+        tabs: [
+            { name: "Tab One", id: 0 },
+            { name: "Tab Two", id: 1 },
+            { name: "Tab Three", id: 2 }
+        ]
     }
 };

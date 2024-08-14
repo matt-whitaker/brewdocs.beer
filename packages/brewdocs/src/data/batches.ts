@@ -3,6 +3,8 @@ import {Batch} from "@brewdocs/model/batch";
 const batches: Batch[] = [
     {
         id: 0,
+        recipeId: 0,
+        brewDate: new Date(),
         grain: [{
             name: "2-row",
             weight: 16
@@ -20,6 +22,11 @@ const batches: Batch[] = [
             weight: 1,
             alpha: 0.76,
             boil: 15
+        },{
+            name: "centennial",
+            weight: 1,
+            alpha: 0.92,
+            boil: 45
         }],
 
         yeast: [{

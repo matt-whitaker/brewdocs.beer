@@ -7,6 +7,8 @@ import Water from "@brewdocs/model/water";
 import Vitals from "@brewdocs/model/vitals";
 
 export interface Batch extends Entity {
+    recipeId: 0,
+    brewDate: Date,
     grain: Grain[];
     mash: Mash[];
     hops: Hop[];

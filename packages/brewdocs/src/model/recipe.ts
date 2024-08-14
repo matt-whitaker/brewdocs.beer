@@ -18,10 +18,11 @@ export default interface Recipe extends Entity {
     notes?: string;
 
     grain: Grain[];
-    mash: Mash[];
     hops: Hop[];
     yeast: Yeast[];
+
     water: Water[];
+    mash: Mash[];
     targets: Vitals;
 
     cost: {
