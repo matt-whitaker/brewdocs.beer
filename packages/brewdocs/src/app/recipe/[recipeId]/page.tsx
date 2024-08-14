@@ -10,11 +10,11 @@ import TabArray from "@brewdocs/components/tab-array";
 
 export interface RecipeProps {
     params: {
-        recipeId: string
+        recipeId: number
     }
 }
 
-export function generateStaticParams() {
+export function generateStaticParams()  {
     return recipes.map((_, i) => ({ recipeId: `${i}` }));
 }
 
@@ -22,19 +22,19 @@ export default function Recipe({ params }: RecipeProps) {
     return (
         <AppWrapper>
             <TabArray tabs={["Overview", "Checklist", "Brew Day", "Summary"]} />
-            <div className="peer-has-[#tab-0:checked]/array:block sm:block hidden">
+            <div className="peer-has-[#tab-1:checked]/array:block sm:block hidden">
                 <RecipeOverview recipe={recipes[params.recipeId]} />
             </div>
             <hr className="sm:block hidden "/>
-            <div className="peer-has-[#tab-1:checked]/array:block sm:block hidden">
+            <div className="peer-has-[#tab-2:checked]/array:block sm:block hidden">
                 <PrepList recipe={recipes[params.recipeId]} preparations={preparations} />
             </div>
             <hr className="sm:block hidden "/>
-            <div className="peer-has-[#tab-2:checked]/array:block sm:block hidden">
+            <div className="peer-has-[#tab-3:checked]/array:block sm:block hidden">
                 <BrewDay recipe={recipes[params.recipeId]} />
             </div>
             <hr className="sm:block hidden "/>
-            <div className="peer-has-[#tab-3:checked]/array:block sm:block hidden">
+            <div className="peer-has-[#tab-4:checked]/array:block sm:block hidden">
                 <BrewSummary recipe={recipes[params.recipeId]} batch={batches[params.recipeId]} />
             </div>
         </AppWrapper>

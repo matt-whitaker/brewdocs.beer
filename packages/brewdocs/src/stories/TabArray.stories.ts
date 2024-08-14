@@ -20,9 +20,10 @@ type Story = StoryObj<typeof meta>;
 export const Development: Story = {
     args: {
         tabs: [
-            { name: "Tab One", id: 0 },
-            { name: "Tab Two", id: 1 },
-            { name: "Tab Three", id: 2 }
+            "Tab One",
+            "Tab Two",
+            "Tab Three",
+            "Tab Four",
         ]
     }
 };

@@ -4,15 +4,14 @@ import classNames from "classnames";
 import {useCallback, useState} from "react";
 
 export interface TabArrayProps {
-    tabs: string[];
+    tabs: [string, string?, string?, string?];
 }
 
 const peerClasses = [
     ["peer/tab-1", "peer-checked/tab-1:font-semibold peer-checked/tab-1:outline"],
     ["peer/tab-2", "peer-checked/tab-2:font-semibold peer-checked/tab-2:outline"],
     ["peer/tab-3", "peer-checked/tab-3:font-semibold peer-checked/tab-3:outline"],
-    ["peer/tab-4", "peer-checked/tab-4:font-semibold peer-checked/tab-4:outline"],
-    ["peer/tab-5", "peer-checked/tab-5:font-semibold peer-checked/tab-5:outline"]
+    ["peer/tab-4", "peer-checked/tab-4:font-semibold peer-checked/tab-4:outline"]
 ];
 
 export default function TabArray({ tabs }: TabArrayProps) {
@@ -21,9 +20,9 @@ export default function TabArray({ tabs }: TabArrayProps) {
         <div className="w-full flex justify-around peer/array sm:hidden">
             {tabs.map((tab, i) =>
                 <input
-                    key={i}
-                    onChange={useCallback(() => setChecked(i), [i])}
-                    id={`tab-${i}`}
+                    key={tab}
+                    onChange={({ target: { value } }) => setChecked(Number(value))}
+                    id={`tab-${i+1}`}
                     type="radio"
                     value={i}
                     checked={i === checked}
@@ -34,7 +33,7 @@ export default function TabArray({ tabs }: TabArrayProps) {
                 <label
                     key={i}
                     className={classNames(peerClasses[i][1], "outline-1 rounded-lg text-sm cursor-pointer mt-5 p-1")}
-                    htmlFor={`tab-${i}`}>
+                    htmlFor={`tab-${i+1}`}>
                     {tab}
                 </label>
             )}

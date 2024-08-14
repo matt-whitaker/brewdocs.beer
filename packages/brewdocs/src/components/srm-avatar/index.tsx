@@ -7,13 +7,13 @@ export interface SrmAvatarProps {
 }
 
 function findHexClasses(srm: number) {
-    for (const [key, hex] of SRM_TO_HEX) {
-        if (srm <= key) {
-            return hex;
-        }
+    const match = Array.from(SRM_TO_HEX.entries()).find(([key, hex]) => srm <= key);
+
+    if (match) {
+        return match[1];
     }
 
-    return SRM_TO_HEX.get(40);
+    return SRM_TO_HEX.get(40) as [string, string, string];
 }
 
 export default function SrmAvatar({ srm }: SrmAvatarProps){

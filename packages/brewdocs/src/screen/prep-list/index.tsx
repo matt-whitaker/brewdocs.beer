@@ -12,11 +12,11 @@ export default function PrepList({ recipe, preparations }: PrepListProps) {
         <Container>
             <div className="sm:grid sm:grid-cols-4">
                 {preparations.map(([title, id, items]) => (
-                    <div className="mb-5">
+                    <div key={id} className="mb-5">
                         <label htmlFor={id} className="text-xl">{title}</label>
                         <ul id={id}>
                             {items.map((item) => (
-                                <label className="flex items-center">
+                                <label key={item} className="flex items-center">
                                     <input type="checkbox" className="checkbox sm:checkbox-sm checkbox-xs mr-3" />
                                     {item}
                                 </label>

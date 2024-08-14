@@ -22,7 +22,7 @@ export default function BrewSummary({ recipe, batch }: BrewSummaryProps) {
                 <h4>Vitals</h4>
                 <div className="flex w-full justify-evenly [&>div]:grow [&>div>*]:text-left">
                     {vitalsData.map(([name, vitals]) => (
-                        <div>
+                        <div key={name}>
                             <h4>{name}</h4>
                             <p>ABV {vitals.abv}</p>
                             <p>IBU {vitals.ibu}</p>

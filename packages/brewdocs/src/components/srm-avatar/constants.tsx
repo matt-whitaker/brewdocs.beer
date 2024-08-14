@@ -1,4 +1,4 @@
-export const SRM_TO_HEX = new Map([
+export const SRM_TO_HEX = new Map<number, [string, string, string]>([
     [1,  ["bg-beer-1",  "border-beer-1", "outline-beer-1"]],   // Pale Straw
     [3,  ["bg-beer-3",  "border-beer-3", "outline-beer-3"]],   // Straw
     [6,  ["bg-beer-6",  "border-beer-6", "outline-beer-6"]],   // Pale Gold
@@ -11,5 +11,5 @@ export const SRM_TO_HEX = new Map([
     [30, ["bg-beer-30", "border-beer-30", "outline-beer-30"]],  // Brown
     [35, ["bg-beer-35", "border-beer-35", "outline-beer-35"]],  // Ruby Brown
     [40, ["bg-beer-40", "border-beer-40", "outline-beer-40"]],  // Deep Brown
-    [40, ["bg-beer-50", "border-beer-50", "outline-beer-50"]],  // Black (fallback value)
+    [50, ["bg-beer-50", "border-beer-50", "outline-beer-50"]],  // Black (fallback value)
 ]);

@@ -1,13 +1,12 @@
 
-import BrewDay from "../screen/brew-day";
+import BrewList from "../screen/brew-list";
 import {Meta, StoryObj} from "@storybook/react";
 import recipes from "@brewdocs/data/recipes";
 import AppWrapper from "../components/app-wrapper";
-import batches from "@brewdocs/data/batches";
 
 const meta = {
-    title: 'Screens/BrewDay',
-    component: BrewDay,
+    title: 'Screens/BrewList',
+    component: BrewList,
     parameters: {
         layout: 'fullscreen'
     },
@@ -18,13 +17,13 @@ const meta = {
     decorators: [
         (Story) => <AppWrapper><Story /></AppWrapper>
     ]
-} satisfies Meta<typeof BrewDay>;
+} satisfies Meta<typeof BrewList>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Development: Story = {
     args: {
-        recipe: recipes[0],
+        recipes
     }
 };
