@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Container from "@brewdocs/components/common/container";
+import ScreenContainer from "../../components/screen-container";
 import Recipe from "@brewdocs/model/recipe";
 
 export interface BrewListProps {
@@ -8,7 +8,7 @@ export interface BrewListProps {
 
 export default function BrewList({ recipes }: BrewListProps) {
     return (
-        <Container>
+        <ScreenContainer>
             <h1 className="text-2xl">Your brews</h1>
             <ul className="mt-4">
                 {recipes.map((recipe, i) => (
@@ -17,6 +17,6 @@ export default function BrewList({ recipes }: BrewListProps) {
                     </li>
                 ))}
             </ul>
-        </Container>
+        </ScreenContainer>
     )
 }

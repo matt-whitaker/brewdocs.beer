@@ -7,7 +7,14 @@ export interface TabArrayProps {
     tabs: [string, string?, string?, string?];
 }
 
-const peerClasses = [
+export const peerClasses = [
+    "peer-has-[#tab-1:checked]/array:block",
+    "peer-has-[#tab-2:checked]/array:block",
+    "peer-has-[#tab-3:checked]/array:block",
+    "peer-has-[#tab-4:checked]/array:block"
+];
+
+const innerPeerClasses = [
     ["peer/tab-1", "peer-checked/tab-1:font-semibold peer-checked/tab-1:outline"],
     ["peer/tab-2", "peer-checked/tab-2:font-semibold peer-checked/tab-2:outline"],
     ["peer/tab-3", "peer-checked/tab-3:font-semibold peer-checked/tab-3:outline"],
@@ -27,12 +34,12 @@ export default function TabArray({ tabs }: TabArrayProps) {
                     value={i}
                     checked={i === checked}
                     name="tab-array"
-                    className={classNames("hidden", peerClasses[i][0])} />
+                    className={classNames("hidden", innerPeerClasses[i][0])} />
             )}
             {tabs.map((tab, i) =>
                 <label
                     key={i}
-                    className={classNames(peerClasses[i][1], "outline-1 rounded-lg text-sm cursor-pointer mt-5 p-1")}
+                    className={classNames(innerPeerClasses[i][1], "outline-1 rounded-lg text-sm cursor-pointer mt-5 p-1")}
                     htmlFor={`tab-${i+1}`}>
                     {tab}
                 </label>

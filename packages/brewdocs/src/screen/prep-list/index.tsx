@@ -1,5 +1,5 @@
 import Recipe from "@brewdocs/model/recipe";
-import Container from "@brewdocs/components/common/container";
+import ScreenContainer from "../../components/screen-container";
 import Preparation from "@brewdocs/model/preparation";
 
 export interface PrepListProps {
@@ -9,7 +9,7 @@ export interface PrepListProps {
 
 export default function PrepList({ recipe, preparations }: PrepListProps) {
     return (
-        <Container>
+        <ScreenContainer>
             <div className="sm:grid sm:grid-cols-4">
                 {preparations.map(([title, id, items]) => (
                     <div key={id} className="mb-5">
@@ -25,6 +25,6 @@ export default function PrepList({ recipe, preparations }: PrepListProps) {
                     </div>
                 ))}
             </div>
-        </Container>
+        </ScreenContainer>
     )
 }

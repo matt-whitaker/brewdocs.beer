@@ -1,6 +1,6 @@
 import Recipe from "@brewdocs/model/recipe";
 import {Batch} from "@brewdocs/model/batch";
-import Container from "@brewdocs/components/common/container";
+import ScreenContainer from "../../components/screen-container";
 import Vitals from "@brewdocs/model/vitals";
 
 export interface BrewSummaryProps {
@@ -11,7 +11,7 @@ export interface BrewSummaryProps {
 export default function BrewSummary({ recipe, batch }: BrewSummaryProps) {
     const vitalsData: [string, Vitals][] = [["Target", recipe.targets], ["Actuals", batch.actuals]];
     return (
-        <Container>
+        <ScreenContainer>
             <div className="[&>h4]:mt-2.5 [&>h4]:capitalize [&>h4]:text-lg [&>h4]:font-semibold">
                 <div className="sm:hidden">
                     <h2 className="text-xl capitalize">{recipe.name}</h2>
@@ -39,6 +39,6 @@ export default function BrewSummary({ recipe, batch }: BrewSummaryProps) {
                 <h4>Yeast</h4>
                 <p>{batch.yeast.map(({ name }) => name).join(", ")}</p>
             </div>
-        </Container>
+        </ScreenContainer>
     )
 }

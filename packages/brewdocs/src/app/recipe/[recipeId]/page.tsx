@@ -7,6 +7,7 @@ import BrewSummary from "@brewdocs/screen/brew-summary";
 import batches from "@brewdocs/data/batches";
 import AppWrapper from "@brewdocs/components/app-wrapper";
 import TabArray from "@brewdocs/components/tab-array";
+import TabWrapper from "@brewdocs/components/tab-wrapper";
 
 export interface RecipeProps {
     params: {
@@ -22,21 +23,12 @@ export default function Recipe({ params }: RecipeProps) {
     return (
         <AppWrapper>
             <TabArray tabs={["Overview", "Checklist", "Brew Day", "Summary"]} />
-            <div className="peer-has-[#tab-1:checked]/array:block sm:block hidden">
+            <TabWrapper>
                 <RecipeOverview recipe={recipes[params.recipeId]} />
-            </div>
-            <hr className="sm:block hidden "/>
-            <div className="peer-has-[#tab-2:checked]/array:block sm:block hidden">
                 <PrepList recipe={recipes[params.recipeId]} preparations={preparations} />
-            </div>
-            <hr className="sm:block hidden "/>
-            <div className="peer-has-[#tab-3:checked]/array:block sm:block hidden">
                 <BrewDay recipe={recipes[params.recipeId]} />
-            </div>
-            <hr className="sm:block hidden "/>
-            <div className="peer-has-[#tab-4:checked]/array:block sm:block hidden">
                 <BrewSummary recipe={recipes[params.recipeId]} batch={batches[params.recipeId]} />
-            </div>
+            </TabWrapper>
         </AppWrapper>
     )
 }

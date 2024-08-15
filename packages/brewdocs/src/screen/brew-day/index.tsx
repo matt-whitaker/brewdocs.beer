@@ -1,5 +1,5 @@
 import Recipe from "@brewdocs/model/recipe";
-import Container from "@brewdocs/components/common/container";
+import ScreenContainer from "../../components/screen-container";
 
 export interface BrewDayProps {
     recipe: Recipe;
@@ -7,8 +7,8 @@ export interface BrewDayProps {
 
 export default function BrewDay(props: BrewDayProps) {
     return (
-        <Container>
+        <ScreenContainer>
             <p>sdklfj</p>
-        </Container>
+        </ScreenContainer>
     )
 }
