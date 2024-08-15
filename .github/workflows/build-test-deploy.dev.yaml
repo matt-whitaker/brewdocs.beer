@@ -31,23 +31,23 @@ jobs:
     steps:
       - run: echo "No tests yet..."
 
-  Deploy:
-    runs-on: ubuntu-latest
-    needs: ["Build", "Test"]
-    environment: "dev"
-    permissions:
-      id-token: write
-      contents: read
-    steps:
-      - uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: ${{ vars.AWS_DEFAULT_REGION }}
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-      - uses: actions/download-artifact@v4
-        with:
-          name: out
-          path: out
-      - run: aws s3 sync --delete --acl public-read out s3://${{ secrets.BREWDOCS_AWS_S3_BUCKET }}
-      - run: aws cloudfront create-invalidation --distribution-id ${{ secrets.BREWDOCS_AWS_CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*" >/dev/null
+#  Deploy:
+#    runs-on: ubuntu-latest
+#    needs: ["Build", "Test"]
+#    environment: "dev"
+#    permissions:
+#      id-token: write
+#      contents: read
+#    steps:
+#      - uses: aws-actions/configure-aws-credentials@v4
+#        with:
+#          aws-region: ${{ vars.AWS_DEFAULT_REGION }}
+#          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+#      - uses: actions/download-artifact@v4
+#        with:
+#          name: out
+#          path: out
+#      - run: aws s3 sync --delete --acl public-read out s3://${{ secrets.BREWDOCS_AWS_S3_BUCKET }}
+#      - run: aws cloudfront create-invalidation --distribution-id ${{ secrets.BREWDOCS_AWS_CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*" >/dev/null
