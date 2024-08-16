@@ -1,18 +1,32 @@
-import Recipe from "@brewdocs/model/recipe";
-import SrmAvatar from "@brewdocs/components/srm-avatar";
-import ScreenContainer from "../../components/screen-container";
+"use client";
 
-export interface RecipeOverviewProps {
-    recipe: Recipe;
+import SrmAvatar from "@brewdocs/component/srm-avatar";
+import ScreenContainer from "@brewdocs/component/screen-container";
+import {useService} from "@brewdocs/service/useService";
+import getRecipes from "@brewdocs/service/getRecipes";
+import Organics from "@brewdocs/component/organics";
+import {ScreenH2, ScreenH3, ScreenH4, ScreenHr} from "../../component/typography";
+
+export type RecipeOverviewProps = { i: number }
+
+const getData = (i: number) => {
+    const [recipes] = useService(getRecipes, []);
+    return recipes[i] ?? null;
 }
 
-export default function RecipeOverview({ recipe }: RecipeOverviewProps) {
+export default function RecipeOverview({ i }: RecipeOverviewProps) {
+    const recipe = getData(i);
+
+    if (!recipe) {
+        return <></>;
+    }
     return (
         <ScreenContainer>
+            <ScreenH2 className="sm:block hidden">Recipe Overview</ScreenH2>
             <div className="flex">
                 <div className="flex-grow">
-                    <h2 className="text-xl capitalize">{recipe.name}</h2>
-                    <h3 className="text-lg capitalize">By {recipe.brewer}</h3>
+                    <ScreenH3>{recipe.name}</ScreenH3>
+                    <ScreenH4>By {`${recipe.brewer}`}</ScreenH4>
                     <p className="text-sm">{recipe.description}</p>
                     <div className="flex pt-3 w-full justify-evenly [&>p]:grow [&>p]:text-left">
                         <p>ABV {recipe.targets.abv}</p>
@@ -23,11 +37,8 @@ export default function RecipeOverview({ recipe }: RecipeOverviewProps) {
                     <SrmAvatar srm={recipe.targets.srm} />
                 </div>
             </div>
-            <div className="pt-5 sm:hidden">
-                <p><b>Grain:</b> {recipe.grain.map(({ name }) => name).join(", ")}</p>
-                <p><b>Hops:</b> {recipe.hops.map(({ name }) => name).join(", ")}</p>
-                <p><b>Yeast:</b> {recipe.yeast.map(({ name }) => name).join(", ")}</p>
-            </div>
+            <ScreenHr className="sm:hidden" />
+            <Organics className="sm:hidden" hops={recipe.hops} grain={recipe.grain} yeast={recipe.yeast} />
         </ScreenContainer>
 
     );

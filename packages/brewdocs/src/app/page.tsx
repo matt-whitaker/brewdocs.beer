@@ -1,11 +1,11 @@
-import AppWrapper from "@brewdocs/components/app-wrapper";
+import AppWrapper from "@brewdocs/component/app-wrapper";
 import BrewList from "@brewdocs/screen/brew-list";
-import recipes from "@brewdocs/data/recipes";
+import getRecipes from "@brewdocs/service/getRecipes";
 
-export default function Home() {
+export default async function Home() {
     return (
         <AppWrapper>
-            <BrewList recipes={recipes} />
+            <BrewList />
         </AppWrapper>
     );
 }

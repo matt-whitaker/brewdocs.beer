@@ -1,5 +1,5 @@
 
-import SrmAvatar from "@brewdocs/components/srm-avatar";
+import SrmAvatar from "@brewdocs/component/srm-avatar";
 import {Meta, StoryObj} from "@storybook/react";
 
 const meta = {

@@ -1,4 +1,4 @@
-import {SRM_TO_HEX} from "@brewdocs/components/srm-avatar/constants";
+import {SRM_TO_HEX} from "@brewdocs/component/srm-avatar/constants";
 import {useMemo} from "react";
 import classNames from "classnames";
 

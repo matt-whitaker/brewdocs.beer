@@ -1,15 +1,22 @@
-import Recipe from "@brewdocs/model/recipe";
-import ScreenContainer from "../../components/screen-container";
-import Preparation from "@brewdocs/model/preparation";
+"use client";
 
-export interface PrepListProps {
-    recipe: Recipe;
-    preparations: Preparation[];
-}
+import ScreenContainer from "@brewdocs/component/screen-container";
+import {useService} from "@brewdocs/service/useService";
+import getPreparations from "@brewdocs/service/getPreparations";
+import {ScreenH2} from "@brewdocs/component/typography";
 
-export default function PrepList({ recipe, preparations }: PrepListProps) {
+export type PrepListProps = { i: number }
+
+export default function PrepList({ i }: PrepListProps) {
+    const [preparations] = useService(getPreparations, []);
+
+    if (!preparations.length) {
+        return <></>;
+    }
+
     return (
         <ScreenContainer>
+            <ScreenH2 className="sm:block hidden">Brew Day Checklist</ScreenH2>
             <div className="sm:grid sm:grid-cols-4">
                 {preparations.map(([title, id, items]) => (
                     <div key={id} className="mb-5">

@@ -39,7 +39,7 @@ export default function TabArray({ tabs }: TabArrayProps) {
             {tabs.map((tab, i) =>
                 <label
                     key={i}
-                    className={classNames(innerPeerClasses[i][1], "outline-1 rounded-lg text-sm cursor-pointer mt-5 p-1")}
+                    className={classNames(innerPeerClasses[i][1], "outline-1 rounded-lg text-sm cursor-pointer p-1")}
                     htmlFor={`tab-${i+1}`}>
                     {tab}
                 </label>

@@ -1,43 +1,41 @@
-import Recipe from "@brewdocs/model/recipe";
-import {Batch} from "@brewdocs/model/batch";
-import ScreenContainer from "../../components/screen-container";
-import Vitals from "@brewdocs/model/vitals";
+"use client";
 
-export interface BrewSummaryProps {
-    recipe: Recipe;
-    batch: Batch;
+import ScreenContainer from "@brewdocs/component/screen-container";
+import {useService} from "@brewdocs/service/useService";
+import getRecipes from "@brewdocs/service/getRecipes";
+import getBatches from "@brewdocs/service/getBatches";
+import Organics from "@brewdocs/component/organics";
+import Vitals from "@brewdocs/component/vitals";
+import {ScreenH2, ScreenH3, ScreenH4, ScreenHr, ScreenP} from "../../component/typography";
+
+export type BrewSummaryProps = { i: number }
+
+const getData = (i: number) => {
+    const [recipes] = useService(getRecipes, []);
+    const [batches] = useService(getBatches, []);
+    return [recipes[i] ?? null, batches[i] ?? null];
 }
 
-export default function BrewSummary({ recipe, batch }: BrewSummaryProps) {
-    const vitalsData: [string, Vitals][] = [["Target", recipe.targets], ["Actuals", batch.actuals]];
+export default function BrewSummary({ i }: BrewSummaryProps) {
+    const [recipe, batch] = getData(i);
+
+    if (!recipe || !batch) {
+        return <></>;
+    }
+
     return (
         <ScreenContainer>
+            <ScreenH2 className="sm:block hidden">Brew Summary</ScreenH2>
             <div className="[&>h4]:mt-2.5 [&>h4]:capitalize [&>h4]:text-lg [&>h4]:font-semibold">
                 <div className="sm:hidden">
-                    <h2 className="text-xl capitalize">{recipe.name}</h2>
-                    <h3 className="text-lg capitalize">By {recipe.brewer}</h3>
-                    <p className="mt-1"><b>Brewed on</b> {batch.brewDate.toDateString()}</p>
-                    <p className="mt-0.5">{recipe.description}</p>
+                    <ScreenH3>{recipe.name}</ScreenH3>
+                    <ScreenH4>By {`${recipe.brewer}`}</ScreenH4>
+                    <ScreenP><b>Brewed on</b> {batch.brewDate.toDateString()}</ScreenP>
+                    <ScreenP>{`${recipe.description}`}</ScreenP>
                 </div>
-                <h4>Vitals</h4>
-                <div className="flex w-full justify-evenly [&>div]:grow [&>div>*]:text-left">
-                    {vitalsData.map(([name, vitals]) => (
-                        <div key={name}>
-                            <h4>{name}</h4>
-                            <p>ABV {vitals.abv}</p>
-                            <p>IBU {vitals.ibu}</p>
-                            <p>SRM {vitals.srm}</p>
-                            <p>O.G. {vitals.og}</p>
-                            <p>F.G. {vitals.fg}</p>
-                        </div>
-                    ))}
-                </div>
-                <h4>Hops</h4>
-                <p>{batch.hops.map(({ name }) => name).join(", ")}</p>
-                <h4>Grain</h4>
-                <p>{batch.grain.map(({ name }) => name).join(", ")}</p>
-                <h4>Yeast</h4>
-                <p>{batch.yeast.map(({ name }) => name).join(", ")}</p>
+                <Vitals className="ml-4" vitals={[["Target", recipe.targets], ["Actuals", batch.actuals]]} />
+                <ScreenHr className="mx-4"/>
+                <Organics className="ml-4" hops={batch.hops} grain={batch.grain} yeast={batch.yeast} />
             </div>
         </ScreenContainer>
     )

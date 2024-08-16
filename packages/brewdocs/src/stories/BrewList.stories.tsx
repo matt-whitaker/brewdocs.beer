@@ -2,7 +2,7 @@
 import BrewList from "../screen/brew-list";
 import {Meta, StoryObj} from "@storybook/react";
 import recipes from "@brewdocs/data/recipes";
-import AppWrapper from "../components/app-wrapper";
+import AppWrapper from "@brewdocs/component/app-wrapper";
 
 const meta = {
     title: 'Screens/BrewList',

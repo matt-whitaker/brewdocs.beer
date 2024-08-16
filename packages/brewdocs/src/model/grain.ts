@@ -1,5 +1,5 @@
 
-export interface Grain {
+export default interface Grain {
     name: string;
     weight: number;
 }

@@ -1,15 +1,21 @@
+"use client";
+
 import Link from "next/link";
-import ScreenContainer from "../../components/screen-container";
-import Recipe from "@brewdocs/model/recipe";
+import ScreenContainer from "@brewdocs/component/screen-container";
+import getRecipes from "@brewdocs/service/getRecipes";
+import {useService} from "@brewdocs/service/useService";
+import {ScreenH2} from "@brewdocs/component/typography";
 
-export interface BrewListProps {
-    recipes: Recipe[];
-}
+export default function BrewList() {
+    const [recipes] = useService(getRecipes, []);
 
-export default function BrewList({ recipes }: BrewListProps) {
+    if (!recipes.length) {
+        return <></>;
+    }
+
     return (
         <ScreenContainer>
-            <h1 className="text-2xl">Your brews</h1>
+            <ScreenH2>Your brews</ScreenH2>
             <ul className="mt-4">
                 {recipes.map((recipe, i) => (
                     <li key={recipe.id} className="list-disc ml-5 underline hover:font-semibold">

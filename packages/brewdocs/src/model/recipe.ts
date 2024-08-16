@@ -1,5 +1,5 @@
 import {Entity} from "@brewdocs/model/entity";
-import {Grain} from "@brewdocs/model/grain";
+import Grain from "@brewdocs/model/grain";
 import {Mash} from "@brewdocs/model/mash";
 import Hop from "@brewdocs/model/hop";
 import Yeast from "@brewdocs/model/yeast";

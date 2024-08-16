@@ -2,7 +2,7 @@
 import BrewSummary from "../screen/brew-summary";
 import {Meta, StoryObj} from "@storybook/react";
 import recipes from "@brewdocs/data/recipes";
-import AppWrapper from "../components/app-wrapper";
+import AppWrapper from "@brewdocs/component/app-wrapper";
 import batches from "@brewdocs/data/batches";
 
 const meta = {

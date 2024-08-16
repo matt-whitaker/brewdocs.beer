@@ -1,5 +1,5 @@
 
-import TabArray from "@brewdocs/components/tab-array";
+import TabArray from "@brewdocs/component/tab-array";
 import {Meta, StoryObj} from "@storybook/react";
 
 const meta = {
