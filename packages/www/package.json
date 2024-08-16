@@ -1,0 +1,16 @@
+{
+  "name": "@brewdocs.beer/www",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "style": "npx tailwindcss -m -i ./style.css -o ./dist/style.min.css",
+    "style:dev": "npx tailwindcss -i ./style.css -o ./dist/style.css"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "daisyui": "^4.12.10",
+    "http-server": "^14.1.1"
+  }
+}

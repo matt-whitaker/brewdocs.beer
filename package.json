@@ -1,15 +1,13 @@
 {
-  "name": "brewdocs",
+  "name": "brewdocs.beer",
   "version": "0.0.0",
   "description": "An (offline) web app prototype of a standard brew day application",
   "main": "index.js",
   "scripts": {},
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "daisyui": "^4.12.10"
-  },
   "workspaces": [
-    "packages/brewdocs"
+    "packages/app",
+    "packages/www"
   ]
 }
