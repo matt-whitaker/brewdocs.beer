@@ -11,13 +11,13 @@ If you are looking for a full-fledged homebrewing application, you'll have to be
 
 ## 1. Proof of Concept
 
-*Milestones*
-- Wizard of Oz
+### Milestones
+- **Wizard of Oz** -
   Data is baked into the build, and user input is simulated. Changes are tied to the session and lost on page exit.
-- Brew Day
+- **Brew Day**
   Prototype quality form interface allowing for the record-keeping of a brew day
-- Splash
+- **Splash**
   Basic splash site on brewdocs.beer for SEO, PWA is served via app.brewdocs.beer
-- Library
+- **Library**
   The basic scaffold of the library for information lookup
 
