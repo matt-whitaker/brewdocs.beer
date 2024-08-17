@@ -1,7 +1,7 @@
-import type { Config } from "tailwindcss";
 import daisyui from "daisyui";
 
-const config: Config = {
+/** @type {import('tailwindcss').Config} */
+export default {
   content: [
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
@@ -33,4 +33,3 @@ const config: Config = {
     themes: ["nord", "coffee"]
   }
 };
-export default config;
