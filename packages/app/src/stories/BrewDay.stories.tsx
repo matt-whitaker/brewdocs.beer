@@ -2,7 +2,7 @@
 import BrewDay from "../screen/brew-day";
 import {Meta, StoryObj} from "@storybook/react";
 import recipes from "@/data/recipes";
-import AppWrapper from "@/component/app-wrapper";
+import AppWrapper from "../component/page";
 import batches from "@/data/batches";
 
 const meta = {

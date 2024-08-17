@@ -1,8 +1,9 @@
 import {SRM_TO_HEX} from "@/component/srm-avatar/constants";
 import {useMemo} from "react";
 import classNames from "classnames";
+import {PropsWithOptionalClass} from "@/component/prop-types";
 
-export interface SrmAvatarProps {
+export type SrmAvatarProps = PropsWithOptionalClass & {
     srm: number;
 }
 
@@ -16,12 +17,15 @@ function findHexClasses(srm: number) {
     return SRM_TO_HEX.get(40) as [string, string, string];
 }
 
-export default function SrmAvatar({ srm }: SrmAvatarProps){
+export default function SrmAvatar({ srm, className }: SrmAvatarProps){
     const [bg,, outline] = useMemo(() => findHexClasses(srm), [srm]);
 
     // 64 wide 112 tall
     return (
-        <div className="flex items-center justify-center sm:w-[135px] sm:h-[155px] w-[80px] h-[100px] shadow shadow-black">
+        <div className={classNames(
+            "flex items-center justify-center sm:w-[135px] sm:h-[155px] w-[80px] h-[100px] shadow shadow-black",
+            [className]
+        )}>
             <div className={classNames(
                 bg,
                 outline, "outline outline-[2px] outline-solid outline-offset-[4px]",

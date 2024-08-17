@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Urbanist } from "next/font/google";
 import "./tailwind.css";
+import classNames from "classnames";
 
 const urbanist = Urbanist({ subsets: ["latin"] });
 
@@ -14,8 +15,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={urbanist.className}>
+    <html lang="en" data-theme="nord">
+      <body className={classNames(urbanist.className, "overscroll-none")}>
         {children}
       </body>
     </html>

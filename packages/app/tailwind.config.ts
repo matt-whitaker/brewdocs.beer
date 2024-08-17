@@ -6,7 +6,6 @@ const config: Config = {
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-
     extend: {
       colors: {
         beer: {
@@ -30,5 +29,8 @@ const config: Config = {
   plugins: [
     daisyui,
   ],
+  daisyui: {
+    themes: ["nord", "coffee"]
+  }
 };
 export default config;

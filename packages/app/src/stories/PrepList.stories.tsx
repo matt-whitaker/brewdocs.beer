@@ -2,7 +2,7 @@
 import PrepList from "../screen/prep-list";
 import {Meta, StoryObj} from "@storybook/react";
 import recipes from "@/data/recipes";
-import AppWrapper from "@/component/app-wrapper";
+import AppWrapper from "../component/page";
 import preparations from "@/data/preparations";
 
 const meta = {

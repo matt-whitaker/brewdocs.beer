@@ -2,8 +2,9 @@ import Vitals from "@/model/vitals";
 import {ScreenH3, ScreenH4, ScreenP} from "@/component/typography";
 import classNames from "classnames";
 import {PropsWithChildren} from "react";
+import {PropsWithOptionalClass} from "@/component/prop-types";
 
-export type VitalsProps = { vitals: [[string, Vitals], [string, Vitals]]; className?: string; };
+export type VitalsProps = PropsWithOptionalClass & { vitals: [[string, Vitals], [string, Vitals]]; };
 
 export default function Vitals({ vitals, className }: VitalsProps) {
     return (

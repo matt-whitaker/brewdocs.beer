@@ -1,7 +1,7 @@
 "use client";
 
 import SrmAvatar from "@/component/srm-avatar";
-import ScreenContainer from "@/component/screen-container";
+import Screen from "../../component/screen";
 import {useService} from "@/service/useService";
 import getRecipes from "@/service/getRecipes";
 import Organics from "@/component/organics";
@@ -21,7 +21,7 @@ export default function RecipeOverview({ i }: RecipeOverviewProps) {
         return <></>;
     }
     return (
-        <ScreenContainer>
+        <Screen>
             <ScreenH2 className="sm:block hidden">Recipe Overview</ScreenH2>
             <div className="flex">
                 <div className="flex-grow">
@@ -39,7 +39,7 @@ export default function RecipeOverview({ i }: RecipeOverviewProps) {
             </div>
             <ScreenHr className="sm:hidden" />
             <Organics className="sm:hidden" hops={recipe.hops} grain={recipe.grain} yeast={recipe.yeast} />
-        </ScreenContainer>
+        </Screen>
 
     );
 }

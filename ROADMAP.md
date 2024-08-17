@@ -12,10 +12,10 @@ If you are looking for a full-fledged homebrewing application, you'll have to be
 ## 1. Proof of Concept
 
 ### Milestones
-- **Wizard of Oz** -
-  Data is baked into the build, and user input is simulated. Changes are tied to the session and lost on page exit.
+- **UI Prototype** -
+  Data is baked into the build, and user input is simulated. Changes are tied to the session and lost on page exit. Pure UI demo
 - **Brew Day**
-  Prototype quality form interface allowing for the record-keeping of a brew day
+  Simple form interface for collecting brew day measurements
 - **Splash**
   Basic splash site on brewdocs.beer for SEO, PWA is served via app.brewdocs.beer
 - **Library**

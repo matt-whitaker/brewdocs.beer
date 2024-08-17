@@ -17,6 +17,7 @@ const recipes: Recipe[] = [
             weight: 16
         }],
         mash: [{
+            name: "Single Mash Infusion",
             weight: 16,
             temp: 185,
             time: 60
@@ -26,6 +27,16 @@ const recipes: Recipe[] = [
             weight: 1,
             alpha: 0.76,
             boil: 15
+        },{
+            name: "cascade",
+            weight: 1,
+            alpha: 0.76,
+            boil: 50
+        },{
+            name: "cascade",
+            weight: 1,
+            alpha: 0.76,
+            boil: 60
         }],
         yeast: [{
             name: "wyeast 1012",
