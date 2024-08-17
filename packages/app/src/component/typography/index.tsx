@@ -1,8 +1,8 @@
 import {PropsWithChildren} from "react";
 import classNames from "classnames";
-import {PropsWithOptionalClass} from "@/component/prop-types";
+import {PropsWithClass} from "@/component/prop-types";
 
-type TypographyProps = PropsWithChildren & PropsWithOptionalClass;
+type TypographyProps = PropsWithChildren & Partial<PropsWithClass>;
 
 export const ScreenH1 = ({ children, className }: TypographyProps) =>
     (<h1 className={classNames("text-4xl capitalize mt-5 [&+h2]:mt-0", [className])}>{children}</h1>);

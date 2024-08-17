@@ -1,8 +1,8 @@
 import {PropsWithChildren} from "react";
 import Shell from "../shell";
-import {PropsWithOptionalClass} from "@/component/prop-types";
+import {PropsWithClass} from "@/component/prop-types";
 
-export type PageProps = PropsWithChildren & PropsWithOptionalClass
+export type PageProps = PropsWithChildren & Partial<PropsWithClass>
 
 export default function Page({ children, className }: PageProps) {
     return (

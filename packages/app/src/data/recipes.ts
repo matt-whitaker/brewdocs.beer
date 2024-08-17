@@ -5,42 +5,42 @@ const recipes: Recipe[] = [
         id: 0,
         brewer: "Homebrew Earl",
         description: "A model beer with a big impact. You'll want to drink the whole batch, but don't!",
-        batchSize: 5,
-        boilTime: 60,
+        batchSize: "5gal",
+        boilTime: "60min",
         name: "Odin's Girdle",
-        type: "ipa",
+        type: "IPA",
         batchNumber: 0,
-        efficiency: 75,
+        efficiency: "75%",
         notes: "",
         grain: [{
             name: "2-row",
-            weight: 16
+            weight: "16oz"
         }],
         mash: [{
-            name: "Single Mash Infusion",
-            weight: 16,
-            temp: 185,
-            time: 60
+            name: "Single Infusion",
+            weight: "16oz",
+            temp: "185°",
+            time: "60min"
         }],
         hops: [{
             name: "cascade",
-            weight: 1,
-            alpha: 0.76,
-            boil: 15
+            weight: "1.0oz",
+            alpha: "0.76%",
+            boil: "15min"
         },{
             name: "cascade",
-            weight: 1,
-            alpha: 0.76,
-            boil: 50
+            weight: "1.0oz",
+            alpha: "0.76%",
+            boil: "50min"
         },{
             name: "cascade",
-            weight: 1,
-            alpha: 0.76,
-            boil: 60
+            weight: "1.0oz",
+            alpha: "0.76%",
+            boil: "60min"
         }],
         yeast: [{
             name: "wyeast 1012",
-            avg_attn: 70,
+            avg_attn: "70%",
             temp: "62",
             starter: true
         }],

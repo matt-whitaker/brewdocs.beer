@@ -3,9 +3,14 @@
 import Screen from "../../component/screen";
 import getRecipes from "@/service/getRecipes";
 import {useService} from "@/service/useService";
-import {ScreenH3, ScreenH4, ScreenHr} from "../../component/typography";
+import {ScreenH3, ScreenH4 } from "@/component/typography";
 import getBatches from "@/service/getBatches";
-import InputGrid from "@/component/input-grid";
+import InputGrid, {TitleCell} from "@/component/input-grid";
+import {Mash} from "@/model/mash";
+import Hop from "@/model/hop";
+import Yeast from "@/model/yeast";
+import Cell from "@/component/input-grid/cell";
+import Row from "@/component/input-grid/row";
 
 export type BrewDayProps = { i: number }
 
@@ -28,29 +33,38 @@ export default function BrewDay({ i }: BrewDayProps) {
                 <ScreenH3>1. Mash</ScreenH3>
 
                 <ScreenH4>Strike Calculation</ScreenH4>
-                <InputGrid inputs={[
-                    ["Grain", ["70°"], false, false],
-                    ["Target", ["167°"], false, false],
-                    ["Strike", ["185°"], true, false]
-                ]}/>
+                <InputGrid<{ name: string; temp: string }>
+                    titleAttr="name"
+                    attrs={["temp"]}
+                    titleEditable={false}
+                    rows={[
+                        { name: "Grain", temp: "70°"},
+                        { name: "Target", temp: "167°" }
+                    ]}>
+                    <Row><TitleCell value="Strike" /><Cell readonly value="185°" col={3} /></Row>
+                </InputGrid>
 
                 <ScreenH4>Infusion Schedule</ScreenH4>
-                <InputGrid inputs={recipe.mash.map((m) => [`${m.name}`, [`${m.temp}°`, `${m.time}min`]])}/>
+                <InputGrid<Mash> rows={recipe.mash} attrs={["temp", "time"]} titleAttr={"name"} titleEditable />
 
                 <ScreenH3>2. Boil</ScreenH3>
-                <InputGrid inputs={recipe.hops.map((h) => [`${h.name}`, [`${h.weight}oz`, `${h.alpha}%`, `${h.boil}min`]])} />
-
-                <ScreenH3>3. Yeast</ScreenH3>
-                <InputGrid inputs={recipe.yeast.map((y) => [`${y.name}`, [`${y.temp}°`]])} />
+                <InputGrid<Hop> rows={recipe.hops} attrs={["weight", "alpha", "boil"]} titleAttr={"name"} titleEditable />
             </div>
             <div>
+                <ScreenH3>3. Yeast</ScreenH3>
+                <InputGrid<Yeast> rows={recipe.yeast} attrs={["temp"]} titleAttr={"name"} titleEditable />
+
                 <ScreenH3>Gravity Readings</ScreenH3>
-                <InputGrid inputs={[
-                    ["Pre-Boil", [`${batch?.hydro?.pre ?? "0"}`], false, false],
-                    ["Post-Boil", [`${batch?.hydro?.boil ?? "0"}`], false, false],
-                    ["Racked", [`${batch?.hydro?.racked ?? "0"}`], false, false],
-                    ["Final", [`${batch?.hydro?.final ?? "0"}`], false, false]
-                ]} />
+                <InputGrid<{ name: string; gravity: string }>
+                    rows={[
+                        { name: "Pre-Boil", gravity: batch?.hydro?.pre.gravity ?? "0.0" },
+                        { name: "Post-Boil", gravity: batch?.hydro?.post.gravity ?? "0.0" },
+                        { name: "Racked", gravity: batch?.hydro?.racked.gravity ?? "0.0" },
+                        { name: "Final", gravity: batch?.hydro?.final.gravity ?? "0.0" }
+                    ]}
+                    attrs={["gravity"]}
+                    titleAttr="name"
+                    titleEditable={false} />
             </div>
         </Screen>
     )

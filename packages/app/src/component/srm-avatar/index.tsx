@@ -1,9 +1,9 @@
 import {SRM_TO_HEX} from "@/component/srm-avatar/constants";
 import {useMemo} from "react";
 import classNames from "classnames";
-import {PropsWithOptionalClass} from "@/component/prop-types";
+import {PropsWithClass} from "@/component/prop-types";
 
-export type SrmAvatarProps = PropsWithOptionalClass & {
+export type SrmAvatarProps = Partial<PropsWithClass> & {
     srm: number;
 }
 

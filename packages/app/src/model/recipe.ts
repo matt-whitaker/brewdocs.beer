@@ -8,13 +8,13 @@ import Vitals from "@/model/vitals";
 
 export default interface Recipe extends Entity {
     name: string;
-    batchSize: number;
-    boilTime: number;
+    batchSize: string;
+    boilTime: string;
     type?: string;
     brewer?: string;
     description?: string;
     batchNumber?: number;
-    efficiency?: number;
+    efficiency?: string;
     notes?: string;
 
     grain: Grain[];

@@ -13,11 +13,14 @@ If you are looking for a full-fledged homebrewing application, you'll have to be
 
 ### Milestones
 - **UI Prototype** -
-  Data is baked into the build, and user input is simulated. Changes are tied to the session and lost on page exit. Pure UI demo
+  - Data is baked into the build, and user input is simulated.
+  - Changes are tied to the session and lost on page exit.
+  - Basic validation for some pizazz
 - **Brew Day**
-  Simple form interface for collecting brew day measurements
+  - Simple form interface for collecting brewing measurements.
+  - Brewing and Fermentation are combined under one tab/flow.
 - **Splash**
-  Basic splash site on brewdocs.beer for SEO, PWA is served via app.brewdocs.beer
+  - Basic splash site on brewdocs.beer for SEO, PWA is served via app.brewdocs.beer
 - **Library**
-  The basic scaffold of the library for information lookup
+  - The basic scaffold of the library for information lookup
 

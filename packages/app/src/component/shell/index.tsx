@@ -2,10 +2,10 @@ import {PropsWithChildren} from "react";
 import Topbar from "../topbar";
 import Navlist, {NavListProps} from "@/component/navlist";
 import classNames from "classnames";
-import {PropsWithOptionalClass} from "@/component/prop-types";
+import {PropsWithClass} from "@/component/prop-types";
 import nav from "@/data/nav";
 
-export type ShellProps = PropsWithChildren & PropsWithOptionalClass;
+export type ShellProps = PropsWithChildren & Partial<PropsWithClass>;
 
 export default function Shell({ children, className }: ShellProps) {
     return (

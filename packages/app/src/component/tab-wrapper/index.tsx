@@ -2,9 +2,12 @@
 
 import {useCallback, useState} from "react";
 import classNames from "classnames";
-import {PropsWithOptionalClass} from "@/component/prop-types";
+import {PropsWithClass} from "@/component/prop-types";
 
-export type TabWrapperProps = PropsWithOptionalClass & { tabs: [string, React.ReactNode][]; name?: string; }
+export type TabWrapperProps = Partial<PropsWithClass> & {
+    tabs: [[string, React.ReactNode], [string, React.ReactNode]?, [string, React.ReactNode]?, [string, React.ReactNode]?];
+    name?: string;
+}
 
 export default function TabWrapper({ tabs, className }: TabWrapperProps) {
     const [checked, setChecked] = useState(0);

@@ -9,6 +9,7 @@ import Hydrometer from "@/model/Hydrometer";
 
 export interface Batch extends Entity {
     recipeId: 0,
+    status?: "prep"|"mash"|"boil"|"ferment"
     brewDate: Date,
     grain: Grain[];
     mash: Mash[];
