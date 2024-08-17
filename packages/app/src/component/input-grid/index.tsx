@@ -21,7 +21,7 @@ export default function InputGrid<T>({ children, rows, attrs, titleAttr, readonl
                 <Row>
                     <TitleCell value={row[titleAttr]} onChange={titleEditable ? () => {} : void 0} />
                     {attrs.map((attr, i) => (
-                        <Cell readonly={readonlyAttrs.includes(attr)} value={row[attr]} col={i+1+(3-attrs.length)} />
+                        <Cell readonly={readonlyAttrs?.includes(attr)} value={row[attr]} col={i+1+(3-attrs.length)} />
                     ))}
                 </Row>
             ))}

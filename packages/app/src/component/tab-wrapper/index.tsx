@@ -13,8 +13,8 @@ export default function TabWrapper({ tabs, className }: TabWrapperProps) {
     const [checked, setChecked] = useState(0);
     const onChange = useCallback(({ target: { value } }) => setChecked(Number(value)), []);
     return (
-        <div className="w-full h-full lg:p-4">
-            <div role="tablist" className={classNames("tabs tabs-boxed", [className])}>
+        <div className={classNames("w-full h-full lg:p-4 p-0", [className])}>
+            <div role="tablist" className="tabs tabs-boxed">
                 {tabs.map(([name, jsx], i) => [
                     <input
                         value={i}

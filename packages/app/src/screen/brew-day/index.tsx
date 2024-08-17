@@ -28,7 +28,7 @@ export default function BrewDay({ i }: BrewDayProps) {
     }
 
     return (
-        <Screen className="grid grid-cols-1 lg:grid-cols-2 gap-x-4">
+        <Screen className="grid grid-cols-1 lg:grid-cols-2 gap-x-4 box-border">
             <div>
                 <ScreenH3>1. Mash</ScreenH3>
 

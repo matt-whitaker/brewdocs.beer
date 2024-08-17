@@ -15,8 +15,7 @@ export default async function Recipe({ params }: RecipeProps) {
     return (
         <Shell>
             <TabWrapper tabs={[
-                ["Shopping", <p></p>],
-                ["Equipment", <PrepList i={params.recipeId} />],
+                ["Checklist", <PrepList i={params.recipeId} />],
                 ["Brew Day", <BrewDay i={params.recipeId} />],
                 ["Summary", <BrewSummary i={params.recipeId} />]
             ]}>

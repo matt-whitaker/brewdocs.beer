@@ -1,6 +1,7 @@
+import {WWW_URL} from "@/data/env";
 
 const nav: [string, string?][] = [
-    ["About", "/about"],
+    ["About", `${WWW_URL}/about`],
     ["------------------------------"],
     ["Home", "/"],
     ["-> Resume Brew", "/recipe/0"],

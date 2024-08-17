@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "serve": "http-server ./out -p 8080"
   },
   "dependencies": {
     "daisyui": "^4.12.10",
