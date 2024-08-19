@@ -1,5 +1,5 @@
 
-import BrewSummary from "../screen/brew-summary";
+import BrewSummary from "../screen/summary";
 import {Meta, StoryObj} from "@storybook/react";
 import recipes from "@/data/recipes";
 import AppWrapper from "../component/page";

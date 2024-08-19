@@ -1,4 +1,9 @@
+import Hero from "@/component/hero";
 
 export default async function Release() {
-    return <></>
+    return (
+        <Hero title="Release Notes">
+
+        </Hero>
+    )
 }

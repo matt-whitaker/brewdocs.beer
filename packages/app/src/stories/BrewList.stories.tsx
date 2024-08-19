@@ -1,5 +1,5 @@
 
-import BrewList from "../screen/brew-list";
+import BrewList from "../screen/batch-list";
 import {Meta, StoryObj} from "@storybook/react";
 import recipes from "@/data/recipes";
 import AppWrapper from "../component/page";

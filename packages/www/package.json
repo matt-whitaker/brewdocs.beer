@@ -10,6 +10,7 @@
     "serve": "http-server ./out -p 8080"
   },
   "dependencies": {
+    "classnames": "^2.5.1",
     "daisyui": "^4.12.10",
     "next": "14.2.5",
     "react": "^18",

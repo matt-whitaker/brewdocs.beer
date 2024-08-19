@@ -1,31 +1,27 @@
 "use client";
 
 import Screen from "../../component/screen";
-import getRecipes from "@/service/getRecipes";
-import {useService} from "@/service/useService";
 import {ScreenH3, ScreenH4 } from "@/component/typography";
-import getBatches from "@/service/getBatches";
 import InputGrid, {TitleCell} from "@/component/input-grid";
 import {Mash} from "@/model/mash";
 import Hop from "@/model/hop";
 import Yeast from "@/model/yeast";
 import Cell from "@/component/input-grid/cell";
 import Row from "@/component/input-grid/row";
+import getBatch from "@/service/getBatch";
+import {useService} from "@/service/useService";
+import Batch from "@/model/batch";
+import Error from "@/component/error";
+import useParam from "@/screen/useParam";
 
-export type BrewDayProps = { i: number }
 
-const getData = (i: number) => {
-    const [recipes] = useService(getRecipes, []);
-    const [batches] = useService(getBatches, []);
-    return [recipes[i] ?? null, batches[i] ?? null];
-}
+export default function BrewDay() {
+    const [batchId] = useParam("batchId");
+    const batch = useService<typeof getBatch, Batch>(getBatch, [batchId]);
+    if (!batch) return <Error>'batch' missing</Error>
 
-export default function BrewDay({ i }: BrewDayProps) {
-    const [recipe, batch] = getData(i);
-
-    if (!recipe) {
-        return <></>;
-    }
+    const recipe = batch?.recipe;
+    if (!recipe) return <Error>'recipe' missing</Error>
 
     return (
         <Screen className="grid grid-cols-1 lg:grid-cols-2 gap-x-4 box-border">
@@ -55,13 +51,8 @@ export default function BrewDay({ i }: BrewDayProps) {
                 <InputGrid<Yeast> rows={recipe.yeast} attrs={["temp"]} titleAttr={"name"} titleEditable />
 
                 <ScreenH3>Gravity Readings</ScreenH3>
-                <InputGrid<{ name: string; gravity: string }>
-                    rows={[
-                        { name: "Pre-Boil", gravity: batch?.hydro?.pre.gravity ?? "0.0" },
-                        { name: "Post-Boil", gravity: batch?.hydro?.post.gravity ?? "0.0" },
-                        { name: "Racked", gravity: batch?.hydro?.racked.gravity ?? "0.0" },
-                        { name: "Final", gravity: batch?.hydro?.final.gravity ?? "0.0" }
-                    ]}
+                <InputGrid<{ date: Date; gravity: string }>
+                    rows={batch.hydrometer}
                     attrs={["gravity"]}
                     titleAttr="name"
                     titleEditable={false} />

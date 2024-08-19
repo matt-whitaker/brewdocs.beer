@@ -1,12 +1,9 @@
 import Screen from "../../component/screen";
-import Shell from "@/component/shell";
 
-export default async function Library() {
+export default function Knowledge() {
     return (
-        <Shell>
-            <Screen>
-                <input className="w-full input input-md" type="text" placeholder="Type to search..." />
-            </Screen>
-        </Shell>
+        <Screen>
+            <input className="w-full input input-md" type="text" placeholder="Type to search..." />
+        </Screen>
     );
 }

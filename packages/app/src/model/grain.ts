@@ -1,5 +1,5 @@
+import {Named} from "@/model/type";
 
-export default interface Grain {
-    name: string;
+export default interface Grain extends Named {
     weight: string;
 }

@@ -1,12 +1,12 @@
-import {WWW_URL} from "@/data/env";
+import {WWW_URL} from "@/utils/env";
 
 const nav: [string, string?][] = [
     ["About", `${WWW_URL}/about`],
     ["------------------------------"],
-    ["Home", "/"],
-    ["-> Resume Brew", "/recipe/0"],
-    ["Brew a Beer", "/recipe"],
+    // ["Dashboard", "/"],
+    ["Batches", "/batches"],
+    ["Recipes", "/recipes"],
     ["Knowledge Base", "/knowledge"]
-]
+];
 
 export default nav;

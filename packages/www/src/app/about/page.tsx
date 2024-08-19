@@ -1,4 +1,8 @@
+import Hero from "@/component/hero";
 
 export default async function About() {
-    return <></>
+    return (
+        <Hero title="About BrewDocs">
+        </Hero>
+    )
 }

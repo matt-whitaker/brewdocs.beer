@@ -10,7 +10,7 @@ export default function Organics({ hops, grain, yeast, className }: OrganicsProp
     return(
         <div className={classNames([className])}>
             <ScreenH4>Hops</ScreenH4>
-            <p>{hops.map(({ name }) => name).join(", ")}</p>
+            <p>{[...new Set(hops.map(({ name }) => name)).values()].join(", ")}</p>
             <ScreenH4>Grain</ScreenH4>
             <p>{grain.map(({ name }) => name).join(", ")}</p>
             <ScreenH4>Yeast</ScreenH4>

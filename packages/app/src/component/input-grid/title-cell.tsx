@@ -1,6 +1,6 @@
 import {useCallback} from "react";
-import {eventValue} from "@/utils";
-import {PropsWithOnChange} from "@/component/prop-types";
+import {PropsWithOnChange} from "@brewdocs.beer/core";
+import {eventValue} from "@/utils/fn";
 
 export type TitleCellProps = Partial<PropsWithOnChange<string>> & {
     value: string;

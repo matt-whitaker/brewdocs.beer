@@ -1,24 +1,25 @@
-import type { Metadata } from "next";
-import { Urbanist } from "next/font/google";
-import "./tailwind.css";
+import type {Metadata} from "next";
+import {Urbanist} from "next/font/google";
 import classNames from "classnames";
+import Shell from "@/component/shell";
+import {PropsWithChildren} from "react";
 
-const urbanist = Urbanist({ subsets: ["latin"] });
+import "../tailwind.css";
+
+const urbanist = Urbanist({subsets: ["latin"]});
 
 export const metadata: Metadata = {
-  title: "BrewDocs - An offline web app for brew day",
+    title: "BrewDocs - An offline web app for brew day",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  return (
-    <html lang="en" data-theme="nord">
-      <body className={classNames(urbanist.className, "overscroll-none")}>
-        {children}
-      </body>
-    </html>
-  );
+export default function RootLayout({ children }: PropsWithChildren) {
+    return (
+        <html lang="en" data-theme="nord">
+        <body className={classNames(urbanist.className, "overscroll-none")}>
+        <Shell>
+            {children}
+        </Shell>
+        </body>
+        </html>
+    );
 }

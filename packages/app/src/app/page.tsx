@@ -1,7 +1,7 @@
 import Hero from "@/component/hero";
 import Shell from "@/component/shell";
 
-export default async function Home() {
+export default function Home() {
     return (
         <Shell>
             <Hero>

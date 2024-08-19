@@ -1,9 +1,8 @@
 
-import PrepList from "../screen/prep-list";
+import PrepList from "../screen/checklist";
 import {Meta, StoryObj} from "@storybook/react";
 import recipes from "@/data/recipes";
 import AppWrapper from "../component/page";
-import preparations from "@/data/preparations";
 
 const meta = {
     title: 'Screens/PrepList',
@@ -26,6 +25,6 @@ type Story = StoryObj<typeof meta>;
 export const Development: Story = {
     args: {
         recipe: recipes[0],
-        preparations
+
     }
 };

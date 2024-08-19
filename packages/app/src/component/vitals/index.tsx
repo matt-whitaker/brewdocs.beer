@@ -2,7 +2,7 @@ import Vitals from "@/model/vitals";
 import {ScreenH3, ScreenH4, ScreenP} from "@/component/typography";
 import classNames from "classnames";
 import {PropsWithChildren} from "react";
-import {PropsWithClass} from "@/component/prop-types";
+import {PropsWithClass} from "@brewdocs.beer/core";
 
 export type VitalsProps = Partial<PropsWithClass> & { vitals: [[string, Vitals], [string, Vitals]]; };
 

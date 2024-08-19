@@ -1,23 +1,24 @@
-import {Entity} from "@/model/entity";
+import {Entity, Named} from "@/model/type";
 import Grain from "@/model/grain";
 import {Mash} from "@/model/mash";
 import Hop from "@/model/hop";
 import Yeast from "@/model/yeast";
-import Water from "@/model/water";
 import Vitals from "@/model/vitals";
-import Hydrometer from "@/model/Hydrometer";
+import Recipe from "@/model/recipe";
+import Hydrometer from "@/model/hydrometer";
 
-export interface Batch extends Entity {
-    recipeId: 0,
-    status?: "prep"|"mash"|"boil"|"ferment"
-    brewDate: Date,
-    grain: Grain[];
-    mash: Mash[];
-    hops: Hop[];
-    yeast: Yeast[];
-    water: Water[];
+export default interface Batch extends Entity, Partial<Named> {
+    recipeId: string;
+    status: "prep"|"mash"|"boil"|"ferment";
     actuals: Vitals;
-    hydro: {
-        ["pre"|"boil"|"racked"|"final"]?: Hydrometer;
-    }
+    hydrometer: Hydrometer[];
+
+    grain?: Grain[];
+    mash?: Mash[];
+    hops?: Hop[];
+    yeast?: Yeast[];
+
+    brewDate?: Date;
+    recipe?: Recipe;
+    brewer?: string;
 }
