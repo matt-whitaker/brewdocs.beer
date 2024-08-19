@@ -1,6 +1,6 @@
 import {PropsWithChildren} from "react";
 import Topbar from "../topbar";
-import Navlist, {NavListProps} from "@/component/navlist";
+import Navlist from "@/component/navlist";
 import classNames from "classnames";
 import {PropsWithClass} from "@brewdocs.beer/core";
 import nav from "@/data/nav";
