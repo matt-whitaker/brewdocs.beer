@@ -17,7 +17,7 @@ export default function RecipeList() {
             <ul className="mt-4">
                 {recipes.map((recipe, i) => (
                     <li key={recipe.id} className="list-disc ml-5 underline hover:font-semibold">
-                        <Link href={`/batch/${i}`}>{recipe.name} by {recipe.brewer}</Link>
+                        <Link href={`/batch?batchId=${i}`}>{recipe.name} by {recipe.brewer}</Link>
                     </li>
                 ))}
             </ul>

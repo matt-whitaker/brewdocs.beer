@@ -1,6 +1,6 @@
-import Checklist from "../../../screen/checklist";
-import Summary from "../../../screen/summary";
-import TabScreens from "../../../component/tab-screens";
+import Checklist from "@/screen/checklist";
+import Summary from "@/screen/summary";
+import TabScreens from "@/component/tab-screens";
 import BrewDay from "@/screen/brew-day";
 import {useMemo} from "react";
 

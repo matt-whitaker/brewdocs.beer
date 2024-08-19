@@ -6,10 +6,10 @@ import {ScreenH2} from "@/component/typography";
 import Batch from "@/model/batch";
 import getBatch from "@/service/getBatch";
 import Error from "@/component/error";
-import useParam from "@/screen/useParam";
+import {useSearchParams} from "next/navigation";
 
 export default function Checklist() {
-    const [batchId] = useParam("batchId");
+    const batchId = useSearchParams().get("batchId");
     const batch = useService<typeof getBatch, Batch>(getBatch, [batchId]);
     if (!batch) { return <Error>'batch' missing</Error>; }
 

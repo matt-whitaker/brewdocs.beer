@@ -12,11 +12,11 @@ import getBatch from "@/service/getBatch";
 import {useService} from "@/service/useService";
 import Batch from "@/model/batch";
 import Error from "@/component/error";
-import useParam from "@/screen/useParam";
+import {useSearchParams} from "next/navigation";
 
 
 export default function BrewDay() {
-    const [batchId] = useParam("batchId");
+    const batchId = useSearchParams().get("batchId");
     const batch = useService<typeof getBatch, Batch>(getBatch, [batchId]);
     if (!batch) return <Error>'batch' missing</Error>
 

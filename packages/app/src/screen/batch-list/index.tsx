@@ -19,7 +19,7 @@ export default function BatchList() {
             <ul className="mt-4">
                 {batches.map((batch, i) => (
                     <li key={batch.id} className="list-disc ml-5 underline hover:font-semibold">
-                        <Link href={`/batch/${i}`}>{batch.name || batch.recipe?.name} by {batch.brewer || batch.recipe?.brewer}</Link>
+                        <Link href={`/batch?batchId=${i}`}>{batch.name || batch.recipe?.name} by {batch.brewer || batch.recipe?.brewer}</Link>
                     </li>
                 ))}
             </ul>
