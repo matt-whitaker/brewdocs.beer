@@ -17,7 +17,7 @@ export default function InputGrid<T>({ children, rows, attrs, titleAttr, readonl
 
     return (
         <List>
-            {rows.map((row) => (
+            {rows.map((row, i) => (
                 <Row>
                     <TitleCell value={row[titleAttr]} onChange={titleEditable ? () => {} : void 0} />
                     {attrs.map((attr, i) => (

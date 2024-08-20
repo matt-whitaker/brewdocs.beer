@@ -6,17 +6,17 @@ import DrawerInput from "@/component/drawer/input";
 import DrawerContent from "@/component/drawer/content";
 import DrawerSidebar from "@/component/drawer/sidebar";
 import Drawer from "@/component/drawer";
+import useDrawer from "@/component/drawer/useDrawer";
 
 export type ShellProps = PropsWithChildren;
 
 export default function Shell({ children }: ShellProps) {
-    const ref = useRef<HTMLInputElement>();
-    const closeDrawer = useCallback(() => ref.current.checked = false, [ref]);
+    const [ref, close] = useDrawer();
     return (
         <Drawer>
             <DrawerInput ref={ref} />
             <DrawerContent>{children}</DrawerContent>
-            <DrawerSidebar close={closeDrawer} nav={nav} />
+            <DrawerSidebar close={close} nav={nav} />
         </Drawer>
     )
 }

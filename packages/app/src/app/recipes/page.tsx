@@ -1,14 +1,19 @@
-import TabScreens from "../../component/tab-screens";
+"use client";
+
 import RecipeList from "@/screen/recipe-list";
-import {useMemo} from "react";
+import PanelSwitcher from "@/component/panel-switcher";
+import PanelSwitcherContent from "@/component/panel-switcher/content";
+import usePanelSwitcher from "@/component/panel-switcher/usePanelSwitcher";
 
 export default function Recipes() {
+    const [active, click] = usePanelSwitcher("All");
     return (
-        <TabScreens tabs={useMemo(() => [
-            ["All", RecipeList],
-            ["Starred", false],
-            ["My Recipes", false],
-        ], [])}>
-        </TabScreens>
+        <PanelSwitcher>
+            <PanelSwitcherContent active={active} click={click} title="All">
+                <RecipeList />
+            </PanelSwitcherContent>
+            <PanelSwitcherContent active={active} click={click} title="Starred"></PanelSwitcherContent>
+            <PanelSwitcherContent active={active} click={click} title="My Recipes"></PanelSwitcherContent>
+        </PanelSwitcher>
     )
 }

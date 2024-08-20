@@ -36,7 +36,7 @@ export default function Summary() {
                 <Organics
                     className="ml-4"
                     hops={batch.hops ?? recipe.hops}
-                    grain={batch.grain ?? recipe.grain}
+                    grain={batch.grain ?? recipe.grains}
                     yeast={batch.yeast ?? recipe.yeast} />
             </div>
         </Screen>

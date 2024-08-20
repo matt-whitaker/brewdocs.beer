@@ -12,13 +12,16 @@ const recipes: Recipe[] = [
         batchNumber: 0,
         efficiency: "70%",
         notes: "",
-        grain: [
+        grains: [
             { name: "German Pils", weight: "9.0lb" },
             { name: "40°L Crystal", weight: "1.0lb" },
             { name: "Special Robust", weight: "0.5lb" }
         ],
         mash: [
-            { name: "Single Infusion", weight: "16oz", temp: "185°", time: "60min" }
+            { name: "Single Infusion", temp: "185°", time: "60min", grains: "all" }
+        ],
+        boil: [
+            { name: "Single Boil", time: "60min", hops: "all" }
         ],
         hops: [
             { name: "Northern Brewer", weight: "1.0oz", alpha: "7.4%", boil: "60min" },

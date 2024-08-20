@@ -16,11 +16,11 @@ export default function Cell({ readonly, col, value }: CellProps) {
                 type="text"
                 className={classNames(
                     colStarts[col - 1],
-                    "px-2 col-span-1 input input-bordered sm:input-md input-sm text-right placeholder:text-right")}
+                    "self-center px-2 col-span-1 input input-bordered lg:input-md input-xs text-right placeholder:text-right")}
                 placeholder={value} />
             : <input
                 type="text"
-                className={classNames(colStarts[2], "px-2 input input-ghost sm:input-md input-sm text-right")}
+                className={classNames(colStarts[2], "self-center px-2 input input-ghost lg:input-md input-xs text-right")}
                 value={value} />
     );
 }
