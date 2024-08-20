@@ -11,7 +11,6 @@ const recipes: Recipe[] = [
         type: "amber_lager",
         batchNumber: 0,
         efficiency: "70%",
-        notes: "",
         grains: [
             { name: "German Pils", weight: "9.0lb" },
             { name: "40°L Crystal", weight: "1.0lb" },
@@ -31,6 +30,7 @@ const recipes: Recipe[] = [
         yeast: [
             { name: "Wyeast 2112", avg_attn: "70%", temp: "62", starter: true }
         ],
+        equipment: [],
         targets: { og: "1.05", fg: "1.014", abv: "4.7", ibu: "35", srm: "9" }
     }
 ];

@@ -8,20 +8,20 @@ import Equipment from "@/model/equipment";
 import Boil from "@/model/boil";
 
 export default interface Recipe extends Entity, Named {
+    brewer: string;
+    type: string;
     batchSize: string;
     batchNumber: number;
     efficiency: string;
-    boilTime: string;
-    type: string;
-    brewer: string;
     description: string;
+    boilTime: string;
+    targets: Vitals;
+
     mash: Mash[];
     boil: Boil[];
     grains: Grain[];
     hops: Hop[];
     yeast: Yeast[];
-    equipment: Equipment[];
-    targets: Vitals;
 
-    notes?: string;
+    equipment: Equipment[];
 }

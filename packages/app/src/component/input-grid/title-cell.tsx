@@ -13,8 +13,8 @@ export default function TitleCell({ value, onChange }: TitleCellProps) {
         ? <input
             title={value}
             type="text"
-            className="whitespace-nowrap leading-8 input sm:input-md input-sm input-ghost col-span-2"
+            className="whitespace-nowrap leading-8 input sm:input-md input-xs input-ghost col-span-3"
             onChange={_onChange}
             value={value} />
-        : <span className="text-sm whitespace-nowrap leading-8 ml-4 col-span-2">{value}</span>
+        : <span className="text-sm whitespace-nowrap leading-8 ml-4 col-span-3">{value}</span>
 }
