@@ -3,21 +3,27 @@
 import Link from "next/link";
 import Screen from "../../component/screen";
 import {useService} from "@/service/useService";
-import {ScreenH2} from "@/component/typography";
+import {ScreenH2, ScreenH3, ScreenP} from "@/component/typography";
 import getRecipes from "@/service/getRecipes";
 import Error from "@/component/error";
+import Recipe from "@/model/recipe";
 
 export default function RecipeList() {
-    const recipes = useService<typeof getRecipes>(getRecipes, []);
+    const recipes = useService<typeof getRecipes, Recipe[]>(getRecipes, []);
     if (!recipes) { return <Error>'recipes' missing</Error> }
 
     return (
         <Screen>
-            <ScreenH2 className="mt-0">Your brews</ScreenH2>
-            <ul className="mt-4">
+            <ScreenH2 className="mt-0">All Recipes</ScreenH2>
+            <ul className="menu mt-4 px-0">
                 {recipes.map((recipe, i) => (
-                    <li key={recipe.id} className="list-disc ml-5 underline hover:font-semibold">
-                        <Link href={`/batch?batchId=${i}`}>{recipe.name} by {recipe.brewer}</Link>
+                    <li key={i} className="odd:bg-base-200">
+                        <Link href={`/batch?batchId=${recipe.id}`} className="text-left block">
+                            <ScreenH2 className="text-xl">{recipe.name}</ScreenH2>
+                            <ScreenH3 className="text-lg mb-1">by {recipe.brewer}</ScreenH3>
+                            <ScreenP>ABV {recipe.targets.abv}% | IBUs {recipe.targets.ibu} | O.G. {recipe.targets.og} | F.G. {recipe.targets.fg}</ScreenP>
+                            <ScreenP>{recipe.description}</ScreenP>
+                        </Link>
                     </li>
                 ))}
             </ul>

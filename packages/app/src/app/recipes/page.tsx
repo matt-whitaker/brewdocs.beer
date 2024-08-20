@@ -5,7 +5,7 @@ import {useMemo} from "react";
 export default function Recipes() {
     return (
         <TabScreens tabs={useMemo(() => [
-            ["Recipes", RecipeList],
+            ["All", RecipeList],
             ["Starred", false],
             ["My Recipes", false],
         ], [])}>

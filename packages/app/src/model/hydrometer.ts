@@ -1,5 +1,6 @@
 
 export default interface Hydrometer {
-    date: Date;
+    note: string;
+    date: string;
     gravity: string;
 }

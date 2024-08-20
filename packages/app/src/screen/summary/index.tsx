@@ -25,15 +25,14 @@ export default function Summary() {
             <ScreenH2>Brew Summary</ScreenH2>
             <div className="[&>h4]:mt-2.5 [&>h4]:capitalize [&>h4]:text-lg [&>h4]:font-semibold">
                 <div className="lg:max-w-[80%] lg:pb-4">
-                    <SrmAvatar className="lg:mb-4 float-right" srm={batch.actuals.srm} />
-                    <ScreenH3>{recipe.name}{batch.name ? ` - ${batch.name}` : ""}</ScreenH3>
+                    <ScreenH3>{recipe.name}<br />{batch.name || ""}</ScreenH3>
                     <ScreenH4>By {`${recipe.brewer}`}</ScreenH4>
-                    <ScreenH4>Brewed By {`${batch.brewer}`}</ScreenH4>
+                    {batch.brewer ? (<ScreenH4>Brewed By {batch.brewer}</ScreenH4>) : <></>}
                     <ScreenP>{`${recipe.description}`}</ScreenP>
                 </div>
                 <div className="divider clear-both">Measurements</div>
                 <Vitals className="ml-4" vitals={[["Target", recipe.targets], ["Actuals", batch.actuals]]} />
-                <div className="divider">Recap</div>
+                <div className="divider">Organics</div>
                 <Organics
                     className="ml-4"
                     hops={batch.hops ?? recipe.hops}

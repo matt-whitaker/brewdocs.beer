@@ -16,6 +16,9 @@ export const ScreenH3 = ({ children, className }: TypographyProps) =>
 export const ScreenH4 = ({ children, className }: TypographyProps) =>
     (<h4 className={classNames("text-lg capitalize mt-2 [&+h5]:mt-0", [className])}>{children}</h4>);
 
+export const ScreenH5 = ({ children, className }: TypographyProps) =>
+    (<h5 className={classNames("capitalize mt-1", [className])}>{children}</h5>);
+
 export const ScreenP = ({ children, className}: TypographyProps) =>
     (<p className={classNames("mt-1 [&+p]:mt-0 first-of-type:mt-0", [className])}>{children}</p>);
 

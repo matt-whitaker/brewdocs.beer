@@ -1,7 +1,7 @@
 "use client";
 
 import Screen from "../../component/screen";
-import {ScreenH3, ScreenH4 } from "@/component/typography";
+import {ScreenH3, ScreenH4, ScreenH5} from "@/component/typography";
 import InputGrid, {TitleCell} from "@/component/input-grid";
 import {Mash} from "@/model/mash";
 import Hop from "@/model/hop";
@@ -13,6 +13,8 @@ import {useService} from "@/service/useService";
 import Batch from "@/model/batch";
 import Error from "@/component/error";
 import {useSearchParams} from "next/navigation";
+import Grain from "@/model/grain";
+import Hydrometer from "@/model/hydrometer";
 
 
 export default function BrewDay() {
@@ -41,7 +43,8 @@ export default function BrewDay() {
                 </InputGrid>
 
                 <ScreenH4>Infusion Schedule</ScreenH4>
-                <InputGrid<Mash> rows={recipe.mash} attrs={["temp", "time"]} titleAttr={"name"} titleEditable />
+                <ScreenH5>1. Single Infusion</ScreenH5>
+                <InputGrid<Grain> rows={recipe.grain} attrs={["weight"]} titleAttr={"name"} titleEditable />
 
                 <ScreenH3>2. Boil</ScreenH3>
                 <InputGrid<Hop> rows={recipe.hops} attrs={["weight", "alpha", "boil"]} titleAttr={"name"} titleEditable />
@@ -51,10 +54,10 @@ export default function BrewDay() {
                 <InputGrid<Yeast> rows={recipe.yeast} attrs={["temp"]} titleAttr={"name"} titleEditable />
 
                 <ScreenH3>Gravity Readings</ScreenH3>
-                <InputGrid<{ date: Date; gravity: string }>
+                <InputGrid<Hydrometer>
                     rows={batch.hydrometer}
                     attrs={["gravity"]}
-                    titleAttr="name"
+                    titleAttr="date"
                     titleEditable={false} />
             </div>
         </Screen>

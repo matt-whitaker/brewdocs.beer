@@ -1,0 +1,2 @@
+The drawer is special. Since the DaisyUI implementation relies on a checkbox, instead of controlling open/close
+state in React itself, we can just use a ref to continue leveraging the input for user events not caught by labels.

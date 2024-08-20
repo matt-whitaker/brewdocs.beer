@@ -9,7 +9,7 @@ import Hydrometer from "@/model/hydrometer";
 
 export default interface Batch extends Entity, Partial<Named> {
     recipeId: string;
-    status: "prep"|"mash"|"boil"|"ferment";
+    status: "prep"|"mash"|"boil"|"ferment"|"complete";
     actuals: Vitals;
     hydrometer: Hydrometer[];
 
@@ -18,7 +18,7 @@ export default interface Batch extends Entity, Partial<Named> {
     hops?: Hop[];
     yeast?: Yeast[];
 
-    brewDate?: Date;
+    brewDate?: string;
     recipe?: Recipe;
     brewer?: string;
 }

@@ -23,6 +23,7 @@ export default function TabScreens({ tabs, className }: TabWrapperProps) {
             <div role="tablist" className="tabs tabs-boxed">
                 {tabs.map(([name, Screen], i) => [
                     <input
+                        title={!Screen ? "Not implemented" : ""}
                         disabled={!Screen}
                         value={i}
                         checked={i === checked}

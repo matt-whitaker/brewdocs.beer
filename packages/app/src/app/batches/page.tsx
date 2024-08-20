@@ -6,9 +6,9 @@ export default function Batch() {
     return (
         <TabScreens tabs={useMemo(() => [
             ["Ready", false],
-            ["Brewing", BrewList],
+            ["Brewing", false],
             ["Fermenting", false],
-            ["Complete", false]
+            ["Complete", BrewList]
         ], [])} />
     );
 }

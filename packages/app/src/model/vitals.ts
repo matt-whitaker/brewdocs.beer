@@ -1,7 +1,7 @@
 export default interface Vitals {
-    og: number;
-    fg: number;
-    abv: number;
-    ibu: number;
-    srm: number;
+    og: string;
+    fg: string;
+    abv: string;
+    ibu: string;
+    srm: string;
 }
