@@ -1,9 +1,9 @@
-import {ChangeEventHandler, useCallback, useState} from "react";
-import {eventValue} from "@/utils/fn";
+import { useCallback, useState } from "react";
 
-export default function usePanelSwitcher(defaultTitle: string): [string, ChangeEventHandler] {
-    const [active, setActive] = useState(defaultTitle);
-    const change = useCallback(eventValue((title: string) => setActive(title)), []);
+export type SwitchFn = (title: string) => void;
+export default function usePanelSwitcher(defaultTitle: string): [string, SwitchFn] {
+    const [active, setActive] = useState<string>(defaultTitle);
+    const change: SwitchFn = useCallback((title: string) => setActive(title), []);
     return [
         active,
         change,

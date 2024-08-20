@@ -23,8 +23,12 @@ export default {
           40: "#8D4A43", // Deep Brown
           50: "#5D3B2E" // Black (fallback value),
         }
+      },
+      lineHeight: {
+        11: "2.75rem",
+        12: "3rem"
       }
-    },
+    }
   },
   plugins: [
     daisyui,

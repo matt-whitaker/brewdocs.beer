@@ -1,13 +1,15 @@
-import {ChangeEvent, PropsWithChildren} from "react";
+import {ChangeEvent, PropsWithChildren, useCallback} from "react";
 import classNames from "classnames";
+import {eventValue} from "@/utils/fn";
 
 export type PanelSwitcherContentProps = Partial<PropsWithChildren> & {
     title: string;
     active: string
-    change: (e: ChangeEvent) => void;
+    change: (value: string) => void;
 }
 
 export default function PanelSwitcherContent({ title, children, active, change }: PanelSwitcherContentProps) {
+    const onChange = useCallback(eventValue(change), [change]);
     return (
         <>
             <input
@@ -15,7 +17,7 @@ export default function PanelSwitcherContent({ title, children, active, change }
                 disabled={!children}
                 value={title}
                 checked={title === active}
-                onChange={change}
+                onChange={onChange}
                 type="radio"
                 name={`tab-wrapper-${title}`}
                 role="tab"
