@@ -10,11 +10,11 @@ export const roadmap: [string, boolean?][] = [
     ["Browser storage"],
     ["Import / Export"],
     ["Manage batch status"],
-    ["Extract recipe support"],
-    ["BIAB recipe support"],
+    ["Adjunct support"],
+    ["Extract support"],
+    ["BIAB support"],
     ["More recipes"],
     ["Expand KB"],
-    ["Add hops"],
-    ["Add malts"],
-    ["Add yeast"]
+    ["Add ingredients"],
+    ["General improvements"]
 ]

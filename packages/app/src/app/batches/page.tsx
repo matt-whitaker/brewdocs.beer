@@ -6,13 +6,13 @@ import usePanelSwitcher from "@/component/panel-switcher/usePanelSwitcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
 
 export default function Batches() {
-    const [active, click] = usePanelSwitcher("Complete");
+    const [active, change] = usePanelSwitcher("Complete");
     return (
         <PanelSwitcher>
-            <PanelSwitcherContent active={active} click={click} title="Ready"></PanelSwitcherContent>
-            <PanelSwitcherContent active={active} click={click} title="Brewing"></PanelSwitcherContent>
-            <PanelSwitcherContent active={active} click={click} title="Fermenting"></PanelSwitcherContent>
-            <PanelSwitcherContent active={active} click={click} title="Complete">
+            <PanelSwitcherContent active={active} change={change} title="Ready"></PanelSwitcherContent>
+            <PanelSwitcherContent active={active} change={change} title="Brewing"></PanelSwitcherContent>
+            <PanelSwitcherContent active={active} change={change} title="Fermenting"></PanelSwitcherContent>
+            <PanelSwitcherContent active={active} change={change} title="Complete">
                 <BrewList />
             </PanelSwitcherContent>
         </PanelSwitcher>

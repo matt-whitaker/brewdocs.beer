@@ -1,9 +1,7 @@
-import Screen from "../../component/screen";
+import SearchEverywhere from "@/screen/search-everywhere";
 
 export default function Knowledge() {
     return (
-        <Screen>
-            <input className="w-full input input-md" type="text" placeholder="Type to search..." />
-        </Screen>
+        <SearchEverywhere />
     );
 }
