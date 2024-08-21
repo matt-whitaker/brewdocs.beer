@@ -8,7 +8,7 @@ export default function Roadmap() {
             <div className="max-w-screen-lg content-start grid-flow-col lg:columns-5 columns-2 lg:w-full mt-4">
                 {roadmap.map(([item, done]) => (
                     <label title={item} className="box-border lg:py-2 py-1 flex items-center justify-start lg:text-md text-sm">
-                        <input checked={!!done} type="checkbox" className="mr-1 disabled checkbox lg:checkbox-md checkbox-sm" />
+                        <input readOnly checked={!!done} type="checkbox" className="mr-1 disabled checkbox lg:checkbox-md checkbox-sm" />
                         <span>{item}</span>
                     </label>
                 ) )}
