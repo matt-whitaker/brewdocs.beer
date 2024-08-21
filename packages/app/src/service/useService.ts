@@ -9,9 +9,9 @@ export default function useService<T>(service: Service<T>) {
     return useMemo(() => ({
         get (
             id: string,
-            defaultState?: T|void
-        ): T|void {
-            const [state, setState] = useState<T>(defaultState);
+            defaultState?: T|void|null
+        ): T|null {
+            const [state, setState] = useState<T>(defaultState || null);
             const _service = useCallback(service.get, [service, id]);
 
             useEffect(() => {

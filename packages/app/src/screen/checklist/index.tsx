@@ -14,12 +14,14 @@ import Collapse from "@/component/collapse";
 import EquipmentChecklist from "@/model/equipemnt-checklist";
 import equipment from "@/data/equipment";
 import {flatten} from "lodash";
-import {useCallback} from "react";
+import {useCallback, useMemo} from "react";
 
 export default function Checklist() {
     const batchId = useSearchParams().get("batchId");
-    const [checked, setChecked] = useButtonChecklist({  });
     const batch = useService<Batch>(batchService).get(batchId);
+    const checklist = batch?.recipe?.checklist;
+
+    const [checked, setChecked] = useButtonChecklist(useMemo(() => ({ '3-PBW': true, "3-CO2": true, "3-Star San": true }), []));
 
     const getItems = useCallback((uses): string[] => [...new Set<string>(flatten(
         uses.map((use) => equipment
@@ -28,18 +30,16 @@ export default function Checklist() {
         ))).values()], [equipment]);
 
     if (!batch) { return <Error>'batch' missing</Error>; }
-
-    const checklist = batch?.recipe?.checklist;
     if (!checklist) { return <Error>'checklist' missing</Error>; }
 
     return (
         <Screen className="join join-vertical">
             <ScreenH2>Brew Day Checklist</ScreenH2>
-            {checklist.map(({ uses, name: title }: EquipmentChecklist) => (
+            {checklist.map(({ uses, name: title }: EquipmentChecklist, i) => (
                 <Collapse title={title}>
                     <ButtonChecklist className="sm:columns-2">
                         {getItems(uses).map((name) => (
-                            <ButtonChecklistItem id={`${title}-${name}`} name={name} checked={checked} toggle={setChecked} />
+                            <ButtonChecklistItem id={`${i+1}-${name}`} name={name} checked={checked} toggle={setChecked} />
                         ))}
                     </ButtonChecklist>
                 </Collapse>

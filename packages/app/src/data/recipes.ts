@@ -1,8 +1,5 @@
 import Recipe from "@/model/recipe";
 import equipment from "@/data/equipment";
-import EquipmentChecklist from "@/model/equipemnt-checklist";
-
-const checklist: EquipmentChecklist[] = [{ name: "Mash", uses: ["boil"] }];
 
 const recipes: Recipe[] = [
     {
@@ -37,7 +34,8 @@ const recipes: Recipe[] = [
         equipment: [...equipment],
         checklist: [
             { name: "Brew Day!", uses: ["mash", "boil", "clean", "primary"] },
-            { name: "Rack Day", uses: ["transfer", "clean"] }
+            { name: "Rack Day", uses: ["transfer", "secondary", "clean"] },
+            { name: "Keg Day", uses: ["kegging", "transfer", "clean", "serve"] }
         ],
         targets: { og: "1.05", fg: "1.014", abv: "4.7", ibu: "35", srm: "9" }
     }

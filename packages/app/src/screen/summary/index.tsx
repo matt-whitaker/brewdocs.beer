@@ -13,9 +13,9 @@ import batchService from "@/service/batch";
 export default function Summary() {
     const batchId = useSearchParams().get("batchId");
     const batch = useService<Batch>(batchService).get(batchId);
-    if (!batch) return <Error>'batch' missing</Error>
-
     const recipe= batch?.recipe;
+
+    if (!batch) return <Error>'batch' missing</Error>
     if (!recipe) return <Error>'recipe' missing</Error>
 
     return (
@@ -34,7 +34,7 @@ export default function Summary() {
                 <Organics
                     className="ml-4 -mt-2"
                     hops={batch.hops ?? recipe.hops}
-                    grain={batch.grain ?? recipe.grains}
+                    grain={batch.grains ?? recipe.grains}
                     yeast={batch.yeast ?? recipe.yeast} />
             </div>
         </Screen>
