@@ -26,13 +26,13 @@ export default function Summary() {
                     <ScreenH3>{recipe.name}<br />{batch.name || ""}</ScreenH3>
                     <ScreenH4>By {`${recipe.brewer}`}</ScreenH4>
                     {batch.brewer ? (<ScreenH4>Brewed By {batch.brewer}</ScreenH4>) : <></>}
-                    <ScreenP>{`${recipe.description}`}</ScreenP>
+                    <ScreenP className="pt-4">{`${recipe.description}`}</ScreenP>
                 </div>
-                <div className="divider clear-both">Measurements</div>
-                <Vitals className="ml-4" vitals={[["Target", recipe.targets], ["Actuals", batch.actuals]]} />
+                <div className="divider">Measurements</div>
+                <Vitals className="ml-4 -mt-2" vitals={[["Target", recipe.targets], ["Actuals", batch.actuals]]} />
                 <div className="divider">Organics</div>
                 <Organics
-                    className="ml-4"
+                    className="ml-4 -mt-2"
                     hops={batch.hops ?? recipe.hops}
                     grain={batch.grain ?? recipe.grains}
                     yeast={batch.yeast ?? recipe.yeast} />

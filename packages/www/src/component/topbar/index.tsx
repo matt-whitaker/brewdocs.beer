@@ -4,7 +4,7 @@ import {Ellipses} from "@/component/svg";
 export type TopbarProps = { nav: [string, string, boolean][] }
 export default function Topbar({ nav }: TopbarProps) {
     return (
-        <div className="navbar bg-primary">
+        <div className="navbar bg-primary fixed z-50">
             <div className="flex-1">
                 <a href="/" className="btn btn-ghost text-2xl font-semibold "><span>Brew<span className="font-light">Docs</span></span></a>
             </div>

@@ -30,7 +30,6 @@ const batches: Batch[] = [
         yeast: [
             { name: "Wyeast 2112", avg_attn: "70%", temp: "62", starter: true }
         ],
-        equipment: [],
         actuals: { og: "1.05", fg: "1.014", abv: "4.7", ibu: "35", srm: "9" },
 
         hydrometer: [

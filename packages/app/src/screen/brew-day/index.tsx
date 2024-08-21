@@ -61,7 +61,7 @@ export default function BrewDay() {
                     {_batch.yeast.map((yeast: Yeast, i) => (
                         <DataGridRow>
                             <DataGridLabel id={yeast.name} editable>{yeast.name}</DataGridLabel>
-                            <DataGridInput update={update} id={yeast.name} col={3} dot={`grains[${i}.temp`} value={yeast.temp} />
+                            <DataGridInput update={update} id={yeast.name} col={3} dot={`yeast[${i}.temp`} value={yeast.temp} />
                         </DataGridRow>
                     ))}
                 </DataGrid>
@@ -71,7 +71,7 @@ export default function BrewDay() {
                     {_batch.hydrometer.map((hydro: Hydrometer, i) => (
                         <DataGridRow>
                             <DataGridLabel id={hydro.date} editable>{hydro.date}</DataGridLabel>
-                            <DataGridInput update={update} id={hydro.date} col={3} dot={`grains[${i}].date`} value={hydro.gravity} />
+                            <DataGridInput update={update} id={hydro.date} col={3} dot={`hydrometer[${i}].gravity`} value={hydro.gravity} />
                         </DataGridRow>
                     ))}
                 </DataGrid>

@@ -19,13 +19,15 @@ export default function Checklist() {
     return (
         <Screen>
             <ScreenH2>Brew Day Checklist</ScreenH2>
-            <div className="mt-3 flex">
-                <ul className="grid-flow-col lg:columns-3 columns-1 w-full ">
+            <div className="mt-3">
+                <ul className="grid-flow-col auto-rows-auto lg:columns-3 sm:columns-2 columns-1 w-full">
                     {equipment.map(({ name }) => (
-                        <label key={name} className="mb-0.5 text-lg flex items-center">
-                            <input type="checkbox" className="checkbox sm:checkbox-sm checkbox-xs mr-3" />
-                            {name}
-                        </label>
+                        <li className="w-full overflow-hidden [&>label]:odd:btn-ghost">
+                            <label key={name} className="font-normal justify-start hover:cursor-pointer btn lg:btn-md btn-sm mb-0.5 text-lg flex items-center">
+                                <input type="checkbox" className="checkbox lg:checkbox-sm checkbox-xs mr-3" />
+                                {name}
+                            </label>
+                        </li>
                     ))}
                 </ul>
             </div>
