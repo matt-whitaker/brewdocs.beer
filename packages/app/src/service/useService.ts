@@ -1,22 +1,34 @@
-import {useCallback, useEffect, useState} from "react";
-import {ServiceFn} from "@/utils/fn";
+import {useCallback, useEffect, useMemo, useState} from "react";
 
-/**
- * Easy abstraction around basic service adapter pattern for React. Good for prototyping
- * @param service
- * @param defaultState
- * @param parms
- */
-export function useService<Fn extends ServiceFn<T, Parameters<Fn>>, T>(
-    service: Fn,
-    parms: Parameters<Fn> = [] as Parameters<Fn>,
-    defaultState?: T|void
-): T|void {
-    const [state, setState] = useState<T>(defaultState);
+export type Service<T> = {
+    get: (id: string) => Promise<T>
+    list: () => Promise<T[]>
+}
 
-    const _parms = (parms ?? []);
-    const _service = useCallback(service, [service, ..._parms]);
-    useEffect(() => { _service(..._parms).then(data => setState(data)); }, [_service, ..._parms]);
+export default function useService<T>(service: Service<T>) {
+    return useMemo(() => ({
+        get (
+            id: string,
+            defaultState?: T|void
+        ): T|void {
+            const [state, setState] = useState<T>(defaultState);
+            const _service = useCallback(service.get, [service, id]);
 
-    return state;
+            useEffect(() => {
+                _service(id).then(data => setState(data));
+            }, [_service, id]);
+
+            return state;
+        },
+        list (defaultState?: T[]): T[] {
+            const [state, setState] = useState<T[]>(defaultState ?? []);
+            const _service = useCallback(service.list, [service]);
+
+            useEffect(() => {
+                _service().then(data => setState(data));
+            }, [_service]);
+
+            return state;
+        }
+    }), [service])
 }

@@ -1,18 +1,18 @@
 "use client";
 
 import Screen from "../../component/screen";
-import {useService} from "@/service/useService";
+import useService from "@/service/useService";
 import Organics from "@/component/organics";
 import Vitals from "@/component/vitals";
 import {ScreenH2, ScreenH3, ScreenH4, ScreenP} from "@/component/typography";
-import getBatch from "@/service/getBatch";
 import Batch from "@/model/batch";
 import Error from "@/component/error";
 import {useSearchParams} from "next/navigation";
+import batchService from "@/service/batch";
 
 export default function Summary() {
     const batchId = useSearchParams().get("batchId");
-    const batch = useService<typeof getBatch, Batch>(getBatch, [batchId]);
+    const batch = useService<Batch>(batchService).get(batchId);
     if (!batch) return <Error>'batch' missing</Error>
 
     const recipe= batch?.recipe;

@@ -1,16 +1,16 @@
 "use client";
 
 import Screen from "../../component/screen";
-import {useService} from "@/service/useService";
+import useService from "@/service/useService";
 import {ScreenH2} from "@/component/typography";
 import Batch from "@/model/batch";
-import getBatch from "@/service/getBatch";
 import Error from "@/component/error";
 import {useSearchParams} from "next/navigation";
+import batchService from "@/service/batch";
 
 export default function Checklist() {
     const batchId = useSearchParams().get("batchId");
-    const batch = useService<typeof getBatch, Batch>(getBatch, [batchId]);
+    const batch = useService<Batch>(batchService).get(batchId);
     if (!batch) { return <Error>'batch' missing</Error>; }
 
     const equipment = batch?.recipe?.equipment;

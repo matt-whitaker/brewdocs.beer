@@ -1,14 +1,14 @@
 "use client";
 
 import Error from "@/component/error";
-import {useService} from "@/service/useService";
-import getBatch from "@/service/getBatch";
+import useService from "@/service/useService";
 import Batch from "@/model/batch";
 import {useSearchParams} from "next/navigation";
+import batchService from "@/service/batch";
 
 export default function Shopping() {
     const [batchId] = useSearchParams().get("batchId");
-    const batch = useService<typeof getBatch, Batch>(getBatch, [batchId]);
+    const batch = useService<Batch>(batchService).get(batchId);
     if (!batch) return <Error>'batch' missing</Error>
     const recipe = batch.recipe;
 
