@@ -1,6 +1,6 @@
 import Hero from "@/component/hero";
 
-export default async function About() {
+export default function About() {
     return (
         <Hero title="About BrewDocs">
         </Hero>

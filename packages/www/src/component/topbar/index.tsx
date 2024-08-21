@@ -1,5 +1,4 @@
 import classNames from "classnames";
-import {APP_URL} from "@/data/env";
 import {Ellipses} from "@/component/svg";
 
 export type TopbarProps = { nav: [string, string, boolean][] }
