@@ -5,8 +5,7 @@ const nav: [string, string?][] = [
     ["------------------------------"],
     // ["Dashboard", "/"],
     ["Batches", "/batches"],
-    ["Recipes", "/recipes"],
-    ["Knowledge Base", "/knowledge"]
+    ["Recipes", "/recipes"]
 ];
 
 export default nav;

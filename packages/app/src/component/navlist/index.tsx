@@ -6,7 +6,7 @@ export type NavListProps = {
 
 export default function Navlist({ nav }: NavListProps) {
     return (
-        <ul className="menu text-primary-content text-lg">
+        <ul className="menu text-primary-content text-lg mt-6">
             {nav.map(([name, link]) => (
                 link
                     ? <li key={name}><Link href={link}>{name}</Link></li>
