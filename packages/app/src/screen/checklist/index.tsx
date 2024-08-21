@@ -7,30 +7,39 @@ import Batch from "@/model/batch";
 import Error from "@/component/error";
 import {useSearchParams} from "next/navigation";
 import batchService from "@/service/batch";
+import ButtonChecklist from "@/component/button-checklist";
+import ButtonChecklistItem from "@/component/button-checklist/item";
+import useButtonChecklist from "@/component/button-checklist/useButtonChecklist";
+import Collapse from "@/component/collapse";
+import EquipmentChecklist from "@/model/equipemnt-checklist";
+import equipment from "@/data/equipment";
 
 export default function Checklist() {
     const batchId = useSearchParams().get("batchId");
+    const [checked, setChecked] = useButtonChecklist({  });
     const batch = useService<Batch>(batchService).get(batchId);
+
     if (!batch) { return <Error>'batch' missing</Error>; }
 
-    const equipment = batch?.recipe?.equipment;
-    if (!equipment) { return <Error>'equipment' missing</Error>; }
+    const checklist = batch?.recipe?.checklist;
+    if (!checklist) { return <Error>'checklist' missing</Error>; }
 
     return (
-        <Screen>
+        <Screen className="join join-vertical">
             <ScreenH2>Brew Day Checklist</ScreenH2>
-            <div className="mt-3">
-                <ul className="grid-flow-col auto-rows-auto lg:columns-3 sm:columns-2 columns-1 w-full">
-                    {equipment.map(({ name }) => (
-                        <li className="w-full overflow-hidden [&>label]:odd:btn-ghost">
-                            <label key={name} className="font-normal justify-start hover:cursor-pointer btn lg:btn-md btn-sm mb-0.5 text-lg flex items-center">
-                                <input type="checkbox" className="checkbox lg:checkbox-sm checkbox-xs mr-3" />
-                                {name}
-                            </label>
-                        </li>
-                    ))}
-                </ul>
-            </div>
+            {checklist.map(({ uses, name: title }: EquipmentChecklist) => (
+                <Collapse title={title}>
+                    <ButtonChecklist className="sm:columns-2">
+                        {uses.map((use) => (
+                            equipment
+                                .filter((eq) => eq.use.includes(use))
+                                .map(({ name }) => (
+                                    <ButtonChecklistItem id={`${title}-${name}`} name={name} checked={checked} toggle={setChecked} />
+                                ))
+                        ))}
+                    </ButtonChecklist>
+                </Collapse>
+            ))}
         </Screen>
     )
 }

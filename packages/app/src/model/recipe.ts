@@ -6,6 +6,7 @@ import Yeast from "@/model/yeast";
 import Vitals from "@/model/vitals";
 import Equipment from "@/model/equipment";
 import Boil from "@/model/boil";
+import EquipmentChecklist from "@/model/equipemnt-checklist";
 
 export default interface Recipe extends Entity, Named {
     brewer: string;
@@ -22,6 +23,6 @@ export default interface Recipe extends Entity, Named {
     grains: Grain[];
     hops: Hop[];
     yeast: Yeast[];
-
     equipment: Equipment[];
+    checklist: EquipmentChecklist[];
 }

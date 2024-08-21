@@ -1,13 +1,15 @@
 import {PropsWithClass} from "../../../../core/src/prop-types";
+import classNames from "classnames";
 
 export const Ellipses = ({ className }: Partial<PropsWithClass>) => (
     <svg
+
         tabIndex={0}
         role="button"
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
-        className="inline-block h-5 w-5 stroke-current">
+        className={classNames("inline-block h-5 w-5 stroke-current", [className])}>
         <path
             strokeLinecap="round"
             strokeLinejoin="round"

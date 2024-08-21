@@ -9,6 +9,6 @@ export default {
     daisyui,
   ],
   daisyui: {
-    themes: ["nord", "coffee"]
+    themes: ["nord", "coffee", "autumn"]
   }
 };
