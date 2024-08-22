@@ -7,7 +7,7 @@ export default function Hero({ children, title, className }: HeroProps) {
     return (
         <div className={classNames("w-screen h-screen hero overflow-y-auto bg-base-200", [className])}>
             <div className="hero-content flex-col text-center">
-                <h1 className="divider text-3xl">{title}</h1>
+                <h1 className="text-3xl">{title}</h1>
                 {children}
             </div>
         </div>
