@@ -8,7 +8,7 @@ The mission is to create a completely offline web application, known as a Progre
 which will also be used to demonstrate how Next.js supports incremental, progressive development which makes it perfect
 for small companies and projects with a long road ahead of them.
 
-### Stack
+## Stack
 
 - [Next.js](https://nextjs.org/)
 - [React](https://react.dev/)
