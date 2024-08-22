@@ -21,7 +21,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: PropsWithChildren) {
     return (
         <html lang="en" data-theme="nord">
-        <body className={classNames(urbanist.className, "w-screen")}>
+        <body className={classNames(urbanist.className, "w-screen overscroll-none")}>
         <Shell>
             {children}
         </Shell>
