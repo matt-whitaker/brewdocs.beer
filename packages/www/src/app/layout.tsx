@@ -20,7 +20,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode; }>) {
     return (
         <html lang="en" data-theme="nord">
-        <body className={classNames(urbanist.className, "w-screen")}>
+        <body className={classNames(urbanist.className, "w-screen overflow-hidden")}>
         <Shell>
             {children}
         </Shell>
