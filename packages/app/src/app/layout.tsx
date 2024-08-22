@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: PropsWithChildren) {
     return (
         <html lang="en" data-theme="nord">
-        <body className={classNames(urbanist.className, "overscroll-none")}>
+        <body className={classNames(urbanist.className, "overscroll-none max-w-screen")}>
         <Shell>
             {children}
         </Shell>
