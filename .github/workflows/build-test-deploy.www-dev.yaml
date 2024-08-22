@@ -19,11 +19,11 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - run: npm ci
-      - run: npm run build -w packages/app
+      - run: npm run build -w packages/www
       - uses: actions/upload-artifact@v4
         with:
           name: out
-          path: packages/app/out
+          path: packages/www/out
 
   Test:
     runs-on: ubuntu-latest
