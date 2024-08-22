@@ -25,7 +25,7 @@ export default function BrewDay() {
     if (!_batch) return <Error>'batch' missing</Error>
 
     return (
-        <Screen className="grid grid-cols-1 lg:grid-cols-2 gap-x-4 box-border">
+        <Screen className="grid grid-cols-1 lg:grid-cols-2 gap-x-4">
             <div>
                 <ScreenH3>1. Mash</ScreenH3>
                 {_batch.mash.map((m, i) => [

@@ -4,7 +4,7 @@ import nav from "@/data/nav";
 
 export default function Shell({ children }: PropsWithChildren) {
     return (
-        <div>
+        <div className="w-screen">
             <Topbar nav={nav}/>
             {children}
         </div>
