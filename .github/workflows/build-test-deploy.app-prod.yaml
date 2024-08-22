@@ -49,5 +49,5 @@ jobs:
         with:
           name: out
           path: out
-      - run: aws s3 sync --delete --acl public-read out s3://${{ secrets.BREWDOCS_AWS_S3_BUCKET }}
-      - run: aws cloudfront create-invalidation --distribution-id ${{ secrets.BREWDOCS_AWS_CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*" >/dev/null
+      - run: aws s3 sync --delete --acl public-read out s3://${{ secrets.APP_AWS_S3_BUCKET }}
+      - run: aws cloudfront create-invalidation --distribution-id ${{ secrets.APP_AWS_CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*" >/dev/null
