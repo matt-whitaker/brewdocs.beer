@@ -6,6 +6,7 @@ import BrewDay from "@/screen/brew-day";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
 import PanelSwitcher from "@/component/panel-switcher";
 import usePanelSwitcher from "@/component/panel-switcher/usePanelSwitcher";
+import {Suspense} from "react";
 
 export default function Recipe() {
     const [active, change] = usePanelSwitcher("Brew Day");
@@ -13,13 +14,19 @@ export default function Recipe() {
         <PanelSwitcher>
             <PanelSwitcherContent active={active} change={change} title="Shopping"></PanelSwitcherContent>
             <PanelSwitcherContent active={active} change={change} title="Checklist">
-                <Checklist />
+                <Suspense>
+                    <Checklist />
+                </Suspense>
             </PanelSwitcherContent>
             <PanelSwitcherContent active={active} change={change} title="Brew Day">
-                <BrewDay />
+                <Suspense>
+                    <BrewDay />
+                </Suspense>
             </PanelSwitcherContent>
             <PanelSwitcherContent active={active} change={change} title="Summary">
-                <Summary />
+                <Suspense>
+                    <Summary />
+                </Suspense>
             </PanelSwitcherContent>
         </PanelSwitcher>
     )
