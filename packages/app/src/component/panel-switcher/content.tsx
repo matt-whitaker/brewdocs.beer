@@ -21,7 +21,7 @@ export default function PanelSwitcherContent({ title, children, active, change }
                 type="radio"
                 name={`tab-wrapper-${title}`}
                 role="tab"
-                className={classNames("tab whitespace-nowrap", { disabled: !children })}
+                className={classNames("tab whitespace-nowrap lg:px-3 px-2.5", { disabled: !children })}
                 aria-label={title}
             />
             <div role="tabpanel" className="tab-content bg-base-100 lg:rounded-box">
