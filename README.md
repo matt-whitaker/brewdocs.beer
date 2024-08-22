@@ -9,7 +9,6 @@ which will also be used to demonstrate how Next.js supports incremental, progres
 for small companies and projects with a long road ahead of them.
 
 ## Stack
-
 - [Next.js](https://nextjs.org/)
 - [React](https://react.dev/)
 - [Tailwind CSS](https://tailwindcss.com/)
