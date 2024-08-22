@@ -12,7 +12,7 @@ import batchService from "@/service/batch";
 
 export default function Summary() {
     const batchId = useSearchParams().get("batchId");
-    const batch = useService<Batch>(batchService).get(batchId);
+    const batch = useService<Batch|null>(batchService.get, null, [batchId]);
     const recipe= batch?.recipe;
 
     if (!batch) return <Error>'batch' missing</Error>

@@ -18,7 +18,7 @@ import {useCallback, useMemo} from "react";
 
 export default function Checklist() {
     const batchId = useSearchParams().get("batchId");
-    const batch = useService<Batch>(batchService).get(batchId);
+    const batch = useService<Batch|null>(batchService.get, null, [batchId]);
     const checklist = batch?.recipe?.checklist;
 
     const [checked, setChecked] = useButtonChecklist(useMemo(() => ({ '3-PBW': true, "3-CO2": true, "3-Star San": true }), []));
@@ -27,7 +27,7 @@ export default function Checklist() {
         uses.map((use) => equipment
             .filter((eq) => eq.use.includes(use))
             .map(({ name }) => name)
-        ))).values()], [equipment]);
+        ))).values()], []);
 
     if (!batch) { return <Error>'batch' missing</Error>; }
     if (!checklist) { return <Error>'checklist' missing</Error>; }
@@ -36,10 +36,10 @@ export default function Checklist() {
         <Screen className="join join-vertical">
             <ScreenH2>Brew Day Checklist</ScreenH2>
             {checklist.map(({ uses, name: title }: EquipmentChecklist, i) => (
-                <Collapse title={title}>
+                <Collapse key={title} title={title}>
                     <ButtonChecklist className="sm:columns-2">
                         {getItems(uses).map((name) => (
-                            <ButtonChecklistItem id={`${i+1}-${name}`} name={name} checked={checked} toggle={setChecked} />
+                            <ButtonChecklistItem key={name} id={`${i+1}-${name}`} name={name} checked={checked} toggle={setChecked} />
                         ))}
                     </ButtonChecklist>
                 </Collapse>

@@ -38,7 +38,7 @@ export type SearchEverywhereProps = {
 }
 
 export default function SearchEverywhere({ }) {
-    const batches = useService<Batch>(batchService).list();
+    const batches = useService<Batch[]>(batchService.list, [], []);
 
     if (!batches) {
         return <></>;

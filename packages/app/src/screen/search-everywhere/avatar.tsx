@@ -9,7 +9,7 @@ export default function SearchEverywhereResult({ name, type, src }: SearchEveryw
         <div className="flex w-2xl">
             <div className="flex flex-col items-center">
                 {["placeholder", "image", "icon"].includes(type)
-                    ? [
+                    ? <>
                         <div className={classNames("avatar", { placeholder: type === "placeholder"})}>
                             <div className="bg-neutral text-neutral-content w-16 rounded-3xl">
                                 {type === "placeholder" ? <span className="text-3xl">{name.charAt(0)}</span> : <></>}
@@ -19,7 +19,7 @@ export default function SearchEverywhereResult({ name, type, src }: SearchEveryw
                         <div>
                             <p>content</p>
                         </div>
-                    ] : <></>}
+                    </> : <></>}
                 {type === "text"
                     ? (
                         <div>

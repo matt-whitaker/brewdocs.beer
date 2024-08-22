@@ -9,7 +9,7 @@ import Recipe from "@/model/recipe";
 import recipeService from "@/service/recipe";
 
 export default function RecipeList() {
-    const recipes = useService<Recipe>(recipeService).list();
+    const recipes = useService<Recipe[]>(recipeService.list, [], []);
     if (!recipes) { return <Error>'recipes' missing</Error> }
 
     return (

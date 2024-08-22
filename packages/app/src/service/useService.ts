@@ -5,30 +5,12 @@ export type Service<T> = {
     list: () => Promise<T[]>
 }
 
-export default function useService<T>(service: Service<T>) {
-    return useMemo(() => ({
-        get (
-            id: string,
-            defaultState?: T|void|null
-        ): T|null {
-            const [state, setState] = useState<T>(defaultState || null);
-            const _service = useCallback(service.get, [service, id]);
+export default function useService<T, M extends keyof Service<T>>(service: Service<T>[M], defaultState: T, params: any[]) {
+    const [state, setState] = useState<T>(defaultState || null);
+    useEffect(() => {
+        service(...params).then(data => setState(data));
+    }, [service, ...params]);
 
-            useEffect(() => {
-                _service(id).then(data => setState(data));
-            }, [_service, id]);
-
-            return state;
-        },
-        list (defaultState?: T[]): T[] {
-            const [state, setState] = useState<T[]>(defaultState ?? []);
-            const _service = useCallback(service.list, [service]);
-
-            useEffect(() => {
-                _service().then(data => setState(data));
-            }, [_service]);
-
-            return state;
-        }
-    }), [service])
+    return state;
 }
+

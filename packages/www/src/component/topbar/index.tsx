@@ -11,6 +11,7 @@ export default function Topbar({ nav }: TopbarProps) {
             <div className="flex-none">
                 {nav.map(([name, href, primary]) => (
                     <a
+                        key={name}
                         className={classNames("btn btn-ghost max-lg:hidden", {
                             "decoration-none": !primary,
                             "btn-sm": !primary,
@@ -27,7 +28,7 @@ export default function Topbar({ nav }: TopbarProps) {
                             tabIndex={0}
                             className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
                             {nav.map(([name, href, primary]) => (
-                                <li>
+                                <li key={name}>
                                     <a href={href}>{name}</a>
                                 </li>
                             ))}
