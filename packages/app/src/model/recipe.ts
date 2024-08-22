@@ -3,7 +3,7 @@ import Grain from "@/model/grain";
 import {Mash} from "@/model/mash";
 import Hop from "@/model/hop";
 import Yeast from "@/model/yeast";
-import Vitals from "@/model/vitals";
+import Measurements from "@/model/measurements";
 import Equipment from "@/model/equipment";
 import Boil from "@/model/boil";
 import EquipmentChecklist from "@/model/equipemnt-checklist";
@@ -16,7 +16,7 @@ export default interface Recipe extends Entity, Named {
     efficiency: string;
     description: string;
     boilTime: string;
-    targets: Vitals;
+    targets: Measurements;
 
     mash: Mash[];
     boil: Boil[];

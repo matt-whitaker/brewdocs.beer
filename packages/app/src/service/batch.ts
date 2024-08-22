@@ -4,8 +4,8 @@ import batches from "@/data/batches";
 import recipeService from "@/service/recipe";
 
 export class BatchService implements Service<Batch> {
-    async get(batchId: string): Promise<Batch> {
-        const batch = batches.find(({ id }: Batch) => id === batchId);
+    async get(batchId: string): Promise<Batch|null> {
+        const batch = batches.find(({ id }: Batch) => id === batchId) ?? null;
         if (batch) batch.recipe = await recipeService.get(batch.recipeId);
 
         return batch;

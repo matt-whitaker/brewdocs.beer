@@ -15,6 +15,7 @@ import EquipmentChecklist from "@/model/equipemnt-checklist";
 import equipment from "@/data/equipment";
 import {flatten} from "lodash";
 import {useCallback, useMemo} from "react";
+import {EquipmentUses} from "@/model/equipment";
 
 export default function Checklist() {
     const batchId = useSearchParams().get("batchId");
@@ -23,7 +24,7 @@ export default function Checklist() {
 
     const [checked, setChecked] = useButtonChecklist(useMemo(() => ({ '3-PBW': true, "3-CO2": true, "3-Star San": true }), []));
 
-    const getItems = useCallback((uses): string[] => [...new Set<string>(flatten(
+    const getItems = useCallback((uses: EquipmentUses[]): string[] => [...new Set<string>(flatten(
         uses.map((use) => equipment
             .filter((eq) => eq.use.includes(use))
             .map(({ name }) => name)

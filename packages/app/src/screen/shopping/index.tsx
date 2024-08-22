@@ -7,7 +7,7 @@ import {useSearchParams} from "next/navigation";
 import batchService from "@/service/batch";
 
 export default function Shopping() {
-    const [batchId] = useSearchParams().get("batchId");
+    const batchId = useSearchParams().get("batchId");
     const batch = useService<Batch|null>(batchService.get, null, [batchId]);
     if (!batch) return <Error>'batch' missing</Error>
     const recipe = batch.recipe;

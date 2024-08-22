@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useState} from "react";
 
-export default function useButtonChecklist(defaultChecked: Record<string, boolean>) {
+export default function useButtonChecklist(defaultChecked: Record<string, boolean>): [Record<string, boolean>, (name: string) => void] {
     const [checked, setChecked] = useState<Record<string, boolean>>(defaultChecked);
     useEffect(() => setChecked(defaultChecked), [defaultChecked]);
 

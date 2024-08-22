@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 export type NavListProps = {
-    nav: [string, string][];
+    nav: [string, string?][];
 }
 
 export default function Navlist({ nav }: NavListProps) {

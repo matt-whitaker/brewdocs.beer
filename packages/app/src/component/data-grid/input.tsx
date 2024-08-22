@@ -6,7 +6,7 @@ import {UpdateFn} from "@/component/data-grid/useDataGrid";
 
 export type DataGridInputProps = { col: number; readonly?: boolean; value: string; dot: string; update: UpdateFn }
 export default function DataGridInput({ col, readonly = false, value, dot, update }: DataGridInputProps) {
-    const onChange = useCallback(eventValue((newValue) => update(dot, newValue)), [dot, update])
+    const onChange = useCallback(eventValue((newValue: string) => update(dot, newValue)), [dot, update])
     return (
         <input
             readOnly={!!readonly}

@@ -1,4 +1,4 @@
-export default interface Vitals {
+export default interface Measurements {
     og: string;
     fg: string;
     abv: string;

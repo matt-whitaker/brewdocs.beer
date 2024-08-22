@@ -4,9 +4,9 @@ import {PropsWithClass} from "@brewdocs.beer/core";
 
 export type PageProps = PropsWithChildren & Partial<PropsWithClass>
 
-export default function Page({ children, className }: PageProps) {
+export default function Page({ children }: PageProps) {
     return (
-        <Shell className={className}>
+        <Shell>
             {children}
         </Shell>
     );

@@ -33,8 +33,8 @@ export default function BrewDay() {
                     <DataGrid key={i}>
                         {_batch.grains.map((grain: Grain, i) => (
                             <DataGridRow key={i}>
-                                <DataGridLabel id={grain.name} editable>{grain.name}</DataGridLabel>
-                                <DataGridInput update={update} id={grain.name} col={3} dot={`grains[${i}.weight`} value={grain.weight} />
+                                <DataGridLabel editable>{grain.name}</DataGridLabel>
+                                <DataGridInput update={update} col={3} dot={`grains[${i}.weight`} value={grain.weight} />
                             </DataGridRow>
                         ))}
                     </DataGrid>
@@ -46,10 +46,10 @@ export default function BrewDay() {
                     <DataGrid key={i}>
                         {_batch.hops.map((hop: Hop, i) => (
                             <DataGridRow key={i}>
-                                <DataGridLabel id={hop.name} editable>{hop.name}</DataGridLabel>
-                                <DataGridInput update={update} id={hop.name} col={1} dot={`hops[${i}.weight`} value={hop.weight} />
-                                <DataGridInput update={update} id={hop.name} col={2} dot={`hops[${i}.alpha`} value={hop.alpha} />
-                                <DataGridInput update={update} id={hop.name} col={3} dot={`hops[${i}.boil`} value={hop.boil} />
+                                <DataGridLabel editable>{hop.name}</DataGridLabel>
+                                <DataGridInput update={update} col={1} dot={`hops[${i}.weight`} value={hop.weight} />
+                                <DataGridInput update={update} col={2} dot={`hops[${i}.alpha`} value={hop.alpha} />
+                                <DataGridInput update={update} col={3} dot={`hops[${i}.boil`} value={hop.boil} />
                             </DataGridRow>
                         ))}
                     </DataGrid>
@@ -60,8 +60,8 @@ export default function BrewDay() {
                 <DataGrid>
                     {_batch.yeast.map((yeast: Yeast, i) => (
                         <DataGridRow key={i}>
-                            <DataGridLabel id={yeast.name} editable>{yeast.name}</DataGridLabel>
-                            <DataGridInput update={update} id={yeast.name} col={3} dot={`yeast[${i}.temp`} value={yeast.temp} />
+                            <DataGridLabel editable>{yeast.name}</DataGridLabel>
+                            <DataGridInput update={update} col={3} dot={`yeast[${i}.temp`} value={yeast.temp} />
                         </DataGridRow>
                     ))}
                 </DataGrid>
@@ -70,8 +70,8 @@ export default function BrewDay() {
                 <DataGrid>
                     {_batch.hydrometer.map((hydro: Hydrometer, i) => (
                         <DataGridRow key={i}>
-                            <DataGridLabel id={hydro.date} editable>{hydro.date}</DataGridLabel>
-                            <DataGridInput update={update} id={hydro.date} col={3} dot={`hydrometer[${i}].gravity`} value={hydro.gravity} />
+                            <DataGridLabel editable>{hydro.date}</DataGridLabel>
+                            <DataGridInput update={update} col={3} dot={`hydrometer[${i}].gravity`} value={hydro.gravity} />
                         </DataGridRow>
                     ))}
                 </DataGrid>

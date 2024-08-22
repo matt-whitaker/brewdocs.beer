@@ -2,6 +2,7 @@ import {eventValue} from "@/utils/fn";
 import {useCallback} from "react";
 
 export type ButtonChecklistItemProps = {
+    id: string;
     name: string;
     checked: Record<string, boolean>;
     toggle: (name: string) => void;

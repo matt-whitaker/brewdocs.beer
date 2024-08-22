@@ -1,15 +1,20 @@
-import {useCallback, useEffect, useMemo, useState} from "react";
+import {useEffect, useState} from "react";
 
+export type ServiceGetFn<T> = (id: string) => Promise<T|null>;
+export type ServiceListFn<T> = () => Promise<T[]>;
 export type Service<T> = {
-    get: (id: string) => Promise<T>
-    list: () => Promise<T[]>
+    get: ServiceGetFn<T>;
+    list: ServiceListFn<T>
 }
 
-export default function useService<T, M extends keyof Service<T>>(service: Service<T>[M], defaultState: T, params: any[]) {
-    const [state, setState] = useState<T>(defaultState || null);
+export type ServiceFn<T> = ServiceGetFn<T> | ServiceListFn<T>;
+
+export default function useService<T>(serviceFn: ServiceFn<T>, defaultState: T, [parm1, parm2]: [any?, any?]): T {
+    const [state, setState] = useState<T>(defaultState);
     useEffect(() => {
-        service(...params).then(data => setState(data));
-    }, [service, ...params]);
+        // @ts-ignore
+        serviceFn(parm1, parm2).then(data => setState(data));
+    }, [serviceFn, parm1, parm2]);
 
     return state;
 }

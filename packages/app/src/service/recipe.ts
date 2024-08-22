@@ -3,8 +3,8 @@ import {Service} from "@/service/useService";
 import recipes from "@/data/recipes";
 
 export class RecipeService implements Service<Recipe> {
-    async get(recipeId: string): Promise<Recipe> {
-        return recipes.find(({ id }: Recipe) => id === recipeId);
+    async get(recipeId: string): Promise<Recipe|null> {
+        return recipes.find(({ id }: Recipe) => id === recipeId) ?? null;
     }
 
     async list(): Promise<Recipe[]> {
