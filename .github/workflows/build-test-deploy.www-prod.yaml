@@ -1,5 +1,5 @@
-name: Build, Test, and Deploy (WWW Dev)
-run-name: "Build, Test, and Deploy (WWW Dev)"
+name: Build, Test, and Deploy (WWW Prod)
+run-name: "Build, Test, and Deploy (WWW Prod)"
 
 on:
   push:
