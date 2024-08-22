@@ -1,7 +1,7 @@
 import classNames from "classnames";
 import {Ellipses} from "@/component/svg";
 
-export type TopbarProps = { nav: [string, string, boolean][] }
+export type TopbarProps = { nav: [string, string, boolean?][] }
 export default function Topbar({ nav }: TopbarProps) {
     return (
         <div className="navbar bg-primary fixed z-50">
