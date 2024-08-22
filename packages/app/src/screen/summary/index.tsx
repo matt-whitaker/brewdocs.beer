@@ -28,9 +28,9 @@ export default function Summary() {
                     {batch.brewer ? (<ScreenH4>Brewed By {batch.brewer}</ScreenH4>) : <></>}
                     <ScreenP className="pt-4">{`${recipe.description}`}</ScreenP>
                 </div>
-                <div className="divider">Measurements</div>
+                <div className="">Measurements</div>
                 <Vitals className="ml-4 -mt-2" vitals={[["Target", recipe.targets], ["Actuals", batch.actuals]]} />
-                <div className="divider">Organics</div>
+                <div className="">Organics</div>
                 <Organics
                     className="ml-4 -mt-2"
                     hops={batch.hops ?? recipe.hops}
