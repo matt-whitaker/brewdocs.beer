@@ -25,7 +25,9 @@ export default function PanelSwitcherContent({ title, children, active, change }
                 aria-label={title}
             />
             <div role="tabpanel" className="tab-content bg-base-100 lg:rounded-box">
-                {children ? children : <></>}
+                <div>
+                    {children ? children : <></>}
+                </div>
             </div>
         </>
     )

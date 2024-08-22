@@ -21,6 +21,3 @@ export const ScreenH5 = ({ children, className }: TypographyProps) =>
 
 export const ScreenP = ({ children, className}: TypographyProps) =>
     (<p className={classNames("mt-1 [&+p]:mt-0 first-of-type:mt-0", [className])}>{children}</p>);
-
-export const ScreenHr = ({ children, className }: TypographyProps) =>
-    (<div className={classNames("sm:divider max-sm:divider-neutral my-5 [&+*]:mt-0", [className])}>{children}</div>);
