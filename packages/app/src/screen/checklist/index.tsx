@@ -34,7 +34,7 @@ export default function Checklist() {
     if (!checklist) { return <Error>'checklist' missing</Error>; }
 
     return (
-        <Screen className="join join-vertical">
+        <Screen className="join join-vertical w-full">
             <ScreenH2>Brew Day Checklist</ScreenH2>
             {checklist.map(({ uses, name: title }: EquipmentChecklist, i) => (
                 <Collapse key={title} title={title}>
