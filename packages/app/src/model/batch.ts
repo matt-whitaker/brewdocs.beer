@@ -8,8 +8,8 @@ export default interface Batch extends Named, Omit<Recipe, "targets"|"descriptio
     status: "prep"|"mash"|"boil"|"ferment"|"complete";
     actuals: Measurements;
     hydrometer: Hydrometer[];
+    checklist: Record<string, boolean>;
 
     recipe: Recipe|null;
     notes?: string;
-    checklist: Record<string, boolean>
 }

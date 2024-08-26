@@ -37,7 +37,8 @@ const batches: Batch[] = [
             { note: "wort", date: "2024-08-01", gravity: "1.051" },
             { note: "1wk", date: "2024-08-08", gravity: "1.018" },
             { note: "2wk", date: "2024-08-15", gravity: "1.014" }
-        ]
+        ],
+        checklist: {}
     }
 ];
 

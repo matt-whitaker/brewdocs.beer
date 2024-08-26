@@ -18,21 +18,24 @@ export default function Recipe() {
     const batch = useSubject<Batch, null>(batchState, null);
     const onChange = useCallback((batch) => batchState.update(batch), [batchState]);
 
-    const [active, change] = usePanelSwitcher("Brew Day");
+    const [active, setActive] = usePanelSwitcher("Brew Day");
+
+    if (!batch) return null;
+
     return (
         <PanelSwitcher>
-            <PanelSwitcherContent active={active} change={change} title="Shopping"></PanelSwitcherContent>
-            <PanelSwitcherContent active={active} change={change} title="Checklist">
+            <PanelSwitcherContent active={active} change={setActive} title="Shopping"></PanelSwitcherContent>
+            <PanelSwitcherContent active={active} change={setActive} title="Checklist">
                 <Suspense>
-                    <Checklist batch={batch} />
+                    <Checklist batch={batch} onChange={onChange} />
                 </Suspense>
             </PanelSwitcherContent>
-            <PanelSwitcherContent active={active} change={change} title="Brew Day">
+            <PanelSwitcherContent active={active} change={setActive} title="Brew Day">
                 <Suspense>
                     <BrewDay batch={batch} onChange={onChange} />
                 </Suspense>
             </PanelSwitcherContent>
-            <PanelSwitcherContent active={active} change={change} title="Summary">
+            <PanelSwitcherContent active={active} change={setActive} title="Summary">
                 <Suspense>
                     <Summary batch={batch} />
                 </Suspense>

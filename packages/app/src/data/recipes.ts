@@ -33,7 +33,7 @@ const recipes: Recipe[] = [
         ],
         equipment: [...equipment],
         checklist: [
-            { name: "Brew Day!", uses: ["mash", "boil", "clean", "primary"] },
+            { name: "Brew Day", uses: ["mash", "boil", "clean", "primary"] },
             { name: "Rack Day", uses: ["transfer", "secondary", "clean"] },
             { name: "Keg Day", uses: ["kegging", "transfer", "clean", "serve"] }
         ],
