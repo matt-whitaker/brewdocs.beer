@@ -8,7 +8,7 @@ import Batch from "@/model/batch";
 import batchService from "@/service/batch";
 
 export default function BatchList() {
-    const batches = useService<Batch[]>(batchService.list, [], []);
+    const batches = useService<Batch[]>(batchService, [], []);
 
     if (!batches) {
         return <></>;

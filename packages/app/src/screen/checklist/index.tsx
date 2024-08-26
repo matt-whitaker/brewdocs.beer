@@ -16,6 +16,7 @@ import equipment from "@/data/equipment";
 import {flatten} from "lodash";
 import {useCallback, useMemo} from "react";
 import {EquipmentUses} from "@/model/equipment";
+import ButtonChecklistAdd from "@/component/button-checklist/add";
 
 export default function Checklist() {
     const batchId = useSearchParams().get("batchId");
@@ -42,6 +43,7 @@ export default function Checklist() {
                         {getItems(uses).map((name) => (
                             <ButtonChecklistItem key={name} id={`${i+1}-${name}`} name={name} checked={checked} toggle={setChecked} />
                         ))}
+                        <ButtonChecklistAdd />
                     </ButtonChecklist>
                 </Collapse>
             ))}

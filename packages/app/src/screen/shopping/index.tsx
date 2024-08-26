@@ -9,15 +9,10 @@ import batchService from "@/service/batch";
 export default function Shopping() {
     const batchId = useSearchParams().get("batchId");
     const batch = useService<Batch|null>(batchService.get, null, [batchId]);
+    const recipe = batch?.recipe;
     if (!batch) return <Error>'batch' missing</Error>
-    const recipe = batch.recipe;
-
-    // Todo: if batch, but not recipe = something went wrong.
-    if (!batch || !recipe) return <></>;
-
-    const categories = [
-        { title: "Hops", data: batch?.hops ?? recipe.hops }
-    ]
+    if (!recipe) return <Error>'recipe' missing</Error>
+    
     return null;
     // return (
     //     <Screen>
