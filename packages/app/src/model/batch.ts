@@ -11,4 +11,5 @@ export default interface Batch extends Named, Omit<Recipe, "targets"|"descriptio
 
     recipe: Recipe|null;
     notes?: string;
+    checklist: Record<string, boolean>
 }

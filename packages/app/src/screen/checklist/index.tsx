@@ -15,8 +15,6 @@ import {flatten} from "lodash";
 import {useCallback, useMemo} from "react";
 import {EquipmentUses} from "@/model/equipment";
 import ButtonChecklistAdd from "@/component/button-checklist/add";
-import useSubject from "@/state/useSubject";
-import BatchState from "@/state/batch";
 
 export default function Checklist({ batch }: { batch: Batch|null }) {
     const checklist = batch?.recipe?.checklist;

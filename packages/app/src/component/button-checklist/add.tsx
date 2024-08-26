@@ -1,5 +1,5 @@
 import {Plus} from "@/component/svg";
-import TextInput from "@/component/text-input";
+import TextInput from "../form/text-input";
 
 export type ButtonChecklistAddProps = {}
 export default function ButtonChecklistAdd({}: ButtonChecklistAddProps) {
