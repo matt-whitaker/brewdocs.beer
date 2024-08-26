@@ -1,9 +1,7 @@
 "use client";
 
 import Screen from "@/component/screen";
-import useService from "@/service/useService";
 import Batch from "@/model/batch";
-import batchService from "@/service/batch";
 import SearchEverywhereResult from "@/screen/search-everywhere/avatar";
 import Container from "@/screen/search-everywhere/container";
 
@@ -34,12 +32,7 @@ import Container from "@/screen/search-everywhere/container";
  *  - blended for organics; significant overlap unlikely (crystal a good test case)
  */
 
-export type SearchEverywhereProps = {
-}
-
-export default function SearchEverywhere({ }) {
-    const batches = useService<Batch[]>(batchService.list, [], []);
-
+export default function SearchEverywhere({ batches }: { batches: Batch[] }) {
     if (!batches) {
         return <></>;
     }

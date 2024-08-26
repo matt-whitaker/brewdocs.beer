@@ -1,12 +1,10 @@
 "use client";
 
 import Screen from "../../component/screen";
-import useService from "@/service/useService";
 import {ScreenH2} from "@/component/typography";
 import Batch from "@/model/batch";
 import Error from "@/component/error";
 import {useSearchParams} from "next/navigation";
-import batchService from "@/service/batch";
 import ButtonChecklist from "@/component/button-checklist";
 import ButtonChecklistItem from "@/component/button-checklist/item";
 import useButtonChecklist from "@/component/button-checklist/useButtonChecklist";
@@ -17,10 +15,10 @@ import {flatten} from "lodash";
 import {useCallback, useMemo} from "react";
 import {EquipmentUses} from "@/model/equipment";
 import ButtonChecklistAdd from "@/component/button-checklist/add";
+import useSubject from "@/state/useSubject";
+import BatchState from "@/state/batch";
 
-export default function Checklist() {
-    const batchId = useSearchParams().get("batchId");
-    const batch = useService<Batch|null>(batchService.get, null, [batchId]);
+export default function Checklist({ batch }: { batch: Batch|null }) {
     const checklist = batch?.recipe?.checklist;
 
     const [checked, setChecked] = useButtonChecklist(useMemo(() => ({ '3-PBW': true, "3-CO2": true, "3-Star San": true }), []));

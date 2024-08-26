@@ -2,14 +2,11 @@
 
 import Link from "next/link";
 import Screen from "../../component/screen";
-import useService from "@/service/useService";
 import {ScreenH2, ScreenH3, ScreenP} from "@/component/typography";
 import Error from "@/component/error";
 import Recipe from "@/model/recipe";
-import recipeService from "@/service/recipe";
 
-export default function RecipeList() {
-    const recipes = useService<Recipe[]>(recipeService.list, [], []);
+export default function RecipeList({ recipes }: { recipes: Recipe[] }) {
     if (!recipes) { return <Error>'recipes' missing</Error> }
 
     return (

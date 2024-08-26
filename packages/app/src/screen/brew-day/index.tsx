@@ -4,11 +4,8 @@ import Screen from "../../component/screen";
 import {ScreenH3, ScreenH5} from "@/component/typography";
 import Hop from "@/model/hop";
 import Yeast from "@/model/yeast";
-import batchService from "@/service/batch";
-import useService from "@/service/useService";
 import Batch from "@/model/batch";
 import Error from "@/component/error";
-import {useSearchParams} from "next/navigation";
 import Grain from "@/model/grain";
 import Hydrometer from "@/model/hydrometer";
 import DataGridLabel from "@/component/data-grid/label";
@@ -18,9 +15,7 @@ import DataGridInput from "@/component/data-grid/input";
 import useDataGrid from "@/component/data-grid/useDataGrid";
 import {Fragment} from "react";
 
-export default function BrewDay() {
-    const batchId = useSearchParams().get("batchId");
-    const batch = useService<Batch|null>(batchService.get, null, [batchId]);
+export default function BrewDay({ batch }: { batch: Batch|null }) {
     const [_batch, update] = useDataGrid<Batch>(batch, () => {});
 
     if (!_batch) return <Error>'batch' missing</Error>

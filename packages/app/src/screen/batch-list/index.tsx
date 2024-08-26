@@ -2,14 +2,10 @@
 
 import Link from "next/link";
 import Screen from "../../component/screen";
-import useService from "@/service/useService";
 import {ScreenH2, ScreenH3, ScreenP} from "@/component/typography";
 import Batch from "@/model/batch";
-import batchService from "@/service/batch";
 
-export default function BatchList() {
-    const batches = useService<Batch[]>(batchService, [], []);
-
+export default function BatchList({ batches }: { batches: Batch[] }) {
     if (!batches) {
         return <></>;
     }
