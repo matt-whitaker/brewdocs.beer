@@ -12,7 +12,7 @@ export default function DataGridInput<T>({ col, readonly = false, data, dot, upd
     const value = useMemo(() => get(data, dot), [data, dot]);
     return (
         <TextInput
-            readOnly={readonly}
+            readonly={readonly}
             className={classNames(
                 VALUE_COL_STARTS[col - 1],
                 "self-center px-1.5 lg:px-2.5 col-span-1 input input-bordered lg:input-sm input-xs text-right placeholder:text-right")}

@@ -1,12 +1,11 @@
-import {Entity, Named} from "@/model/type";
+import {Entity} from "@/model/type";
 import Grain from "@/model/grain";
 import {Mash} from "@/model/mash";
 import Hop from "@/model/hop";
 import Yeast from "@/model/yeast";
 import Measurements from "@/model/measurements";
-import Equipment, {EquipmentUses} from "@/model/equipment";
+import Equipment from "@/model/equipment";
 import Boil from "@/model/boil";
-import EquipmentChecklist from "@/model/equipemnt-checklist";
 import RecipeChecklist from "@/model/recipe-checklist";
 
 export default interface Recipe extends Entity {

@@ -5,7 +5,7 @@ import {cloneDeep, debounce, get, set} from "lodash";
 
 export type ToggleFn = (dot: string) => void;
 export type AddFn = (dot: string, value: string) => void;
-export default function useButtonChecklist<T>(
+export default function useButtonChecklist<T extends object>(
     data: T,
     onChange: (data: T) => void
 ): [T|null, ToggleFn, AddFn] {
@@ -15,7 +15,7 @@ export default function useButtonChecklist<T>(
     const debouncedOnChange = useMemo(() => debounce(onChange, 350), [onChange]);
 
     const toggle = useCallback((dot: string) => {
-        const newState = set(cloneDeep(data), dot, !get(data, dot))
+        const newState = set<T>(cloneDeep<T>(data), dot, !get(data, dot))
         setState(newState);
         debouncedOnChange(newState);
     }, [data, debouncedOnChange])

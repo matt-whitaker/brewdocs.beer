@@ -7,10 +7,9 @@ import {ScreenH2, ScreenH3, ScreenH4, ScreenP} from "@/component/typography";
 import Batch from "@/model/batch";
 import Error from "@/component/error";
 
-export default function Summary({ batch }: { batch: Batch|null }) {
+export default function Summary({ batch }: { batch: Batch }) {
     const recipe= batch?.recipe;
 
-    if (!batch) return <Error>'batch' missing</Error>
     if (!recipe) return <Error>'recipe' missing</Error>
 
     return (

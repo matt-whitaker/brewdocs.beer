@@ -11,7 +11,7 @@ import Collapse from "@/component/collapse";
 import {BatchChecklist} from "@/model/batch-checklist";
 import ButtonChecklistAdd from "@/component/button-checklist/add";
 
-export default function Checklist({ batch, onChange }: { batch: Batch|null; onChange: (batch: Batch) => void }) {
+export default function Checklist({ batch, onChange }: { batch: Batch; onChange: (batch: Batch) => void }) {
     const [data, toggle, add] = useButtonChecklist(batch, onChange);
 
     if (!data) { return <Error>'batch' missing</Error>; }

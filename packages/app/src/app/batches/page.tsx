@@ -10,8 +10,13 @@ import {useMemo} from "react";
 import BatchesState from "@/state/batches";
 
 export default function Batches() {
-    const batches = useSubject<Batch[], []>(useMemo(() => new BatchesState(), []), []);
+    const batches = useSubject<Batch[]>(useMemo(() => new BatchesState(), []));
     const [active, change] = usePanelSwitcher("Complete");
+
+    if (!batches) {
+        return null;
+    }
+
     return (
         <PanelSwitcher>
             <PanelSwitcherContent active={active} change={change} title="Ready"></PanelSwitcherContent>

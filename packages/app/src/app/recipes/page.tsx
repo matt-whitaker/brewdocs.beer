@@ -10,8 +10,13 @@ import {useMemo} from "react";
 import RecipesState from "@/state/recipes";
 
 export default function Recipes() {
-    const recipes = useSubject<Recipe[], []>(useMemo(() => new RecipesState(), []), []);
+    const recipes = useSubject<Recipe[]>(useMemo(() => new RecipesState(), []));
     const [active, change] = usePanelSwitcher("All");
+
+    if (!recipes) {
+        return null;
+    }
+
     return (
         <PanelSwitcher>
             <PanelSwitcherContent active={active} change={change} title="All">

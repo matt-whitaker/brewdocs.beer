@@ -2,8 +2,8 @@ import {cloneDeep, debounce, set} from "lodash";
 import {useCallback, useEffect, useMemo, useState} from "react";
 
 export type UpdateFn = (dot: string, value: string) => void;
-export default function useDataGrid<T>(data: T|null, onChange: (data: T) => void): [T|null, UpdateFn] {
-    const [state, setState] = useState<T|null>(data);
+export default function useDataGrid<T>(data: T, onChange: (data: T) => void): [T, UpdateFn] {
+    const [state, setState] = useState<T>(data);
     const debouncedOnChange = useMemo(() => debounce(onChange, 350), [onChange]);
 
     useEffect(() => setState(data), [data]);

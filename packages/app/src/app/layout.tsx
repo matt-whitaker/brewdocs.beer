@@ -2,7 +2,7 @@ import type {Metadata, Viewport} from "next";
 import {Urbanist} from "next/font/google";
 import classNames from "classnames";
 import Shell from "@/component/shell";
-import {PropsWithChildren} from "react";
+import {PropsWithChildren, Suspense} from "react";
 
 import "../tailwind.css";
 
@@ -23,7 +23,9 @@ export default function RootLayout({ children }: PropsWithChildren) {
         <html lang="en" data-theme="nord">
         <body className={classNames(urbanist.className, "w-screen overscroll-none")}>
         <Shell>
-            {children}
+            <Suspense>
+                {children}
+            </Suspense>
         </Shell>
         </body>
         </html>

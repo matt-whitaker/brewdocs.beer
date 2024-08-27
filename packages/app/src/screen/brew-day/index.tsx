@@ -15,11 +15,9 @@ import DataGridInput from "@/component/data-grid/input";
 import useDataGrid from "@/component/data-grid/useDataGrid";
 import {Fragment} from "react";
 
-export type BrewDayProps = { batch: Batch|null, onChange: (batch: Batch) => void; };
+export type BrewDayProps = { batch: Batch, onChange: (batch: Batch) => void; };
 export default function BrewDay({ batch, onChange }: BrewDayProps) {
     const [data, update] = useDataGrid<Batch>(batch, onChange);
-
-    if (!data) return <Error>'batch' missing</Error>
 
     return (
         <Screen className="grid grid-cols-1 lg:grid-cols-2 gap-x-4">

@@ -19,4 +19,5 @@ export class BatchService {
     }
 }
 
-export default new BatchService();
+const batchService = new BatchService();
+export default batchService;

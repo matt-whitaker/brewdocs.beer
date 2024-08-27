@@ -1,12 +1,13 @@
 
-import PrepList from "../screen/checklist";
+import Checklist from "../screen/checklist";
 import {Meta, StoryObj} from "@storybook/react";
 import recipes from "@/data/recipes";
 import AppWrapper from "../component/page";
+import batches from "@/data/batches";
 
 const meta = {
     title: 'Screens/PrepList',
-    component: PrepList,
+    component: Checklist,
     parameters: {
         layout: 'fullscreen'
     },
@@ -17,14 +18,14 @@ const meta = {
     decorators: [
         (Story) => <AppWrapper><Story /></AppWrapper>
     ]
-} satisfies Meta<typeof PrepList>;
+} satisfies Meta<typeof Checklist>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Development: Story = {
     args: {
-        recipe: recipes[0],
-
+        batch: batches[0],
+        onChange: () => {}
     }
 };

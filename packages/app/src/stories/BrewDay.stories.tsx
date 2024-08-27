@@ -25,6 +25,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Development: Story = {
     args: {
-        recipe: recipes[0],
+        batch: batches[0],
+        onChange: () => {}
     }
 };

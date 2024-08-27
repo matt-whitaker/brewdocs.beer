@@ -5,13 +5,13 @@ export type SubjectShape<T> = {
     initialize(): void;
 }
 
-export default function useSubject<T, TT>(subject: SubjectShape<T>, defaultValue?: infer TT): T|TT {
-    const [state, setState] = useState<T|TT>(defaultValue);
+export default function useSubject<T>(subject: SubjectShape<T|null>, defaultValue: T|null = null): T|null {
+    const [state, setState] = useState<T|null>(defaultValue);
 
     useEffect(() => {
         subject.subscribe((newState) => setState(newState));
         subject.initialize();
-    }, [])
+    }, [subject])
 
     return state;
 }
