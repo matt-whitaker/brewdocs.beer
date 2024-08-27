@@ -1,6 +1,6 @@
-import {Named} from "@/model/type";
 
-export default interface Boil extends Named {
+export default interface Boil {
+    name: string;
     time: string;
-    hops: "all"|"base"|"secondary"
+    hops: "all"
 }

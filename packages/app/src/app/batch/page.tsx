@@ -23,21 +23,19 @@ export default function Recipe() {
     if (!batch) return null;
 
     return (
-        <Suspense>
-            <PanelSwitcher>
-                <PanelSwitcherContent active={active} change={setActive} title="Shopping">
-                    <Shopping batch={batch} onChange={onChange} />
-                </PanelSwitcherContent>
-                <PanelSwitcherContent active={active} change={setActive} title="Checklist">
-                    <Checklist batch={batch} onChange={onChange} />
-                </PanelSwitcherContent>
-                <PanelSwitcherContent active={active} change={setActive} title="Brew Day">
-                    <BrewDay batch={batch} onChange={onChange} />
-                </PanelSwitcherContent>
-                <PanelSwitcherContent active={active} change={setActive} title="Summary">
-                    <Summary batch={batch} />
-                </PanelSwitcherContent>
-            </PanelSwitcher>
-        </Suspense>
+        <PanelSwitcher>
+            <PanelSwitcherContent active={active} change={setActive} title="Shopping">
+                <Shopping batch={batch} onChange={onChange} />
+            </PanelSwitcherContent>
+            <PanelSwitcherContent active={active} change={setActive} title="Checklist">
+                <Checklist batch={batch} onChange={onChange} />
+            </PanelSwitcherContent>
+            <PanelSwitcherContent active={active} change={setActive} title="Brew Day">
+                <BrewDay batch={batch} onChange={onChange} />
+            </PanelSwitcherContent>
+            <PanelSwitcherContent active={active} change={setActive} title="Summary">
+                <Summary batch={batch} />
+            </PanelSwitcherContent>
+        </PanelSwitcher>
     );
 }

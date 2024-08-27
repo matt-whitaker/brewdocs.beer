@@ -1,7 +1,5 @@
-import {eventValue} from "@/utils/fn";
-import {PropsWithChildren, useCallback, useMemo} from "react";
-import {get} from "lodash";
-import {Cancel, Trash} from "@/component/svg";
+import {PropsWithChildren } from "react";
+import {Trash} from "@/component/svg";
 
 export type ButtonChecklistItemProps = PropsWithChildren & {
     name: string;
@@ -16,8 +14,8 @@ export default function ButtonChecklistItem({ name, onToggle, onRemove, checked,
             <div onClick={onRemove} className="absolute lg:right-3 right-2 items-center lg:hidden flex h-full hover:cursor-pointer">
                 <Trash className="w-4 stroke-red-800" />
             </div>
-            <label htmlFor={name} key={name} className="font-normal justify-start hover:cursor-pointer btn lg:btn-ghost lg:btn-md btn-sm mb-0.5 text-lg flex items-center">
-                <input id={name} value={name} onChange={onToggle} type="checkbox" checked={checked} className="checkbox lg:checkbox-sm checkbox-xs mr-3" />
+            <label htmlFor={name} key={name} className="font-normal justify-start hover:cursor-pointer btn lg:btn-ghost btn-sm mb-0.5 text-lg flex items-center">
+                <input id={name} value={name} onChange={onToggle} type="checkbox" checked={checked} className="checkbox checkbox-xs mr-3" />
                 {children}
             </label>
         </li>

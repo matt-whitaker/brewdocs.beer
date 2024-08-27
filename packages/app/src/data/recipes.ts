@@ -31,6 +31,7 @@ const recipes: Recipe[] = [
         yeast: [
             { name: "Wyeast 2112", avg_attn: "70%", temp: "62", starter: true }
         ],
+        additives: [],
         equipment: [...equipment],
         checklist: [
             { name: "Brew Day", uses: ["mash", "boil", "clean", "primary"] },

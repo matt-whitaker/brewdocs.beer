@@ -1,6 +1,6 @@
-import {Named} from "@/model/type";
 
-export default interface Hop extends Named {
+export default interface Hop {
+    name: string;
     weight: string;
     alpha: string;
     boil: string;

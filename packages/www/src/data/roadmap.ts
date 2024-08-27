@@ -1,12 +1,12 @@
 
 export const roadmap: [string, boolean?][] = [
-    ["Shopping List"],
     ["Strike Calculation"],
     ["Favorites"],
     ["Profiles"],
     ["Personal Recipes"],
     ["Manage Batches"],
     ["Manage Equipment"],
+    ["Inventory"],
     ["Import / Export"],
     ["Local Storage"],
     ["Adjunct support"],

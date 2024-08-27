@@ -7,6 +7,7 @@ import Measurements from "@/model/measurements";
 import Equipment from "@/model/equipment";
 import Boil from "@/model/boil";
 import RecipeChecklist from "@/model/recipe-checklist";
+import Additive from "@/model/additive";
 
 export default interface Recipe extends Entity {
     name: string;
@@ -17,13 +18,15 @@ export default interface Recipe extends Entity {
     efficiency: string;
     description: string;
     boilTime: string;
-    targets: Measurements;
 
+    targets: Measurements;
     mash: Mash[];
     boil: Boil[];
     grains: Grain[];
     hops: Hop[];
     yeast: Yeast[];
+    additives: Additive[];
     equipment: Equipment[];
+
     checklist: RecipeChecklist[];
 }

@@ -1,7 +1,7 @@
-import {Named} from "@/model/type";
 
-export interface Mash extends Named {
+export interface Mash {
+    name: string;
     temp: string;
     time: string;
-    grains: "all"|"base"|"secondary"
+    grains: "all"
 }
