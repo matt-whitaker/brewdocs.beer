@@ -26,15 +26,15 @@ export default function Checklist({ batch, onChange }: { batch: Batch; onChange:
                             <ButtonChecklistItem<Batch>
                                 key={`${title}-${name}`}
                                 name={`${title}-${name}`}
-                                toggleDot={`checklist.[${i}].items.[${j}].checked`}
-                                removeDot={`checklist.[${i}].items`}
-                                data={data}
-                                toggle={toggle}
-                                remove={remove}>
+                                checked={checked}
+                                onToggle={() => toggle(`checklist.[${i}].items.[${j}].checked`)}
+                                onRemove={() => remove(`checklist.[${i}].items`, j)}>
                                 {name}
                             </ButtonChecklistItem>
                         ))}
-                        <ButtonChecklistAdd add={add} dot={`checklist.[${i}].items`} disallow={items.map(({ name }) => name)} />
+                        <ButtonChecklistAdd
+                            add={(value: string) => add(`checklist.[${i}].items`, value)}
+                            disallow={items.map(({ name }) => name)} />
                     </ButtonChecklist>
                 </Collapse>
             ))}

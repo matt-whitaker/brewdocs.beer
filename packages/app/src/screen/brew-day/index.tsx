@@ -18,7 +18,7 @@ import {Fragment} from "react";
 export type BrewDayProps = { batch: Batch, onChange: (batch: Batch) => void; };
 export default function BrewDay({ batch, onChange }: BrewDayProps) {
     const [data, update] = useDataGrid<Batch>(batch, onChange);
-
+    
     return (
         <Screen className="grid grid-cols-1 lg:grid-cols-2 gap-x-4">
             <div>

@@ -32,4 +32,8 @@ export default class BatchesState {
                 this._$ubject!.next(batches);
             });
     }
+
+    update(batches: Batch[]) {
+
+    }
 }

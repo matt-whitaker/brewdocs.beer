@@ -15,7 +15,7 @@ import Summary from "@/screen/summary";
 export default function RecipeContent() {
     const batchId = useSearchParams().get("batchId");
     const batchState = useMemo(() => new BatchState(batchId!), [batchId]);
-    const batch = useSubject<Batch>(batchState);
+    const [batch] = useSubject<Batch>(batchState);
     const onChange = useCallback((batch: Batch) => batchState.update(batch), [batchState]);
     const [active, setActive] = usePanelSwitcher("Brew Day");
 

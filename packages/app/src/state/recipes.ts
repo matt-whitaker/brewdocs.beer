@@ -32,4 +32,8 @@ export default class RecipesState {
                 this._$ubject!.next(recipes);
             });
     }
+
+    update(recipes: Recipe[]) {
+
+    }
 }
