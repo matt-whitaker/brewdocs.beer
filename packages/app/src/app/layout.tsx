@@ -23,9 +23,7 @@ export default function RootLayout({ children }: PropsWithChildren) {
         <html lang="en" data-theme="nord">
         <body className={classNames(urbanist.className, "w-screen overscroll-none")}>
         <Shell>
-            <Suspense>
-                {children}
-            </Suspense>
+            {children}
         </Shell>
         </body>
         </html>
