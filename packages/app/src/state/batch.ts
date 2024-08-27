@@ -34,7 +34,7 @@ export default class BatchState {
     }
 
     update(batch: Batch) {
-        console.log("BatchState updating with", batch);
+        // console.log("BatchState updating with", batch);
         this._$ubject!.next(batch);
     }
 }
