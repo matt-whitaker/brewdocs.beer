@@ -24,7 +24,7 @@ export default function BrewDay({ batch, onChange }: BrewDayProps) {
                 <ScreenH3>1. Mash</ScreenH3>
                 {data.mash.map((m, i) => (
                     <Fragment key={`mash-${m.name}-${i}`}>
-                        <ScreenH5>{i+1}. {m.name} - {m.time}</ScreenH5>,
+                        <ScreenH5>{i+1}. {m.name} - {m.time}</ScreenH5>
                         <DataGrid>
                             {data.grains.map((grain: Grain, i) => (
                                 <DataGridRow key={`grain-${grain.name}-${i}`}>
@@ -39,7 +39,7 @@ export default function BrewDay({ batch, onChange }: BrewDayProps) {
                 <ScreenH3>2. Boil</ScreenH3>
                 {data.boil.map((m, i) => (
                     <Fragment key={`boil-${m.name}-${i}`}>
-                        <ScreenH5>{i+1}. {m.name}  - {m.time}</ScreenH5>,
+                        <ScreenH5>{i+1}. {m.name}  - {m.time}</ScreenH5>
                         <DataGrid>
                             {data.hops.map((hop: Hop, i) => (
                                 <DataGridRow key={`hop-${hop.name}-${i}`}>
