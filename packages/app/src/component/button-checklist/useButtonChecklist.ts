@@ -5,27 +5,36 @@ import {cloneDeep, debounce, get, set} from "lodash";
 
 export type ToggleFn = (dot: string) => void;
 export type AddFn = (dot: string, value: string) => void;
+export type RemoveFn = (dot: string, value: string) => void;
 export default function useButtonChecklist<T extends object>(
     data: T,
     onChange: (data: T) => void
-): [T|null, ToggleFn, AddFn] {
+): [T|null, ToggleFn, AddFn, RemoveFn] {
     const [state, setState] = useState<T|null>(data);
     useEffect(() => setState(data), [data]);
 
     const debouncedOnChange = useMemo(() => debounce(onChange, 350), [onChange]);
 
     const toggle = useCallback((dot: string) => {
-        const newState = set<T>(cloneDeep<T>(data), dot, !get(data, dot))
+        const newState = set<T>(cloneDeep<T>(state), dot, !get(state, dot))
         setState(newState);
         debouncedOnChange(newState);
-    }, [data, debouncedOnChange])
+    }, [state, debouncedOnChange])
 
     const add = useCallback((dot: string, value: string) => {
-        const newState = cloneDeep(data)
+        const newState = cloneDeep(state)
         get(newState, dot).push({ checked: false, name: value });
         setState(newState);
         debouncedOnChange(newState);
-    }, [data, debouncedOnChange])
+    }, [state, debouncedOnChange]);
 
-    return [state, toggle, add];
+    const remove = useCallback((dot: string, value: string) => {
+        const newState = cloneDeep(state);
+        const index = get(newState, dot).findIndex(({ name }) => name === value);
+        get(newState, dot).splice(index, 1);
+        setState(newState);
+        debouncedOnChange(newState);
+    }, [state, debouncedOnChange])
+
+    return [state, toggle, add, remove];
 }

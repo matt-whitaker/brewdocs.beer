@@ -12,7 +12,7 @@ import {BatchChecklist} from "@/model/batch-checklist";
 import ButtonChecklistAdd from "@/component/button-checklist/add";
 
 export default function Checklist({ batch, onChange }: { batch: Batch; onChange: (batch: Batch) => void }) {
-    const [data, toggle, add] = useButtonChecklist(batch, onChange);
+    const [data, toggle, add, remove] = useButtonChecklist(batch, onChange);
 
     if (!data) { return <Error>'batch' missing</Error>; }
 
@@ -26,9 +26,11 @@ export default function Checklist({ batch, onChange }: { batch: Batch; onChange:
                             <ButtonChecklistItem<Batch>
                                 key={`${title}-${name}`}
                                 name={`${title}-${name}`}
-                                dot={`checklist.[${i}].items.[${j}].checked`}
+                                toggleDot={`checklist.[${i}].items.[${j}].checked`}
+                                removeDot={`checklist.[${i}].items`}
                                 data={data}
-                                toggle={toggle}>
+                                toggle={toggle}
+                                remove={remove}>
                                 {name}
                             </ButtonChecklistItem>
                         ))}
