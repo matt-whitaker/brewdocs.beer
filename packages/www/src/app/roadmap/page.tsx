@@ -13,7 +13,7 @@ export default function Roadmap() {
                     </label>
                 ) )}
             </div>
-            <p className="lg:text-md text-sm">Something you'd like to see added here? Don't worry, this list will be expanded.</p>
+            <p className="lg:text-md text-sm">Something you'd like to see added here? A suggestions feature will be added in the future.</p>
         </Hero>
     )
 }
