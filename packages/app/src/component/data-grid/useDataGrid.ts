@@ -1,8 +1,7 @@
 import {cloneDeep, debounce, get, set} from "lodash";
 import {useCallback, useEffect, useMemo, useState} from "react";
+import {ToggleFn, UpdateFn} from "@/utils/fn";
 
-export type UpdateFn = (dot: string, value: string) => void;
-export type ToggleFn = (dot: string) => void;
 export default function useDataGrid<T>(data: T, onChange: (data: T) => void): [T, UpdateFn, ToggleFn] {
     const [state, setState] = useState<T>(data);
     useEffect(() => setState(data), [data]);
@@ -23,7 +22,7 @@ export default function useDataGrid<T>(data: T, onChange: (data: T) => void): [T
             setState(newState);
             debouncedOnChange(newState);
         }
-    }, [state, debouncedOnChange])
+    }, [state, debouncedOnChange]);
 
-    return [ state, update, toggle ];
+    return [state, update, toggle];
 }
