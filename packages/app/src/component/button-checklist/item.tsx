@@ -1,14 +1,16 @@
 import {eventValue} from "@/utils/fn";
-import {PropsWithChildren, useCallback} from "react";
+import {PropsWithChildren, useCallback, useMemo} from "react";
 import {get} from "lodash";
 
 export type ButtonChecklistItemProps<T> = PropsWithChildren & {
     name: string;
-    checked: boolean;
-    toggle: (name: string) => void;
+    dot: string;
+    data: T;
+    toggle: (dot: string) => void;
 }
-export default function ButtonChecklistItem<T>({ name, toggle, checked = false, children }: ButtonChecklistItemProps<T>) {
-    const onChange = useCallback(eventValue(toggle), [toggle]);
+export default function ButtonChecklistItem<T>({ name, toggle, dot, data, children }: ButtonChecklistItemProps<T>) {
+    const onChange = useCallback(() => toggle(dot), [dot, toggle]);
+    const checked = useMemo(() => get(data, dot).checked, [data, dot]);
 
     return (
         <li className="w-full overflow-hidden max-lg:[&>label]:odd:btn-ghost">

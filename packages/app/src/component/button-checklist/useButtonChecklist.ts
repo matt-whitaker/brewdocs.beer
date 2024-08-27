@@ -1,20 +1,31 @@
 import {useCallback, useEffect, useMemo, useState} from "react";
-import {debounce} from "lodash";
+import {cloneDeep, debounce, get, set} from "lodash";
 
-export default function useButtonChecklist(
-    defaultChecked: Record<string, boolean> = {},
-    onChange: (checked: Record<string, boolean>) => void
-): [Record<string, boolean>, (name: string) => void] {
-    const [checked, setChecked] = useState<Record<string, boolean>>(defaultChecked);
+//
+
+export type ToggleFn = (dot: string) => void;
+export type AddFn = (dot: string, value: string) => void;
+export default function useButtonChecklist<T>(
+    data: T,
+    onChange: (data: T) => void
+): [T|null, ToggleFn, AddFn] {
+    const [state, setState] = useState<T|null>(data);
+    useEffect(() => setState(data), [data]);
+
     const debouncedOnChange = useMemo(() => debounce(onChange, 350), [onChange]);
 
-    useEffect(() => setChecked(defaultChecked), [defaultChecked]);
+    const toggle = useCallback((dot: string) => {
+        const newState = set(cloneDeep(data), dot, !get(data, dot))
+        setState(newState);
+        debouncedOnChange(newState);
+    }, [data, debouncedOnChange])
 
-    const toggle = useCallback((name: string) => {
-        const updated = { ...checked, [name]: !checked[name] };
-        setChecked(updated);
-        debouncedOnChange(updated);
-    }, [checked, setChecked])
+    const add = useCallback((dot: string, value: string) => {
+        const newState = cloneDeep(data)
+        get(newState, dot).push({ checked: false, name: value });
+        setState(newState);
+        debouncedOnChange(newState);
+    }, [data, debouncedOnChange])
 
-    return [checked, toggle];
+    return [state, toggle, add];
 }

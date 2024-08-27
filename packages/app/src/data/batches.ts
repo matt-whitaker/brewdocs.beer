@@ -38,7 +38,42 @@ const batches: Batch[] = [
             { note: "1wk", date: "2024-08-08", gravity: "1.018" },
             { note: "2wk", date: "2024-08-15", gravity: "1.014" }
         ],
-        checklist: {}
+        checklist: [
+            {
+                name: "Brew Day",
+                items: [
+                    { checked: false, name: "Mash Tun - 10gal" },
+                    { checked: false, name: "Stirring Wand" },
+                    { checked: false, name: "Sparge Vessel - 15gal" },
+                    { checked: false, name: "Long Thermometer" },
+                    { checked: false, name: "Burner and stand" },
+                    { checked: false, name: "Boil Kettle - 15gal" },
+                    { checked: false, name: "Long Stirring Spoon" },
+                    { checked: false, name: "Scale" },
+                    { checked: false, name: "Star San" },
+                    { checked: false, name: "PBW" }
+                ]
+            },
+            {
+                name: "Rack Day",
+                items: [
+                    { checked: false, name: "Racking Cane & Hose" },
+                    { checked: false, name: "Glass Carboy - 7gal" },
+                    { checked: false, name: "Star San" },
+                    { checked: false, name: "PBW" },
+                ]
+            },
+            {
+                name: "Key Day",
+                items: [
+                    { checked: false, name: "CO2" },
+                    { checked: false, name: "Racking Cane & Hose" },
+                    { checked: false, name: "Star San" },
+                    { checked: false, name: "PBW" },
+                    { checked: false, name: "Keg (Coke) - 5.5gal" },
+                ]
+            },
+        ]
     }
 ];
 

@@ -4,11 +4,13 @@ import {Mash} from "@/model/mash";
 import Hop from "@/model/hop";
 import Yeast from "@/model/yeast";
 import Measurements from "@/model/measurements";
-import Equipment from "@/model/equipment";
+import Equipment, {EquipmentUses} from "@/model/equipment";
 import Boil from "@/model/boil";
 import EquipmentChecklist from "@/model/equipemnt-checklist";
+import RecipeChecklist from "@/model/recipe-checklist";
 
-export default interface Recipe extends Entity, Named {
+export default interface Recipe extends Entity {
+    name: string;
     brewer: string;
     type: string;
     batchSize: string;
@@ -24,5 +26,5 @@ export default interface Recipe extends Entity, Named {
     hops: Hop[];
     yeast: Yeast[];
     equipment: Equipment[];
-    checklist: EquipmentChecklist[];
+    checklist: RecipeChecklist[];
 }
