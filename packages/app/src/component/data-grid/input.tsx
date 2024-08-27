@@ -1,15 +1,16 @@
 import classNames from "classnames";
 import {VALUE_COL_STARTS} from "@/component/data-grid/classes";
-import {useCallback, useMemo} from "react";
-import {eventValue} from "@/utils/fn";
-import {UpdateFn} from "@/component/data-grid/useDataGrid";
+import {useCallback} from "react";
 import TextInput from "../form/text-input";
-import {get} from "lodash";
 
-export type DataGridInputProps<T> = { col: number; readonly?: boolean; data: T; dot: string; update: UpdateFn }
-export default function DataGridInput<T>({ col, readonly = false, data, dot, update }: DataGridInputProps<T>) {
-    const onChange = useCallback((newValue: string) => update(dot, newValue), [dot, update]);
-    const value = useMemo(() => get(data, dot), [data, dot]);
+export type DataGridInputProps<T> = {
+    col: number;
+    readonly?: boolean;
+    value: string;
+    update: (value: string) => void;
+}
+export default function DataGridInput<T>({ col, readonly = false, value, update }: DataGridInputProps<T>) {
+    const onChange = useCallback((newValue: string) => update(newValue), [update]);
     return (
         <TextInput
             readonly={readonly}

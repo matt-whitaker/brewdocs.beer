@@ -23,7 +23,7 @@ export default function Checklist({ batch, onChange }: { batch: Batch; onChange:
                 <Collapse key={title} title={title}>
                     <ButtonChecklist className="sm:columns-2">
                         {items.map(({ name, checked }, j) => (
-                            <ButtonChecklistItem<Batch>
+                            <ButtonChecklistItem
                                 key={`${title}-${name}`}
                                 name={`${title}-${name}`}
                                 checked={checked}

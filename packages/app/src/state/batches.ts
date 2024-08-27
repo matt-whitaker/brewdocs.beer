@@ -34,6 +34,6 @@ export default class BatchesState {
     }
 
     update(batches: Batch[]) {
-
+        console.log("BatchesState updating with", batches);
     }
 }

@@ -16,23 +16,29 @@ export default function useButtonChecklist<T extends object>(
     const debouncedOnChange = useMemo(() => debounce(onChange, 350), [onChange]);
 
     const toggle = useCallback((dot: string) => {
-        const newState = set<T>(cloneDeep<T>(state), dot, !get(state, dot))
-        setState(newState);
-        debouncedOnChange(newState);
+        if (state) {
+            const newState = set(cloneDeep(state), dot, !get(state, dot))
+            setState(newState);
+            debouncedOnChange(newState);
+        }
     }, [state, debouncedOnChange])
 
     const add = useCallback((dot: string, value: string) => {
-        const newState = cloneDeep(state)
-        get(newState, dot).push({ checked: false, name: value });
-        setState(newState);
-        debouncedOnChange(newState);
+        if (state) {
+            const newState = cloneDeep(state)
+            get(newState, dot).push({ checked: false, name: value });
+            setState(newState);
+            debouncedOnChange(newState);
+        }
     }, [state, debouncedOnChange]);
 
     const remove = useCallback((dot: string, index: number) => {
-        const newState = cloneDeep(state);
-        get(newState, dot).splice(index, 1);
-        setState(newState);
-        debouncedOnChange(newState);
+        if (state) {
+            const newState = cloneDeep(state);
+            get(newState, dot).splice(index, 1);
+            setState(newState);
+            debouncedOnChange(newState);
+        }
     }, [state, debouncedOnChange])
 
     return [state, toggle, add, remove];

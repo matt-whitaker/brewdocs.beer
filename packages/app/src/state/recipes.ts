@@ -34,6 +34,6 @@ export default class RecipesState {
     }
 
     update(recipes: Recipe[]) {
-
+        console.log("RecipesState updating with", recipes);
     }
 }
