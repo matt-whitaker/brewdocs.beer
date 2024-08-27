@@ -64,7 +64,7 @@ const batches: Batch[] = [
                 ]
             },
             {
-                name: "Key Day",
+                name: "Keg Day",
                 items: [
                     { checked: false, name: "CO2" },
                     { checked: false, name: "Racking Cane & Hose" },

@@ -20,7 +20,7 @@ export default function Checklist({ batch, onChange }: { batch: Batch; onChange:
         <Screen className="join join-vertical w-full">
             <ScreenH2>Brew Day Checklist</ScreenH2>
             {data.checklist.map(({ items, name: title }: BatchChecklist, i) => (
-                <Collapse key={title} title={title}>
+                <Collapse key={title} title={title} className="lg:collapse-open">
                     <ButtonChecklist className="sm:columns-2">
                         {items.map(({ name, checked }, j) => (
                             <ButtonChecklistItem
