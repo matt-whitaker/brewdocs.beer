@@ -73,6 +73,32 @@ const batches: Batch[] = [
                     { checked: false, name: "Keg (Coke) - 5.5gal" },
                 ]
             },
+        ],
+        shopping: [
+            {
+                name: "Hops",
+                items: [
+                    { name: "Northern Brewer", scalar: "2.75oz", purchased: false, cost: "$0.00"}
+                ]
+            },
+            {
+                name: "Grain",
+                items: [
+                    { name: "German Pils", scalar: "9.0lb", purchased: false, cost: "$0.00" },
+                    { name: "40°L Crystal", scalar: "1.0lb", purchased: false, cost: "$0.00" },
+                    { name: "Special Robust", scalar: "0.5lb", purchased: false, cost: "$0.00" }
+                ]
+            },
+            {
+                name: "Yeast",
+                items: [
+                    { name: "Wyeast 2112", purchased: false, cost: "$0.00" }
+                ]
+            },
+            {
+                name: "Other",
+                items: []
+            },
         ]
     }
 ];

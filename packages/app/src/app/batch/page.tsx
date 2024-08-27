@@ -25,7 +25,9 @@ export default function Recipe() {
     return (
         <Suspense>
             <PanelSwitcher>
-                <PanelSwitcherContent active={active} change={setActive} title="Shopping"></PanelSwitcherContent>
+                <PanelSwitcherContent active={active} change={setActive} title="Shopping">
+                    <Shopping batch={batch} onChange={onChange} />
+                </PanelSwitcherContent>
                 <PanelSwitcherContent active={active} change={setActive} title="Checklist">
                     <Checklist batch={batch} onChange={onChange} />
                 </PanelSwitcherContent>

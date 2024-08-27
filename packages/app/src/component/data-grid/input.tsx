@@ -3,13 +3,13 @@ import {VALUE_COL_STARTS} from "@/component/data-grid/classes";
 import {useCallback} from "react";
 import TextInput from "../form/text-input";
 
-export type DataGridInputProps<T> = {
+export type DataGridInputProps = {
     col: number;
     readonly?: boolean;
     value: string;
     update: (value: string) => void;
 }
-export default function DataGridInput<T>({ col, readonly = false, value, update }: DataGridInputProps<T>) {
+export default function DataGridInput({ col, readonly = false, value, update }: DataGridInputProps) {
     const onChange = useCallback((newValue: string) => update(newValue), [update]);
     return (
         <TextInput
