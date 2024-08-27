@@ -24,15 +24,18 @@ const batches: Batch[] = [
             { name: "Single Boil", time: "60min", hops: "all" }
         ],
         hops: [
-            { name: "Northern Brewer", weight: "1.0oz", alpha: "7.4%", boil: "60min" },
-            { name: "Northern Brewer", weight: "0.75oz", alpha: "7.4%", boil: "20min" },
-            { name: "Northern Brewer", weight: "1.0oz", alpha: "7.4%", boil: "k/o" }
+            { name: "Northern Brewer", weight: "1.0oz", alpha: "7.4%", scalar: "60min", phase: "boil" },
+            { name: "Northern Brewer", weight: "0.75oz", alpha: "7.4%", scalar: "20min", phase: "boil" },
+            { name: "Northern Brewer", weight: "1.0oz", alpha: "7.4%", scalar: "k/o", phase: "boil" }
         ],
         yeast: [
-            { name: "Wyeast 2112", avg_attn: "70%", temp: "62", starter: true }
+            { name: "Wyeast 2112", avg_attn: "70%", temp: "62", starter: false }
+        ],
+        additives: [
+            { name: "Yeast Nutrients", when: "boil", scalar: "15min" },
+            { name: "Irish Moss", when: "boil", scalar: "15min" }
         ],
         actuals: { og: "1.05", fg: "1.014", abv: "4.7", ibu: "35", srm: "9" },
-
         hydrometer: [
             { note: "wort", date: "2024-08-01", gravity: "1.051" },
             { note: "1wk", date: "2024-08-08", gravity: "1.018" },
@@ -97,7 +100,10 @@ const batches: Batch[] = [
             },
             {
                 name: "Other",
-                items: []
+                items: [
+                    { name: "Yeast Nutrients", purchased: true, cost: "$0.00" },
+                    { name: "Irish Moss", purchased: true, cost: "$0.00" }
+                ]
             },
         ]
     }

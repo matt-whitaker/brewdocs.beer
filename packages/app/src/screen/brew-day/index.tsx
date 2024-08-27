@@ -1,7 +1,7 @@
 "use client";
 
 import Screen from "../../component/screen";
-import {ScreenH3, ScreenH5} from "@/component/typography";
+import {ScreenH3, ScreenH4, ScreenH5} from "@/component/typography";
 import Hop from "@/model/hop";
 import Yeast from "@/model/yeast";
 import Batch from "@/model/batch";
@@ -13,6 +13,7 @@ import DataGrid from "@/component/data-grid";
 import DataGridInput from "@/component/data-grid/input";
 import useDataGrid from "@/component/data-grid/useDataGrid";
 import {Fragment} from "react";
+import Additive from "@/model/additive";
 
 export type BrewDayProps = { batch: Batch, onChange: (batch: Batch) => void; };
 export default function BrewDay({ batch, onChange }: BrewDayProps) {
@@ -24,7 +25,7 @@ export default function BrewDay({ batch, onChange }: BrewDayProps) {
                 <ScreenH3>1. Mash</ScreenH3>
                 {data.mash.map((m, i) => (
                     <Fragment key={`mash-${m.name}-${i}`}>
-                        <ScreenH5>{i+1}. {m.name} - {m.time}</ScreenH5>
+                        <ScreenH4>{i+1}. {m.name} - {m.time}</ScreenH4>
                         <DataGrid>
                             {data.grains.map((grain: Grain, i) => (
                                 <DataGridRow key={`grain-${grain.name}-${i}`}>
@@ -39,19 +40,34 @@ export default function BrewDay({ batch, onChange }: BrewDayProps) {
                 <ScreenH3>2. Boil</ScreenH3>
                 {data.boil.map((m, i) => (
                     <Fragment key={`boil-${m.name}-${i}`}>
-                        <ScreenH5>{i+1}. {m.name}  - {m.time}</ScreenH5>
+                        <ScreenH4>{i+1}. {m.name}  - {m.time}</ScreenH4>
                         <DataGrid>
                             {data.hops.map((hop: Hop, i) => (
                                 <DataGridRow key={`hop-${hop.name}-${i}`}>
                                     <DataGridLabel editable>{hop.name}</DataGridLabel>
                                     <DataGridInput value={hop.weight} update={(value: string) => update(`hops[${i}].weight`, value)} col={1} />
                                     <DataGridInput value={hop.alpha} update={(value: string) => update(`hops[${i}].alpha`, value)} col={2} />
-                                    <DataGridInput value={hop.boil} update={(value: string) => update(`hops[${i}].boil`, value)} col={3} />
+                                    <DataGridInput value={hop.scalar} update={(value: string) => update(`hops[${i}].boil`, value)} col={3} />
                                 </DataGridRow>
                             ))}
                         </DataGrid>
                     </Fragment>
                 ))}
+                {data.additives.length ? (
+                    <Fragment>
+                        <ScreenH5>Additives</ScreenH5>
+                        <DataGrid>
+                            {data.additives.map((additive: Additive, i) => (
+                                <DataGridRow key={`additive-${additive.name}-${i}`}>
+                                    <DataGridLabel editable>{additive.name}</DataGridLabel>
+                                    {additive.scalar
+                                        ? <DataGridInput value={additive.scalar} update={(value: string) => update(`additives[${i}].scalar`, value)} col={3} />
+                                        : <></>}
+                                </DataGridRow>
+                            ))}
+                        </DataGrid>
+                    </Fragment>
+                ) : <></>}
             </div>
             <div>
                 <ScreenH3>3. Yeast</ScreenH3>

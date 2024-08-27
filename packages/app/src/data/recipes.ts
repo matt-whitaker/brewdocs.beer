@@ -24,14 +24,17 @@ const recipes: Recipe[] = [
             { name: "Single Boil", time: "60min", hops: "all" }
         ],
         hops: [
-            { name: "Northern Brewer", weight: "1.0oz", alpha: "7.4%", boil: "60min" },
-            { name: "Northern Brewer", weight: "0.75oz", alpha: "7.4%", boil: "20min" },
-            { name: "Northern Brewer", weight: "1.0oz", alpha: "7.4%", boil: "k/o" }
+            { name: "Northern Brewer", weight: "1.0oz", alpha: "7.4%", scalar: "60min", phase: "boil" },
+            { name: "Northern Brewer", weight: "0.75oz", alpha: "7.4%", scalar: "20min", phase: "boil" },
+            { name: "Northern Brewer", weight: "1.0oz", alpha: "7.4%", scalar: "k/o", phase: "boil" }
         ],
         yeast: [
-            { name: "Wyeast 2112", avg_attn: "70%", temp: "62", starter: true }
+            { name: "Wyeast 2112", avg_attn: "70%", temp: "62", starter: false }
         ],
-        additives: [],
+        additives: [
+            { name: "Yeast Nutrients", when: "boil", scalar: "15min" },
+            { name: "Irish Moss", when: "boil", scalar: "15min" }
+        ],
         equipment: [...equipment],
         checklist: [
             { name: "Brew Day", uses: ["mash", "boil", "clean", "primary"] },
