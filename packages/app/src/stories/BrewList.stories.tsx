@@ -2,8 +2,7 @@
 import BrewList from "../screen/batch-list";
 import {Meta, StoryObj} from "@storybook/react";
 import AppWrapper from "../component/page";
-import batches from "../../public/json/batches.json";
-import Batch from "@/model/batch";
+import batches from "@/data/batches";
 
 const meta = {
     title: 'Screens/BrewList',
@@ -25,6 +24,6 @@ type Story = StoryObj<typeof meta>;
 
 export const Development: Story = {
     args: {
-        batches: batches.data as Batch[]
+        batches: batches
     }
 };

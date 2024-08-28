@@ -2,8 +2,7 @@
 import Checklist from "../screen/checklist";
 import {Meta, StoryObj} from "@storybook/react";
 import AppWrapper from "../component/page";
-import batches from "../../public/json/batches.json";
-import Batch from "@/model/batch";
+import batches from "@/data/batches";
 
 const meta = {
     title: 'Screens/PrepList',
@@ -25,7 +24,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Development: Story = {
     args: {
-        batch: batches.data[0] as Batch,
+        batch: batches[0],
         onChange: () => {}
     }
 };

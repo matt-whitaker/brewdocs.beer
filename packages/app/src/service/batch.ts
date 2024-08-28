@@ -11,7 +11,7 @@ export class BatchService {
 
     async list(): Promise<Batch[]> {
         const recipesMap = (await recipeService.list()).reduce((m, r) => m.set(r.id, r), new Map());
-        const { data: batches } = await (await fetch("/json/batches.json")).json() as { data: Batch[] };
+        const batches = (await import("@/data/batches")).default;
         return batches.map(batch => {
             batch.recipe = recipesMap.get(batch.recipeId);
             return batch;

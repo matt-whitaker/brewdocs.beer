@@ -17,7 +17,11 @@ export default function ButtonChecklistAdd<T>({ add, disallow }: ButtonChecklist
                 className="font-normal justify-start hover:cursor-pointer p-2 mb-0.5 text-lg flex items-center">
                 <Plus className="stroke-primary w-4" />
             </label>
-            <TextInput value={state} onChange={setState} className="input input-xs lg:input-primary input-ghost flex-grow ml-2 outline-0" />
+            <TextInput
+                placeholder="Add additional items"
+                value={state}
+                onChange={setState}
+                className="input input-xs lg:input-primary input-ghost flex-grow ml-2 outline-0" />
         </li>
     )
 }

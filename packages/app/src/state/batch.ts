@@ -4,7 +4,6 @@ import State from "@/state/state";
 
 export class BatchState extends State<Batch> {
     load(batchId: string) {
-        console.log("called");
         batchService.get(batchId)
             .then(batch => {
                 this._subject?.next(batch);
@@ -12,7 +11,6 @@ export class BatchState extends State<Batch> {
     }
 
     update(batch: Batch) {
-        console.log("BatchState updating with", batch);
         this._subject?.next(batch);
     }
 }
