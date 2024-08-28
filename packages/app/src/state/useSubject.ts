@@ -2,20 +2,21 @@ import {useCallback, useEffect, useState} from "react";
 import {cloneDeep} from "lodash";
 
 export type SubjectShape<T> = {
+    current(): T;
     subscribe(fn: (value:T) => void): void;
-    initialize(): void;
     update(value: T): void;
+    load(parm1?: string, parm2?: string): void;
 }
 
 export type ModifierFn<T> = (state: T|null) => void;
 export type ModifyFn<T> = (fn: ModifierFn<T>) => void;
 
-export default function useSubject<T>(subject: SubjectShape<T|null>, defaultValue: T|null = null): [T|null, ModifyFn<T>] {
-    const [state, setState] = useState<T|null>(defaultValue);
+export default function useSubject<T>(subject: SubjectShape<T|null>, defaultValue: T|null = null, ...parms: [any?, any?]): [T|null, ModifyFn<T>] {
+    const [state, setState] = useState<T|null>(subject.current() || defaultValue);
 
     useEffect(() => {
         subject.subscribe((newState) => setState(newState));
-        subject.initialize();
+        subject.load(parms[0], parms[1]);
     }, [subject]);
 
     const modify = useCallback((fn: ModifierFn<T>) => {

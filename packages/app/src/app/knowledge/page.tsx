@@ -6,9 +6,10 @@ import useSubject from "@/state/useSubject";
 import Batch from "@/model/batch";
 import {useMemo} from "react";
 import BatchesState from "@/state/batches";
+import batchesState from "@/state/batches";
 
 export default function Knowledge() {
-    const [batches] = useSubject<Batch[]>(useMemo(() => new BatchesState(), []));
+    const [batches] = useSubject<Batch[]>(batchesState);
     if (!batches) {
         return null;
     }

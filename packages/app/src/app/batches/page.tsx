@@ -6,16 +6,14 @@ import usePanelSwitcher from "@/component/panel-switcher/usePanelSwitcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
 import useSubject from "@/state/useSubject";
 import Batch from "@/model/batch";
-import {useMemo} from "react";
-import BatchesState from "@/state/batches";
+import batchesState from "@/state/batches";
+import Loading from "@/screen/loading";
 
 export default function Batches() {
-    const [batches] = useSubject<Batch[]>(useMemo(() => new BatchesState(), []));
+    const [batches] = useSubject<Batch[]>(batchesState);
     const [active, change] = usePanelSwitcher("Complete");
 
-    if (!batches) {
-        return null;
-    }
+    if (!batches) return <Loading />;
 
     return (
         <PanelSwitcher>

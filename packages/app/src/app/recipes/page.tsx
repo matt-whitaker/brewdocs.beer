@@ -8,14 +8,14 @@ import useSubject from "@/state/useSubject";
 import Recipe from "@/model/recipe";
 import {useMemo} from "react";
 import RecipesState from "@/state/recipes";
+import recipesState from "@/state/recipes";
+import Loading from "@/screen/loading";
 
 export default function Recipes() {
-    const [recipes] = useSubject<Recipe[]>(useMemo(() => new RecipesState(), []));
+    const [recipes] = useSubject<Recipe[]>(recipesState);
     const [active, change] = usePanelSwitcher("All");
 
-    if (!recipes) {
-        return null;
-    }
+    if (!recipes) return <Loading />
 
     return (
         <PanelSwitcher>
