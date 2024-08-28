@@ -20,7 +20,7 @@ export default function Shopping({ batch, onChange }: { batch: Batch; onChange: 
     return (
         <Screen>
             <ScreenH2>Shopping List</ScreenH2>
-            <div className="mt-3 grid grid-cols-1 lg:grid-cols-3 gap-x-4">
+            <div className="mt-3 grid grid-cols-1 lg:grid-cols-2 gap-x-4">
                 {data.shopping.map((category, i) => (
                     <div key={`shopping-${category.name}`}>
                         <ScreenH3>{category.name}</ScreenH3>
