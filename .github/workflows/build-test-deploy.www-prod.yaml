@@ -34,7 +34,7 @@ jobs:
       - run: echo "No tests yet..."
 
   Deploy:
-    needs: ["Build", "Test"]
+    needs: ["Build"]
     uses: matt-whitaker/aws-static-site/.github/workflows/deploy-static-site.yaml@mainline
     with:
       environment: "www-prod"
