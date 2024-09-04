@@ -33,7 +33,7 @@ jobs:
     with:
       environment: "app-prod"
       aws_default_region: "us-west-2"
-      artifact_path: ${{ env.ARTIFACT_PATH  }}
+      artifact_path: "${{ env.ARTIFACT_PATH  }}"
     secrets:
       aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
       aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
