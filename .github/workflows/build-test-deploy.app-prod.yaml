@@ -27,7 +27,7 @@ jobs:
           path: packages/app/out
 
   Deploy:
-    needs: ["Build"]
+    needs: ["Build", "Test"]
     uses: matt-whitaker/aws-static-site/.github/workflows/deploy-static-site.yaml@mainline
     with:
       environment: "app-prod"
