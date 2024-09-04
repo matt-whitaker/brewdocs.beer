@@ -24,8 +24,8 @@ jobs:
       - run: npm run build -w packages/www
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.ARTIFACT_PATH  }}
-          path: ${{ env.ARTIFACT_PATH  }}
+          name: packages/www/out
+          path: packages/www/out
 
   Test:
     runs-on: ubuntu-latest
@@ -39,7 +39,7 @@ jobs:
     with:
       environment: "www-prod"
       aws_default_region: "us-west-2"
-      artifact_path: "${{ env.ARTIFACT_PATH }}"
+      artifact_path: "packages/www/out"
     secrets:
       aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
       aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
