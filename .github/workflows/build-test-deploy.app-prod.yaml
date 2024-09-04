@@ -26,6 +26,12 @@ jobs:
           name: app-prod
           path: packages/app/out
 
+  Test:
+    runs-on: ubuntu-latest
+    needs: ["Build"]
+    steps:
+      - run: echo "No tests yet..."
+
   Deploy:
     needs: ["Build", "Test"]
     uses: matt-whitaker/aws-static-site/.github/workflows/deploy-static-site.yaml@mainline
