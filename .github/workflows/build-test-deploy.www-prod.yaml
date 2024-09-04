@@ -10,7 +10,6 @@ on:
 env:
   NODE_VERSION: 18
   NEXT_PUBLIC_APP_URL: "https://app.brewdocs.beer"
-  ARTIFACT_PATH: "packages/www/out"
 
 jobs:
   Build:
@@ -24,7 +23,7 @@ jobs:
       - run: npm run build -w packages/www
       - uses: actions/upload-artifact@v4
         with:
-          name: packages/www/out
+          name: www-prod
           path: packages/www/out
 
   Test:
@@ -39,6 +38,7 @@ jobs:
     with:
       environment: "www-prod"
       aws_default_region: "us-west-2"
+      artifact_name: "www-prod"
       artifact_path: "packages/www/out"
     secrets:
       aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
