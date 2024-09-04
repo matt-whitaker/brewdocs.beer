@@ -14,3 +14,4 @@ for small companies and projects with a long road ahead of them.
 - [React](https://react.dev/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Daisy UI](https://daisyui.com/)
+- [RxJs](https://rxjs.dev/)
