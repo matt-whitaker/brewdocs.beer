@@ -1,9 +1,7 @@
 "use client";
 
-import {Suspense, useCallback, useMemo} from "react";
+import {useCallback} from "react";
 import {useSearchParams} from "next/navigation";
-import BatchState from "@/state/batch";
-import useSubject from "@/state/useSubject";
 import Batch from "@/model/batch";
 import usePanelSwitcher from "@/component/panel-switcher/usePanelSwitcher";
 import PanelSwitcher from "@/component/panel-switcher";
@@ -12,21 +10,25 @@ import Checklist from "@/screen/checklist";
 import BrewDay from "@/screen/brew-day";
 import Summary from "@/screen/summary";
 import Shopping from "@/screen/shopping";
-import batchState from "@/state/batch";
 import Loading from "@/screen/loading";
+import batchesState, {useBatches} from "@/state/batches";
+import {useRecipes} from "@/state/recipes";
 
-export default function Recipe() {
+export default function Batch() {
     const batchId = useSearchParams().get("batchId");
-    const [batch] = useSubject<Batch>(batchState, null, batchId);
-    const onChange = useCallback((batch: Batch) => batchState.update(batch), [batchState]);
+    const [, batchesIndex] = useBatches();
+    const [, recipesIndex] = useRecipes();
+    const batch = batchesIndex?.get(batchId);
+    const recipe = recipesIndex?.get(batch.recipeId)
+    const onChange = useCallback((batch: Batch) => batchesState.update(batch), []);
     const [active, setActive] = usePanelSwitcher("Brew Day");
 
-    if (!batch) return <Loading />;
+    if (!batch || !recipe) return <Loading />;
 
     return (
         <PanelSwitcher>
             <PanelSwitcherContent active={active} change={setActive} title="Shopping">
-                <Shopping batch={batch} onChange={onChange} />
+                <Shopping batch={batch} recipe={recipe} onChange={onChange} />
             </PanelSwitcherContent>
             <PanelSwitcherContent active={active} change={setActive} title="Checklist">
                 <Checklist batch={batch} onChange={onChange} />
@@ -35,7 +37,7 @@ export default function Recipe() {
                 <BrewDay batch={batch} onChange={onChange} />
             </PanelSwitcherContent>
             <PanelSwitcherContent active={active} change={setActive} title="Summary">
-                <Summary batch={batch} />
+                <Summary batch={batch} recipe={recipe} />
             </PanelSwitcherContent>
         </PanelSwitcher>
     );

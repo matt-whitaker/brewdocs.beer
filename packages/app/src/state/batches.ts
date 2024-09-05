@@ -1,19 +1,36 @@
 import Batch from "@/model/batch";
-import batchService from "@/service/batch";
 import State from "@/state/state";
+import {useEffect, useState} from "react";
 
-export class BatchesState extends State<Batch[]> {
+export type BatchesTuple = [Batch[], Map<string, Batch>]|[null, null];
+
+export function useBatches(): BatchesTuple {
+    const [state, setState] = useState<BatchesTuple>(batchesState.current || [null, null]);
+
+    useEffect(() => {
+        batchesState.subscribe((newState) => setState(newState));
+        batchesState.load();
+    }, []);
+
+    return state as BatchesTuple;
+}
+
+export class BatchesState extends State<BatchesTuple> {
     load() {
-        batchService.list()
+        import("@/data/batches").then(({ default: batches }) => batches)
             .then(batches => {
-                this._subject.next(batches);
+                const index = batches.reduce((m, r) => m.set(r.id, r), new Map());
+                this._subject.next([batches, index]);
             });
     }
 
-    update(batches: Batch[]) {
-        this._subject.next(batches);
+    update(batch: Batch) {
+        // do update
+
+        // reload from storage
+        this.load();
     }
 }
 
-const batchesState = new BatchesState();
+const batchesState = new BatchesState([null, null]);
 export default batchesState;

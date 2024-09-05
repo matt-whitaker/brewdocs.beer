@@ -6,12 +6,9 @@ import Vitals from "@/component/vitals";
 import {ScreenH2, ScreenH3, ScreenH4, ScreenP} from "@/component/typography";
 import Batch from "@/model/batch";
 import Error from "@/component/error";
+import Recipe from "@/model/recipe";
 
-export default function Summary({ batch }: { batch: Batch }) {
-    const recipe= batch?.recipe;
-
-    if (!recipe) return <Error>'recipe' missing</Error>
-
+export default function Summary({ batch, recipe }: { batch: Batch; recipe: Recipe }) {
     return (
         <Screen>
             <ScreenH2>Brew Summary</ScreenH2>

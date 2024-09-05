@@ -1,20 +1,36 @@
 import Recipe from "@/model/recipe";
-import RecipeService from "@/service/recipe";
 import State from "@/state/state";
+import {useEffect, useState} from "react";
 
-export class RecipesState extends State<Recipe[]>{
+export type RecipesTuple = [Recipe[], Map<string, Recipe>]|[null, null];
+
+export function useRecipes(): RecipesTuple {
+    const [state, setState] = useState<RecipesTuple>(recipesState.current || [null, null]);
+
+    useEffect(() => {
+        recipesState.subscribe((newState) => setState(newState));
+        recipesState.load();
+    }, []);
+
+    return state as RecipesTuple;
+}
+
+export class RecipesState extends State<RecipesTuple>{
     load() {
-        RecipeService.list()
+        import("@/data/recipes").then(({ default: recipes }) => recipes)
             .then(recipes => {
-                this._subject.next(recipes);
+                const index = recipes.reduce((m, r) => m.set(r.id, r), new Map());
+                this._subject.next([recipes, index]);
             });
     }
 
-    update(recipes: Recipe[]) {
-        // console.log("RecipesState updating with", recipes);
-        this._subject.next(recipes);
+    update(batch: Recipe) {
+        // do update
+
+        // reload from storage
+        this.load();
     }
 }
 
-const recipesState = new RecipesState();
+const recipesState = new RecipesState([null, null]);
 export default recipesState;

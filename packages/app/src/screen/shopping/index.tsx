@@ -10,12 +10,10 @@ import DataGridLabel from "@/component/data-grid/label";
 import DataGridInput from "@/component/data-grid/input";
 import DataGridCheckbox from "@/component/data-grid/checkbox";
 import useDataGrid from "@/component/data-grid/useDataGrid";
+import Recipe from "@/model/recipe";
 
-export default function Shopping({ batch, onChange }: { batch: Batch; onChange: (batch: Batch) => void }) {
+export default function Shopping({ batch, recipe, onChange }: { batch: Batch; recipe: Recipe; onChange: (batch: Batch) => void }) {
     const [data, update, toggle] = useDataGrid<Batch>(batch, onChange);
-
-    const recipe = batch?.recipe;
-    if (!recipe) return <Error>'recipe' missing</Error>;
 
     return (
         <Screen>
