@@ -18,10 +18,11 @@ export default function Batch() {
     const batchId = useSearchParams().get("batchId");
     const [, batchesIndex] = useBatches();
     const [, recipesIndex] = useRecipes();
-    const batch = batchesIndex?.get(batchId);
-    const recipe = recipesIndex?.get(batch.recipeId)
-    const onChange = useCallback((batch: Batch) => batchesState.update(batch), []);
     const [active, setActive] = usePanelSwitcher("Brew Day");
+    const onChange = useCallback((batch: Batch) => batchesState.update(batch), []);
+
+    const batch = batchesIndex?.get(batchId);
+    const recipe = batch && recipesIndex?.get(batch.recipeId);
 
     if (!batch || !recipe) return <Loading />;
 

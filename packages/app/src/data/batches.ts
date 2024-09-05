@@ -4,7 +4,6 @@ const batches: Batch[] = [
     {
         id: "0",
         recipeId: "0",
-        recipe: null,
         name: "Batch #1",
         brewer: "Anonymous",
         batchSize: "5gal",

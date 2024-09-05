@@ -1,6 +1,11 @@
-import Batch from "@/model/batch";
+import Batch, {NOT_IN_BATCH, NotInBatch} from "@/model/batch";
 import State from "@/state/state";
 import {useEffect, useState} from "react";
+import batchesStorage from "@/storage/batches";
+import {cloneDeep, intersection, omit} from "lodash";
+import Recipe from "@/model/recipe";
+import equipment from "@/data/equipment";
+import {BatchChecklist} from "@/model/batch-checklist";
 
 export type BatchesTuple = [Batch[], Map<string, Batch>]|[null, null];
 
@@ -17,18 +22,42 @@ export function useBatches(): BatchesTuple {
 
 export class BatchesState extends State<BatchesTuple> {
     load() {
-        import("@/data/batches").then(({ default: batches }) => batches)
+        batchesStorage.list()
             .then(batches => {
                 const index = batches.reduce((m, r) => m.set(r.id, r), new Map());
                 this._subject.next([batches, index]);
             });
     }
 
+    createFromRecipe(recipe: Recipe) {
+        batchesStorage.generateId()
+            .then((id) => {
+                const batch: Batch = {
+                    id,
+                    recipeId: recipe.id,
+                    status: "prep",
+                    actuals: { og: "0.00", fg: "0.00", abv: "0.0%", ibu: "0", srm: "0" },
+                    hydrometer: [],
+                    checklist: (recipe.checklist.map((list) => ({
+                        name: list.name,
+                        items: equipment
+                            .filter((ment) => !!intersection(list.uses, ment.use).length)
+                            .map((ment) => ({ checked: false, name: ment.name }))
+                    })) as BatchChecklist[]),
+                    shopping: [],
+                    ...(omit(cloneDeep(recipe), NOT_IN_BATCH) as Omit<Recipe, NotInBatch>)
+                }
+
+                return batchesStorage.save(batch)
+                    .then(() => this.load());
+            })
+
+    }
+
     update(batch: Batch) {
         // do update
-
-        // reload from storage
-        this.load();
+        batchesStorage.save(batch)
+            .then(() => this.load());
     }
 }
 

@@ -8,6 +8,7 @@ export function useRecipes(): RecipesTuple {
     const [state, setState] = useState<RecipesTuple>(recipesState.current || [null, null]);
 
     useEffect(() => {
+        console.log("useEffect in useRecipes");
         recipesState.subscribe((newState) => setState(newState));
         recipesState.load();
     }, []);

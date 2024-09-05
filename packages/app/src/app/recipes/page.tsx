@@ -10,8 +10,10 @@ import {useMemo} from "react";
 import RecipesState, {useRecipes} from "@/state/recipes";
 import recipesState from "@/state/recipes";
 import Loading from "@/screen/loading";
+import {useBatches} from "@/state/batches";
 
 export default function Recipes() {
+    useBatches(); // temp; just ensure batch state is instantiated for this page
     const [recipes] = useRecipes();
     const [active, change] = usePanelSwitcher("All");
 

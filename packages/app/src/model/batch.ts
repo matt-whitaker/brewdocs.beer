@@ -1,11 +1,12 @@
 import Measurements from "@/model/measurements";
 import Recipe from "@/model/recipe";
 import Hydrometer from "@/model/hydrometer";
-import {Named} from "@/model/type";
+import {Entity, Named} from "@/model/type";
 import {BatchChecklist} from "@/model/batch-checklist";
 import ShoppingList from "@/model/shopping-list";
 
-export default interface Batch extends Omit<Recipe, "targets"|"description"|"type"|"equipment"|"checklist"> {
+export type NotInBatch = "id"|"targets"|"description"|"type"|"equipment"|"checklist";
+export default interface Batch extends Entity, Omit<Recipe, NotInBatch> {
     name: string;
     recipeId: string;
     status: "prep"|"mash"|"boil"|"ferment"|"complete";
@@ -13,6 +14,7 @@ export default interface Batch extends Omit<Recipe, "targets"|"description"|"typ
     hydrometer: Hydrometer[];
     checklist: BatchChecklist[];
     shopping: ShoppingList[];
-    recipe: Recipe|null;
     notes?: string;
 }
+
+export const NOT_IN_BATCH: NotInBatch[] = ["id", "targets", "description", "type", "equipment", "checklist"]
