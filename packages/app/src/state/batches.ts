@@ -10,17 +10,17 @@ import {BatchChecklist} from "@/model/batch-checklist";
 export type BatchesTuple = [Batch[], Map<string, Batch>]|[null, null];
 
 export function useBatches(): BatchesTuple {
-    const [state, setState] = useState<BatchesTuple>(batchesState.current || [null, null]);
+    const [state, setState] = useState<BatchesTuple>(batchesState.current ?? [null, null]);
 
     useEffect(() => {
-        batchesState.subscribe((newState) => setState(newState));
+        batchesState.subscribe((newState) => setState(newState as BatchesTuple));
         batchesState.load();
     }, []);
 
     return state as BatchesTuple;
 }
 
-export class BatchesState extends State<BatchesTuple> {
+export class BatchesState extends State<BatchesTuple, [null, null]> {
     load() {
         batchesStorage.list()
             .then(batches => {
@@ -55,7 +55,6 @@ export class BatchesState extends State<BatchesTuple> {
     }
 
     update(batch: Batch) {
-        // do update
         batchesStorage.save(batch)
             .then(() => this.load());
     }

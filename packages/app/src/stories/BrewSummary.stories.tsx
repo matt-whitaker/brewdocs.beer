@@ -3,6 +3,7 @@ import BrewSummary from "../screen/summary";
 import {Meta, StoryObj} from "@storybook/react";
 import AppWrapper from "../component/page";
 import batches from "@/data/batches";
+import recipes from "@/data/recipes";
 
 const meta = {
     title: 'Screens/BrewSummary',
@@ -24,6 +25,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Development: Story = {
     args: {
-        batch: batches[0]
+        batch: batches[0],
+        recipe: recipes[0]
     }
 };
