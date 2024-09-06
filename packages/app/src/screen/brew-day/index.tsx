@@ -1,7 +1,7 @@
 "use client";
 
 import Screen from "../../component/screen";
-import {ScreenH3, ScreenH4, ScreenH5} from "@/component/typography";
+import {ScreenH2, ScreenH3, ScreenH4, ScreenH5} from "@/component/typography";
 import Hop from "@/model/hop";
 import Yeast from "@/model/yeast";
 import Batch from "@/model/batch";
@@ -21,6 +21,7 @@ export default function BrewDay({ batch, onChange }: BrewDayProps) {
 
     return (
         <Screen className="grid grid-cols-1 lg:grid-cols-2 gap-x-4">
+            <ScreenH2 className="col-start-1 lg:col-span-2 col-span-1">Brew Day</ScreenH2>
             <div>
                 <ScreenH3>1. Mash</ScreenH3>
                 {data.mash.map((m, i) => (

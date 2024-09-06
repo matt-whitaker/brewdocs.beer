@@ -8,7 +8,7 @@ import Batch from "@/model/batch";
 import Error from "@/component/error";
 import Recipe from "@/model/recipe";
 
-export default function Summary({ batch, recipe }: { batch: Batch; recipe: Recipe }) {
+export default function BatchSummary({ batch, recipe }: { batch: Batch; recipe: Recipe }) {
     return (
         <Screen>
             <ScreenH2>Brew Summary</ScreenH2>

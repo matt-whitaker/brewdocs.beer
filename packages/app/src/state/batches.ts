@@ -5,7 +5,7 @@ import batchesStorage from "@/storage/batches";
 import {cloneDeep, intersection, omit} from "lodash";
 import Recipe from "@/model/recipe";
 import equipment from "@/data/equipment";
-import {BatchChecklist} from "@/model/batch-checklist";
+import {ChecklistData} from "@/model/checklist-data";
 
 export type BatchesTuple = [Batch[], Map<string, Batch>]|[null, null];
 
@@ -29,8 +29,8 @@ export class BatchesState extends State<BatchesTuple, [null, null]> {
             });
     }
 
-    createFromRecipe(recipe: Recipe) {
-        batchesStorage.generateId()
+    async createFromRecipe(recipe: Recipe) {
+        return batchesStorage.generateId()
             .then((id) => {
                 const batch: Batch = {
                     id,
@@ -43,15 +43,15 @@ export class BatchesState extends State<BatchesTuple, [null, null]> {
                         items: equipment
                             .filter((ment) => !!intersection(list.uses, ment.use).length)
                             .map((ment) => ({ checked: false, name: ment.name }))
-                    })) as BatchChecklist[]),
+                    })) as ChecklistData[]),
                     shopping: [],
                     ...(omit(cloneDeep(recipe), NOT_IN_BATCH) as Omit<Recipe, NotInBatch>)
                 }
 
                 return batchesStorage.save(batch)
-                    .then(() => this.load());
-            })
-
+                    .then(() => this.load())
+                    .then(() => id);
+            });
     }
 
     update(batch: Batch) {

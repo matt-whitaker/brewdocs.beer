@@ -3,7 +3,7 @@ import {ScreenH4, ScreenP} from "@/component/typography";
 import classNames from "classnames";
 import {PropsWithClass} from "@brewdocs.beer/core";
 
-export type VitalsProps = Partial<PropsWithClass> & { vitals: [[string, Measurements], [string, Measurements]]; };
+export type VitalsProps = Partial<PropsWithClass> & { vitals: [[string, Measurements], [string, Measurements]?]; };
 
 export default function Vitals({ vitals, className }: VitalsProps) {
     return (

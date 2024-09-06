@@ -6,7 +6,7 @@ import Yeast from "@/model/yeast";
 import Measurements from "@/model/measurements";
 import Equipment from "@/model/equipment";
 import Boil from "@/model/boil";
-import RecipeChecklist from "@/model/recipe-checklist";
+import ChecklistDefinition from "@/model/checklist-definition";
 import Additive from "@/model/additive";
 
 export default interface Recipe extends Entity {
@@ -28,5 +28,5 @@ export default interface Recipe extends Entity {
     additives: Additive[];
     equipment: Equipment[];
 
-    checklist: RecipeChecklist[];
+    checklist: ChecklistDefinition[];
 }

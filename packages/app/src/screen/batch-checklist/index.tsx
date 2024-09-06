@@ -8,10 +8,10 @@ import ButtonChecklist from "@/component/button-checklist";
 import ButtonChecklistItem from "@/component/button-checklist/item";
 import useButtonChecklist from "@/component/button-checklist/useButtonChecklist";
 import Collapse from "@/component/collapse";
-import {BatchChecklist} from "@/model/batch-checklist";
+import {ChecklistData} from "@/model/checklist-data";
 import ButtonChecklistAdd from "@/component/button-checklist/add";
 
-export default function Checklist({ batch, onChange }: { batch: Batch; onChange: (batch: Batch) => void }) {
+export default function BatchChecklist({ batch, onChange }: { batch: Batch; onChange: (batch: Batch) => void }) {
     const [data, toggle, add, remove] = useButtonChecklist(batch, onChange);
 
     if (!data) { return <Error>'batch' missing</Error>; }
@@ -19,7 +19,7 @@ export default function Checklist({ batch, onChange }: { batch: Batch; onChange:
     return (
         <Screen className="join join-vertical w-full">
             <ScreenH2>Brew Day Checklist</ScreenH2>
-            {data.checklist.map(({ items, name: title }: BatchChecklist, i) => (
+            {data.checklist.map(({ items, name: title }: ChecklistData, i) => (
                 <Collapse key={title} title={title} className="lg:collapse-open">
                     <ButtonChecklist className="sm:columns-2">
                         {items.map(({ name, checked }, j) => (

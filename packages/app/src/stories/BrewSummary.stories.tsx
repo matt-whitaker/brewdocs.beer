@@ -1,5 +1,5 @@
 
-import BrewSummary from "../screen/summary";
+import BrewSummary from "../screen/batch-summary";
 import {Meta, StoryObj} from "@storybook/react";
 import AppWrapper from "../component/page";
 import batches from "@/data/batches";

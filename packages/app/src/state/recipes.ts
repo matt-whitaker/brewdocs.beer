@@ -24,11 +24,7 @@ export class RecipesState extends State<RecipesTuple, [null, null]>{
             });
     }
 
-    update(batch: Recipe) {
-        // do update
-
-        // reload from storage
-        // this.load();
+    update(recipe: Recipe) {
     }
 }
 

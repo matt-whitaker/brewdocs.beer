@@ -17,7 +17,7 @@ export default function RecipesPage() {
     const [recipes] = useRecipes();
     const [active, change] = usePanelSwitcher("All");
 
-    if (!recipes) return <Loading />
+    if (!recipes) return <Loading />;
 
     return (
         <PanelSwitcher>
