@@ -10,7 +10,7 @@ import batchesState, {useBatches} from "@/state/batches";
 import Loading from "@/screen/loading";
 import {useRecipes} from "@/state/recipes";
 
-export default function Batches() {
+export default function BatchesPage() {
     const [batches] = useBatches();
     const [, recipesIndex] = useRecipes();
     const [active, change] = usePanelSwitcher("Complete");

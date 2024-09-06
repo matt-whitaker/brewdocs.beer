@@ -11,7 +11,7 @@ import RecipesState, {useRecipes} from "@/state/recipes";
 import recipesState from "@/state/recipes";
 import Loading from "@/screen/loading";
 
-export default function Recipes() {
+export default function RecipesPage() {
     const [recipes] = useRecipes();
     const [active, change] = usePanelSwitcher("All");
 

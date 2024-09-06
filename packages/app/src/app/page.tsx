@@ -1,6 +1,6 @@
 import Hero from "@/component/hero";
 
-export default function Home() {
+export default function HomePage() {
     return (
         <Hero>
             <div className="max-w-md">

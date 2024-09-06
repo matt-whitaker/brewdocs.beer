@@ -14,14 +14,15 @@ import Loading from "@/screen/loading";
 import batchesState, {useBatches} from "@/state/batches";
 import {useRecipes} from "@/state/recipes";
 
-export default function Batch() {
+export default function BatchPage() {
     const batchId = useSearchParams().get("batchId");
     const [, batchesIndex] = useBatches();
     const [, recipesIndex] = useRecipes();
-    const batch = batchesIndex?.get(batchId);
-    const recipe = recipesIndex?.get(batch.recipeId)
     const onChange = useCallback((batch: Batch) => batchesState.update(batch), []);
     const [active, setActive] = usePanelSwitcher("Brew Day");
+
+    const batch = batchesIndex?.get(batchId!);
+    const recipe = batch && recipesIndex?.get(batch.recipeId);
 
     if (!batch || !recipe) return <Loading />;
 

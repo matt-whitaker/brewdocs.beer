@@ -5,17 +5,17 @@ import {useEffect, useState} from "react";
 export type RecipesTuple = [Recipe[], Map<string, Recipe>]|[null, null];
 
 export function useRecipes(): RecipesTuple {
-    const [state, setState] = useState<RecipesTuple>(recipesState.current || [null, null]);
+    const [state, setState] = useState<RecipesTuple>(recipesState.current ?? [null, null]);
 
     useEffect(() => {
-        recipesState.subscribe((newState) => setState(newState));
+        recipesState.subscribe((newState) => setState(newState as RecipesTuple));
         recipesState.load();
     }, []);
 
     return state as RecipesTuple;
 }
 
-export class RecipesState extends State<RecipesTuple>{
+export class RecipesState extends State<RecipesTuple, [null, null]>{
     load() {
         import("@/data/recipes").then(({ default: recipes }) => recipes)
             .then(recipes => {
@@ -28,7 +28,7 @@ export class RecipesState extends State<RecipesTuple>{
         // do update
 
         // reload from storage
-        this.load();
+        // this.load();
     }
 }
 

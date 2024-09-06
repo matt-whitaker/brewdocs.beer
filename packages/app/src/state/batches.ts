@@ -5,17 +5,17 @@ import {useEffect, useState} from "react";
 export type BatchesTuple = [Batch[], Map<string, Batch>]|[null, null];
 
 export function useBatches(): BatchesTuple {
-    const [state, setState] = useState<BatchesTuple>(batchesState.current || [null, null]);
+    const [state, setState] = useState<BatchesTuple>(batchesState.current ?? [null, null]);
 
     useEffect(() => {
-        batchesState.subscribe((newState) => setState(newState));
+        batchesState.subscribe((newState) => setState(newState as BatchesTuple));
         batchesState.load();
     }, []);
 
     return state as BatchesTuple;
 }
 
-export class BatchesState extends State<BatchesTuple> {
+export class BatchesState extends State<BatchesTuple, [null, null]> {
     load() {
         import("@/data/batches").then(({ default: batches }) => batches)
             .then(batches => {
@@ -28,7 +28,7 @@ export class BatchesState extends State<BatchesTuple> {
         // do update
 
         // reload from storage
-        this.load();
+        // this.load();
     }
 }
 

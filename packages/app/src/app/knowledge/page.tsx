@@ -4,7 +4,7 @@ import SearchEverywhere from "@/screen/search-everywhere";
 import {FEATURES_SEARCH_EVERYWHERE} from "@/utils/env";
 import {useBatches} from "@/state/batches";
 
-export default function Knowledge() {
+export default function KnowledgePage() {
     const [batches] = useBatches();
 
     if (!batches) {
