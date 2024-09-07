@@ -2,8 +2,8 @@ import {Plus} from "@/component/svg";
 import TextInput from "../form/text-input";
 import { useState} from "react";
 
-export type ButtonChecklistAddProps<T> = { add: (value: string) => void; disallow: string[] }
-export default function ButtonChecklistAdd<T>({ add, disallow }: ButtonChecklistAddProps<T>) {
+export type ChecklistAddProps<T> = { add: (value: string) => void; disallow: string[] }
+export default function ChecklistAdd<T>({ add, disallow }: ChecklistAddProps<T>) {
     const [state, setState] = useState("");
     return (
         <li className="pl-1 w-full overflow-hidden max-lg:[&>label]:odd:btn-ghost flex items-center flex-grow pr-1 leading-8">

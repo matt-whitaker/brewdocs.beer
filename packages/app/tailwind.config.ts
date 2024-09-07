@@ -24,6 +24,9 @@ export default {
           50: "#5D3B2E" // Black (fallback value),
         }
       },
+      screens: {
+        xs: "350px"
+      },
       lineHeight: {
         11: "2.75rem",
         12: "3rem"

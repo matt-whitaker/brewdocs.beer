@@ -29,9 +29,9 @@ export default function BatchPage() {
     return (
         <PanelSwitcher>
             <PanelSwitcherContent active={active} change={setActive} title="Planning">
-                <Shopping batch={batch} recipe={recipe} onChange={onChange} />
             </PanelSwitcherContent>
             <PanelSwitcherContent active={active} change={setActive} title="Checklists">
+                <Shopping batch={batch} recipe={recipe} onChange={onChange} />
                 <BatchChecklist batch={batch} onChange={onChange} />
             </PanelSwitcherContent>
             <PanelSwitcherContent active={active} change={setActive} title="Schedule">
