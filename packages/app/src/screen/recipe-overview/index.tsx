@@ -12,7 +12,7 @@ import Modal from "@/component/modal";
 import ModalTitle from "@/component/modal/title";
 import ModalFooter from "@/component/modal/footer";
 import useModal from "@/component/modal/useModal";
-import CreateBatchForm from "../../component/create-batch-form";
+import CreateBatchForm from "@/component/create-batch-form";
 import useCreatBatchForm from "@/component/create-batch-form/useCreateBatchForm";
 
 export type RecipeOverviewProps = { recipe: Recipe, batchesCount: number };
