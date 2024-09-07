@@ -3,9 +3,9 @@ import classNames from "classnames";
 import {PropsWithChildren} from "react";
 
 export type ButtonChecklistProps = Partial<PropsWithClass> & PropsWithChildren;
-export default function ButtonChecklist({ className, children }: ButtonChecklistProps) {
+export default function Checklist({ className, children }: ButtonChecklistProps) {
     return (
-        <ul className={classNames("mt-3 first-of-type:mt-0 grid-flow-col auto-rows-auto lg:columns-3 columns-1 w-full", [className])}>
+        <ul className={classNames("mt-3 first-of-type:mt-0 grid-flow-col auto-rows-auto lg:columns-4 columns-1 w-full", [className])}>
             {children}
         </ul>
     );

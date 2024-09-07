@@ -2,7 +2,7 @@ import {useCallback, useEffect, useMemo, useState} from "react";
 import {cloneDeep, debounce, get, set} from "lodash";
 import {AddFn, RemoveFn, ToggleFn} from "@/utils/fn";
 
-export default function useButtonChecklist<T extends object>(
+export default function useChecklist<T extends object>(
     data: T,
     onChange: (data: T) => void
 ): [T|null, ToggleFn, AddFn, RemoveFn] {

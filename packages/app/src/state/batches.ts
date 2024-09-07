@@ -1,12 +1,14 @@
 import Batch, {NOT_IN_BATCH, NotInBatch} from "@/model/batch";
 import State from "@/state/state";
 import batchesStorage from "@/storage/batches";
-import {cloneDeep, intersection, omit} from "lodash";
+import {cloneDeep, groupBy, intersection, omit, partition} from "lodash";
 import Recipe from "@/model/recipe";
 import equipment from "@/data/equipment";
 import {ChecklistData} from "@/model/checklist-data";
 import {CreateBatchState} from "@/component/create-batch-form/useCreateBatchForm";
 import useObservableState from "@/state/useObservableState";
+import Hop from "@/model/hop";
+import {parseNumberString} from "@/utils/math";
 
 export type BatchesTuple = [Batch[], Map<string, Batch>]|[null, null];
 export const useBatches = () => useObservableState<BatchesTuple, [null, null]>(batchesState, [null, null]);
@@ -35,15 +37,23 @@ export class BatchesState extends State<BatchesTuple, [null, null]> {
                     .filter((ment) => !!intersection(list.uses, ment.use).length)
                     .map((ment) => ({ checked: false, name: ment.name }))
             })) as ChecklistData[]),
+
             shopping: [
                 {
                     name: "Hops",
-                    items: recipe.hops.map(({ name, weight }) => ({
-                        name,
-                        weight,
-                        purchased: false,
-                        cost: "$0.00"
-                    }))
+                    items: (() => {
+                        const groups: Record<string, Hop[]> = groupBy(recipe.hops, "name");
+                        return Object.keys(groups).map(hopName => {
+                            const unit = parseNumberString(groups[hopName][0].weight)[1];
+                            const weight = groups[hopName].reduce((m, v) => m+parseNumberString(v.weight)[0], 0.0)
+                            return {
+                                name: hopName,
+                                purchased: false,
+                                cost: "$0.00",
+                                weight: `${weight}${unit}`
+                            }
+                        })
+                    })()
                 },
                 {
                     name: "Grain",
@@ -71,6 +81,7 @@ export class BatchesState extends State<BatchesTuple, [null, null]> {
                     }))
                 }
             ],
+
             // Clone the inheritable properties from the recipe
             ...(omit(cloneDeep(recipe), NOT_IN_BATCH) as Omit<Recipe, NotInBatch>),
             // Inputs override all

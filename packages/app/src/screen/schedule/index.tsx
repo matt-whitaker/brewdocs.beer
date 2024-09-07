@@ -70,7 +70,7 @@ export default function BrewDay({ batch, onChange }: BrewDayProps) {
                     </Fragment>
                 ) : <></>}
             </div>
-            <div>
+            <div className="lg:pt-2">
                 <ScreenH3>3. Yeast</ScreenH3>
                 <DataGrid>
                     {data.yeast.map((yeast: Yeast, i) => (

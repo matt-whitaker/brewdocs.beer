@@ -14,7 +14,7 @@ export const ScreenH3 = ({ children, className }: TypographyProps) =>
     (<h3 className={classNames("text-xl capitalize mt-3 first:mt-0 [&+h4]:mt-1 leading-tight", [className])}>{children}</h3>);
 
 export const ScreenH4 = ({ children, className }: TypographyProps) =>
-    (<h4 className={classNames("text-md uppercase mt-2 first:mt-0 [&+h5]:mt-0 [&+h4]:mt-0 leading-tight", [className])}>{children}</h4>);
+    (<h4 className={classNames("text-md capitalize font-semibold mt-2 first:mt-0 [&+h5]:mt-0 [&+h4]:mt-0 leading-tight", [className])}>{children}</h4>);
 
 export const ScreenH5 = ({ children, className }: TypographyProps) =>
     (<h5 className={classNames("capitalize mt-1 first:mt-0", [className])}>{children}</h5>);

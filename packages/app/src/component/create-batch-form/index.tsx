@@ -17,7 +17,7 @@ export default function CreateBatchForm({ defaultName, inputs, change }: CreatBa
                     onChange={onChangeName}
                     value={inputs.name}
                     type="text"
-                    className="ml-2 mt-2 input input-primary input-sm"
+                    className="xs:ml-2 mt-2 input input-primary input-sm"
                     placeholder={defaultName} />
             </label>
         </span>
