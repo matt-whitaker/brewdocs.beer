@@ -4,9 +4,9 @@ const batches: Batch[] = [
     {
         id: "0",
         recipeId: "0",
-        recipe: null,
         name: "Batch #1",
         brewer: "Anonymous",
+        brewDate: "0000-00-00",
         batchSize: "5gal",
         boilTime: "60min",
         batchNumber: 1,
@@ -24,12 +24,12 @@ const batches: Batch[] = [
             { name: "Single Boil", time: "60min", hops: "all" }
         ],
         hops: [
-            { name: "Northern Brewer", weight: "1.0oz", alpha: "7.4%", scalar: "60min", phase: "boil" },
-            { name: "Northern Brewer", weight: "0.75oz", alpha: "7.4%", scalar: "20min", phase: "boil" },
-            { name: "Northern Brewer", weight: "1.0oz", alpha: "7.4%", scalar: "k/o", phase: "boil" }
+            { name: "Northern Brewer", weight: "1.0oz", alpha: "7.4%", boil: "60min", phase: "boil" },
+            { name: "Northern Brewer", weight: "0.75oz", alpha: "7.4%", boil: "20min", phase: "boil" },
+            { name: "Northern Brewer", weight: "1.0oz", alpha: "7.4%", boil: "k/o", phase: "boil" }
         ],
         yeast: [
-            { name: "Wyeast 2112", avg_attn: "70%", temp: "62°", starter: false }
+            { name: "Wyeast 2112", avg_attn: "70%", scalar: "62°", starter: false }
         ],
         additives: [
             { name: "Yeast Nutrients", when: "boil", scalar: "15min" },
@@ -81,15 +81,15 @@ const batches: Batch[] = [
             {
                 name: "Hops",
                 items: [
-                    { name: "Northern Brewer", scalar: "2.75oz", purchased: true, cost: "$0.00"}
+                    { name: "Northern Brewer", weight: "2.75oz", purchased: true, cost: "$0.00"}
                 ]
             },
             {
                 name: "Grain",
                 items: [
-                    { name: "German Pils", scalar: "9.0lb", purchased: true, cost: "$0.00" },
-                    { name: "40°L Crystal", scalar: "1.0lb", purchased: true, cost: "$0.00" },
-                    { name: "Special Robust", scalar: "0.5lb", purchased: true, cost: "$0.00" }
+                    { name: "German Pils", weight: "9.0lb", purchased: true, cost: "$0.00" },
+                    { name: "40°L Crystal", weight: "1.0lb", purchased: true, cost: "$0.00" },
+                    { name: "Special Robust", weight: "0.5lb", purchased: true, cost: "$0.00" }
                 ]
             },
             {

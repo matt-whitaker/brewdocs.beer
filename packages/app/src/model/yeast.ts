@@ -2,6 +2,6 @@
 export default interface Yeast {
     name: string;
     avg_attn: string;
-    temp: string;
+    scalar: string;
     starter: boolean;
 }

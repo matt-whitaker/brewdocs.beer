@@ -1,12 +1,12 @@
 
-import Checklist from "../screen/checklist";
+import BatchChecklist from "../screen/batch-checklist";
 import {Meta, StoryObj} from "@storybook/react";
 import AppWrapper from "../component/page";
 import batches from "@/data/batches";
 
 const meta = {
     title: 'Screens/PrepList',
-    component: Checklist,
+    component: BatchChecklist,
     parameters: {
         layout: 'fullscreen'
     },
@@ -17,7 +17,7 @@ const meta = {
     decorators: [
         (Story) => <AppWrapper><Story /></AppWrapper>
     ]
-} satisfies Meta<typeof Checklist>;
+} satisfies Meta<typeof BatchChecklist>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

@@ -1,8 +1,7 @@
 "use client";
 
-import Error from "@/component/error";
 import Batch from "@/model/batch";
-import {ScreenH2, ScreenH3} from "@/component/typography";
+import {ScreenH1, ScreenH3} from "@/component/typography";
 import Screen from "@/component/screen";
 import DataGrid from "@/component/data-grid";
 import DataGridRow from "@/component/data-grid/row";
@@ -12,24 +11,24 @@ import DataGridCheckbox from "@/component/data-grid/checkbox";
 import useDataGrid from "@/component/data-grid/useDataGrid";
 import Recipe from "@/model/recipe";
 
-export default function Shopping({ batch, recipe, onChange }: { batch: Batch; recipe: Recipe; onChange: (batch: Batch) => void }) {
+export default function Shopping({ batch, onChange }: { batch: Batch; recipe: Recipe; onChange: (batch: Batch) => void }) {
     const [data, update, toggle] = useDataGrid<Batch>(batch, onChange);
 
     return (
         <Screen>
-            <ScreenH2>Shopping List</ScreenH2>
-            <div className="mt-3 grid grid-cols-1 lg:grid-cols-2 gap-x-4">
+            <ScreenH1>Shopping List</ScreenH1>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-4 pt-2">
                 {data.shopping.map((category, i) => (
                     <div key={`shopping-${category.name}`}>
                         <ScreenH3>{category.name}</ScreenH3>
                         <DataGrid>
                             {category.items.map((item, j) => (
-                                <DataGridRow key={`hop-${item.name}-${j}`}>
+                                <DataGridRow key={`shopping-item-${item.name}-${j}`}>
                                     <DataGridLabel editable>{item.name}</DataGridLabel>
-                                    {item.scalar
+                                    {item.weight
                                         ? <DataGridInput
-                                            value={item.scalar}
-                                            update={(value: string) => update(`shopping.[${i}].items.[${j}].scalar`, value)}
+                                            value={item.weight}
+                                            update={(value: string) => update(`shopping.[${i}].items.[${j}].weight`, value)}
                                             col={1} />
                                         : <></>}
                                     <DataGridInput

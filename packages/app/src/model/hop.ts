@@ -3,6 +3,6 @@ export default interface Hop {
     name: string;
     weight: string;
     alpha: string;
-    scalar: string;
+    boil: string;
     phase: "boil"|"secondary"|"dry";
 }

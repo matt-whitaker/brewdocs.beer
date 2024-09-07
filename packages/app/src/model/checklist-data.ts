@@ -1,5 +1,5 @@
 
-export interface BatchChecklist {
+export interface ChecklistData {
     name: string;
     items: {
         name: string;

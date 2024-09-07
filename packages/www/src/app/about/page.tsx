@@ -3,7 +3,7 @@ import {APP_URL} from "@/data/env";
 
 export default function About() {
     return (
-        <Hero title="About BrewDocs" className="max-lg:pt-16">
+        <Hero title="About BrewDocs" className="max-lg:pt-[8rem]">
             <div className="lg:max-w-screen-md p-4 text-left [&>p]:mt-3 [&>p]:indent-4 lg:text-lg flex flex-col">
                 <p>BrewDocs is a lightweight documentation tool designed for beginner and hobbyist homebrewers. It simplifies the process of organizing and recording homebrew recipes while offering an educational resource for the brewing process. Designed <b>mobile-first</b>, it is optimized for use while brewing; no need to lug around a laptop.</p>
                 <p>Additionally, the software follows an <b>offline-first</b> approach. The aim is to provide fast, on-demand information as well as keeping operating costs down. Think of it as a digital booklet.</p>

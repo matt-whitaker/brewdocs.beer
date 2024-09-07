@@ -1,7 +1,7 @@
 "use client";
 
 import Screen from "../../component/screen";
-import {ScreenH3, ScreenH4, ScreenH5} from "@/component/typography";
+import {ScreenH1, ScreenH3, ScreenH4} from "@/component/typography";
 import Hop from "@/model/hop";
 import Yeast from "@/model/yeast";
 import Batch from "@/model/batch";
@@ -21,7 +21,8 @@ export default function BrewDay({ batch, onChange }: BrewDayProps) {
 
     return (
         <Screen className="grid grid-cols-1 lg:grid-cols-2 gap-x-4">
-            <div>
+            <ScreenH1 className="col-start-1 lg:col-span-2 col-span-1">Brew Schedule</ScreenH1>
+            <div className="pt-2">
                 <ScreenH3>1. Mash</ScreenH3>
                 {data.mash.map((m, i) => (
                     <Fragment key={`mash-${m.name}-${i}`}>
@@ -47,7 +48,7 @@ export default function BrewDay({ batch, onChange }: BrewDayProps) {
                                     <DataGridLabel editable>{hop.name}</DataGridLabel>
                                     <DataGridInput value={hop.weight} update={(value: string) => update(`hops[${i}].weight`, value)} col={1} />
                                     <DataGridInput value={hop.alpha} update={(value: string) => update(`hops[${i}].alpha`, value)} col={2} />
-                                    <DataGridInput value={hop.scalar} update={(value: string) => update(`hops[${i}].boil`, value)} col={3} />
+                                    <DataGridInput value={hop.boil} update={(value: string) => update(`hops[${i}].boil`, value)} col={3} />
                                 </DataGridRow>
                             ))}
                         </DataGrid>
@@ -75,7 +76,7 @@ export default function BrewDay({ batch, onChange }: BrewDayProps) {
                     {data.yeast.map((yeast: Yeast, i) => (
                         <DataGridRow key={`yeast-${yeast.name}-${i}`}>
                             <DataGridLabel editable>{yeast.name}</DataGridLabel>
-                            <DataGridInput value={yeast.temp} update={(value: string) => update(`yeast[${i}].temp`, value)} col={3} />
+                            <DataGridInput value={yeast.scalar} update={(value: string) => update(`yeast[${i}].temp`, value)} col={3} />
                         </DataGridRow>
                     ))}
                 </DataGrid>

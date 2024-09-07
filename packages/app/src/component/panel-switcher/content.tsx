@@ -4,16 +4,17 @@ import {eventValue} from "@/utils/fn";
 
 export type PanelSwitcherContentProps = Partial<PropsWithChildren> & {
     title: string;
+    titleAlt?: string;
     active: string
     change: (value: string) => void;
 }
 
-export default function PanelSwitcherContent({ title, children, active, change }: PanelSwitcherContentProps) {
+export default function PanelSwitcherContent({ title, titleAlt, children, active, change }: PanelSwitcherContentProps) {
     const onChange = useCallback(eventValue(change), [change]);
     return (
         <>
             <input
-                title={!children ? "Not implemented" : ""}
+                title={titleAlt || (!children ? "Not implemented" : "")}
                 disabled={!children}
                 value={title}
                 checked={title === active}
