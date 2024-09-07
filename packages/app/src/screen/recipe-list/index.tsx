@@ -10,7 +10,7 @@ import batchesState from "@/state/batches";
 export default function RecipeList({ recipes }: { recipes: Recipe[] }) {
     return (
         <Screen>
-            <ScreenH2 className="mt-0">All Recipes</ScreenH2>
+            <ScreenH2>All Recipes</ScreenH2>
             <ul className="menu mt-4 px-0">
                 {recipes.map((recipe, i) => (
                     <li key={i} className="odd:bg-base-200">

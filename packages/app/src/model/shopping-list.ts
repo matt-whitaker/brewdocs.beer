@@ -4,7 +4,7 @@ export default interface ShoppingList {
     items: {
         name: string;
         cost: string;
-        scalar?: string;
+        weight?: string;
         purchased: boolean;
     }[];
 }

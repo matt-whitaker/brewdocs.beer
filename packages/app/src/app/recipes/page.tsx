@@ -4,16 +4,12 @@ import RecipeList from "@/screen/recipe-list";
 import PanelSwitcher from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
 import usePanelSwitcher from "@/component/panel-switcher/usePanelSwitcher";
-import useSubject from "@/state/useSubject";
-import Recipe from "@/model/recipe";
-import {useMemo} from "react";
-import RecipesState, {useRecipes} from "@/state/recipes";
-import recipesState from "@/state/recipes";
+import {useRecipes} from "@/state/recipes";
 import Loading from "@/screen/loading";
 import {useBatches} from "@/state/batches";
 
 export default function RecipesPage() {
-    useBatches(); // temp; just ensure batch state is instantiated for this page
+    useBatches(); // boil; just ensure batch state is instantiated for this page
     const [recipes] = useRecipes();
     const [active, change] = usePanelSwitcher("All");
 

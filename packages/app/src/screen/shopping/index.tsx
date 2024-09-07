@@ -24,12 +24,12 @@ export default function Shopping({ batch, recipe, onChange }: { batch: Batch; re
                         <ScreenH3>{category.name}</ScreenH3>
                         <DataGrid>
                             {category.items.map((item, j) => (
-                                <DataGridRow key={`hop-${item.name}-${j}`}>
+                                <DataGridRow key={`shopping-item-${item.name}-${j}`}>
                                     <DataGridLabel editable>{item.name}</DataGridLabel>
-                                    {item.scalar
+                                    {item.weight
                                         ? <DataGridInput
-                                            value={item.scalar}
-                                            update={(value: string) => update(`shopping.[${i}].items.[${j}].scalar`, value)}
+                                            value={item.weight}
+                                            update={(value: string) => update(`shopping.[${i}].items.[${j}].weight`, value)}
                                             col={1} />
                                         : <></>}
                                     <DataGridInput

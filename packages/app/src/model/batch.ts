@@ -8,6 +8,7 @@ import ShoppingList from "@/model/shopping-list";
 export type NotInBatch = "id"|"targets"|"description"|"type"|"equipment"|"checklist";
 export default interface Batch extends Entity, Omit<Recipe, NotInBatch> {
     name: string;
+    brewDate: string;
     recipeId: string;
     status: "prep"|"mash"|"boil"|"ferment"|"complete";
     actuals: Measurements;

@@ -9,7 +9,7 @@ import Recipe from "@/model/recipe";
 export default function BatchList({ batches, recipes }: { batches: Batch[]; recipes: Map<string, Recipe> }) {
     return (
         <Screen>
-            <ScreenH2 className="mt-0">Your brews</ScreenH2>
+            <ScreenH2>Your brews</ScreenH2>
             <ul className="menu mt-4 px-0">
                 {batches.map((batch, i) => (
                     <li key={i} className="odd:bg-base-200">

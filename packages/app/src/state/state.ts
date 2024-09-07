@@ -14,4 +14,6 @@ export default abstract class State<T, Null> {
     get current() {
         return this._subject.value;
     }
+
+    abstract load(): void;
 }

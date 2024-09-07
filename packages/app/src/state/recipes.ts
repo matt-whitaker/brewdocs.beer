@@ -1,19 +1,9 @@
 import Recipe from "@/model/recipe";
 import State from "@/state/state";
-import {useEffect, useState} from "react";
+import useObservableState from "@/state/useObservableState";
 
 export type RecipesTuple = [Recipe[], Map<string, Recipe>]|[null, null];
-
-export function useRecipes(): RecipesTuple {
-    const [state, setState] = useState<RecipesTuple>(recipesState.current ?? [null, null]);
-
-    useEffect(() => {
-        recipesState.subscribe((newState) => setState(newState as RecipesTuple));
-        recipesState.load();
-    }, []);
-
-    return state as RecipesTuple;
-}
+export const useRecipes = () => useObservableState<RecipesTuple, [null, null]>(recipesState, [null, null]);
 
 export class RecipesState extends State<RecipesTuple, [null, null]>{
     load() {

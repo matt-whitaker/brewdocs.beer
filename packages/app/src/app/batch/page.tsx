@@ -18,7 +18,7 @@ export default function BatchPage() {
     const batchId = useSearchParams().get("batchId");
     const [, batchesIndex] = useBatches();
     const [, recipesIndex] = useRecipes();
-    const [active, setActive] = usePanelSwitcher("Brew Day");
+    const [active, setActive] = usePanelSwitcher("Summary");
     const onChange = useCallback((batch: Batch) => batchesState.update(batch), []);
 
     const batch = batchesIndex?.get(batchId!);
