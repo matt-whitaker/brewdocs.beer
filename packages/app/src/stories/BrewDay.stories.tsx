@@ -1,5 +1,5 @@
 
-import BrewDay from "../screen/brew-day";
+import BrewDay from "../screen/schedule";
 import {Meta, StoryObj} from "@storybook/react";
 import AppWrapper from "../component/page";
 import batches from "@/data/batches";

@@ -2,16 +2,14 @@
 
 import Link from "next/link";
 import Screen from "../../component/screen";
-import {ScreenH2, ScreenH3, ScreenP} from "@/component/typography";
-import Error from "@/component/error";
+import {ScreenH1, ScreenH2, ScreenH3, ScreenP} from "@/component/typography";
 import Recipe from "@/model/recipe";
-import batchesState from "@/state/batches";
 
 export default function RecipeList({ recipes }: { recipes: Recipe[] }) {
     return (
         <Screen>
-            <ScreenH2>All Recipes</ScreenH2>
-            <ul className="menu mt-4 px-0">
+            <ScreenH1>All Recipes</ScreenH1>
+            <ul className="menu px-0">
                 {recipes.map((recipe, i) => (
                     <li key={i} className="odd:bg-base-200">
                         <Link href={`/recipe?recipeId=${recipe.id}`} className="text-left block">

@@ -8,9 +8,9 @@ export type VitalsProps = Partial<PropsWithClass> & { vitals: [[string, Measurem
 export default function Vitals({ vitals, className }: VitalsProps) {
     return (
         <div>
-            <div className={classNames([className], "flex w-full justify-evenly [&>div]:grow [&>div>*]:text-left")}>
+            <div className={classNames([className], "flex w-full justify-evenly")}>
                 {vitals.map(([name, vitals]) => (
-                    <div key={name}>
+                    <div className="basis-1/2 [&>*]:text-left" key={name}>
                         <ScreenH4>{name}</ScreenH4>
                         <ScreenP>ABV {vitals.abv}</ScreenP>
                         <ScreenP>IBU {vitals.ibu}</ScreenP>

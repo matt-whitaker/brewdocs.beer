@@ -1,7 +1,7 @@
 "use client";
 
 import Screen from "../../component/screen";
-import {ScreenH2} from "@/component/typography";
+import {ScreenH1} from "@/component/typography";
 import Batch from "@/model/batch";
 import Error from "@/component/error";
 import ButtonChecklist from "@/component/button-checklist";
@@ -18,7 +18,7 @@ export default function BatchChecklist({ batch, onChange }: { batch: Batch; onCh
 
     return (
         <Screen className="join join-vertical w-full">
-            <ScreenH2>Brew Day Checklist</ScreenH2>
+            <ScreenH1>Brew Day Checklist</ScreenH1>
             {data.checklist.map(({ items, name: title }: ChecklistData, i) => (
                 <Collapse key={title} title={title} className="lg:collapse-open">
                     <ButtonChecklist className="sm:columns-2">
