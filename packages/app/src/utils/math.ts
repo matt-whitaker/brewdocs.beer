@@ -1,4 +1,4 @@
-export const CURRENCY_REGEX = /^[\$\€\£\¥\₹\₽\₩\₫\₪\₱\₭\฿\₦\₲\₵\₮\₡\₸]/;
+export const CURRENCY_REGEX = /^[\$\€\£\¥\₹\₽\₩\₫\₪\₱\₭\฿\₦\₲\₵\₮\₡\₸]/; // todo web safe to do this?
 export const UNIT_REGEX = /[^\d.,]+/;
 export const COMMAS_REGEX = /,/g;
 
@@ -6,7 +6,7 @@ export function parseNumberString(numberString: string): [number, string] {
     const match = numberString.match(UNIT_REGEX);
 
     if (match) {
-        const [unit]: [string] = match;
+        const unit = match[0];
 
         let number = numberString.replace(unit, '');
         if (CURRENCY_REGEX.test(unit)) {
