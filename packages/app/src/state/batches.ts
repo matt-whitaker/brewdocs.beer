@@ -5,7 +5,7 @@ import {cloneDeep, intersection, omit} from "lodash";
 import Recipe from "@/model/recipe";
 import equipment from "@/data/equipment";
 import {ChecklistData} from "@/model/checklist-data";
-import {CreateBatchForm} from "@/component/create-batch-form/useCreateBatchForm";
+import {CreateBatchState} from "@/component/create-batch-form/useCreateBatchForm";
 import useObservableState from "@/state/useObservableState";
 
 export type BatchesTuple = [Batch[], Map<string, Batch>]|[null, null];
@@ -20,7 +20,7 @@ export class BatchesState extends State<BatchesTuple, [null, null]> {
             });
     }
 
-    async createFromRecipe(recipe: Recipe, inputs: CreateBatchForm) {
+    async createFromRecipe(recipe: Recipe, inputs: CreateBatchState) {
         const id = await batchesStorage.generateId();
 
         const batch: Batch = {

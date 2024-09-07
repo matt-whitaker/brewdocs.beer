@@ -2,14 +2,14 @@ import {useMemo, useState} from "react";
 import Batch from "@/model/batch";
 import {omitBy, isEmpty} from "lodash";
 
-export type CreateBatchForm = Pick<Batch, "name"|"brewDate">
-export default function useCreatBatchForm(defaultName: string) {
-    const [state, setState] = useState<CreateBatchForm>({ name: "", brewDate: "" });
-    const finalState = useMemo(() => ({
+export type CreateBatchState = Pick<Batch, "name"|"brewDate">
+export default function useCreatBatchForm(defaultName: string): [CreateBatchState, (state: CreateBatchState) => void, CreateBatchState] {
+    const [state, setState] = useState<CreateBatchState>({ name: "", brewDate: "" });
+    const finalState = useMemo<CreateBatchState>(() => ({
         name: defaultName,
-        date: "",
+        brewDate: "",
         ...omitBy(state, isEmpty)
-    } as CreateBatchForm), [defaultName, state]);
+    }), [defaultName, state]);
 
     return [
         state,

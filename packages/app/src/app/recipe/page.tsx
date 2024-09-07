@@ -16,7 +16,7 @@ export default function RecipePage() {
     const [batches] = useBatches();
     const [active, setActive] = usePanelSwitcher("Overview");
 
-    const recipe = recipesIndex?.get(recipeId);
+    const recipe = recipesIndex?.get(recipeId!);
 
     if (!recipe || !batches) return <Loading />;
 

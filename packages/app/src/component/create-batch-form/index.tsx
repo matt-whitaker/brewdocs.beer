@@ -1,11 +1,11 @@
-import {useCallback, useState} from "react";
+import {useCallback} from "react";
 import {eventValue} from "@/utils/fn";
-import {CreateBatchForm} from "@/component/create-batch-form/useCreateBatchForm";
+import {CreateBatchState} from "@/component/create-batch-form/useCreateBatchForm";
 
 export type CreatBatchFormProps = {
     defaultName: string;
-    inputs: CreateBatchForm;
-    change: (inputs: CreateBatchForm) => void;
+    inputs: CreateBatchState;
+    change: (inputs: CreateBatchState) => void;
 }
 export default function CreateBatchForm({ defaultName, inputs, change }: CreatBatchFormProps) {
     const onChangeName = useCallback(eventValue((name: string) => change({ ...inputs, name })), [change]);

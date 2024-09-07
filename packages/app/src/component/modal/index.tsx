@@ -1,6 +1,6 @@
-import {forwardRef} from "react";
+import {forwardRef, PropsWithChildren} from "react";
 
-const Modal = forwardRef(({ children }, ref) => {
+const Modal = forwardRef(({ children }: PropsWithChildren, ref: any) => {
     return(
         <dialog className="modal" ref={ref}>
             <div className="modal-box">
