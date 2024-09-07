@@ -14,8 +14,9 @@ export default function BatchList({ batches, recipes }: { batches: Batch[]; reci
                 {batches.map((batch, i) => (
                     <li key={i} className="odd:bg-base-200">
                         <Link href={`/batch?batchId=${batch.id}`} className="text-left block">
-                            <ScreenH2 className="text-xl">{recipes.get(batch.recipeId)?.name || ""}<br />{batch.name || ""}</ScreenH2>
-                            <ScreenH3 className="text-lg mb-1">by {batch.brewer || recipes.get(batch.recipeId)?.brewer || ""}</ScreenH3>
+                            <ScreenH2 className="text-lg">{recipes.get(batch.recipeId)?.name || ""}</ScreenH2>
+                            <ScreenP>{batch.name || ""}</ScreenP>
+                            <ScreenP>by {batch.brewer || recipes.get(batch.recipeId)?.brewer || ""}</ScreenP>
                             <ScreenP>Status: {batch.status}</ScreenP>
                         </Link>
                     </li>

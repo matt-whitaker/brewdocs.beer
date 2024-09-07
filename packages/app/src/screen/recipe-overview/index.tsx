@@ -1,7 +1,7 @@
 "use client";
 
 import Screen from "@/component/screen";
-import {ScreenH1, ScreenH3, ScreenH4, ScreenP} from "@/component/typography";
+import {ScreenH1, ScreenH2, ScreenH3, ScreenH4, ScreenP} from "@/component/typography";
 import Recipe from "@/model/recipe";
 import {Plus} from "@/component/svg";
 import batchesState from "@/state/batches";
@@ -30,8 +30,8 @@ export default function RecipeOverview({ recipe, batchesCount }: RecipeOverviewP
         <Screen>
             <ScreenH1>Recipe Overview</ScreenH1>
             <div className="lg:max-w-[80%] lg:pb-4 pb-2 pt-2">
-                <ScreenH3>{recipe.name}</ScreenH3>
-                <ScreenH4>By {`${recipe.brewer}`}</ScreenH4>
+                <ScreenH2>{recipe.name}</ScreenH2>
+                <ScreenP>By {`${recipe.brewer}`}</ScreenP>
                 <ScreenP className="pt-2">ABV {recipe.targets.abv}% | IBUs {recipe.targets.ibu} | O.G. {recipe.targets.og} | F.G. {recipe.targets.fg}</ScreenP>
                 <ScreenP className="pt-4">{`${recipe.description}`}</ScreenP>
             </div>
