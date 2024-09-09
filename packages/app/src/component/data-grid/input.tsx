@@ -7,15 +7,13 @@ import {PropsWithClass} from "@brewdocs.beer/core";
 export type DataGridInputProps = {
     col: number;
     readonly?: boolean;
-    name?: string;
     value: string;
     update: (value: string) => void;
 } & PropsWithClass
-export default function DataGridInput({ col, readonly = false, value, update, className, name }: DataGridInputProps) {
+export default function DataGridInput({ col, readonly = false, value, update, className }: DataGridInputProps) {
     const onChange = useCallback((newValue: string) => update(newValue), [update]);
     return (
         <TextInput
-            name={name}
             readonly={readonly}
             className={classNames(
                 VALUE_COL_STARTS[col - 1],

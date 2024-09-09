@@ -7,8 +7,8 @@
   "author": "",
   "license": "ISC",
   "workspaces": [
+    "packages/core",
     "packages/app",
-    "packages/www",
-    "packages/core"
+    "packages/www"
   ]
 }

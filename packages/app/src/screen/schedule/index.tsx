@@ -84,10 +84,10 @@ export default function BrewDay({ batch, onChange }: BrewDayProps) {
                 <ScreenH3>Gravity Readings</ScreenH3>
                 <DataGrid>
                     {data.hydrometer.map((hydro: Hydrometer, i) => (
-                        <DataGridRow key={`hydro-${hydro.date}-${i}`}>
+                        <DataGridRow key={`hydro-${hydro.name}-${i}`}>
                             <DataGridLabel>{hydro.name}</DataGridLabel>
-                            <DataGridInput name="hydrometer.date" value={hydro.date} update={(value: string) => update(`hydrometer[${i}].date`, value)} col={1} className="col-start-4 col-span-2" />
-                            <DataGridInput name="hydrometer.gravity" value={hydro.gravity} update={(value: string) => update(`hydrometer[${i}].gravity`, value)} col={3} />
+                            <DataGridInput value={hydro.date} update={(value: string) => update(`hydrometer[${i}].date`, value)} col={1} className="col-start-4 col-span-2" />
+                            <DataGridInput value={hydro.gravity} update={(value: string) => update(`hydrometer[${i}].gravity`, value)} col={3} />
                         </DataGridRow>
                     ))}
                 </DataGrid>
