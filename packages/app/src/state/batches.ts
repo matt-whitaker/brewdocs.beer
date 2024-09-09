@@ -30,7 +30,28 @@ export class BatchesState extends State<BatchesTuple, [null, null]> {
             recipeId: recipe.id,
             status: "prep",
             actuals: { og: "0.00", fg: "0.00", abv: "0.0%", ibu: "0", srm: "0" },
-            hydrometer: [],
+            hydrometer: [
+                {
+                    date: "0000-00-00",
+                    gravity: "0.00",
+                    name: "Before boil",
+                },
+                {
+                    date: "0000-00-00",
+                    gravity: "0.00",
+                    name: "After boil",
+                },
+                {
+                    date: "0000-00-00",
+                    gravity: "0.00",
+                    name: "After primary",
+                },
+                {
+                    date: "0000-00-00",
+                    gravity: "0.00",
+                    name: "After secondary",
+                }
+            ],
             checklist: (recipe.checklist.map((list) => ({
                 name: list.name,
                 items: equipment
@@ -88,14 +109,14 @@ export class BatchesState extends State<BatchesTuple, [null, null]> {
             ...inputs
         }
 
-        batchesStorage.save(batch)
+        batchesStorage.save(batch.id, batch)
             .then(() => this.load());
 
         return id;
     }
 
     update(batch: Batch) {
-        batchesStorage.save(batch)
+        batchesStorage.save(batch.id, batch)
             .then(() => this.load());
     }
 }

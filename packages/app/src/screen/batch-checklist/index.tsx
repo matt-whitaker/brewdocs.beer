@@ -9,10 +9,15 @@ import ChecklistItem from "@/component/checklist/item";
 import useChecklist from "@/component/checklist/useChecklist";
 import Collapse from "@/component/collapse";
 import {ChecklistData} from "@/model/checklist-data";
-import ChecklistAdd from "@/component/checklist/add";
+import settingsState, {Settings} from "@/state/settings";
 
-export default function BatchChecklist({ batch, onChange }: { batch: Batch; onChange: (batch: Batch) => void }) {
-    const [data, toggle, add, remove] = useChecklist(batch, onChange);
+export type BatchChecklistProps = {
+    batch: Batch;
+    settings: Settings;
+    onChange: (batch: Batch) => void
+};
+export default function BatchChecklist({ batch, settings, onChange }: BatchChecklistProps) {
+    const [data, toggle,, remove] = useChecklist(batch, onChange);
 
     if (!data) { return <Error>'batch' missing</Error>; }
 
@@ -21,24 +26,21 @@ export default function BatchChecklist({ batch, onChange }: { batch: Batch; onCh
             <ScreenH1 className="mb-2">Equipment Checklist</ScreenH1>
             {data.checklist.map(({ items, name: title }: ChecklistData, i) => (
                 <Collapse
+                    toggle={(open: boolean) => settingsState.set(`batch-checklist.${title.toLowerCase()}`, open)}
                     key={title}
                     title={title}
                     className="lg:collapse-open"
-                    openInitial={items.some(({ checked }) => checked)}>
+                    openInitial={settings[`batch-checklist.${title.toLowerCase()}`] ?? items.some(({ checked }) => checked)}>
                     <Checklist className="sm:columns-2">
                         {items.map(({ name, checked }, j) => (
                             <ChecklistItem
                                 key={`${title}-${name}`}
                                 name={`${title}-${name}`}
                                 checked={checked}
-                                onToggle={() => toggle(`checklist.[${i}].items.[${j}].checked`)}
-                                onRemove={() => remove(`checklist.[${i}].items`, j)}>
+                                onToggle={() => toggle(`checklist.[${i}].items.[${j}].checked`)}>
                                 {name}
                             </ChecklistItem>
                         ))}
-                        <ChecklistAdd
-                            add={(value: string) => add(`checklist.[${i}].items`, value)}
-                            disallow={items.map(({ name }) => name)} />
                     </Checklist>
                 </Collapse>
             ))}
