@@ -13,7 +13,7 @@ import Shopping from "@/screen/shopping";
 import Loading from "@/screen/loading";
 import batchesState, {useBatches} from "@/state/batches";
 import {useRecipes} from "@/state/recipes";
-import {useSettings} from "@/state/settings";
+import {useSettings} from "@/state/session";
 
 export default function BatchPage() {
     const batchId = useSearchParams().get("batchId");

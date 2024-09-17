@@ -9,11 +9,11 @@ import ChecklistItem from "@/component/checklist/item";
 import useChecklist from "@/component/checklist/useChecklist";
 import Collapse from "@/component/collapse";
 import {ChecklistData} from "@/model/checklist-data";
-import settingsState, {Settings} from "@/state/settings";
+import sessionState, {Session} from "@/state/session";
 
 export type BatchChecklistProps = {
     batch: Batch;
-    settings: Settings;
+    settings: Session;
     onChange: (batch: Batch) => void
 };
 export default function BatchChecklist({ batch, settings, onChange }: BatchChecklistProps) {
@@ -26,7 +26,7 @@ export default function BatchChecklist({ batch, settings, onChange }: BatchCheck
             <ScreenH1 className="mb-2">Equipment Checklist</ScreenH1>
             {data.checklist.map(({ items, name: title }: ChecklistData, i) => (
                 <Collapse
-                    toggle={(open: boolean) => settingsState.set(`batch-checklist.${title.toLowerCase()}`, open)}
+                    toggle={(open: boolean) => sessionState.set(`batch-checklist.${title.toLowerCase()}`, open)}
                     key={title}
                     title={title}
                     className="lg:collapse-open"
