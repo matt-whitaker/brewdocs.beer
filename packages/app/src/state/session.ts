@@ -3,7 +3,7 @@ import useObservableState from "@/state/useObservableState";
 import sessionStorage from "@/storage/settings";
 
 export type Session = Record<string, boolean>
-export const useSettings = () => useObservableState<Session, null>(sessionState, null);
+export const useSession = () => useObservableState<Session, null>(sessionState, null);
 
 export class SessionState extends State<Session, null> {
     load() {

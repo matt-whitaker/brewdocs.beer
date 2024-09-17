@@ -13,10 +13,10 @@ import sessionState, {Session} from "@/state/session";
 
 export type BatchChecklistProps = {
     batch: Batch;
-    settings: Session;
+    session: Session;
     onChange: (batch: Batch) => void
 };
-export default function BatchChecklist({ batch, settings, onChange }: BatchChecklistProps) {
+export default function BatchChecklist({ batch, session, onChange }: BatchChecklistProps) {
     const [data, toggle] = useChecklist(batch, onChange);
 
     if (!data) { return <Error>'batch' missing</Error>; }
@@ -30,7 +30,7 @@ export default function BatchChecklist({ batch, settings, onChange }: BatchCheck
                     key={title}
                     title={title}
                     className="lg:collapse-open"
-                    openInitial={settings[`batch-checklist.${title.toLowerCase()}`] ?? items.some(({ checked }) => checked)}>
+                    openInitial={session[`batch-checklist.${title.toLowerCase()}`] ?? items.some(({ checked }) => checked)}>
                     <Checklist className="sm:columns-2">
                         {items.map(({ name, checked }, j) => (
                             <ChecklistItem

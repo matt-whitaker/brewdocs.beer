@@ -15,10 +15,10 @@ import sessionState, {Session} from "@/state/session";
 export type ShoppingProps = {
     batch: Batch;
     recipe: Recipe;
-    settings: Session
+    session: Session
     onChange: (batch: Batch) => void
 };
-export default function Shopping({ batch, settings, onChange }: ShoppingProps) {
+export default function Shopping({ batch, session, onChange }: ShoppingProps) {
     const [data, update, toggle] = useDataGrid<Batch>(batch, onChange);
     return (
         <Screen>
@@ -30,7 +30,7 @@ export default function Shopping({ batch, settings, onChange }: ShoppingProps) {
                         key={`shopping-${category.name}`}
                         title={category.name}
                         className="lg:collapse-open"
-                        openInitial={settings[`shopping.${category.name.toLowerCase()}`] ?? category.items.some((item) => item.purchased)}>
+                        openInitial={session[`shopping.${category.name.toLowerCase()}`] ?? category.items.some((item) => item.purchased)}>
                         <DataGrid>
                             {category.items.map((item, j) => (
                                 <DataGridRow key={`shopping-item-${item.name}-${j}`}>
