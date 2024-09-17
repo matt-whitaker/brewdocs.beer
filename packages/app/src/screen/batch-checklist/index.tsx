@@ -17,7 +17,7 @@ export type BatchChecklistProps = {
     onChange: (batch: Batch) => void
 };
 export default function BatchChecklist({ batch, settings, onChange }: BatchChecklistProps) {
-    const [data, toggle,, remove] = useChecklist(batch, onChange);
+    const [data, toggle] = useChecklist(batch, onChange);
 
     if (!data) { return <Error>'batch' missing</Error>; }
 

@@ -31,7 +31,7 @@ export default function BrewDay({ batch, onChange }: BrewDayProps) {
                             {data.grains.map((grain: Grain, i) => (
                                 <DataGridRow key={`grain-${grain.name}-${i}`}>
                                     <DataGridLabel>{grain.name}</DataGridLabel>
-                                    <DataGridInput value={grain.weight} update={(value: string) => update(`grains[${i}].weight`, value)} col={3} />
+                                    <DataGridInput readonly value={grain.weight} update={(value: string) => update(`grains[${i}].weight`, value)} col={3} />
                                 </DataGridRow>
                             ))}
                         </DataGrid>
@@ -45,9 +45,9 @@ export default function BrewDay({ batch, onChange }: BrewDayProps) {
                         <DataGrid>
                             {data.hops.map((hop: Hop, i) => (
                                 <DataGridRow key={`hop-${hop.name}-${i}`}>
-                                    <DataGridLabel>{hop.name}</DataGridLabel>
-                                    <DataGridInput value={hop.weight} update={(value: string) => update(`hops[${i}].weight`, value)} col={1} />
-                                    <DataGridInput value={hop.alpha} update={(value: string) => update(`hops[${i}].alpha`, value)} col={2} />
+                                    <DataGridLabel overgrow>{`${hop.name} (${hop.alpha})`}</DataGridLabel>
+                                    <DataGridInput readonly value={hop.weight} col={2} />
+                                    {/*<DataGridInput value={hop.alpha} update={(value: string) => update(`hops[${i}].alpha`, value)} col={2} />*/}
                                     <DataGridInput value={hop.boil} update={(value: string) => update(`hops[${i}].boil`, value)} col={3} />
                                 </DataGridRow>
                             ))}

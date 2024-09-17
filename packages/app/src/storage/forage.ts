@@ -1,5 +1,5 @@
-import localforage from "localforage";
 import {Entity} from "@/model/type";
+import localforage from "@/utils/localforage";
 
 export abstract class Forage<T extends Entity|string|number|boolean> {
     protected _forage: LocalForage;

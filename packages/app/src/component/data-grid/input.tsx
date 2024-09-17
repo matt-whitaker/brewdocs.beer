@@ -8,10 +8,10 @@ export type DataGridInputProps = {
     col: number;
     readonly?: boolean;
     value: string;
-    update: (value: string) => void;
+    update?: (value: string) => void;
 } & PropsWithClass
 export default function DataGridInput({ col, readonly = false, value, update, className }: DataGridInputProps) {
-    const onChange = useCallback((newValue: string) => update(newValue), [update]);
+    const onChange = useCallback((newValue: string) => update?.(newValue), [update]);
     return (
         <TextInput
             readonly={readonly}

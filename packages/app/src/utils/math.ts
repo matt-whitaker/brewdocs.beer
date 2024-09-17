@@ -23,3 +23,6 @@ export function parseNumberString(numberString: string): [number, string] {
 
     return [parseFloat(number), ''];
 }
+
+export function calculateNewHopWeight(originalAlpha: string, originalWeight: string, newAlpha: string) {
+}

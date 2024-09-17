@@ -44,6 +44,7 @@ export default function Shopping({ batch, settings, onChange }: ShoppingProps) {
                                     </DataGridLabel>
                                     {item.weight
                                         ? <DataGridInput
+                                            readonly
                                             value={item.weight}
                                             update={(value: string) => update(`shopping.[${i}].items.[${j}].weight`, value)}
                                             col={2} />
