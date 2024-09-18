@@ -30,7 +30,7 @@ export default function BatchChecklist({ batch, session, onChange }: BatchCheckl
                     key={title}
                     title={title}
                     className="lg:collapse-open"
-                    openInitial={session[`batch-checklist.${title.toLowerCase()}`] ?? items.some(({ checked }) => checked)}>
+                    openInitial={session[`batch-checklist.${title.toLowerCase()}`] ?? true}>
                     <Checklist className="sm:columns-2">
                         {items.map(({ name, checked }, j) => (
                             <ChecklistItem

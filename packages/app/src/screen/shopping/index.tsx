@@ -30,7 +30,7 @@ export default function Shopping({ batch, session, onChange }: ShoppingProps) {
                         key={`shopping-${category.name}`}
                         title={category.name}
                         className="lg:collapse-open"
-                        openInitial={session[`shopping.${category.name.toLowerCase()}`] ?? category.items.some((item) => item.purchased)}>
+                        openInitial={session[`shopping.${category.name.toLowerCase()}`] ?? true}>
                         <DataGrid>
                             {category.items.map((item, j) => (
                                 <DataGridRow key={`shopping-item-${item.name}-${j}`}>
@@ -40,15 +40,8 @@ export default function Shopping({ batch, session, onChange }: ShoppingProps) {
                                             type="checkbox"
                                             checked={item.purchased}
                                             className="checkbox checkbox-xs mr-2" />
-                                        {item.name}
+                                        {item.name}{item.weight ? ` - ${item.weight}` : ""}
                                     </DataGridLabel>
-                                    {item.weight
-                                        ? <DataGridInput
-                                            readonly
-                                            value={item.weight}
-                                            update={(value: string) => update(`shopping.[${i}].items.[${j}].weight`, value)}
-                                            col={2} />
-                                        : <></>}
                                     <DataGridInput
                                         value={item.cost}
                                         update={(value: string) => update(`shopping.[${i}].items.[${j}].cost`, value)}
