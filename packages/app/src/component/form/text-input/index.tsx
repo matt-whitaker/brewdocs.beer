@@ -13,5 +13,5 @@ export default function TextInput({ className, onChange, value, readonly, placeh
         value={value}
         onChange={_onChange}
         type="text"
-        className={classNames([className])} />;
+        className={classNames("input input-bordered lg:input-sm input-xs", [className])} />;
 }

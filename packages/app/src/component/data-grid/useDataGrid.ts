@@ -8,7 +8,7 @@ export default function useDataGrid<T>(data: T, onChange: (data: T) => void): [T
 
     const debouncedOnChange = useMemo(() => debounce(onChange, 350), [onChange]);
 
-    const update: UpdateFn = useCallback((dot: string, value: string) => {
+    const update: UpdateFn = useCallback((dot: string, value?: string) => {
         if (state) {
             const newState = set(cloneDeep(state), dot, value)
             setState(newState);

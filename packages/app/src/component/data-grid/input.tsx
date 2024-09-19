@@ -17,8 +17,9 @@ export default function DataGridInput({ col, readonly = false, value, update, cl
             readonly={readonly}
             className={classNames(
                 VALUE_COL_STARTS[col - 1],
-                "self-center px-1.5 lg:px-2.5 col-span-1 input input-bordered lg:input-sm input-xs text-right placeholder:text-right",
-                [className])}
+                "self-center px-1.5 lg:px-2.5 col-span-1 text-right placeholder:text-right",
+                [className],
+                { "input-primary": !readonly })}
             value={value}
             onChange={onChange} />
     )

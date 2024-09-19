@@ -14,6 +14,8 @@ import Loading from "@/screen/loading";
 import batchesState, {useBatches} from "@/state/batches";
 import {useRecipes} from "@/state/recipes";
 import {useSession} from "@/state/session";
+import Planning from "@/screen/planning";
+import {FEATURES_PLANNING} from "@/utils/env";
 
 export default function BatchPage() {
     const batchId = useSearchParams().get("batchId");
@@ -30,8 +32,15 @@ export default function BatchPage() {
 
     return (
         <PanelSwitcher>
-            <PanelSwitcherContent active={active} change={setActive} title="Planning">
-            </PanelSwitcherContent>
+            { FEATURES_PLANNING
+                ? (
+                    <PanelSwitcherContent active={active} change={setActive} title="Planning">
+                        <Planning batch={batch} recipe={recipe} onChange={onChange} />
+                    </PanelSwitcherContent>
+                ) : (
+                    <PanelSwitcherContent active={active} change={setActive} title="Planning" />
+                )
+            }
             <PanelSwitcherContent active={active} change={setActive} title="Checklists">
                 <Shopping batch={batch} recipe={recipe} session={session} onChange={onChange} />
                 <BatchChecklist batch={batch} session={session} onChange={onChange} />

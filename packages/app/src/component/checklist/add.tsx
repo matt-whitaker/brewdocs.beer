@@ -21,7 +21,7 @@ export default function ChecklistAdd<T>({ add, disallow }: ChecklistAddProps<T>)
                 placeholder="Add additional items"
                 value={state}
                 onChange={setState}
-                className="input input-xs lg:input-primary input-ghost flex-grow ml-2 outline-0" />
+                className="lg:input-xs lg:input-primary input-ghost flex-grow ml-2 outline-0" />
         </li>
     )
 }

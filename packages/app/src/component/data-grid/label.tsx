@@ -8,7 +8,7 @@ export default function DataGridLabel({ children, className, overgrow }: DataGri
         <label
             className={classNames(
                 "text-sm whitespace-nowrap pl-3 leading-6 lg:leading-8 has-[input]:hover:cursor-pointer",
-                [overgrow ? "col-span-4" : "col-span-3", className]
+                [className, overgrow ? "col-span-4" : "col-span-3"]
             )}>
             {children}
         </label>
