@@ -15,6 +15,9 @@ import Hop from "@/model/hop";
 import Yeast from "@/model/yeast";
 import TextInput from "@/component/form/text-input";
 import Checkbox from "@/component/form/checkbox";
+import classNames from "classnames";
+import {VALUE_COL_STARTS} from "@/component/data-grid/classes";
+import DateInput from "@/component/form/date-input";
 
 export type PlanningProps = { batch: Batch; recipe: Recipe; onChange: (batch: Batch) => void }
 export default function Planning({ batch, recipe, onChange }: PlanningProps) {
@@ -30,8 +33,8 @@ export default function Planning({ batch, recipe, onChange }: PlanningProps) {
                     <ScreenP>By {`${recipe.brewer}`}</ScreenP>
                     <ScreenP>
                         Brewed on:
-                        <TextInput
-                            className="ml-2 text-right input-primary"
+                        <DateInput
+                            className="ml-2 input-primary text-right placeholder:text-right"
                             onChange={useCallback((value: string) => update(`brewDate`, value), [])}
                             value={data.brewDate} />
                     </ScreenP>
