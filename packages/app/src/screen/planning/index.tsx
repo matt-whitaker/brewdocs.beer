@@ -73,7 +73,7 @@ export default function Planning({ batch, recipe, onChange }: PlanningProps) {
                 <ScreenH3>Yeast</ScreenH3>
                 <DataGrid>
                     {data.yeast.map((yeast: Yeast, i) => (
-                        <Fragment >
+                        <Fragment key={`yeast-${yeast.name}-${i}`}>
                             <DataGridRow key={`grain-${yeast.name}-${i}`}>
                                 <DataGridLabel className="flex items-center -ml-2">
                                     {/*<UpDown className="w-4 mr-2" />*/}
