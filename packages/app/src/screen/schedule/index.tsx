@@ -45,7 +45,7 @@ export default function BrewDay({ batch, onChange }: BrewDayProps) {
                         <DataGrid>
                             {data.hops.map((hop: Hop, i) => (
                                 <DataGridRow key={`hop-${hop.name}-${i}`}>
-                                    <DataGridLabel overgrow>{`${hop.name} (${hop.alpha})`}</DataGridLabel>
+                                    <DataGridLabel>{`${hop.name} (${hop.alpha})`}</DataGridLabel>
                                     <DataGridInput readonly value={hop.weight} col={2} />
                                     <DataGridInput value={hop.boil} update={(value: string) => update(`hops[${i}].boil`, value)} col={3} />
                                 </DataGridRow>
