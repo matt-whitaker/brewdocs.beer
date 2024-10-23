@@ -35,8 +35,9 @@ export default function Shopping({ batch, session, onChange }: ShoppingProps) {
                         <DataGrid>
                             {category.items.map((item, j) => (
                                 <DataGridRow key={`shopping-item-${item.name}-${j}`}>
-                                    <DataGridLabel className="flex items-center" overgrow>
+                                    <DataGridLabel className="flex items-center" htmlFor={`shopping-item-${item.name}-${j}`}>
                                         <DataGridCheckbox
+                                            id={`shopping-item-${item.name}-${j}`}
                                             checked={item.purchased}
                                             onChange={() => toggle(`shopping.[${i}].items.[${j}].purchased`)} />
                                         {item.name}{item.weight ? ` - ${item.weight}` : ""}

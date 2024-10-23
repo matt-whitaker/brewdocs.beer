@@ -14,12 +14,11 @@ export default interface Recipe extends Entity {
     brewer: string;
     type: string;
     batchSize: string;
-    batchNumber: number;
     efficiency: string;
     description: string;
     boilTime: string;
-
     targets: Measurements;
+
     mash: Mash[];
     boil: Boil[];
     grains: Grain[];

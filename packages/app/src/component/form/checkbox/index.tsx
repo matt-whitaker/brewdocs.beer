@@ -7,11 +7,10 @@ export type CheckboxProps = PropsWithClass & PropsWithChildren & {
     onChange: () => void;
     checked: boolean;
     readonly?: boolean;
-    placeholder?: string;
     name?: string
     cbClassName?: string;
 };
-export default function FormCheckbox({ children, onChange, checked, readonly, placeholder, name, className, cbClassName }: CheckboxProps) {
+export default function FormCheckbox({ children, onChange, checked, readonly, name, className, cbClassName }: CheckboxProps) {
     const _onChange = useCallback(eventValue(onChange), [onChange]);
 
     return (
@@ -19,7 +18,6 @@ export default function FormCheckbox({ children, onChange, checked, readonly, pl
             {children}
             <input
                 name={name ?? void 0}
-                placeholder={placeholder ?? void 0}
                 readOnly={!!readonly}
                 checked={checked}
                 onChange={_onChange}

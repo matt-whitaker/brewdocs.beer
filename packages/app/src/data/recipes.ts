@@ -1,5 +1,4 @@
 import Recipe from "@/model/recipe";
-import equipment from "@/data/equipment";
 
 const recipes: Recipe[] = [
     {
@@ -10,7 +9,6 @@ const recipes: Recipe[] = [
         batchSize: "5gal",
         boilTime: "60min",
         type: "amber_lager",
-        batchNumber: 0,
         efficiency: "70%",
         grains: [
             { name: "German Pils", weight: "9.0lb" },

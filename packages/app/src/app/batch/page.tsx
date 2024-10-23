@@ -22,7 +22,7 @@ export default function BatchPage() {
     const session = useSession();
     const [, batchesIndex] = useBatches();
     const [, recipesIndex] = useRecipes();
-    const [active, setActive] = usePanelSwitcher("Summary");
+    const [active, setActive] = usePanelSwitcher("Planning");
     const onChange = useCallback((batch: Batch) => batchesState.update(batch), []);
 
     const batch = batchesIndex?.get(batchId!);

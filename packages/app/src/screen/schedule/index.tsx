@@ -1,6 +1,5 @@
 "use client";
 
-import Screen from "../../component/screen";
 import {ScreenH1, ScreenH3, ScreenH4} from "@/component/typography";
 import Hop from "@/model/hop";
 import Yeast from "@/model/yeast";
@@ -14,15 +13,16 @@ import DataGridInput from "@/component/data-grid/input";
 import useDataGrid from "@/component/data-grid/useDataGrid";
 import {Fragment} from "react";
 import Additive from "@/model/additive";
+import ScreenTwoCol from "@/component/screen/two-col";
 
 export type BrewDayProps = { batch: Batch, onChange: (batch: Batch) => void; };
 export default function BrewDay({ batch, onChange }: BrewDayProps) {
     const [data, update] = useDataGrid<Batch>(batch, onChange);
 
     return (
-        <Screen className="grid grid-cols-1 lg:grid-cols-2 gap-x-4">
-            <ScreenH1 className="col-start-1 lg:col-span-2 col-span-1">Brew Schedule</ScreenH1>
-            <div className="pt-2">
+        <ScreenTwoCol>
+            <ScreenH1 className="col-start-1 lg:col-span-2 col-span-1 mb-2">Brew Schedule</ScreenH1>
+            <div>
                 <ScreenH3>1. Mash</ScreenH3>
                 {data.mash.map((m, i) => (
                     <Fragment key={`mash-${m.name}-${i}`}>
@@ -31,7 +31,7 @@ export default function BrewDay({ batch, onChange }: BrewDayProps) {
                             {data.grains.map((grain: Grain, i) => (
                                 <DataGridRow key={`grain-${grain.name}-${i}`}>
                                     <DataGridLabel>{grain.name}</DataGridLabel>
-                                    <DataGridInput readonly value={grain.weight} update={(value: string) => update(`grains[${i}].weight`, value)} col={3} />
+                                    <DataGridInput readonly value={m.temp} col={3} />
                                 </DataGridRow>
                             ))}
                         </DataGrid>
@@ -69,7 +69,7 @@ export default function BrewDay({ batch, onChange }: BrewDayProps) {
                     </Fragment>
                 ) : <></>}
             </div>
-            <div className="lg:pt-2">
+            <div>
                 <ScreenH3>3. Yeast</ScreenH3>
                 <DataGrid>
                     {data.yeast.map((yeast: Yeast, i) => (
@@ -85,13 +85,13 @@ export default function BrewDay({ batch, onChange }: BrewDayProps) {
                     {data.hydrometer.map((hydro: Hydrometer, i) => (
                         <DataGridRow key={`hydro-${hydro.name}-${i}`}>
                             <DataGridLabel>
-                                <DataGridInput type="date" value={hydro.date} update={(value: string) => update(`hydrometer[${i}].date`, value)} col={1} className="col-start-4 col-span-2" />
+                                <DataGridInput type="date" value={hydro.date} update={(value: string) => update(`hydrometer[${i}].date`, value)} col={1} />
                             </DataGridLabel>
                             <DataGridInput value={hydro.gravity} update={(value: string) => update(`hydrometer[${i}].gravity`, value)} col={3} />
                         </DataGridRow>
                     ))}
                 </DataGrid>
             </div>
-        </Screen>
+        </ScreenTwoCol>
     )
 }

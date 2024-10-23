@@ -1,10 +1,9 @@
 
-export type FormSelectProps = { className?: string }
-export default function FormSelect({ className }: FormSelectProps) {
+export type FormSelectProps = { className?: string; data: string[] }
+export default function FormSelect({ className, data }: FormSelectProps) {
     return (
-        <select className={classNames("col-span-4", [className])}>
-            <option>Maris Otter - 2 Row</option>
-            <option>Crystal 40L</option>
+        <select className={classNames([className])}>
+            {data.map((d) => <option value={d}>{d}</option>)}
         </select>
     )
 }
