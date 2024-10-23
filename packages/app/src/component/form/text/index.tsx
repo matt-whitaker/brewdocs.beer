@@ -1,17 +1,17 @@
 import classNames from "classnames";
-import {PropsWithClass} from "@brewdocs.beer/core";
+import {PropsWithClass} from "../../../../../core/src";
 import {useCallback} from "react";
 import {eventValue} from "@/utils/fn";
 
-export type DateInputProps = PropsWithClass & { onChange: (value: string) => void; value: string; readonly?: boolean; placeholder?: string; name?: string }
-export default function DateInput({ className, onChange, value, readonly, placeholder, name }: DateInputProps) {
+export type TextInputProps = PropsWithClass & { onChange: (value: string) => void; value: string; readonly?: boolean; placeholder?: string; name?: string }
+export default function FormText({ className, onChange, value, readonly, placeholder, name }: TextInputProps) {
     const _onChange = useCallback(eventValue(onChange), [onChange]);
     return <input
         name={name ?? void 0}
-        placeholder={"MM/DD/YYYY"}
+        placeholder={placeholder ?? void 0}
         readOnly={!!readonly}
         value={value}
         onChange={_onChange}
-        type="date"
+        type="text"
         className={classNames("input input-bordered lg:input-sm input-xs", [className])} />;
 }

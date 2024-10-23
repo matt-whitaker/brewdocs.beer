@@ -11,6 +11,7 @@ import useDataGrid from "@/component/data-grid/useDataGrid";
 import Recipe from "@/model/recipe";
 import Collapse from "@/component/collapse";
 import sessionState, {Session} from "@/state/session";
+import DataGridCheckbox from "@/component/data-grid/checkbox";
 
 export type ShoppingProps = {
     batch: Batch;
@@ -23,7 +24,7 @@ export default function Shopping({ batch, session, onChange }: ShoppingProps) {
     return (
         <Screen>
             <ScreenH1>Shopping List</ScreenH1>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-4 pt-2">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-4 pt-2">{/* this needs to be something */}
                 {data.shopping.map((category, i) => (
                     <Collapse
                         toggle={(open: boolean) => sessionState.set(`shopping.${category.name.toLowerCase()}`, open)}
@@ -35,11 +36,9 @@ export default function Shopping({ batch, session, onChange }: ShoppingProps) {
                             {category.items.map((item, j) => (
                                 <DataGridRow key={`shopping-item-${item.name}-${j}`}>
                                     <DataGridLabel className="flex items-center" overgrow>
-                                        <input
-                                            onChange={() => toggle(`shopping.[${i}].items.[${j}].purchased`)}
-                                            type="checkbox"
+                                        <DataGridCheckbox
                                             checked={item.purchased}
-                                            className="checkbox checkbox-xs mr-2" />
+                                            onChange={() => toggle(`shopping.[${i}].items.[${j}].purchased`)} />
                                         {item.name}{item.weight ? ` - ${item.weight}` : ""}
                                     </DataGridLabel>
                                     <DataGridInput

@@ -19,7 +19,7 @@ export type BatchChecklistProps = {
 export default function BatchChecklist({ batch, session, onChange }: BatchChecklistProps) {
     const [data, toggle] = useChecklist(batch, onChange);
 
-    if (!data) { return <Error>'batch' missing</Error>; }
+    if (!data) { return <Error>'data' missing</Error>; }
 
     return (
         <Screen className="join join-vertical w-full">

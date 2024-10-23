@@ -1,5 +1,5 @@
 import {Plus} from "@/component/svg";
-import TextInput from "../form/text-input";
+import TextInput from "../form/text";
 import { useState} from "react";
 
 export type ChecklistAddProps<T> = { add: (value: string) => void; disallow: string[] }

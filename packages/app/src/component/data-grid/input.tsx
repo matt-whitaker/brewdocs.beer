@@ -1,9 +1,9 @@
 import classNames from "classnames";
 import {VALUE_COL_STARTS} from "@/component/data-grid/classes";
 import {useCallback} from "react";
-import TextInput from "../form/text-input";
+import TextInput from "../form/text";
 import {PropsWithClass} from "@brewdocs.beer/core";
-import DateInput from "@/component/form/date-input";
+import FormDate from "../form/date";
 
 export type DataGridInputProps = {
     col: number;
@@ -17,7 +17,7 @@ export default function DataGridInput({ col, readonly = false, value, update, cl
 
     if (type === "date") {
         return (
-            <DateInput
+            <FormDate
                 readonly={readonly}
                 className={classNames(
                     VALUE_COL_STARTS[col - 1],
