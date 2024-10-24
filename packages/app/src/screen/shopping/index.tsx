@@ -44,7 +44,7 @@ export default function Shopping({ batch, session, onChange }: ShoppingProps) {
                                     </DataGridLabel>
                                     <DataGridInput
                                         value={item.cost}
-                                        update={(value: string) => update(`shopping.[${i}].items.[${j}].cost`, value)}
+                                        onChange={(value: string) => update(`shopping.[${i}].items.[${j}].cost`, value)}
                                         col={3} />
                                 </DataGridRow>
                             ))}

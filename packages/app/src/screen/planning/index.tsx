@@ -53,7 +53,7 @@ export default function Planning({ batch, recipe, onChange }: PlanningProps) {
                                     <DataGridLabel>
                                         <DataGridSelect data={grains.map((({ name }) => ({ value: name, name })))} value={grain.name} />
                                     </DataGridLabel>
-                                    <DataGridInput value={grain.weight} update={(value: string) => update(`grains[${i}].weight`, value)} col={3} />
+                                    <DataGridInput value={grain.weight} onChange={(value: string) => update(`grains[${i}].weight`, value)} col={3} />
                                 </DataGridRow>
                             </Fragment>
                         ))}
@@ -66,8 +66,8 @@ export default function Planning({ batch, recipe, onChange }: PlanningProps) {
                                     <DataGridLabel>
                                         <DataGridSelect data={hops.map((({ name }) => ({ value: name, name })))} value={hop.name} />
                                     </DataGridLabel>
-                                    <DataGridInput value={hop.weight} update={(value: string) => update(`hops[${i}].weight`, value)} col={2} />
-                                    <DataGridInput value={hop.boil} update={(value: string) => update(`hops[${i}].boil`, value)} col={3} />
+                                    <DataGridInput value={hop.weight} onChange={(value: string) => update(`hops[${i}].weight`, value)} col={2} />
+                                    <DataGridInput value={hop.boil} onChange={(value: string) => update(`hops[${i}].boil`, value)} col={3} />
                                 </DataGridRow>
                             </Fragment>
                         ))}
@@ -82,7 +82,7 @@ export default function Planning({ batch, recipe, onChange }: PlanningProps) {
                                     <DataGridLabel>
                                         <DataGridSelect data={yeasts.map((({ name }) => ({ value: name, name })))} value={yeast.name} />
                                     </DataGridLabel>
-                                    <DataGridInput value={yeast.scalar} update={(value: string) => update(`yeast[${i}].scalar`, value)} col={3} />
+                                    <DataGridInput value={yeast.scalar} onChange={(value: string) => update(`yeast[${i}].scalar`, value)} col={3} />
                                 </DataGridRow>
                                 <FormCheckbox onChange={() => toggle(`yeast[${i}].starter`)} checked={yeast.starter}>
                                     Starter?

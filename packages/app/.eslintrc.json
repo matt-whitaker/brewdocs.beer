@@ -1,5 +1,5 @@
 {
-  "extends": ["next", "plugin:storybook/recommended"],
+  "extends": [],
   "rules": {
     "react/no-unescaped-entities": "off"
   }

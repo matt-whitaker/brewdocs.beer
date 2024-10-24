@@ -11,13 +11,12 @@ export type InputTextProps = PropsWithClass & PropsWithOnChange<string> & {
     align?: "left"|"center"|"right";
 }
 export function InputText({ className, onChange, value, readonly, placeholder, name, primary, align }: InputTextProps) {
-    const _onChange = useCallback(eventValue(onChange), [onChange]);
+    const optionalProps = onChange ? { onChange: useCallback(eventValue(onChange), [onChange]) } : {}
     return <input
         name={name ?? void 0}
         placeholder={placeholder!}
         readOnly={!!readonly}
         value={value}
-        onChange={_onChange}
         type="text"
         className={classNames(
             "input input-bordered lg:input-sm input-xs px-1 lg:px-2.5",
@@ -27,5 +26,6 @@ export function InputText({ className, onChange, value, readonly, placeholder, n
                 "text-right": align === "right",
                 "placeholder:text-right": align === "right"
             }
-        )} />;
+        )}
+        {...optionalProps} />;
 }

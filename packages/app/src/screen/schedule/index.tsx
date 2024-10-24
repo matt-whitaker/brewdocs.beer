@@ -48,7 +48,7 @@ export default function BrewDay({ batch, onChange }: BrewDayProps) {
                                 <DataGridRow key={`hop-${hop.name}-${i}`}>
                                     <DataGridLabel>{hop.name} <DataGridLabelNote>({hop.alpha})</DataGridLabelNote></DataGridLabel>
                                     <DataGridInput readonly value={hop.weight} col={2} />
-                                    <DataGridInput value={hop.boil} update={(value: string) => update(`hops[${i}].boil`, value)} col={3} />
+                                    <DataGridInput value={hop.boil} onChange={(value: string) => update(`hops[${i}].boil`, value)} col={3} />
                                 </DataGridRow>
                             ))}
                         </DataGrid>
@@ -62,7 +62,7 @@ export default function BrewDay({ batch, onChange }: BrewDayProps) {
                                 <DataGridRow key={`additive-${additive.name}-${i}`}>
                                     <DataGridLabel>{additive.name}</DataGridLabel>
                                     {additive.scalar
-                                        ? <DataGridInput value={additive.scalar} update={(value: string) => update(`additives[${i}].scalar`, value)} col={3} />
+                                        ? <DataGridInput value={additive.scalar} onChange={(value: string) => update(`additives[${i}].scalar`, value)} col={3} />
                                         : <></>}
                                 </DataGridRow>
                             ))}
@@ -76,7 +76,7 @@ export default function BrewDay({ batch, onChange }: BrewDayProps) {
                     {data.yeast.map((yeast: Yeast, i) => (
                         <DataGridRow key={`yeast-${yeast.name}-${i}`}>
                             <DataGridLabel>{yeast.name}</DataGridLabel>
-                            <DataGridInput value={yeast.scalar} update={(value: string) => update(`yeast[${i}].scalar`, value)} col={3} />
+                            <DataGridInput value={yeast.scalar} onChange={(value: string) => update(`yeast[${i}].scalar`, value)} col={3} />
                         </DataGridRow>
                     ))}
                 </DataGrid>
@@ -86,9 +86,9 @@ export default function BrewDay({ batch, onChange }: BrewDayProps) {
                     {data.hydrometer.map((hydro: Hydrometer, i) => (
                         <DataGridRow key={`hydro-${hydro.name}-${i}`}>
                             <DataGridLabel>
-                                <DataGridInput type="date" value={hydro.date} update={(value: string) => update(`hydrometer[${i}].date`, value)} col={1} />
+                                <DataGridInput type="date" value={hydro.date} onChange={(value: string) => update(`hydrometer[${i}].date`, value)} col={1} />
                             </DataGridLabel>
-                            <DataGridInput value={hydro.gravity} update={(value: string) => update(`hydrometer[${i}].gravity`, value)} col={3} />
+                            <DataGridInput value={hydro.gravity} onChange={(value: string) => update(`hydrometer[${i}].gravity`, value)} col={3} />
                         </DataGridRow>
                     ))}
                 </DataGrid>

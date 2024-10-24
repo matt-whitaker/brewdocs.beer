@@ -12,13 +12,13 @@ export type InputDateProps = PropsWithClass & PropsWithOnChange<string> & {
     align?: "left"|"center"|"right";
 }
 export function InputDate({ className, onChange, value, readonly, placeholder, name, primary, align }: InputDateProps) {
-    const _onChange = useCallback(eventValue(onChange), [onChange]);
+    const optionalProps = onChange ? { onChange: useCallback(eventValue(onChange), [onChange]) } : {};
+
     return <input
         name={name ?? void 0}
         placeholder={placeholder ?? "MM/DD/YYYY"}
         readOnly={!!readonly}
         value={value}
-        onChange={_onChange}
         type="date"
         className={classNames(
             "input input-bordered lg:input-sm input-xs px-1.5 lg:px-2.5",
@@ -28,5 +28,6 @@ export function InputDate({ className, onChange, value, readonly, placeholder, n
                 "text-right": align === "right",
                 "placeholder:text-right": align === "right"
             }
-        )} />;
+        )}
+        {...optionalProps } />;
 }
