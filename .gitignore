@@ -2,3 +2,5 @@ node_modules/
 notes.md
 .env
 .idea/
+*storybook.log
+dist

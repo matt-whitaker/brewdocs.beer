@@ -1,7 +1,7 @@
-import {PropsWithClass} from "../../../../core/src/prop-types";
+import {PropsWithClass} from "@brewdocs.beer/core";
 import classNames from "classnames";
 
-export const Ellipses = ({ className }: Partial<PropsWithClass>) => (
+export const Ellipses = ({ className }: PropsWithClass) => (
     <svg
 
         tabIndex={0}
