@@ -14,6 +14,7 @@ import useDataGrid from "@/component/data-grid/useDataGrid";
 import {Fragment} from "react";
 import Additive from "@/model/additive";
 import ScreenTwoCol from "@/component/screen/two-col";
+import DataGridLabelNote from "@/component/data-grid/label-note";
 
 export type BrewDayProps = { batch: Batch, onChange: (batch: Batch) => void; };
 export default function BrewDay({ batch, onChange }: BrewDayProps) {
@@ -30,7 +31,7 @@ export default function BrewDay({ batch, onChange }: BrewDayProps) {
                         <DataGrid>
                             {data.grains.map((grain: Grain, i) => (
                                 <DataGridRow key={`grain-${grain.name}-${i}`}>
-                                    <DataGridLabel>{grain.name} <span className="float-right pr-1">({grain.weight})</span></DataGridLabel>
+                                    <DataGridLabel>{grain.name} <DataGridLabelNote>({grain.weight})</DataGridLabelNote></DataGridLabel>
                                     <DataGridInput readonly value={m.temp} col={3} />
                                 </DataGridRow>
                             ))}
@@ -45,7 +46,7 @@ export default function BrewDay({ batch, onChange }: BrewDayProps) {
                         <DataGrid>
                             {data.hops.map((hop: Hop, i) => (
                                 <DataGridRow key={`hop-${hop.name}-${i}`}>
-                                    <DataGridLabel>{hop.name} <span className="float-right pr-1">({hop.alpha})</span></DataGridLabel>
+                                    <DataGridLabel>{hop.name} <DataGridLabelNote>({hop.alpha})</DataGridLabelNote></DataGridLabel>
                                     <DataGridInput readonly value={hop.weight} col={2} />
                                     <DataGridInput value={hop.boil} update={(value: string) => update(`hops[${i}].boil`, value)} col={3} />
                                 </DataGridRow>
