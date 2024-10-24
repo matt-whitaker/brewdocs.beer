@@ -1,7 +1,7 @@
 import Batch, {NOT_IN_BATCH, NotInBatch} from "@/model/batch";
 import State from "@/state/state";
 import batchesStorage from "@/storage/batches";
-import {cloneDeep, groupBy, intersection, omit, partition} from "lodash";
+import {cloneDeep, groupBy, intersection, omit} from "lodash";
 import Recipe from "@/model/recipe";
 import equipment from "@/data/equipment";
 import {ChecklistData} from "@/model/checklist-data";

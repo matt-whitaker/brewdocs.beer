@@ -27,21 +27,19 @@ export default function Planning({ batch, recipe, onChange }: PlanningProps) {
     return (
         <>
             <Screen>
-                <ScreenH1 className="col-start-1 lg:col-span-2 col-span-1 mb-2">Batch Planning</ScreenH1>
-                <div className="[&>h4]:mt-2.5 [&>h4]:capitalize [&>h4]:text-lg [&>h4]:font-semibold pt-2">
-                    <div className="lg:max-w-[80%] lg:pb-4">
-                        <ScreenH2>{recipe.name}</ScreenH2>
-                        <ScreenH3>{batch.name || ""}</ScreenH3>
-                        <ScreenP>By {`${recipe.brewer}`}</ScreenP>
-                        <ScreenP>
-                            Brewed on:
-                            <InputDate
-                                primary
-                                align="right"
-                                onChange={useCallback((value: string) => update(`brewDate`, value), [])}
-                                value={data.brewDate} />
-                        </ScreenP>
-                    </div>
+                <ScreenH1 className="mb-2">Batch Planning</ScreenH1>
+                <div className="lg:max-w-[80%] lg:pb-4">
+                    <ScreenH2>{recipe.name}</ScreenH2>
+                    <ScreenH3>{batch.name || ""}</ScreenH3>
+                    <ScreenP>By {`${recipe.brewer}`}</ScreenP>
+                    <ScreenP>
+                        Brewed on:
+                        <InputDate
+                            primary
+                            align="right"
+                            onChange={useCallback((value: string) => update(`brewDate`, value), [])}
+                            value={data.brewDate} />
+                    </ScreenP>
                 </div>
             </Screen>
             <ScreenTwoCol>
@@ -52,7 +50,7 @@ export default function Planning({ batch, recipe, onChange }: PlanningProps) {
                             <Fragment key={`grain-${grain.name}-${i}`}>
                                 <DataGridRow>
                                     <DataGridLabel>
-                                        <DataGridSelect data={grains} value={grain.name} />
+                                        <DataGridSelect data={grains.map((({ name }) => ({ value: name, name })))} value={grain.name} />
                                     </DataGridLabel>
                                     <DataGridInput value={grain.weight} update={(value: string) => update(`grains[${i}].weight`, value)} col={3} />
                                 </DataGridRow>
@@ -65,7 +63,7 @@ export default function Planning({ batch, recipe, onChange }: PlanningProps) {
                             <Fragment key={`grain-${hop.name}-${i}`}>
                                 <DataGridRow>
                                     <DataGridLabel>
-                                        <DataGridSelect data={hops} value={hop.name} />
+                                        <DataGridSelect data={hops.map((({ name }) => ({ value: name, name })))} value={hop.name} />
                                     </DataGridLabel>
                                     <DataGridInput value={hop.weight} update={(value: string) => update(`hops[${i}].weight`, value)} col={2} />
                                     <DataGridInput value={hop.boil} update={(value: string) => update(`hops[${i}].boil`, value)} col={3} />
@@ -81,7 +79,7 @@ export default function Planning({ batch, recipe, onChange }: PlanningProps) {
                             <Fragment key={`yeast-${yeast.name}-${i}`}>
                                 <DataGridRow key={`grain-${yeast.name}-${i}`}>
                                     <DataGridLabel>
-                                        <DataGridSelect data={yeasts} value={yeast.name} />
+                                        <DataGridSelect data={yeasts.map((({ name }) => ({ value: name, name })))} value={yeast.name} />
                                     </DataGridLabel>
                                     <DataGridInput value={yeast.scalar} update={(value: string) => update(`yeast[${i}].scalar`, value)} col={3} />
                                 </DataGridRow>
