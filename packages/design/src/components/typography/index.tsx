@@ -1,6 +1,6 @@
 import {PropsWithChildren} from "react";
 import classNames from "classnames";
-import {PropsWithClass} from "packages/core";
+import {PropsWithClass} from "@brewdocs.beer/core";
 
 type TypographyProps = PropsWithChildren & PropsWithClass;
 

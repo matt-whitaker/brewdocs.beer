@@ -35,6 +35,7 @@ export default function Planning({ batch, recipe, onChange }: PlanningProps) {
                     <ScreenP>
                         Brewed on:
                         <InputDate
+                            className="ml-1"
                             primary
                             align="right"
                             onChange={useCallback((value: string) => update(`brewDate`, value), [])}
