@@ -1,7 +1,6 @@
 import classNames from "classnames";
-import {PropsWithClass} from "@brewdocs.beer/core";
+import {PropsWithClass, eventValue} from "@brewdocs.beer/core"
 import {useCallback} from "react";
-import {eventValue} from "@/utils/fn";
 
 export type DateInputProps = PropsWithClass & { onChange: (value: string) => void; value: string; readonly?: boolean; placeholder?: string; name?: string }
 export default function FormDate({ className, onChange, value, readonly, placeholder, name }: DateInputProps) {

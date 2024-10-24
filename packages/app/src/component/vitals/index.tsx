@@ -1,5 +1,5 @@
 import Measurements from "@/model/measurements";
-import {ScreenH4, ScreenP} from "@/component/typography";
+import {ScreenH4, ScreenP} from "@brewdocs.beer/design";
 import classNames from "classnames";
 import {PropsWithClass} from "@brewdocs.beer/core";
 

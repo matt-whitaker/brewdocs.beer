@@ -1,7 +1,7 @@
 "use client";
 
 import Batch from "@/model/batch";
-import {ScreenH1} from "@/component/typography";
+import {ScreenH1} from "@brewdocs.beer/design";
 import Screen from "@/component/screen";
 import DataGrid from "@/component/data-grid";
 import DataGridRow from "@/component/data-grid/row";

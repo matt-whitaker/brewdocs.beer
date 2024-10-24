@@ -1,7 +1,7 @@
 "use client";
 
 import Screen from "@/component/screen";
-import {ScreenH1, ScreenH2, ScreenH3, ScreenH4, ScreenP} from "@/component/typography";
+import {ScreenH1, ScreenH2, ScreenP} from "@brewdocs.beer/design";
 import Recipe from "@/model/recipe";
 import {Plus} from "@/component/svg";
 import batchesState from "@/state/batches";

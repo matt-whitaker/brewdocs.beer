@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Screen from "../../component/screen";
-import {ScreenH1, ScreenH2, ScreenH3, ScreenP} from "@/component/typography";
+import {ScreenH1, ScreenH2, ScreenP} from "@brewdocs.beer/design";
 import Batch from "@/model/batch";
 import Recipe from "@/model/recipe";
 

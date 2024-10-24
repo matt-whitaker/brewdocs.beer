@@ -4,6 +4,7 @@ import daisyui from "daisyui";
 export default {
   content: [
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
+    "../design/src/**/*.{js,ts,jsx,tsx,mdx}"
   ],
   theme: {
     extend: {

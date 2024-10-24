@@ -3,7 +3,7 @@
 import Screen from "../../component/screen";
 import Organics from "@/component/organics";
 import Vitals from "@/component/vitals";
-import {ScreenH1, ScreenH2, ScreenH3, ScreenH4, ScreenP} from "@/component/typography";
+import {ScreenH1, ScreenH2, ScreenH3, ScreenP} from "@brewdocs.beer/design";
 import Batch from "@/model/batch";
 import Recipe from "@/model/recipe";
 

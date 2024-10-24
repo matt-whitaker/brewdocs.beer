@@ -1,6 +1,6 @@
 import {Plus} from "@/component/svg";
-import TextInput from "../form/text";
 import { useState} from "react";
+import {InputText} from "@brewdocs.beer/design";
 
 export type ChecklistAddProps<T> = { add: (value: string) => void; disallow: string[] }
 export default function ChecklistAdd<T>({ add, disallow }: ChecklistAddProps<T>) {
@@ -17,7 +17,7 @@ export default function ChecklistAdd<T>({ add, disallow }: ChecklistAddProps<T>)
                 className="font-normal justify-start hover:cursor-pointer p-2 mb-0.5 text-lg flex items-center">
                 <Plus className="stroke-primary w-4" />
             </label>
-            <TextInput
+            <InputText
                 placeholder="Add additional items"
                 value={state}
                 onChange={setState}

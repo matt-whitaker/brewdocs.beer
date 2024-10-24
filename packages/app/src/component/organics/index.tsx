@@ -2,7 +2,7 @@ import Hop from "@/model/hop";
 import Grain from "@/model/grain";
 import Yeast from "@/model/yeast";
 import classNames from "classnames";
-import {ScreenH4} from "@/component/typography";
+import {ScreenH4} from "@brewdocs.beer/design";
 
 export type OrganicsProps = { hops: Hop[]; grain: Grain[]; yeast: Yeast[]; className?: string }
 

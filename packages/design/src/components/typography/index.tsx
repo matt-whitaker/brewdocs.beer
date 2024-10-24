@@ -1,8 +1,8 @@
 import {PropsWithChildren} from "react";
 import classNames from "classnames";
-import {PropsWithClass} from "@brewdocs.beer/core";
+import {PropsWithClass} from "packages/core";
 
-type TypographyProps = PropsWithChildren & Partial<PropsWithClass>;
+type TypographyProps = PropsWithChildren & PropsWithClass;
 
 export const ScreenH1 = ({ children, className }: TypographyProps) =>
     (<h1 className={classNames("text-2xl capitalize -mx-2 px-2 py-1 mt-5 first:mt-0 [&+h2]:mt-0 bg-primary bg-opacity-60 rounded-badge", [className])}>{children}</h1>);

@@ -1,6 +1,6 @@
 "use client";
 
-import {ScreenH1, ScreenH3, ScreenH4} from "@/component/typography";
+import {ScreenH1, ScreenH3, ScreenH4} from "@brewdocs.beer/design";
 import Hop from "@/model/hop";
 import Yeast from "@/model/yeast";
 import Batch from "@/model/batch";

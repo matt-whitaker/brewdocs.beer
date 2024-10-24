@@ -1,7 +1,7 @@
 "use client";
 
 import Screen from "../../component/screen";
-import {ScreenH1} from "@/component/typography";
+import {ScreenH1} from "@brewdocs.beer/design";
 import Batch from "@/model/batch";
 import Error from "@/component/error";
 import Checklist from "../../component/checklist";
