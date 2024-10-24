@@ -1,7 +1,7 @@
 import {PropsWithClass} from "../../../../../core";
 import classNames from "classnames";
 import {PropsWithChildren, useCallback} from "react";
-import {eventValue} from "@/utils/fn";
+import {eventValue} from "@brewdocs.beer/core";
 
 export type CheckboxProps = PropsWithClass & PropsWithChildren & {
     onChange: () => void;

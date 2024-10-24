@@ -19,7 +19,7 @@ export function InputDate({ className, onChange, value, readonly, placeholder, n
         readOnly={!!readonly}
         value={value}
         onChange={_onChange}
-        type="text"
+        type="date"
         className={classNames(
             "input input-bordered lg:input-sm input-xs px-1.5 lg:px-2.5",
             [className],

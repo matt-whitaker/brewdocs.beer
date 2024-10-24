@@ -1,6 +1,6 @@
 "use client";
 
-import {ScreenH1, ScreenH2, ScreenH3, ScreenP} from "@brewdocs.beer/design";
+import {ScreenH1, ScreenH2, ScreenH3, ScreenP, InputDate} from "@brewdocs.beer/design";
 import Batch from "@/model/batch";
 import Recipe from "@/model/recipe";
 import {Fragment, useCallback} from "react";
@@ -13,7 +13,6 @@ import useDataGrid from "@/component/data-grid/useDataGrid";
 import Hop from "@/model/hop";
 import Yeast from "@/model/yeast";
 import FormCheckbox from "@/component/form/checkbox";
-import FormDate from "../../component/form/date";
 import DataGridSelect from "@/component/data-grid/select";
 import grains from "@/data/grains";
 import hops from "@/data/hops";
@@ -36,8 +35,9 @@ export default function Planning({ batch, recipe, onChange }: PlanningProps) {
                         <ScreenP>By {`${recipe.brewer}`}</ScreenP>
                         <ScreenP>
                             Brewed on:
-                            <FormDate
-                                className="ml-2 input-primary text-right placeholder:text-right"
+                            <InputDate
+                                primary
+                                align="right"
                                 onChange={useCallback((value: string) => update(`brewDate`, value), [])}
                                 value={data.brewDate} />
                         </ScreenP>

@@ -1,6 +1,6 @@
 import {ChangeEvent, PropsWithChildren, useCallback} from "react";
 import classNames from "classnames";
-import {eventValue} from "@/utils/fn";
+import {eventValue} from "@brewdocs.beer/core";
 
 export type PanelSwitcherContentProps = Partial<PropsWithChildren> & {
     title: string;

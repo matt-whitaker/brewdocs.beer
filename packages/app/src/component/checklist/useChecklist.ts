@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useMemo, useState} from "react";
 import {cloneDeep, debounce, get, set} from "lodash";
-import {AddFn, RemoveFn, ToggleFn} from "@/utils/fn";
+import {AddFn, RemoveFn, ToggleFn} from "@brewdocs.beer/core";
 
 export default function useChecklist<T extends object>(
     data: T,

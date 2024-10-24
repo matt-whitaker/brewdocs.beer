@@ -1,5 +1,5 @@
 import {useCallback} from "react";
-import {eventValue} from "@/utils/fn";
+import {eventValue} from "@brewdocs.beer/core";
 import {CreateBatchState} from "@/component/create-batch-form/useCreateBatchForm";
 
 export type CreatBatchFormProps = {

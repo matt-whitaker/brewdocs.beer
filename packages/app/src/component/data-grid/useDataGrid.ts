@@ -1,6 +1,6 @@
 import {cloneDeep, debounce, get, set} from "lodash";
 import {useCallback, useEffect, useMemo, useState} from "react";
-import {ToggleFn, UpdateFn} from "@/utils/fn";
+import {ToggleFn, UpdateFn} from "@brewdocs.beer/core";
 
 export default function useDataGrid<T>(data: T, onChange: (data: T) => void): [T, UpdateFn, ToggleFn] {
     const [state, setState] = useState<T>(data);
