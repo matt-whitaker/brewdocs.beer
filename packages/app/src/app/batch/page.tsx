@@ -15,7 +15,6 @@ import batchesState, {useBatches} from "@/state/batches";
 import {useRecipes} from "@/state/recipes";
 import {useSession} from "@/state/session";
 import Planning from "@/screen/planning";
-import {FEATURES_PLANNING} from "@/utils/env";
 
 export default function BatchPage() {
     const batchId = useSearchParams().get("batchId");
