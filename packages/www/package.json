@@ -3,11 +3,18 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "serve": "http-server ./out -p 8080"
+    "serve": "http-server ./out -p 8080",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
   },
   "dependencies": {
+    "@next/eslint-plugin-next": "^14.2.16",
     "classnames": "^2.5.1",
     "daisyui": "^4.12.10",
+    "eslint-config-next": "^14.2.16",
+    "next": "^14.2.16",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
