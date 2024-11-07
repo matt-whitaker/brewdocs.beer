@@ -16,7 +16,7 @@ export default function DataGridInput({ col, readonly = false, value, onChange, 
     if (type === "date") {
         return (
             <InputDate
-                readonly
+                readonly={readonly}
                 primary={!readonly}
                 value={value}
                 align="right"
@@ -32,7 +32,7 @@ export default function DataGridInput({ col, readonly = false, value, onChange, 
 
     return (
         <InputText
-            readonly
+            readonly={readonly}
             primary={!readonly}
             value={value}
             align="right"
