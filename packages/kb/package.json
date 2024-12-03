@@ -5,7 +5,8 @@
   "main": "./src/index.ts",
   "devDependencies": {},
   "scripts": {
-    "build": "./bin/build-json.js"
+    "build": "./bin/build-json.js",
+    "postinstall": "npm run build"
   },
   "author": "",
   "license": "ISC"
