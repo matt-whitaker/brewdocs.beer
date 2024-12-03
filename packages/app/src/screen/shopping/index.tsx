@@ -7,7 +7,7 @@ import DataGrid from "@/component/data-grid";
 import DataGridRow from "@/component/data-grid/row";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridInput from "@/component/data-grid/input";
-import useDataGrid from "@/component/data-grid/useDataGrid";
+import useJsonEdit from "@/state/useJsonEdit";
 import Recipe from "@/model/recipe";
 import Collapse from "@/component/collapse";
 import sessionState, {Session} from "@/state/session";
@@ -20,7 +20,7 @@ export type ShoppingProps = {
     onChange: (batch: Batch) => void
 };
 export default function Shopping({ batch, session, onChange }: ShoppingProps) {
-    const [data, update, toggle] = useDataGrid<Batch>(batch, onChange);
+    const [data, update, toggle] = useJsonEdit<Batch>(batch, onChange);
     return (
         <Screen>
             <ScreenH1>Shopping List</ScreenH1>

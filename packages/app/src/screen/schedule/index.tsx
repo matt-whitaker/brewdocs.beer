@@ -10,7 +10,7 @@ import DataGridLabel from "@/component/data-grid/label";
 import DataGridRow from "@/component/data-grid/row";
 import DataGrid from "@/component/data-grid";
 import DataGridInput from "@/component/data-grid/input";
-import useDataGrid from "@/component/data-grid/useDataGrid";
+import useJsonEdit from "@/state/useJsonEdit";
 import {Fragment} from "react";
 import Additive from "@/model/additive";
 import ScreenTwoCol from "@/component/screen/two-col";
@@ -18,7 +18,7 @@ import DataGridLabelNote from "@/component/data-grid/label-note";
 
 export type BrewDayProps = { batch: Batch, onChange: (batch: Batch) => void; };
 export default function BrewDay({ batch, onChange }: BrewDayProps) {
-    const [data, update] = useDataGrid<Batch>(batch, onChange);
+    const [data, update] = useJsonEdit<Batch>(batch, onChange);
 
     return (
         <ScreenTwoCol>

@@ -1,7 +1,17 @@
 import classNames from "classnames";
 import {InputSelect, InputSelectOption} from "@brewdocs.beer/design/src/components/input-select";
+import {PropsWithClass, PropsWithOnChange} from "../../../../core";
 
-export type DataGridSelectProps = { className?: string; data: InputSelectOption[]; value: string }
-export default function DataGridSelect({ className, data, value }: DataGridSelectProps) {
-    return <InputSelect className={classNames("col-span-4 w-full", [className])} value={value} data={data}/>;
+export type DataGridSelectProps = PropsWithOnChange<string> & PropsWithClass & {
+    data: InputSelectOption[];
+    value: string;
+}
+export default function DataGridSelect({ className, data, value, onChange }: DataGridSelectProps) {
+    const optionalProps = onChange? { onChange } : {};
+    return <InputSelect
+        className={classNames("col-span-4 w-full", [className])}
+        value={value}
+        data={data}
+        {...optionalProps}
+    />;
 }

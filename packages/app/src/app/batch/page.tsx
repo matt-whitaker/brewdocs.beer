@@ -19,20 +19,28 @@ import Planning from "@/screen/planning";
 export default function BatchPage() {
     const batchId = useSearchParams().get("batchId");
     const session = useSession();
+
     const [, batchesIndex] = useBatches();
     const [, recipesIndex] = useRecipes();
+
     const [active, setActive] = usePanelSwitcher("Planning");
     const onChange = useCallback((batch: Batch) => batchesState.update(batch), []);
 
     const batch = batchesIndex?.get(batchId!);
     const recipe = batch && recipesIndex?.get(batch.recipeId);
 
-    if (!batch || !recipe || !session) return <Loading />;
+    if (!batch || !recipe) {
+        return <Loading />
+    }
 
     return (
         <PanelSwitcher>
             <PanelSwitcherContent active={active} change={setActive} title="Planning">
-                <Planning batch={batch} recipe={recipe} onChange={onChange} />
+                <Planning
+                    batch={batch}
+                    recipe={recipe}
+                    onChange={onChange}
+                />
             </PanelSwitcherContent>
             <PanelSwitcherContent active={active} change={setActive} title="Checklists">
                 <Shopping batch={batch} recipe={recipe} session={session} onChange={onChange} />

@@ -12,7 +12,7 @@ const recipes: Recipe[] = [
         efficiency: "70%",
         grains: [
             { name: "German Pils", weight: "9.0lb" },
-            { name: "40°L Crystal", weight: "1.0lb" },
+            { name: "Crystal Malt 40L", weight: "1.0lb" },
             { name: "Special Robust", weight: "0.5lb" }
         ],
         mash: [
@@ -30,7 +30,7 @@ const recipes: Recipe[] = [
             { name: "Wyeast 2112", avg_attn: "70%", scalar: "62°", starter: false }
         ],
         additives: [
-            { name: "Yeast Nutrients", when: "boil", scalar: "15min" },
+            { name: "KbYeast Nutrients", when: "boil", scalar: "15min" },
             { name: "Irish Moss", when: "boil", scalar: "15min" }
         ],
         equipment: [
