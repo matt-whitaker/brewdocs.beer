@@ -29,7 +29,7 @@ export default function BatchPage() {
     const batch = batchesIndex?.get(batchId!);
     const recipe = batch && recipesIndex?.get(batch.recipeId);
 
-    if (!batch || !recipe) {
+    if (!session || !batch || !recipe) {
         return <Loading />
     }
 

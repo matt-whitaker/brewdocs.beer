@@ -11,8 +11,8 @@ export default function BatchList({ batches, recipes }: { batches: Batch[]; reci
         <Screen>
             <ScreenH1>Your brews</ScreenH1>
             <ul className="menu px-0">
-                {batches.map((batch, i) => (
-                    <li key={i} className="odd:bg-base-200">
+                {batches.map((batch) => (
+                    <li key={batch.id} className="odd:bg-base-200">
                         <Link href={`/batch?batchId=${batch.id}`} className="text-left block">
                             <ScreenH2 className="text-lg">{recipes.get(batch.recipeId)?.name || ""}</ScreenH2>
                             <ScreenP>{batch.name || ""}</ScreenP>
