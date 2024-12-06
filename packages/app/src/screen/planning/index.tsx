@@ -19,6 +19,7 @@ import Screen from "@/component/screen";
 import kbHopsState, {useKbHops} from "@/state/kbHops";
 import kbYeastsState, {useKbYeasts} from "@/state/kbYeasts";
 import kbGrainsState, {useKbGrains} from "@/state/kbGrains";
+import useIndexBy from "@/state/useIndexBy";
 
 export type PlanningProps = {
     batch: Batch;
@@ -26,9 +27,12 @@ export type PlanningProps = {
     onChange: (batch: Batch) => void
 }
 export default function Planning({ batch, recipe, onChange }: PlanningProps) {
-    const [hops, hopsIndex] = useKbHops();
-    const [yeasts, yeastsIndex] = useKbYeasts();
-    const [grains, grainsIndex] = useKbGrains();
+    const hops = useKbHops();
+    const hopsIndex = useIndexBy(hops, "name");
+    const yeasts = useKbYeasts();
+    const yeastsIndex = useIndexBy(yeasts, "name");
+    const grains = useKbGrains();
+    const grainsIndex = useIndexBy(grains, "name");
 
     const [data, update, toggle] = useJsonEdit<Batch>(batch, onChange);
 

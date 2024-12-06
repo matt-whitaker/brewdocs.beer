@@ -1,18 +1,13 @@
 import { KbHop, importResource } from "@brewdocs.beer/kb"
-import State from "@/state/state";
-import useObservableState from "@/state/useObservableState";
 import Hop from "@/model/hop";
+import CollectionState from "@/state/collectionState";
+import useCollectionState from "@/state/useCollectionState";
 
-export type KbHopsTuple = [KbHop[], Map<string, KbHop>]|[null, null];
-export const useKbHops = () => useObservableState<KbHopsTuple, [null, null]>(kbHopsState, [null, null]);
+export const useKbHops = () => useCollectionState<KbHop>(kbHopsState);
 
-export class KbHopsState extends State<KbHopsTuple, [null, null]>{
+export class KbHopsState extends CollectionState<KbHop>{
     load() {
-        importResource("hops")!
-            .then((hops: KbHop[]) => {
-                const index = hops.reduce((m, r) => m.set(r.name, r), new Map());
-                this._subject.next([hops, index]);
-            });
+        importResource("hops")!.then((hops: KbHop[]) => this._subject.next(hops));
     }
 
     /**
@@ -29,5 +24,5 @@ export class KbHopsState extends State<KbHopsTuple, [null, null]>{
     }
 }
 
-const kbHopsState = new KbHopsState([null, null]);
+const kbHopsState = new KbHopsState(null);
 export default kbHopsState;

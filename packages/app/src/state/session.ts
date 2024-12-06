@@ -3,14 +3,11 @@ import useObservableState from "@/state/useObservableState";
 import sessionStorage from "@/storage/settings";
 
 export type Session = Record<string, boolean>
-export const useSession = () => useObservableState<Session, null>(sessionState, null);
+export const useSession = () => useObservableState<Session>(sessionState, null);
 
 export class SessionState extends State<Session, null> {
     load() {
-        sessionStorage.index()
-            .then((settings: Session) => {
-                this._subject.next(settings);
-            });
+        sessionStorage.index().then((settings: Session) => this._subject.next(settings));
     }
 
     set(id: string, value: any) {

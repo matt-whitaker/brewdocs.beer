@@ -3,11 +3,13 @@
   "version": "0.0.1",
   "description": "",
   "main": "./src/index.ts",
-  "devDependencies": {},
   "scripts": {
     "build": "./bin/build-json.js",
     "postinstall": "npm run build"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@brewdocs.beer/core": "^0.0.1"
+  }
 }

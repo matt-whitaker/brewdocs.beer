@@ -1,4 +1,3 @@
-import {Entity} from "@/model/type";
 import Grain from "@/model/grain";
 import {Mash} from "@/model/mash";
 import Hop from "@/model/hop";
@@ -8,6 +7,7 @@ import Equipment from "@/model/equipment";
 import Boil from "@/model/boil";
 import ChecklistDefinition from "@/model/checklist-definition";
 import Additive from "@/model/additive";
+import {Entity} from "@brewdocs.beer/core";
 
 export default interface Recipe extends Entity {
     name: string;

@@ -1,20 +1,21 @@
+import {Entity} from "@brewdocs.beer/core";
 
-export interface KbRecipe {
+export interface KbRecipe extends Entity {
 
 }
 
-export interface KbGrain {
+export interface KbGrain extends Entity {
     name: string;
     lovibond: number;
     origin: string;
     notes: string;
 }
 
-export interface KbYeast {
+export interface KbYeast extends Entity {
     name: string;
 }
 
-export interface KbHop {
+export interface KbHop extends Entity {
     name: string;
     alpha: number;
     origin: string;

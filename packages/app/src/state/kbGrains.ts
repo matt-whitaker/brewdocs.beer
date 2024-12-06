@@ -1,18 +1,13 @@
 import {importResource, KbGrain} from "@brewdocs.beer/kb"
-import State from "@/state/state";
-import useObservableState from "@/state/useObservableState";
 import Grain from "@/model/grain";
+import useCollectionState from "@/state/useCollectionState";
+import CollectionState from "@/state/collectionState";
 
-export type KbGrainsTuple = [KbGrain[], Map<string, KbGrain>]|[null, null];
-export const useKbGrains = () => useObservableState<KbGrainsTuple, [null, null]>(kbGrainsState, [null, null]);
+export const useKbGrains = () => useCollectionState<KbGrain>(kbGrainsState);
 
-export class KbGrainsState extends State<KbGrainsTuple, [null, null]>{
+export class KbGrainsState extends CollectionState<KbGrain>{
     load() {
-        importResource("grains")!
-            .then((grains: KbGrain[]) => {
-                const index = grains.reduce((m, r) => m.set(r.name, r), new Map());
-                this._subject.next([grains, index]);
-            });
+        importResource("grains")!.then((grains: KbGrain[]) => this._subject.next(grains));
     }
 
     /**
@@ -26,5 +21,5 @@ export class KbGrainsState extends State<KbGrainsTuple, [null, null]>{
     }
 }
 
-const kbGrainsState = new KbGrainsState([null, null]);
+const kbGrainsState = new KbGrainsState(null);
 export default kbGrainsState;

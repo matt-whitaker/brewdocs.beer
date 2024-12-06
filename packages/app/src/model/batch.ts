@@ -1,9 +1,9 @@
 import Measurements from "@/model/measurements";
 import Recipe from "@/model/recipe";
 import Hydrometer from "@/model/hydrometer";
-import {Entity} from "@/model/type";
 import {ChecklistData} from "@/model/checklist-data";
 import ShoppingList from "@/model/shopping-list";
+import {Entity} from "@brewdocs.beer/core";
 
 export type NotInBatch = "id"|"targets"|"description"|"type"|"equipment"|"checklist";
 export default interface Batch extends Entity, Omit<Recipe, NotInBatch> {

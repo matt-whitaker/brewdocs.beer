@@ -1,18 +1,13 @@
 import { KbYeast, importResource } from "@brewdocs.beer/kb"
-import State from "@/state/state";
-import useObservableState from "@/state/useObservableState";
 import Yeast from "@/model/yeast";
+import useCollectionState from "@/state/useCollectionState";
+import CollectionState from "@/state/collectionState";
 
-export type KbYeastsTuple = [KbYeast[], Map<string, KbYeast>]|[null, null];
-export const useKbYeasts = () => useObservableState<KbYeastsTuple, [null, null]>(kbYeastsState, [null, null]);
+export const useKbYeasts = () => useCollectionState<KbYeast>(kbYeastsState);
 
-export class KbYeastsState extends State<KbYeastsTuple, [null, null]>{
+export class KbYeastsState extends CollectionState<KbYeast>{
     load() {
-        importResource("yeasts")!
-            .then((yeasts: KbYeast[]) => {
-                const index = yeasts.reduce((m, r) => m.set(r.name, r), new Map());
-                this._subject.next([yeasts, index]);
-            });
+        importResource("yeasts")!.then((yeasts: KbYeast[]) => this._subject.next(yeasts));
     }
 
     /**
@@ -28,5 +23,5 @@ export class KbYeastsState extends State<KbYeastsTuple, [null, null]>{
     }
 }
 
-const kbYeastsState = new KbYeastsState([null, null]);
+const kbYeastsState = new KbYeastsState(null);
 export default kbYeastsState;

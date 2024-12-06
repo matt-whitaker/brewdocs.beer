@@ -1,18 +1,18 @@
 import {BehaviorSubject} from "rxjs";
 
 
-export default abstract class State<T, Null> {
-    protected _subject: BehaviorSubject<T|Null>;
+export default abstract class State<T> {
+    protected _subject: BehaviorSubject<T|null>;
 
-    constructor(initialValue: T|Null) {
-        this._subject = new BehaviorSubject<T|Null>(initialValue);
+    constructor(initialValue: T|null) {
+        this._subject = new BehaviorSubject<T|null>(initialValue);
     }
 
-    subscribe(fn: (value: T|Null) => void) {
+    subscribe(fn: (value: T|null) => void) {
         return this._subject.subscribe(fn);
     }
 
-    get current(): T|Null {
+    get current(): T|null {
         return this._subject.value;
     }
 
