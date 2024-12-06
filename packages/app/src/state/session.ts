@@ -14,8 +14,7 @@ export class SessionState extends State<Session, null> {
     }
 
     set(id: string, value: any) {
-        sessionStorage.save(id, value);
-        this.load();
+        sessionStorage.save(id, value).then(() => this.load());
     }
 }
 

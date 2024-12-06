@@ -11,23 +11,21 @@ import BrewDay from "@/screen/schedule";
 import BatchSummary from "@/screen/batch-summary";
 import Shopping from "@/screen/shopping";
 import Loading from "@/screen/loading";
-import batchesState, {useBatches} from "@/state/batches";
-import {useRecipes} from "@/state/recipes";
+import batchesState from "@/state/batches";
 import {useSession} from "@/state/session";
 import Planning from "@/screen/planning";
+import {useBatch} from "@/state/batch";
+import {useRecipe} from "@/state/recipe";
 
 export default function BatchPage() {
     const batchId = useSearchParams().get("batchId");
     const session = useSession();
 
-    const [, batchesIndex] = useBatches();
-    const [, recipesIndex] = useRecipes();
+    const batch = useBatch(batchId ?? null);
+    const recipe = useRecipe(batch?.recipeId ?? null);
 
     const [active, setActive] = usePanelSwitcher("Planning");
-    const onChange = useCallback((batch: Batch) => batchesState.update(batch), []);
-
-    const batch = batchesIndex?.get(batchId!);
-    const recipe = batch && recipesIndex?.get(batch.recipeId);
+    const onChange = useCallback((newBatch: Batch) => batchesState.update(newBatch), []);
 
     if (!session || !batch || !recipe) {
         return <Loading />

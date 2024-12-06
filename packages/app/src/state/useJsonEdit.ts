@@ -15,7 +15,7 @@ export default function useJsonEdit<T>(data: T, onChange: (data: T) => void): [T
      */
     const update = useCallback((dot: string, value?: unknown) => {
         if (state) {
-            const newState = set(cloneDeep(state), dot, value)
+            const newState = set(cloneDeep(state), dot, value);
             setState(newState);
             debouncedOnChange(newState);
         }
@@ -33,7 +33,7 @@ export default function useJsonEdit<T>(data: T, onChange: (data: T) => void): [T
     }, [state, debouncedOnChange]);
 
     /**
-     * Replaces
+     * replaces nested data of the sub resource
      */
     // const replace = useCallback(<T>(dot: string, value?: T) => {
     //     if (state) {

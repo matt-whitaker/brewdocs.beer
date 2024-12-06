@@ -1,25 +1,20 @@
 import Batch, {NOT_IN_BATCH, NotInBatch} from "@/model/batch";
-import State from "@/state/state";
 import batchesStorage from "@/storage/batches";
 import {cloneDeep, groupBy, intersection, omit} from "lodash";
 import Recipe from "@/model/recipe";
 import equipment from "@/data/equipment";
 import {ChecklistData} from "@/model/checklist-data";
 import {CreateBatchState} from "@/component/create-batch-form/useCreateBatchForm";
-import useObservableState from "@/state/useObservableState";
 import Hop from "@/model/hop";
 import {parseNumberString} from "@/utils/math";
+import CollectionState from "@/state/collectionState";
+import useCollectionState from "@/state/useCollectionState";
 
-export type BatchesTuple = [Batch[], Map<string, Batch>]|[null, null];
-export const useBatches = () => useObservableState<BatchesTuple, [null, null]>(batchesState, [null, null]);
+export const useBatches = () => useCollectionState<Batch>(batchesState);
 
-export class BatchesState extends State<BatchesTuple, [null, null]> {
+export class BatchesState extends CollectionState<Batch> {
     load() {
-        batchesStorage.list()
-            .then(batches => {
-                const index = batches.reduce((m, r) => m.set(r.id, r), new Map());
-                this._subject.next([batches, index]);
-            });
+        batchesStorage.list().then(batches => this._subject.next(batches));
     }
 
     async createFromRecipe(recipe: Recipe, inputs: CreateBatchState) {
@@ -121,5 +116,5 @@ export class BatchesState extends State<BatchesTuple, [null, null]> {
     }
 }
 
-const batchesState = new BatchesState([null, null]);
+const batchesState = new BatchesState(null);
 export default batchesState;

@@ -1,7 +1,7 @@
 import Measurements from "@/model/measurements";
 import Recipe from "@/model/recipe";
 import Hydrometer from "@/model/hydrometer";
-import {Entity, Named} from "@/model/type";
+import {Entity} from "@/model/type";
 import {ChecklistData} from "@/model/checklist-data";
 import ShoppingList from "@/model/shopping-list";
 

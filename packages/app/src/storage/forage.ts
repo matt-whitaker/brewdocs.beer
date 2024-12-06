@@ -1,7 +1,7 @@
 import {Entity} from "@/model/type";
 import localforage from "@/storage/localforage";
 
-export abstract class Forage<T extends Entity|string|number|boolean> {
+export abstract class Forage<T> {
     protected _forage: LocalForage;
     protected _name: string;
 

@@ -9,8 +9,7 @@ import Loading from "@/screen/loading";
 import {useBatches} from "@/state/batches";
 
 export default function RecipesPage() {
-    useBatches(); // boil; just ensure batch state is instantiated for this page
-    const [recipes] = useRecipes();
+    const recipes = useRecipes();
     const [active, change] = usePanelSwitcher("All");
 
     if (!recipes) return <Loading />;

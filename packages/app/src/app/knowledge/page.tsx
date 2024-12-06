@@ -5,7 +5,7 @@ import {FEATURES_SEARCH_EVERYWHERE} from "@/utils/env";
 import {useBatches} from "@/state/batches";
 
 export default function KnowledgePage() {
-    const [batches] = useBatches();
+    const batches = useBatches();
 
     if (!batches) {
         return null;

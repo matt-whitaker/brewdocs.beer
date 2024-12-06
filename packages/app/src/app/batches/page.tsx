@@ -7,10 +7,12 @@ import PanelSwitcherContent from "@/component/panel-switcher/content";
 import {useBatches} from "@/state/batches";
 import Loading from "@/screen/loading";
 import {useRecipes} from "@/state/recipes";
+import useIndexById from "@/state/useIndexByid";
 
 export default function BatchesPage() {
-    const [batches] = useBatches();
-    const [, recipesIndex] = useRecipes();
+    const batches = useBatches();
+    const recipes = useRecipes();
+    const recipesIndex = useIndexById(recipes);
     const [active, change] = usePanelSwitcher("Complete");
 
     if (!batches || !recipesIndex) return <Loading />;

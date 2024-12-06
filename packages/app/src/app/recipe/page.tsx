@@ -9,14 +9,16 @@ import {useRecipes} from "@/state/recipes";
 import RecipeOverview from "@/screen/recipe-overview";
 import BatchList from "@/screen/batch-list";
 import {useBatches} from "@/state/batches";
+import useIndexById from "@/state/useIndexByid";
+import {useRecipe} from "@/state/recipe";
 
 export default function RecipePage() {
     const recipeId = useSearchParams().get("recipeId");
-    const [, recipesIndex] = useRecipes();
-    const [batches] = useBatches();
-    const [active, setActive] = usePanelSwitcher("Overview");
+    const batches = useBatches();
+    const recipesIndex = useIndexById(useRecipes());
+    const recipe = useRecipe(recipeId);
 
-    const recipe = recipesIndex?.get(recipeId!);
+    const [active, setActive] = usePanelSwitcher("Overview");
 
     if (!recipe || !batches) return <Loading />;
 

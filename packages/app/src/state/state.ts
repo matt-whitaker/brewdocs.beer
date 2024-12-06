@@ -1,5 +1,6 @@
 import {BehaviorSubject} from "rxjs";
 
+
 export default abstract class State<T, Null> {
     protected _subject: BehaviorSubject<T|Null>;
 
@@ -8,7 +9,7 @@ export default abstract class State<T, Null> {
     }
 
     subscribe(fn: (value: T|Null) => void) {
-        this._subject.subscribe(fn);
+        return this._subject.subscribe(fn);
     }
 
     get current(): T|Null {

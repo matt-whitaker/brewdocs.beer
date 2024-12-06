@@ -1,22 +1,15 @@
 import Recipe from "@/model/recipe";
-import State from "@/state/state";
-import useObservableState from "@/state/useObservableState";
+import useCollectionState from "@/state/useCollectionState";
+import CollectionState from "@/state/collectionState";
 
-export type RecipesTuple = [Recipe[], Map<string, Recipe>]|[null, null];
-export const useRecipes = () => useObservableState<RecipesTuple, [null, null]>(recipesState, [null, null]);
+export const useRecipes = () => useCollectionState<Recipe>(recipesState);
 
-export class RecipesState extends State<RecipesTuple, [null, null]>{
+export class RecipesState extends CollectionState<Recipe>{
     load() {
         import("@/data/recipes").then(({ default: recipes }) => recipes)
-            .then(recipes => {
-                const index = recipes.reduce((m, r) => m.set(r.id, r), new Map());
-                this._subject.next([recipes, index]);
-            });
-    }
-
-    update(recipe: Recipe) {
+            .then(recipes => this._subject.next(recipes));
     }
 }
 
-const recipesState = new RecipesState([null, null]);
+const recipesState = new RecipesState(null);
 export default recipesState;
