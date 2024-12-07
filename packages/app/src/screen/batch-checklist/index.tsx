@@ -24,7 +24,7 @@ export default function BatchChecklist({ batch, session, onChange }: BatchCheckl
     return (
         <Screen className="join join-vertical w-full">
             <ScreenH1 className="mb-2">Equipment Checklist</ScreenH1>
-            {data.checklist.map(({ items, name: title }: ChecklistData, i) => (
+            {data.checklists.map(({ items, name: title }: ChecklistData, i) => (
                 <Collapse
                     toggle={(open: boolean) => sessionState.set(`batch-checklist.${title.toLowerCase()}`, open)}
                     key={title}

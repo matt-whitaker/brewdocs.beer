@@ -40,7 +40,7 @@ export default function Shopping({ batch, session, onChange }: ShoppingProps) {
                                             id={`shopping-item-${item.name}-${j}`}
                                             checked={item.purchased}
                                             onChange={() => toggle(`shopping.[${i}].items.[${j}].purchased`)} />
-                                        {item.name}{item.weight ? ` - ${item.weight}` : ""}
+                                        {item.name}{item.scalar ? ` - ${item.scalar}` : ""}
                                     </DataGridLabel>
                                     <DataGridInput
                                         value={item.cost}
@@ -48,7 +48,7 @@ export default function Shopping({ batch, session, onChange }: ShoppingProps) {
                                         col={3} />
                                 </DataGridRow>
                             ))}
-                        </DataGrid>
+                        </DataGrid>`
                     </Collapse>
                 ))}
             </div>

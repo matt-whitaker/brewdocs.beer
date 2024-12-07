@@ -8,13 +8,13 @@ export type CreatBatchFormProps = {
     change: (inputs: CreateBatchState) => void;
 }
 export default function CreateBatchForm({ defaultName, inputs, change }: CreatBatchFormProps) {
-    const onChangeName = useCallback(eventValue((name: string) => change({ ...inputs, name })), [change]);
+    const onChange = useCallback(eventValue((name: string) => change({ ...inputs, name })), [change, inputs]);
     return (
         <span>
             <label>
                 Batch name:
                 <input
-                    onChange={onChangeName}
+                    onChange={onChange}
                     value={inputs.name}
                     type="text"
                     className="xs:ml-2 mt-2 input input-primary input-sm"

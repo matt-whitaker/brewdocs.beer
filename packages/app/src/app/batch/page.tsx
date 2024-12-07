@@ -11,10 +11,9 @@ import BrewDay from "@/screen/schedule";
 import BatchSummary from "@/screen/batch-summary";
 import Shopping from "@/screen/shopping";
 import Loading from "@/screen/loading";
-import batchesState from "@/state/batches";
 import {useSession} from "@/state/session";
 import Planning from "@/screen/planning";
-import {useBatch} from "@/state/batch";
+import batchState, {useBatch} from "@/state/batch";
 import {useRecipe} from "@/state/recipe";
 
 export default function BatchPage() {
@@ -25,7 +24,7 @@ export default function BatchPage() {
     const recipe = useRecipe(batch?.recipeId ?? null);
 
     const [active, setActive] = usePanelSwitcher("Planning");
-    const onChange = useCallback((newBatch: Batch) => batchesState.update(newBatch), []);
+    const onChange = useCallback((newBatch: Batch) => batchState.update(newBatch), []);
 
     if (!session || !batch || !recipe) {
         return <Loading />

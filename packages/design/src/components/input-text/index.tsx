@@ -1,8 +1,11 @@
 import classNames from "classnames";
-import {PropsWithClass, PropsWithOnChange, eventValue} from "@brewdocs.beer/core"
+import {PropsWithClass, PropsWithOnChange, eventValue, PropsWithOnBlur} from "@brewdocs.beer/core"
 import {useCallback} from "react";
 
-export type InputTextProps = PropsWithClass & PropsWithOnChange<string> & {
+export type InputTextProps = PropsWithClass
+    & PropsWithOnChange<string>
+    & PropsWithOnBlur<string>
+    & {
     value: string;
     readonly?: boolean;
     placeholder?: string;
@@ -10,8 +13,11 @@ export type InputTextProps = PropsWithClass & PropsWithOnChange<string> & {
     primary?: boolean;
     align?: "left"|"center"|"right";
 }
-export function InputText({ className, onChange, value, readonly, placeholder, name, primary, align }: InputTextProps) {
-    const optionalProps = onChange ? { onChange: useCallback(eventValue(onChange), [onChange]) } : {}
+export function InputText({ className, onChange, onBlur, value, readonly, placeholder, name, primary, align }: InputTextProps) {
+    const optionalProps  = {
+        onChange: onChange ? useCallback(eventValue(onChange), [onChange]) : void 0,
+        onBlur: onBlur ? useCallback(eventValue(onBlur), [onBlur]) : void 0
+    };
     return <input
         name={name ?? void 0}
         placeholder={placeholder!}

@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
 import CollectionState from "@/state/collectionState";
-import {Entity} from "@/model/type";
+import {Entity} from "@brewdocs.beer/core";
 
 export default function useCollectionState<T extends Entity>(
     observableState: CollectionState<T>,

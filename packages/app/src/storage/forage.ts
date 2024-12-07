@@ -1,4 +1,3 @@
-import {Entity} from "@/model/type";
 import localforage from "@/storage/localforage";
 
 export abstract class Forage<T> {

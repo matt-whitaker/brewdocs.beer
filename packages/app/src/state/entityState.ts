@@ -1,11 +1,11 @@
 import {BehaviorSubject} from "rxjs";
-import {Entity} from "@/model/type";
+import {Entity} from "@brewdocs.beer/core";
 
 
 export default abstract class EntityState<T extends Entity> {
     protected _subject: BehaviorSubject<T|null>;
 
-    constructor(initialValue: T|null) {
+    constructor(initialValue: T|null = null) {
         this._subject = new BehaviorSubject<T|null>(initialValue);
     }
 

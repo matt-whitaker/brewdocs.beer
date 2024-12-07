@@ -4,7 +4,6 @@ import Screen from "@/component/screen";
 import {ScreenH1, ScreenH2, ScreenP} from "@brewdocs.beer/design";
 import Recipe from "@/model/recipe";
 import {Plus} from "@/component/svg";
-import batchesState from "@/state/batches";
 import {useCallback} from "react";
 import {useRouter} from "next/navigation";
 import Organics from "@/component/organics";
@@ -14,6 +13,7 @@ import ModalFooter from "@/component/modal/footer";
 import useModal from "@/component/modal/useModal";
 import CreateBatchForm from "@/component/create-batch-form";
 import useCreatBatchForm from "@/component/create-batch-form/useCreateBatchForm";
+import createBatch from "@/actions/createBatch";
 
 export type RecipeOverviewProps = { recipe: Recipe, batchesCount: number };
 export default function RecipeOverview({ recipe, batchesCount }: RecipeOverviewProps) {
@@ -23,8 +23,8 @@ export default function RecipeOverview({ recipe, batchesCount }: RecipeOverviewP
     const router = useRouter();
 
     const onConfirm = useCallback(() =>
-            batchesState.createFromRecipe(recipe, finalInputs).then((id) => router.push(`/batch?batchId=${id}`)),
-        [batchInputs, recipe, finalInputs]);
+            createBatch(recipe, finalInputs).then((id) => router.push(`/batch?batchId=${id}`)),
+        [router, recipe, finalInputs]);
 
     return (
         <Screen>

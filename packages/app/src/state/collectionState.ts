@@ -1,5 +1,5 @@
 import {BehaviorSubject} from "rxjs";
-import {Entity} from "@/model/type";
+import {Entity} from "@brewdocs.beer/core";
 
 
 export default abstract class CollectionState<T extends Entity> {

@@ -1,7 +1,7 @@
 
 import {useEffect, useState} from "react";
 import EntityState from "@/state/entityState";
-import {Entity} from "@/model/type";
+import {Entity} from "@brewdocs.beer/core";
 
 export default function useEntityState<T extends Entity>(
     observableState: EntityState<T>,
