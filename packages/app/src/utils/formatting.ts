@@ -1,6 +1,6 @@
 import {Units, Currencies} from "@brewdocs.beer/core";
 
-function formatNumberWithUnit(input, unit) {
+function formatNumberWithUnit(input: string, unit: Units) {
     // Use regex to separate the numeric part and any suffix from the input
     const match = input.match(/^(-?\d+(?:\.\d+)?)(\D*)$/);
 
@@ -11,7 +11,7 @@ function formatNumberWithUnit(input, unit) {
     const [_, numericPart, actualUnit] = match;
 
     // Check if the actual suffix is non-empty and valid
-    if (actualUnit && Object.values(Units).includes(actualUnit)) {
+    if (actualUnit && Object.values(Units).includes(actualUnit as Units)) {
         return input; // Input already has a valid suffix
     }
 
@@ -19,7 +19,7 @@ function formatNumberWithUnit(input, unit) {
     return numericPart + unit;
 }
 
-function formatNumberWithCurrency(input, currency) {
+function formatNumberWithCurrency(input: string, currency: Currencies) {
     // Use regex to separate any prefix and the numeric part from the input
     const match = input.match(/^(\D*)(-?\d+(?:\.\d+)?)$/);
 
@@ -30,7 +30,7 @@ function formatNumberWithCurrency(input, currency) {
     const [_, actualCurrency, numericPart] = match;
 
     // Check if the actual prefix is non-empty and matches the expected prefix
-    if (actualCurrency && Object.values(Currencies).includes(actualCurrency)) {
+    if (actualCurrency && Object.values(Currencies).includes(actualCurrency as Currencies)) {
         return input; // Input already has the correct prefix
     }
 
