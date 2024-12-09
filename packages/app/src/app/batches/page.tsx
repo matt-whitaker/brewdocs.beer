@@ -7,7 +7,7 @@ import PanelSwitcherContent from "@/component/panel-switcher/content";
 import {useBatches} from "@/state/batches";
 import Loading from "@/screen/loading";
 import {useRecipes} from "@/state/recipes";
-import useIndexBy from "@/state/useIndexBy";
+import useIndexBy from "@/hooks/useIndexBy";
 
 export default function BatchesPage() {
     const batches = useBatches();

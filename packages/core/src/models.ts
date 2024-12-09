@@ -12,6 +12,7 @@ export enum Currencies {
 }
 
 export enum Units {
+    PERCENT = "%",
     LITERS = "L",
     MILLILITERS = "mL",
     GALLONS = "gal",
@@ -30,7 +31,8 @@ export enum Units {
     PLATO = "°P",
     IBU = "IBU",
     SRM = "SRM",
-    PH = "pH"
+    PH = "pH",
+    MINUTES = "min"
 }
 
 export interface Entity {

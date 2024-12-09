@@ -1,6 +1,6 @@
+import Scalar from "@/model/scalar";
 
 export default interface Additive {
     name: string;
-    when: "boil"|"starter"|"",
-    scalar?: string,
+    boil: Scalar,
 }

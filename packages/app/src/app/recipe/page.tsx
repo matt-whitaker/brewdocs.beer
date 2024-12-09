@@ -9,7 +9,7 @@ import {useRecipes} from "@/state/recipes";
 import RecipeOverview from "@/screen/recipe-overview";
 import BatchList from "@/screen/batch-list";
 import {useBatches} from "@/state/batches";
-import useIndexBy from "@/state/useIndexBy";
+import useIndexBy from "@/hooks/useIndexBy";
 import {useRecipe} from "@/state/recipe";
 
 export default function RecipePage() {

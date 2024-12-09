@@ -1,7 +1,8 @@
 import {importResource, KbGrain} from "@brewdocs.beer/kb"
 import Grain from "@/model/grain";
-import useCollectionState from "@/state/useCollectionState";
+import useCollectionState from "@/hooks/useCollectionState";
 import CollectionState from "@/state/collectionState";
+import {Units} from "@brewdocs.beer/core";
 
 export const useKbGrains = () => useCollectionState<KbGrain>(kbGrainsState);
 
@@ -16,7 +17,10 @@ export class KbGrainsState extends CollectionState<KbGrain>{
     kbToState(kbHop: KbGrain): Grain {
         return {
             name: kbHop.name,
-            weight: "0.0oz",
+            weight: {
+                value: "0.0oz",
+                unit: Units.OUNCES
+            },
         } as Grain;
     }
 }

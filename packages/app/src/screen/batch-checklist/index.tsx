@@ -8,7 +8,6 @@ import Checklist from "../../component/checklist";
 import ChecklistItem from "@/component/checklist/item";
 import useChecklist from "@/component/checklist/useChecklist";
 import Collapse from "@/component/collapse";
-import {ChecklistData} from "@/model/checklist-data";
 import sessionState, {Session} from "@/state/session";
 
 export type BatchChecklistProps = {
@@ -24,7 +23,7 @@ export default function BatchChecklist({ batch, session, onChange }: BatchCheckl
     return (
         <Screen className="join join-vertical w-full">
             <ScreenH1 className="mb-2">Equipment Checklist</ScreenH1>
-            {data.checklists.map(({ items, name: title }: ChecklistData, i) => (
+            {data.checklists.map(({ items, name: title }, i) => (
                 <Collapse
                     toggle={(open: boolean) => sessionState.set(`batch-checklist.${title.toLowerCase()}`, open)}
                     key={title}

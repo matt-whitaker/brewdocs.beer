@@ -9,7 +9,7 @@ import Grain from "@/model/grain";
 import DataGridRow from "@/component/data-grid/row";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridInput from "@/component/data-grid/input";
-import useJsonEdit from "@/state/useJsonEdit";
+import useJsonEdit from "@/hooks/useJsonEdit";
 import Hop from "@/model/hop";
 import Yeast from "@/model/yeast";
 import FormCheckbox from "@/component/form/checkbox";
@@ -19,7 +19,7 @@ import Screen from "@/component/screen";
 import kbHopsState, {useKbHops} from "@/state/kbHops";
 import kbYeastsState, {useKbYeasts} from "@/state/kbYeasts";
 import kbGrainsState, {useKbGrains} from "@/state/kbGrains";
-import useIndexBy from "@/state/useIndexBy";
+import useIndexBy from "@/hooks/useIndexBy";
 
 export type PlanningProps = {
     batch: Batch;
@@ -34,7 +34,7 @@ export default function Planning({ batch, recipe, onChange }: PlanningProps) {
     const grains = useKbGrains();
     const grainsIndex = useIndexBy(grains, "name");
 
-    const [data, update, toggle] = useJsonEdit<Batch>(batch, onChange);
+    const [data, update, updateScalar] = useJsonEdit<Batch>(batch, onChange);
 
     if (!hops || !hopsIndex || !yeasts || !yeastsIndex || !grains || !grainsIndex) {
         return null;
@@ -74,8 +74,10 @@ export default function Planning({ batch, recipe, onChange }: PlanningProps) {
                                         />
                                     </DataGridLabel>
                                     <DataGridInput
-                                        value={grain.weight}
-                                        onChange={(value: string) => update(`grains[${i}].weight`, value)} col={3}
+                                        col={3}
+                                        value={grain.weight.value}
+                                        onChange={(value: string) => update(`grains[${i}].weight.value`, value)}
+                                        onBlur={(value: string) => updateScalar(`grains[${i}].weight`, value)}
                                     />
                                 </DataGridRow>
                             </Fragment>
@@ -93,8 +95,18 @@ export default function Planning({ batch, recipe, onChange }: PlanningProps) {
                                             onChange={(value: string) => update(`hops[${i}]`, kbHopsState.kbToState(hopsIndex?.get(value)!))}
                                         />
                                     </DataGridLabel>
-                                    <DataGridInput value={hop.weight} onChange={(value: string) => update(`hops[${i}].weight`, value)} col={2} />
-                                    <DataGridInput value={hop.boil} onChange={(value: string) => update(`hops[${i}].boil`, value)} col={3} />
+                                    <DataGridInput
+                                        col={2}
+                                        value={hop.weight.value}
+                                        onChange={(value: string) => update(`hops[${i}].weight.value`, value)}
+                                        onBlur={(value: string) => updateScalar(`hops[${i}].weight`, value)}
+                                    />
+                                    <DataGridInput
+                                        col={3}
+                                        value={hop.boil.value}
+                                        onChange={(value: string) => update(`hops[${i}].boil.value`, value)}
+                                        onBlur={(value: string) => updateScalar(`hops[${i}].boil`, value)}
+                                    />
                                 </DataGridRow>
                             </Fragment>
                         ))}
@@ -113,11 +125,16 @@ export default function Planning({ batch, recipe, onChange }: PlanningProps) {
                                             onChange={(value: string) => update(`yeasts[${i}]`, kbYeastsState.kbToState(yeastsIndex?.get(value)!))}
                                         />
                                     </DataGridLabel>
-                                    <DataGridInput value={yeast.scalar} onChange={(value: string) => update(`yeast[${i}].scalar`, value)} col={3} />
+                                    <DataGridInput
+                                        col={3}
+                                        value={yeast.temp.value}
+                                        onChange={(value: string) => update(`yeast[${i}].temp.value`, value)}
+                                        onBlur={(value: string) => updateScalar(`yeast[${i}].temp`, value)}
+                                    />
                                 </DataGridRow>
-                                <FormCheckbox onChange={() => toggle(`yeast[${i}].starter`)} checked={yeast.starter}>
-                                    Starter?
-                                </FormCheckbox>
+                                {/*<FormCheckbox onChange={() => toggle(`yeast[${i}].starter`)} checked={yeast.starter}>*/}
+                                {/*    Starter?*/}
+                                {/*</FormCheckbox>*/}
                             </Fragment>
                         ))}
                     </DataGrid>

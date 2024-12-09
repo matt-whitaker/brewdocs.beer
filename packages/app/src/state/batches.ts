@@ -1,7 +1,7 @@
 import Batch from "@/model/batch";
 import batchesStorage from "@/storage/batches";
 import CollectionState from "@/state/collectionState";
-import useCollectionState from "@/state/useCollectionState";
+import useCollectionState from "@/hooks/useCollectionState";
 
 export const useBatches = () => useCollectionState<Batch>(batchesState);
 

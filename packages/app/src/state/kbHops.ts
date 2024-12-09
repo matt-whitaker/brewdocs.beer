@@ -1,7 +1,8 @@
-import { KbHop, importResource } from "@brewdocs.beer/kb"
+import {importResource, KbHop} from "@brewdocs.beer/kb"
 import Hop from "@/model/hop";
 import CollectionState from "@/state/collectionState";
-import useCollectionState from "@/state/useCollectionState";
+import useCollectionState from "@/hooks/useCollectionState";
+import {Units} from "@brewdocs.beer/core";
 
 export const useKbHops = () => useCollectionState<KbHop>(kbHopsState);
 
@@ -16,9 +17,18 @@ export class KbHopsState extends CollectionState<KbHop>{
     kbToState(kbHop: KbHop): Hop {
         return {
             name: kbHop.name,
-            weight: "0.0oz",
-            alpha: `${kbHop.alpha}%`,
-            boil: "60.0",
+            weight: {
+                value: "0.0oz",
+                unit: Units.OUNCES
+            },
+            alpha: {
+                value: `${kbHop.alpha}%`,
+                unit: Units.PERCENT
+            },
+            boil: {
+                value: "60min",
+                unit: Units.MINUTES
+            },
             phase: "boil"
         } as Hop;
     }

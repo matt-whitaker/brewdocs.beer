@@ -27,7 +27,7 @@ const recipes: Recipe[] = [
             { name: "Northern Brewer", weight: "1.0oz", alpha: "7.4%", boil: "k/o", phase: "boil" }
         ],
         yeast: [
-            { name: "Wyeast 2112", avg_attn: "70%", scalar: "62°", starter: false }
+            { name: "Wyeast 2112", avg_attn: "70%", temp: "62°", starter: false }
         ],
         additives: [
             { name: "KbYeast Nutrients", when: "boil", scalar: "15min" },

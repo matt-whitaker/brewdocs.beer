@@ -1,6 +1,6 @@
 import EntityState from "@/state/entityState";
 
-import useEntityState from "@/state/useEntityState";
+import useEntityState from "@/hooks/useEntityState";
 import Recipe from "@/model/recipe";
 
 

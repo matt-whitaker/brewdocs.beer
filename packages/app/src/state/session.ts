@@ -1,5 +1,5 @@
 import State from "@/state/state";
-import useObservableState from "@/state/useObservableState";
+import useObservableState from "@/hooks/useObservableState";
 import sessionStorage from "@/storage/settings";
 
 export type Session = Record<string, boolean>

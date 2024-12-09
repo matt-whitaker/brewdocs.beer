@@ -1,5 +1,5 @@
 import Recipe from "@/model/recipe";
-import useCollectionState from "@/state/useCollectionState";
+import useCollectionState from "@/hooks/useCollectionState";
 import CollectionState from "@/state/collectionState";
 
 export const useRecipes = () => useCollectionState<Recipe>(recipesState);

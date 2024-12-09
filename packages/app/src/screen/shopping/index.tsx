@@ -7,7 +7,7 @@ import DataGrid from "@/component/data-grid";
 import DataGridRow from "@/component/data-grid/row";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridInput from "@/component/data-grid/input";
-import useJsonEdit from "@/state/useJsonEdit";
+import useJsonEdit from "@/hooks/useJsonEdit";
 import Recipe from "@/model/recipe";
 import Collapse from "@/component/collapse";
 import sessionState, {Session} from "@/state/session";

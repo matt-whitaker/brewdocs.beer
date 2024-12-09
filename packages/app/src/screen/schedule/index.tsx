@@ -10,7 +10,7 @@ import DataGridLabel from "@/component/data-grid/label";
 import DataGridRow from "@/component/data-grid/row";
 import DataGrid from "@/component/data-grid";
 import DataGridInput from "@/component/data-grid/input";
-import useJsonEdit from "@/state/useJsonEdit";
+import useJsonEdit from "@/hooks/useJsonEdit";
 import {Fragment} from "react";
 import Additive from "@/model/additive";
 import ScreenTwoCol from "@/component/screen/two-col";
@@ -27,12 +27,12 @@ export default function BrewDay({ batch, onChange }: BrewDayProps) {
                 <ScreenH3>1. Mash</ScreenH3>
                 {data.mash.map((m, i) => (
                     <Fragment key={`mash-${m.name}-${i}`}>
-                        <ScreenH4>{m.name} - {m.time}</ScreenH4>
+                        <ScreenH4>{m.name} - {m.time.value}</ScreenH4>
                         <DataGrid>
                             {data.grains.map((grain: Grain, i) => (
                                 <DataGridRow key={`grain-${grain.name}-${i}`}>
-                                    <DataGridLabel>{grain.name} <DataGridLabelNote>({grain.weight})</DataGridLabelNote></DataGridLabel>
-                                    <DataGridInput readonly value={m.temp} col={3} />
+                                    <DataGridLabel>{grain.name} <DataGridLabelNote>({grain.weight.value})</DataGridLabelNote></DataGridLabel>
+                                    <DataGridInput readonly value={m.temp.value} col={3} />
                                 </DataGridRow>
                             ))}
                         </DataGrid>
@@ -42,13 +42,13 @@ export default function BrewDay({ batch, onChange }: BrewDayProps) {
                 <ScreenH3>2. Boil</ScreenH3>
                 {data.boil.map((m, i) => (
                     <Fragment key={`boil-${m.name}-${i}`}>
-                        <ScreenH4>{m.name}  - {m.time}</ScreenH4>
+                        <ScreenH4>{m.name}  - {m.time.value}</ScreenH4>
                         <DataGrid>
                             {data.hops.map((hop: Hop, i) => (
                                 <DataGridRow key={`hop-${hop.name}-${i}`}>
-                                    <DataGridLabel>{hop.name} <DataGridLabelNote>({hop.alpha})</DataGridLabelNote></DataGridLabel>
-                                    <DataGridInput readonly value={hop.weight} col={2} />
-                                    <DataGridInput value={hop.boil} onChange={(value: string) => update(`hops[${i}].boil`, value)} col={3} />
+                                    <DataGridLabel>{hop.name} <DataGridLabelNote>({hop.alpha.value})</DataGridLabelNote></DataGridLabel>
+                                    <DataGridInput readonly value={hop.weight.value} col={2} />
+                                    <DataGridInput value={hop.boil.value} onChange={(value: string) => update(`hops[${i}].boil`, value)} col={3} />
                                 </DataGridRow>
                             ))}
                         </DataGrid>
@@ -61,9 +61,7 @@ export default function BrewDay({ batch, onChange }: BrewDayProps) {
                             {data.additives.map((additive: Additive, i) => (
                                 <DataGridRow key={`additive-${additive.name}-${i}`}>
                                     <DataGridLabel>{additive.name}</DataGridLabel>
-                                    {additive.scalar
-                                        ? <DataGridInput value={additive.scalar} onChange={(value: string) => update(`additives[${i}].scalar`, value)} col={3} />
-                                        : <></>}
+                                    <DataGridInput value={additive.boil.value} onChange={(value: string) => update(`additives[${i}].scalar`, value)} col={3} />
                                 </DataGridRow>
                             ))}
                         </DataGrid>
@@ -76,7 +74,7 @@ export default function BrewDay({ batch, onChange }: BrewDayProps) {
                     {data.yeast.map((yeast: Yeast, i) => (
                         <DataGridRow key={`yeast-${yeast.name}-${i}`}>
                             <DataGridLabel>{yeast.name}</DataGridLabel>
-                            <DataGridInput value={yeast.scalar} onChange={(value: string) => update(`yeast[${i}].scalar`, value)} col={3} />
+                            <DataGridInput value={yeast.temp.value} onChange={(value: string) => update(`yeast[${i}].scalar`, value)} col={3} />
                         </DataGridRow>
                     ))}
                 </DataGrid>

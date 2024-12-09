@@ -1,6 +1,7 @@
+import Scalar from "@/model/scalar";
 
 export default interface Boil {
     name: string;
-    time: string;
+    time: Scalar;
     hops: "all";
 }

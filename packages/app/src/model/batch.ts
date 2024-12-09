@@ -9,24 +9,24 @@ import Hop from "@/model/hop";
 import Yeast from "@/model/yeast";
 import Additive from "@/model/additive";
 
-interface ShoppingListItem {
+export interface ShoppingListItem {
     name: string;
     cost: string;
     purchased: boolean;
     scalar?: string;
 }
 
-interface ShoppingList {
+export interface ShoppingList {
     name: string;
     items: ShoppingListItem[];
 }
 
-interface ChecklistItem {
+export interface ChecklistItem {
     name: string;
-    checked: boolean;
+    completed: boolean;
 }
 
-interface Checklist {
+export interface Checklist {
     name: string;
     items: ChecklistItem[];
 }
@@ -49,6 +49,7 @@ export default interface Batch extends Entity {
     hops: Hop[];
     yeast: Yeast[];
     additives: Additive[];
+    //adjunct
 
     actuals: Measurements;
     hydrometer: Hydrometer[];

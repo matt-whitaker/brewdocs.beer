@@ -1,8 +1,9 @@
+import Scalar from "@/model/scalar";
 
 export default interface Hop {
     name: string;
-    weight: string;
-    alpha: string;
-    boil: string;
+    weight: Scalar;
+    alpha: Scalar;
+    boil: Scalar;
     phase: "boil"|"secondary"|"dry";
 }

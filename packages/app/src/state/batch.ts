@@ -1,7 +1,7 @@
 import EntityState from "@/state/entityState";
 import Batch from "@/model/batch";
 import batchesStorage from "@/storage/batches";
-import useEntityState from "@/state/useEntityState";
+import useEntityState from "@/hooks/useEntityState";
 
 
 export const useBatch = (id: string|null = null) => useEntityState<Batch>(batchState, id);

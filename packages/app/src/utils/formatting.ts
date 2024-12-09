@@ -1,39 +1,59 @@
 import {Units, Currencies} from "@brewdocs.beer/core";
+import Scalar from "@/model/scalar";
 
-function formatNumberWithUnit(input: string, unit: Units) {
-    // Use regex to separate the numeric part and any suffix from the input
-    const match = input.match(/^(-?\d+(?:\.\d+)?)(\D*)$/);
+export const UNIT_REGEX = /^(-?\d+(?:\.\d+)?)(\D*)$/;
+export const CURRENCY_REGEX = /^(\D*)(-?\d+(?:\.\d+)?)$/;
+
+// export function parseUnit(input: string): Units|null {
+//     const match = input.match(UNIT_REGEX);
+//
+//     if (!match) return null;
+//
+//     const [_, __, actualUnit]: [void, void, Units] = match;
+//
+//     return Object.values(Units).includes(actualUnit) ? actualUnit : null;
+// }
+
+export function scalarFromNumberWithUnit(input: string, defaultUnit: Units): Scalar {
+    const match = input.match(UNIT_REGEX);
 
     if (!match) {
         throw new Error("Invalid input format. Input must start with a number.");
     }
 
-    const [_, numericPart, actualUnit] = match;
+    const [_, numericPart, actualUnit]: [void, string, Units] = match;
 
-    // Check if the actual suffix is non-empty and valid
     if (actualUnit && Object.values(Units).includes(actualUnit as Units)) {
-        return input; // Input already has a valid suffix
+        return {
+            value: input,
+            unit: actualUnit
+        };
     }
 
-    // Return the fixed string with the expected suffix
-    return numericPart + unit;
+    return {
+        value: numericPart + defaultUnit,
+        unit: defaultUnit,
+    }
 }
 
-function formatNumberWithCurrency(input: string, currency: Currencies) {
-    // Use regex to separate any prefix and the numeric part from the input
-    const match = input.match(/^(\D*)(-?\d+(?:\.\d+)?)$/);
+export function scalarFromNumberWithCurrency(input: string, defaultCurrency: Currencies): Scalar {
+    const match = input.match(CURRENCY_REGEX);
 
     if (!match) {
         throw new Error("Invalid input format. Input must start with an optional prefix followed by a number.");
     }
 
-    const [_, actualCurrency, numericPart] = match;
+    const [_, actualCurrency, numericPart]: [void, Currencies, string] = match;
 
-    // Check if the actual prefix is non-empty and matches the expected prefix
     if (actualCurrency && Object.values(Currencies).includes(actualCurrency as Currencies)) {
-        return input; // Input already has the correct prefix
+        return {
+            value: input,
+            currency: actualCurrency
+        };
     }
 
-    // Return the fixed string with the expected prefix
-    return currency + numericPart;
+    return {
+        value: numericPart + defaultCurrency,
+        currency: defaultCurrency
+    };
 }
