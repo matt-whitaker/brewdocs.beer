@@ -14,16 +14,16 @@ export const CURRENCY_REGEX = /^(\D*)(-?\d+(?:\.\d+)?)$/;
 //     return Object.values(Units).includes(actualUnit) ? actualUnit : null;
 // }
 
-export function scalarFromNumberWithUnit(input: string, defaultUnit: Units): Scalar {
+export function scalarFromNumberWithUnit(input: string, defaultUnit: Units, lock: boolean = false): Scalar {
     const match = input.match(UNIT_REGEX);
 
     if (!match) {
         throw new Error("Invalid input format. Input must start with a number.");
     }
 
-    const [_, numericPart, actualUnit]: [void, string, Units] = match;
+    const [_, numericPart, actualUnit] = match as unknown as [void, string, Units];
 
-    if (actualUnit && Object.values(Units).includes(actualUnit as Units)) {
+    if (!lock && actualUnit && Object.values(Units).includes(actualUnit as Units)) {
         return {
             value: input,
             unit: actualUnit
@@ -36,16 +36,16 @@ export function scalarFromNumberWithUnit(input: string, defaultUnit: Units): Sca
     }
 }
 
-export function scalarFromNumberWithCurrency(input: string, defaultCurrency: Currencies): Scalar {
+export function scalarFromNumberWithCurrency(input: string, defaultCurrency: Currencies, lock: boolean = false): Scalar {
     const match = input.match(CURRENCY_REGEX);
 
     if (!match) {
         throw new Error("Invalid input format. Input must start with an optional prefix followed by a number.");
     }
 
-    const [_, actualCurrency, numericPart]: [void, Currencies, string] = match;
+    const [_, actualCurrency, numericPart] = match as unknown as [void, Currencies, string];
 
-    if (actualCurrency && Object.values(Currencies).includes(actualCurrency as Currencies)) {
+    if (!lock && actualCurrency && Object.values(Currencies).includes(actualCurrency as Currencies)) {
         return {
             value: input,
             currency: actualCurrency

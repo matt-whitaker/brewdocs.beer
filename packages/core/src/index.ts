@@ -1,4 +1,4 @@
 
 export * from "./models";
-export * from "./fn";
+export * from "./event";
 export * from "./props";

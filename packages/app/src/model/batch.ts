@@ -8,12 +8,13 @@ import Grain from "@/model/grain";
 import Hop from "@/model/hop";
 import Yeast from "@/model/yeast";
 import Additive from "@/model/additive";
+import Scalar from "@/model/scalar";
 
 export interface ShoppingListItem {
     name: string;
-    cost: string;
+    cost: Scalar;
     purchased: boolean;
-    scalar?: string;
+    scalar?: Scalar;
 }
 
 export interface ShoppingList {
@@ -31,7 +32,6 @@ export interface Checklist {
     items: ChecklistItem[];
 }
 
-export type NotInBatch = "id"|"targets"|"description"|"type"|"equipment"|"checklist";
 export default interface Batch extends Entity {
     name: string;
     brewDate: string;
@@ -49,7 +49,7 @@ export default interface Batch extends Entity {
     hops: Hop[];
     yeast: Yeast[];
     additives: Additive[];
-    //adjunct
+    //adjuncts
 
     actuals: Measurements;
     hydrometer: Hydrometer[];
@@ -58,5 +58,3 @@ export default interface Batch extends Entity {
 
     notes?: string;
 }
-
-export const NOT_IN_BATCH: NotInBatch[] = ["id", "targets", "description", "type", "equipment", "checklist"]

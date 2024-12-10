@@ -10,8 +10,9 @@ export class BatchState extends EntityState<Batch> {
         batchesStorage.get(id).then(batches => this._subject.next(batches));
     }
 
-    update(batch: Batch) {
-        batchesStorage.save(batch.id, batch).then(() => this.load(batch.id));
+    update(id: string, batch: Batch) {
+        const prev = batchesStorage.get(id);
+        batchesStorage.save(id, batch).then(() => this.load(batch.id));
     }
 }
 

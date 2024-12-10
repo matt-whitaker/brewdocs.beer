@@ -31,11 +31,11 @@ export default function BatchChecklist({ batch, session, onChange }: BatchCheckl
                     className="lg:collapse-open"
                     openInitial={session[`batch-checklist.${title.toLowerCase()}`] ?? true}>
                     <Checklist className="sm:columns-2">
-                        {items.map(({ name, checked }, j) => (
+                        {items.map(({ name, completed }, j) => (
                             <ChecklistItem
                                 key={`${title}-${name}`}
                                 name={`${title}-${name}`}
-                                checked={checked}
+                                checked={completed}
                                 onToggle={() => toggle(`checklist.[${i}].items.[${j}].checked`)}>
                                 {name}
                             </ChecklistItem>

@@ -4,7 +4,7 @@ import Scalar from "@/model/scalar";
 import {scalarFromNumberWithCurrency, scalarFromNumberWithUnit} from "@/utils/formatting";
 
 type UpdateFn = (dot: string, value?: unknown) => void;
-type UpdateScalarFn = (dot: string, value: string) => void;
+type UpdateScalarFn = (dot: string, value: string, lock?: boolean) => void;
 type ToggleFn = (dot: string) => void;
 
 export default function useJsonEdit<T>(data: T, onChange: (data: T) => void): [T, UpdateFn, UpdateScalarFn, ToggleFn] {
@@ -27,17 +27,17 @@ export default function useJsonEdit<T>(data: T, onChange: (data: T) => void): [T
     /**
      * Updates a property on the JSNO object, handles unit formatting
      */
-    const updateScalar = useCallback((dot: string, value: string) => {
+    const updateScalar = useCallback((dot: string, value: string, lock: boolean = false) => {
         if (state) {
             const prevScalar = get(state, dot) as Scalar;
 
             if (prevScalar.unit) {
-                const newScalar = scalarFromNumberWithUnit(value, prevScalar.unit);
+                const newScalar = scalarFromNumberWithUnit(value, prevScalar.unit, lock);
                 const newState = set(cloneDeep(state), dot, newScalar);
                 setState(newState);
                 debouncedOnChange(newState);
             } else if (prevScalar.currency) {
-                const newScalar = scalarFromNumberWithCurrency(value, prevScalar.currency);
+                const newScalar = scalarFromNumberWithCurrency(value, prevScalar.currency, lock);
                 const newState = set(cloneDeep(state), dot, newScalar);
                 setState(newState);
                 debouncedOnChange(newState);

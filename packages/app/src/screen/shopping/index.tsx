@@ -20,7 +20,7 @@ export type ShoppingProps = {
     onChange: (batch: Batch) => void
 };
 export default function Shopping({ batch, session, onChange }: ShoppingProps) {
-    const [data, update, toggle] = useJsonEdit<Batch>(batch, onChange);
+    const [data, update, updateScalar, toggle] = useJsonEdit<Batch>(batch, onChange);
     return (
         <Screen>
             <ScreenH1>Shopping List</ScreenH1>
@@ -40,12 +40,14 @@ export default function Shopping({ batch, session, onChange }: ShoppingProps) {
                                             id={`shopping-item-${item.name}-${j}`}
                                             checked={item.purchased}
                                             onChange={() => toggle(`shopping.[${i}].items.[${j}].purchased`)} />
-                                        {item.name}{item.scalar ? ` - ${item.scalar}` : ""}
+                                        {item.name}{item.scalar ? ` - ${item.scalar.value}` : ""}
                                     </DataGridLabel>
                                     <DataGridInput
-                                        value={item.cost}
-                                        onChange={(value: string) => update(`shopping.[${i}].items.[${j}].cost`, value)}
-                                        col={3} />
+                                        col={3}
+                                        value={item.cost.value}
+                                        onChange={(value: string) => update(`shopping.[${i}].items.[${j}].cost.value`, value)}
+                                        onBlur={(value: string) => updateScalar(`shopping.[${i}].items.[${j}].cost`, value, true)}
+                                    />
                                 </DataGridRow>
                             ))}
                         </DataGrid>`

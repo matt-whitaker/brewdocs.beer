@@ -1,4 +1,5 @@
 import Recipe from "@/model/recipe";
+import {Units} from "@brewdocs.beer/core";
 
 const recipes: Recipe[] = [
     {
@@ -11,27 +12,130 @@ const recipes: Recipe[] = [
         type: "amber_lager",
         efficiency: "70%",
         grains: [
-            { name: "German Pils", weight: "9.0lb" },
-            { name: "Crystal Malt 40L", weight: "1.0lb" },
-            { name: "Special Robust", weight: "0.5lb" }
+            {
+                name: "German Pils",
+                weight: {
+                    value: "9.0lb",
+                    unit: Units.POUNDS
+                }
+            },
+            {
+                name: "Crystal Malt 40L",
+                weight: {
+                    value: "1.0lb",
+                    unit: Units.POUNDS
+                }
+            },
+            {
+                name: "Special Robust",
+                weight: {
+                    value: "0.5lb",
+                    unit: Units.POUNDS
+                }
+            }
         ],
         mash: [
-            { name: "Single Infusion", temp: "185°", time: "60min", grains: "all" }
+            {
+                name: "Single Infusion",
+                temp: {
+                    value: "185°",
+                    unit: Units.FAHRENHEIT
+                },
+                time: {
+                    value: "60min",
+                    unit: Units.MINUTES,
+                },
+                grains: "all"
+            }
         ],
         boil: [
-            { name: "Single Boil", time: "60min", hops: "all" }
+            {
+                name: "Single Boil",
+                time: {
+                    value: "60min",
+                    unit: Units.MINUTES
+                },
+                hops: "all"
+            }
         ],
         hops: [
-            { name: "Northern Brewer", weight: "1.0oz", alpha: "7.4%", boil: "60min", phase: "boil" },
-            { name: "Northern Brewer", weight: "0.75oz", alpha: "7.4%", boil: "20min", phase: "boil" },
-            { name: "Northern Brewer", weight: "1.0oz", alpha: "7.4%", boil: "k/o", phase: "boil" }
+            {
+                name: "Northern Brewer",
+                weight: {
+                    value: "1.0oz",
+                    unit: Units.OUNCES
+                },
+                alpha: {
+                    value: "7.4%",
+                    unit: Units.PERCENT
+                },
+                boil: {
+                    value: "60min",
+                    unit: Units.MINUTES
+                },
+                phase: "boil"
+            },
+            {
+                name: "Northern Brewer",
+                weight: {
+                    value: "0.75oz",
+                    unit: Units.OUNCES
+                },
+                alpha: {
+                    value: "7.4%",
+                    unit: Units.PERCENT
+                },
+                boil: {
+                    value: "20min",
+                    unit: Units.MINUTES
+                },
+                phase: "boil"
+            },
+            {
+                name: "Northern Brewer",
+                weight: {
+                    value: "1.0oz",
+                    unit: Units.OUNCES
+                },
+                alpha: {
+                    value: "7.4%",
+                    unit: Units.PERCENT
+                },
+                boil: {
+                    value: "k/o"
+                },
+                phase: "boil"
+            }
         ],
         yeast: [
-            { name: "Wyeast 2112", avg_attn: "70%", temp: "62°", starter: false }
+            {
+                name: "Wyeast 2112",
+                avg_attn: {
+                    value: "70%",
+                    unit: Units.PERCENT
+                },
+                temp: {
+                    value: "62°F",
+                    unit: Units.FAHRENHEIT
+                },
+                starter: false
+            }
         ],
         additives: [
-            { name: "KbYeast Nutrients", when: "boil", scalar: "15min" },
-            { name: "Irish Moss", when: "boil", scalar: "15min" }
+            {
+                name: "Yeast Nutrients",
+                boil: {
+                    value: "15min",
+                    unit: Units.MINUTES
+                }
+            },
+            {
+                name: "Irish Moss",
+                boil: {
+                    value: "15min",
+                    unit: Units.MINUTES
+                }
+            }
         ],
         equipment: [
             { name: "Boil Kettle - 15gal", use: ["boil"] },

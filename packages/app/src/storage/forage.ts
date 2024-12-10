@@ -1,4 +1,7 @@
+import { v4 as uuidV4} from "uuid";
 import localforage from "@/storage/localforage";
+
+export const ID_REGEX = /^.*?#(.*)$/;
 
 export abstract class Forage<T> {
     protected _forage: LocalForage;
@@ -34,11 +37,31 @@ export abstract class Forage<T> {
         return await this._forage.setItem(this.buildKey(id), item);
     }
 
+    async delete(id: string): Promise<void>{
+        console.log(`Deleting ${this._name}#${id}`);
+        return await this._forage.removeItem(this.buildKey(id));
+    }
+
     async generateId(): Promise<string> {
-        return `${(await this._forage.length()) + 1}`;
+        return `${uuidV4()}`;
     }
 
     protected buildKey(id: string) {
         return `${this._name}#${id}`
     }
+
+    async purge() {
+        (await this._forage.keys()).map(key => {
+            this._forage.removeItem(key);
+        });
+    }
+
+    // private extractId(key: string): string | null {
+    //     const match = key.match(ID_REGEX);
+    //
+    //     if (!match) return null;
+    //
+    //     const [, id] = match;
+    //     return id;
+    // }
 }

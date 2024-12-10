@@ -5,6 +5,7 @@ import Shell from "@/component/shell";
 import {PropsWithChildren, Suspense} from "react";
 
 import "../tailwind.css";
+import DbCleanup from "@/component/db-cleanup";
 
 const urbanist = Urbanist({subsets: ["latin"]});
 
@@ -23,6 +24,7 @@ export default function RootLayout({ children }: PropsWithChildren) {
         <html lang="en" data-theme="nord">
         <body className={classNames(urbanist.className, "w-screen overscroll-none")}>
         <Shell>
+            <DbCleanup />
             <Suspense>
                 {children}
             </Suspense>
