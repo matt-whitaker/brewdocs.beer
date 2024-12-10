@@ -53,7 +53,7 @@ export function scalarFromNumberWithCurrency(input: string, defaultCurrency: Cur
     }
 
     return {
-        value: numericPart + defaultCurrency,
+        value: defaultCurrency + numericPart,
         currency: defaultCurrency
     };
 }
