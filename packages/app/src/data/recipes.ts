@@ -7,10 +7,19 @@ const recipes: Recipe[] = [
         name: "Anchor Steam Beer Clone",
         brewer: "Anonymous",
         description: "Clone of the famous California staple, Anchor's Steam Beer",
-        batchSize: "5gal",
-        boilTime: "60min",
+        batchSize: {
+            value: "5gal",
+            unit: Units.GALLONS
+        },
+        boilTime: {
+            value: "60min",
+            unit: Units.MINUTES
+        },
         type: "amber_lager",
-        efficiency: "70%",
+        efficiency: {
+            value: "70%",
+            unit: Units.PERCENT
+        },
         grains: [
             {
                 name: "German Pils",
@@ -160,7 +169,22 @@ const recipes: Recipe[] = [
             { name: "Rack Day", uses: ["transfer", "secondary", "clean"] },
             { name: "Keg Day", uses: ["kegging", "transfer", "clean", "serve"] }
         ],
-        targets: { og: "1.05", fg: "1.014", abv: "4.7", ibu: "35", srm: "9" }
+        targets: {
+            og: {
+                value: "1.05°P",
+                unit: Units.PLATO
+            },
+            fg: {
+                value: "1.014°P",
+                unit: Units.PLATO
+            },
+            abv: {
+                value: "4.7%",
+                unit: Units.PERCENT
+            },
+            ibu: "35",
+            srm: "9"
+        }
     }
 ];
 

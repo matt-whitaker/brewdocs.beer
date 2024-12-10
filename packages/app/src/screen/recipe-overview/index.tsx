@@ -32,7 +32,7 @@ export default function RecipeOverview({ recipe, batchesCount }: RecipeOverviewP
             <div className="lg:max-w-[80%] lg:pb-4 pb-2 pt-2">
                 <ScreenH2>{recipe.name}</ScreenH2>
                 <ScreenP>By {`${recipe.brewer}`}</ScreenP>
-                <ScreenP className="pt-2">ABV {recipe.targets.abv}% | IBUs {recipe.targets.ibu} | O.G. {recipe.targets.og} | F.G. {recipe.targets.fg}</ScreenP>
+                <ScreenP className="pt-2">ABV {recipe.targets.abv.value}% | IBUs {recipe.targets.ibu} | O.G. {recipe.targets.og.value} | F.G. {recipe.targets.fg.value}</ScreenP>
                 <ScreenP className="pt-4">{`${recipe.description}`}</ScreenP>
             </div>
             <button className="btn btn-primary btn-sm" onClick={toggle}>

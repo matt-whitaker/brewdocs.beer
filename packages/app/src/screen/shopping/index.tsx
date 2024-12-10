@@ -31,7 +31,7 @@ export default function Shopping({ batch, session, onChange }: ShoppingProps) {
                         key={`shopping-${category.name}`}
                         title={category.name}
                         className="lg:collapse-open"
-                        openInitial={session[`shopping.${category.name.toLowerCase()}`] ?? true}>
+                        openInitial={session[`shopping.${category.name.toLowerCase()}`] ?? false}>
                         <DataGrid>
                             {category.items.map((item, j) => (
                                 <DataGridRow key={`shopping-item-${item.name}-${j}`}>
@@ -50,7 +50,7 @@ export default function Shopping({ batch, session, onChange }: ShoppingProps) {
                                     />
                                 </DataGridRow>
                             ))}
-                        </DataGrid>`
+                        </DataGrid>
                     </Collapse>
                 ))}
             </div>

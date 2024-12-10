@@ -5,7 +5,6 @@ import usePanelSwitcher from "@/component/panel-switcher/usePanelSwitcher";
 import PanelSwitcher from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
 import Loading from "@/screen/loading";
-import {useRecipes} from "@/state/recipes";
 import RecipeOverview from "@/screen/recipe-overview";
 import BatchList from "@/screen/batch-list";
 import {useBatches} from "@/state/batches";
@@ -14,13 +13,13 @@ import {useRecipe} from "@/state/recipe";
 
 export default function RecipePage() {
     const recipeId = useSearchParams().get("recipeId");
-    const batches = useBatches();
-    const recipesIndex = useIndexBy(useRecipes());
+    const batches = useBatches(batch => batch.recipeId === recipeId);
     const recipe = useRecipe(recipeId);
+    const recipesIndex = useIndexBy(recipe);
 
     const [active, setActive] = usePanelSwitcher("Overview");
 
-    if (!recipe || !batches) return <Loading />;
+    if (!recipe || !batches || !recipesIndex) return <Loading />;
 
     return (
         <PanelSwitcher>
@@ -28,7 +27,7 @@ export default function RecipePage() {
                 <RecipeOverview recipe={recipe} batchesCount={batches.length} />
             </PanelSwitcherContent>
             <PanelSwitcherContent active={active} change={setActive} title="Batches">
-                <BatchList batches={batches.filter(batch => batch.recipeId === recipe.id)} recipesIndex={recipesIndex!} />
+                <BatchList batches={batches} recipesIndex={recipesIndex} />
             </PanelSwitcherContent>
             <PanelSwitcherContent active={active} change={setActive} title="Editor">
             </PanelSwitcherContent>

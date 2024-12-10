@@ -18,7 +18,7 @@ import DataGridLabelNote from "@/component/data-grid/label-note";
 
 export type BrewDayProps = { batch: Batch, onChange: (batch: Batch) => void; };
 export default function BrewDay({ batch, onChange }: BrewDayProps) {
-    const [data, update] = useJsonEdit<Batch>(batch, onChange);
+    const [data, update, updateScalar] = useJsonEdit<Batch>(batch, onChange);
 
     return (
         <ScreenTwoCol>
@@ -48,7 +48,12 @@ export default function BrewDay({ batch, onChange }: BrewDayProps) {
                                 <DataGridRow key={`hop-${hop.name}-${i}`}>
                                     <DataGridLabel>{hop.name} <DataGridLabelNote>({hop.alpha.value})</DataGridLabelNote></DataGridLabel>
                                     <DataGridInput readonly value={hop.weight.value} col={2} />
-                                    <DataGridInput value={hop.boil.value} onChange={(value: string) => update(`hops[${i}].boil`, value)} col={3} />
+                                    <DataGridInput
+                                        col={3}
+                                        value={hop.boil.value}
+                                        onChange={(value: string) => update(`hops[${i}].boil`, value)}
+                                        onBlur={(value: string) => updateScalar(`hops[${i}].boil`, value)}
+                                    />
                                 </DataGridRow>
                             ))}
                         </DataGrid>
@@ -61,7 +66,12 @@ export default function BrewDay({ batch, onChange }: BrewDayProps) {
                             {data.additives.map((additive: Additive, i) => (
                                 <DataGridRow key={`additive-${additive.name}-${i}`}>
                                     <DataGridLabel>{additive.name}</DataGridLabel>
-                                    <DataGridInput value={additive.boil.value} onChange={(value: string) => update(`additives[${i}].scalar`, value)} col={3} />
+                                    <DataGridInput
+                                        col={3}
+                                        value={additive.boil.value}
+                                        onChange={(value: string) => update(`additives[${i}].scalar`, value)}
+                                        onBlur={(value: string) => updateScalar(`additives[${i}].scalar`, value)}
+                                    />
                                 </DataGridRow>
                             ))}
                         </DataGrid>
@@ -74,7 +84,12 @@ export default function BrewDay({ batch, onChange }: BrewDayProps) {
                     {data.yeast.map((yeast: Yeast, i) => (
                         <DataGridRow key={`yeast-${yeast.name}-${i}`}>
                             <DataGridLabel>{yeast.name}</DataGridLabel>
-                            <DataGridInput value={yeast.temp.value} onChange={(value: string) => update(`yeast[${i}].scalar`, value)} col={3} />
+                            <DataGridInput
+                                col={3}
+                                value={yeast.temp.value}
+                                onChange={(value: string) => update(`yeast[${i}].temp.value`, value)}
+                                onBlur={(value: string) => updateScalar(`yeast[${i}].temp`, value)}
+                            />
                         </DataGridRow>
                     ))}
                 </DataGrid>
@@ -84,9 +99,19 @@ export default function BrewDay({ batch, onChange }: BrewDayProps) {
                     {data.hydrometer.map((hydro: Hydrometer, i) => (
                         <DataGridRow key={`hydro-${hydro.name}-${i}`}>
                             <DataGridLabel>
-                                <DataGridInput type="date" value={hydro.date} onChange={(value: string) => update(`hydrometer[${i}].date`, value)} col={1} />
+                                <DataGridInput
+                                    col={1}
+                                    type="date"
+                                    value={hydro.date}
+                                    onChange={(value: string) => update(`hydrometer[${i}].date`, value)}
+                                />
                             </DataGridLabel>
-                            <DataGridInput value={hydro.gravity} onChange={(value: string) => update(`hydrometer[${i}].gravity`, value)} col={3} />
+                            <DataGridInput
+                                col={3}
+                                value={hydro.gravity.value}
+                                onChange={(value: string) => update(`hydrometer[${i}].gravity.value`, value)}
+                                onBlur={(value: string) => updateScalar(`hydrometer[${i}].gravity`, value)}
+                            />
                         </DataGridRow>
                     ))}
                 </DataGrid>

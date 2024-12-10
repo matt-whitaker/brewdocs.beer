@@ -25,19 +25,19 @@ export default function useJsonEdit<T>(data: T, onChange: (data: T) => void): [T
     }, [state, debouncedOnChange]);
 
     /**
-     * Updates a property on the JSNO object, handles unit formatting
+     * Updates a property on the JSON object, handles unit formatting
      */
-    const updateScalar = useCallback((dot: string, value: string, lock: boolean = false) => {
+    const updateScalar = useCallback((dot: string, value: string, lockUnit: boolean = false) => {
         if (state) {
             const prevScalar = get(state, dot) as Scalar;
 
             if (prevScalar.unit) {
-                const newScalar = scalarFromNumberWithUnit(value, prevScalar.unit, lock);
+                const newScalar = scalarFromNumberWithUnit(value, prevScalar.unit, lockUnit);
                 const newState = set(cloneDeep(state), dot, newScalar);
                 setState(newState);
                 debouncedOnChange(newState);
             } else if (prevScalar.currency) {
-                const newScalar = scalarFromNumberWithCurrency(value, prevScalar.currency, lock);
+                const newScalar = scalarFromNumberWithCurrency(value, prevScalar.currency, lockUnit);
                 const newState = set(cloneDeep(state), dot, newScalar);
                 setState(newState);
                 debouncedOnChange(newState);

@@ -1,7 +1,9 @@
+import Scalar from "@/model/scalar";
+
 export default interface Measurements {
-    og: string;
-    fg: string;
-    abv: string;
+    og: Scalar;
+    fg: Scalar;
+    abv: Scalar;
     ibu: string;
     srm: string;
 }

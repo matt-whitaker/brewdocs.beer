@@ -14,7 +14,7 @@ export const CURRENCY_REGEX = /^(\D*)(-?\d+(?:\.\d+)?)$/;
 //     return Object.values(Units).includes(actualUnit) ? actualUnit : null;
 // }
 
-export function scalarFromNumberWithUnit(input: string, defaultUnit: Units, lock: boolean = false): Scalar {
+export function scalarFromNumberWithUnit(input: string, defaultUnit: Units, lockUnit: boolean = false): Scalar {
     const match = input.match(UNIT_REGEX);
 
     if (!match) {
@@ -23,7 +23,7 @@ export function scalarFromNumberWithUnit(input: string, defaultUnit: Units, lock
 
     const [_, numericPart, actualUnit] = match as unknown as [void, string, Units];
 
-    if (!lock && actualUnit && Object.values(Units).includes(actualUnit as Units)) {
+    if (!lockUnit && actualUnit && Object.values(Units).includes(actualUnit as Units)) {
         return {
             value: input,
             unit: actualUnit

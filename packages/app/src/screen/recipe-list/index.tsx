@@ -16,7 +16,7 @@ export default function RecipeList({ recipes }: RecipeListProps) {
                         <Link href={`/recipe?recipeId=${recipe.id}`} className="text-left block">
                             <ScreenH2 className="text-lg">{recipe.name}</ScreenH2>
                             <ScreenP className="mb-1">by {recipe.brewer}</ScreenP>
-                            <ScreenP>ABV {recipe.targets.abv}% | IBUs {recipe.targets.ibu} | O.G. {recipe.targets.og} | F.G. {recipe.targets.fg}</ScreenP>
+                            <ScreenP>ABV {recipe.targets.abv.value}% | IBUs {recipe.targets.ibu} | O.G. {recipe.targets.og.value} | F.G. {recipe.targets.fg.value}</ScreenP>
                             <ScreenP className="pt-2">{recipe.description}</ScreenP>
                         </Link>
                     </li>

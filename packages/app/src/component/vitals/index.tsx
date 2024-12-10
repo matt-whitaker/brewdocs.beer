@@ -12,11 +12,11 @@ export default function Vitals({ vitals, className }: VitalsProps) {
                 {vitals.map(([name, vital]) => (
                     <div className="basis-1/2 [&>*]:text-left" key={name}>
                         <ScreenH4>{name}</ScreenH4>
-                        <ScreenP>ABV {vital.abv}</ScreenP>
+                        <ScreenP>ABV {vital.abv.value}</ScreenP>
                         <ScreenP>IBU {vital.ibu}</ScreenP>
                         <ScreenP>SRM {vital.srm}</ScreenP>
-                        <ScreenP>O.G. {vital.og}</ScreenP>
-                        <ScreenP>F.G. {vital.fg}</ScreenP>
+                        <ScreenP>O.G. {vital.og.value}</ScreenP>
+                        <ScreenP>F.G. {vital.fg.value}</ScreenP>
                     </div>
                 ))}
             </div>

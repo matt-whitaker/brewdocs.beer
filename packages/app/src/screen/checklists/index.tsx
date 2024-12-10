@@ -15,7 +15,7 @@ export type BatchChecklistProps = {
     session: Session;
     onChange: (batch: Batch) => void
 };
-export default function BatchChecklist({ batch, session, onChange }: BatchChecklistProps) {
+export default function Checklists({ batch, session, onChange }: BatchChecklistProps) {
     const [data, toggle] = useChecklist(batch, onChange);
 
     if (!data) { return <Error>'data' missing</Error>; }
@@ -25,18 +25,18 @@ export default function BatchChecklist({ batch, session, onChange }: BatchCheckl
             <ScreenH1 className="mb-2">Equipment Checklist</ScreenH1>
             {data.checklists.map(({ items, name: title }, i) => (
                 <Collapse
-                    toggle={(open: boolean) => sessionState.set(`batch-checklist.${title.toLowerCase()}`, open)}
+                    toggle={(open: boolean) => sessionState.set(`checklist.${title.toLowerCase()}`, open)}
                     key={title}
                     title={title}
                     className="lg:collapse-open"
-                    openInitial={session[`batch-checklist.${title.toLowerCase()}`] ?? true}>
+                    openInitial={session[`checklist.${title.toLowerCase()}`] ?? false}>
                     <Checklist className="sm:columns-2">
                         {items.map(({ name, completed }, j) => (
                             <ChecklistItem
                                 key={`${title}-${name}`}
                                 name={`${title}-${name}`}
                                 checked={completed}
-                                onToggle={() => toggle(`checklist.[${i}].items.[${j}].checked`)}>
+                                onToggle={() => toggle(`checklists.[${i}].items.[${j}].completed`)}>
                                 {name}
                             </ChecklistItem>
                         ))}

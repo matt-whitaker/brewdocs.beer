@@ -6,7 +6,7 @@ import Batch from "@/model/batch";
 import usePanelSwitcher from "@/component/panel-switcher/usePanelSwitcher";
 import PanelSwitcher from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
-import BatchChecklist from "@/screen/batch-checklist";
+import Checklists from "../../screen/checklists";
 import BrewDay from "@/screen/schedule";
 import BatchSummary from "@/screen/batch-summary";
 import Shopping from "@/screen/shopping";
@@ -42,7 +42,7 @@ export default function BatchPage() {
             </PanelSwitcherContent>
             <PanelSwitcherContent active={active} change={setActive} title="Checklists">
                 <Shopping batch={batch} recipe={recipe} session={session} onChange={onChange} />
-                <BatchChecklist batch={batch} session={session} onChange={onChange} />
+                <Checklists batch={batch} session={session} onChange={onChange} />
             </PanelSwitcherContent>
             <PanelSwitcherContent active={active} change={setActive} title="Schedule">
                 <BrewDay batch={batch} onChange={onChange} />

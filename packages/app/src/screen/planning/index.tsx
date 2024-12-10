@@ -20,6 +20,7 @@ import kbHopsState, {useKbHops} from "@/state/kbHops";
 import kbYeastsState, {useKbYeasts} from "@/state/kbYeasts";
 import kbGrainsState, {useKbGrains} from "@/state/kbGrains";
 import useIndexBy from "@/hooks/useIndexBy";
+import {LockClosed} from "@/component/svg";
 
 export type PlanningProps = {
     batch: Batch;
@@ -44,8 +45,8 @@ export default function Planning({ batch, recipe, onChange }: PlanningProps) {
         <>
             <Screen>
                 <ScreenH1 className="mb-2">Batch Planning</ScreenH1>
-                <div className="lg:max-w-[80%] lg:pb-4">
-                    <ScreenH2>{recipe.name}</ScreenH2>
+                <div className="lg:max-w-[80%] lg:pb-4 relative">
+                    <ScreenH2 className="first-of-type:mt-0">{recipe.name}</ScreenH2>
                     <ScreenH3>{batch.name || ""}</ScreenH3>
                     <ScreenP>By {`${recipe.brewer}`}</ScreenP>
                     <ScreenP>
@@ -70,7 +71,7 @@ export default function Planning({ batch, recipe, onChange }: PlanningProps) {
                                         <DataGridSelect
                                             data={grains.map((({ name }) => ({ value: name, name })))}
                                             value={grain.name}
-                                            onChange={(value: string) => update(`grains[${i}]`, kbGrainsState.kbToState(grainsIndex?.get(value)!))}
+                                            onChange={(value: string) => update(`grains[${i}]`, kbGrainsState.kbToState(grainsIndex!.get(value)!))}
                                         />
                                     </DataGridLabel>
                                     <DataGridInput
@@ -92,7 +93,7 @@ export default function Planning({ batch, recipe, onChange }: PlanningProps) {
                                         <DataGridSelect
                                             data={hops.map((({ name }) => ({ value: name, name })))}
                                             value={hop.name}
-                                            onChange={(value: string) => update(`hops[${i}]`, kbHopsState.kbToState(hopsIndex?.get(value)!))}
+                                            onChange={(value: string) => update(`hops[${i}]`, kbHopsState.kbToState(hopsIndex!.get(value)!))}
                                         />
                                     </DataGridLabel>
                                     <DataGridInput
@@ -113,7 +114,7 @@ export default function Planning({ batch, recipe, onChange }: PlanningProps) {
                     </DataGrid>
                 </div>
                 <div>
-                    <ScreenH3>Yeast</ScreenH3>
+                    <ScreenH3 className="first:mt-3">Yeast</ScreenH3>
                     <DataGrid>
                         {data.yeast.map((yeast: Yeast, i) => (
                             <Fragment key={`yeast-${yeast.name}-${i}`}>
@@ -122,7 +123,7 @@ export default function Planning({ batch, recipe, onChange }: PlanningProps) {
                                         <DataGridSelect
                                             data={yeasts.map((({ name }) => ({ value: name, name })))}
                                             value={yeast.name}
-                                            onChange={(value: string) => update(`yeasts[${i}]`, kbYeastsState.kbToState(yeastsIndex?.get(value)!))}
+                                            onChange={(value: string) => update(`yeasts[${i}]`, kbYeastsState.kbToState(yeastsIndex!.get(value)!))}
                                         />
                                     </DataGridLabel>
                                     <DataGridInput

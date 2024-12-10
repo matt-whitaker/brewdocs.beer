@@ -8,15 +8,16 @@ import Boil from "@/model/boil";
 import ChecklistDefinition from "@/model/checklist-definition";
 import Additive from "@/model/additive";
 import {Entity} from "@brewdocs.beer/core";
+import Scalar from "@/model/scalar";
 
 export default interface Recipe extends Entity {
     name: string;
     brewer: string;
     type: string;
-    batchSize: string;
-    efficiency: string;
+    batchSize: Scalar;
+    efficiency: Scalar;
     description: string;
-    boilTime: string;
+    boilTime: Scalar;
     targets: Measurements;
 
     mash: Mash[];

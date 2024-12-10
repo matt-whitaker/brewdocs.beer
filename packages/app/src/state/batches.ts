@@ -1,9 +1,9 @@
 import Batch from "@/model/batch";
 import batchesStorage from "@/storage/batches";
 import CollectionState from "@/state/collectionState";
-import useCollectionState from "@/hooks/useCollectionState";
+import useCollectionState, {FilterFn} from "@/hooks/useCollectionState";
 
-export const useBatches = () => useCollectionState<Batch>(batchesState);
+export const useBatches = (filter?: FilterFn<Batch>) => useCollectionState<Batch>(batchesState, null, filter);
 
 export class BatchesState extends CollectionState<Batch> {
     load() {

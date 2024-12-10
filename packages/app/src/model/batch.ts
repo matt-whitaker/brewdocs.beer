@@ -39,9 +39,9 @@ export default interface Batch extends Entity {
     status: "prep"|"mash"|"boil"|"ferment"|"complete";
 
     brewer?: string;
-    batchSize: string;
-    efficiency: string;
-    boilTime: string;
+    batchSize: Scalar;
+    efficiency: Scalar;
+    boilTime: Scalar;
 
     mash: Mash[];
     boil: Boil[];

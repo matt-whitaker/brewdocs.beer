@@ -12,33 +12,31 @@ export default function useChecklist<T extends object>(
     const [state, setState] = useState<T|null>(data);
     useEffect(() => setState(data), [data]);
 
-    const debouncedOnChange = useMemo(() => debounce(onChange, 350), [onChange]);
-
     const toggle = useCallback<ToggleFn>((dot: string) => {
         if (state) {
             const newState = set(cloneDeep(state), dot, !get(state, dot))
             setState(newState);
-            debouncedOnChange(newState);
+            onChange(newState);
         }
-    }, [state, debouncedOnChange])
+    }, [state, onChange])
 
     const add = useCallback<AddFn>((dot: string, value: string) => {
         if (state) {
             const newState = cloneDeep(state)
             get(newState, dot).push({ checked: false, name: value });
             setState(newState);
-            debouncedOnChange(newState);
+            onChange(newState);
         }
-    }, [state, debouncedOnChange]);
+    }, [state, onChange]);
 
     const remove = useCallback((dot: string, index: number) => {
         if (state) {
             const newState = cloneDeep(state);
             get(newState, dot).splice(index, 1);
             setState(newState);
-            debouncedOnChange(newState);
+            onChange(newState);
         }
-    }, [state, debouncedOnChange])
+    }, [state, onChange])
 
     return [state, toggle, add, remove];
 }
