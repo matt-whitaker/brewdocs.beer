@@ -1,6 +1,7 @@
 node_modules/
 notes.md
-.env
+.env.*
+!.env.development
 .idea/
 *storybook.log
 dist
