@@ -4,16 +4,6 @@ import Scalar from "@/model/scalar";
 export const UNIT_REGEX = /^(-?\d+(?:\.\d+)?)(\D*)$/;
 export const CURRENCY_REGEX = /^(\D*)(-?\d+(?:\.\d+)?)$/;
 
-// export function parseUnit(input: string): Units|null {
-//     const match = input.match(UNIT_REGEX);
-//
-//     if (!match) return null;
-//
-//     const [_, __, actualUnit]: [void, void, Units] = match;
-//
-//     return Object.values(Units).includes(actualUnit) ? actualUnit : null;
-// }
-
 export function scalarFromNumberWithUnit(input: string, defaultUnit: Units, lockUnit: boolean = false): Scalar {
     const match = input.match(UNIT_REGEX);
 
