@@ -1,5 +1,5 @@
 import Hero from "@/component/hero";
-import {APP_URL, GITHUB_URL} from "@/data/env";
+import {GITHUB_URL} from "@/data/env";
 import Link from "next/link";
 
 export default function About() {
