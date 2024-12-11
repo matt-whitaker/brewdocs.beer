@@ -1,6 +1,7 @@
 import {forwardRef, PropsWithChildren} from "react";
 
-const Modal = forwardRef(({ children }: PropsWithChildren, ref: any) => {
+export type ModalProps = PropsWithChildren & { open?: boolean; }
+const Modal = forwardRef(({ children }: ModalProps, ref: any) => {
     return(
         <dialog className="modal" ref={ref}>
             <div className="modal-box">

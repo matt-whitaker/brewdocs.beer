@@ -17,5 +17,5 @@ export default abstract class CollectionState<T extends Entity> {
         return this._subject.value;
     }
 
-    abstract load(): void;
+    abstract load(): Promise<T[]|null>;
 }

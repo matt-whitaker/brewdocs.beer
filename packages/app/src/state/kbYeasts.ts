@@ -7,8 +7,10 @@ import {Units} from "@brewdocs.beer/core";
 export const useKbYeasts = () => useCollectionState<KbYeast>(kbYeastsState);
 
 export class KbYeastsState extends CollectionState<KbYeast>{
-    load() {
-        importResource("yeasts")!.then((yeasts: KbYeast[]) => this._subject.next(yeasts));
+    async load() {
+        const yeasts = await importResource<KbYeast>("yeasts");
+        this._subject.next(yeasts);
+        return yeasts;
     }
 
     /**

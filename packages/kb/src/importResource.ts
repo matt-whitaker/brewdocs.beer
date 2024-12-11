@@ -1,19 +1,16 @@
-import {KbGrain, KbHop, KbYeast} from "./models";
-
 export type Resources = "hops"|"grains"|"yeasts"|"recipes";
 
-function importResource(resource: "hops"): Promise<KbHop[]>;
-function importResource(resource: "grains"): Promise<KbGrain[]>;
-function importResource(resource: "yeasts"): Promise<KbYeast[]>;
-async function importResource(resource: Resources): Promise<KbHop[]|KbGrain[]|KbYeast[]|Promise<null>> {
+async function importResource<T>(resource: Resources): Promise<T[]|null> {
     try {
         switch (resource) {
+            case "recipes":
+                return (await import("../dist/recipes.json")).data as T[];
             case "hops":
-                return (await import("../dist/hops.json")).data as KbHop[];
+                return (await import("../dist/hops.json")).data as T[];
             case "grains":
-                return (await import("../dist/grains.json")).data as KbGrain[];
+                return (await import("../dist/grains.json")).data as T[];
             case "yeasts":
-                return (await import("../dist/yeasts.json")).data as KbYeast[];
+                return (await import("../dist/yeasts.json")).data as T[];
         }
     } catch (e) {
         console.error(`Failed to load static resource: ${resource}`, e);

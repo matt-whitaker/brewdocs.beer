@@ -7,8 +7,10 @@ import {Units} from "@brewdocs.beer/core";
 export const useKbGrains = () => useCollectionState<KbGrain>(kbGrainsState);
 
 export class KbGrainsState extends CollectionState<KbGrain>{
-    load() {
-        importResource("grains")!.then((grains: KbGrain[]) => this._subject.next(grains));
+    async load() {
+        const grains = await importResource<KbGrain>("grains");
+        this._subject.next(grains);
+        return grains;
     }
 
     /**

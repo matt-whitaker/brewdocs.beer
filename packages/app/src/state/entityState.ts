@@ -17,5 +17,5 @@ export default abstract class EntityState<T extends Entity> {
         return this._subject.value;
     }
 
-    abstract load(id: string): void;
+    abstract load(id: string): Promise<T|null>;
 }

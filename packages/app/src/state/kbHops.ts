@@ -7,8 +7,10 @@ import {Units} from "@brewdocs.beer/core";
 export const useKbHops = () => useCollectionState<KbHop>(kbHopsState);
 
 export class KbHopsState extends CollectionState<KbHop>{
-    load() {
-        importResource("hops")!.then((hops: KbHop[]) => this._subject.next(hops));
+    async load() {
+        const hops = await importResource<KbHop>("hops");
+        this._subject.next(hops);
+        return hops;
     }
 
     /**

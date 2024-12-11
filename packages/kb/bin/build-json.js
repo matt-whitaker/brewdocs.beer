@@ -48,6 +48,6 @@ const outDir = path.join(process.cwd(), "dist");
       data: combinedData
     }
 
-    fs.writeFileSync(outputFilePath, JSON.stringify(json, null, 2));
+    fs.writeFileSync(outputFilePath, JSON.stringify(json, null, 0));
   });
 })();
