@@ -12,7 +12,6 @@ import DataGridInput from "@/component/data-grid/input";
 import useJsonEdit from "@/hooks/useJsonEdit";
 import Hop from "@/model/hop";
 import Yeast from "@/model/yeast";
-import FormCheckbox from "@/component/form/checkbox";
 import DataGridSelect from "@/component/data-grid/select";
 import ScreenTwoCol from "@/component/screen/two-col";
 import Screen from "@/component/screen";
@@ -20,7 +19,9 @@ import kbHopsState, {useKbHops} from "@/state/kbHops";
 import kbYeastsState, {useKbYeasts} from "@/state/kbYeasts";
 import kbGrainsState, {useKbGrains} from "@/state/kbGrains";
 import useIndexBy from "@/hooks/useIndexBy";
-import {LockClosed} from "@/component/svg";
+import DataGridRemoveButton from "@/component/data-grid/remove-button";
+import AddRow from "@/component/data-grid/add-row";
+import {KbGrain, KbHop, KbYeast} from "@brewdocs.beer/kb"
 
 export type PlanningProps = {
     batch: Batch;
@@ -35,7 +36,7 @@ export default function Planning({ batch, recipe, onChange }: PlanningProps) {
     const grains = useKbGrains();
     const grainsIndex = useIndexBy(grains, "name");
 
-    const [data, update, updateScalar] = useJsonEdit<Batch>(batch, onChange);
+    const [data, update, updateScalar,, add, remove] = useJsonEdit<Batch>(batch, onChange);
 
     if (!hops || !hopsIndex || !yeasts || !yeastsIndex || !grains || !grainsIndex) {
         return null;
@@ -62,12 +63,13 @@ export default function Planning({ batch, recipe, onChange }: PlanningProps) {
             </Screen>
             <ScreenTwoCol>
                 <div>
-                    <ScreenH3>Grain</ScreenH3>
+                    <ScreenH3 className="cozy">Grain</ScreenH3>
                     <DataGrid>
                         {data.grains.map((grain: Grain, i) => (
                             <Fragment key={`grain-${grain.name}-${i}`}>
                                 <DataGridRow>
-                                    <DataGridLabel>
+                                    <DataGridLabel className="ml-6">
+                                        <DataGridRemoveButton onClick={() => remove("grains", i)} />
                                         <DataGridSelect
                                             data={grains.map((({ name }) => ({ value: name, name })))}
                                             value={grain.name}
@@ -83,13 +85,18 @@ export default function Planning({ batch, recipe, onChange }: PlanningProps) {
                                 </DataGridRow>
                             </Fragment>
                         ))}
+                        <AddRow<KbGrain>
+                            data={grains}
+                            onClick={(value: string) => add("grains", kbGrainsState.kbToState(grainsIndex!.get(value)!))}
+                        />
                     </DataGrid>
                     <ScreenH3>Hops</ScreenH3>
                     <DataGrid>
                         {data.hops.map((hop: Hop, i) => (
                             <Fragment key={`grain-${hop.name}-${i}`}>
                                 <DataGridRow>
-                                    <DataGridLabel>
+                                    <DataGridLabel className="ml-6">
+                                        <DataGridRemoveButton onClick={() => remove("hops", i)} />
                                         <DataGridSelect
                                             data={hops.map((({ name }) => ({ value: name, name })))}
                                             value={hop.name}
@@ -111,15 +118,20 @@ export default function Planning({ batch, recipe, onChange }: PlanningProps) {
                                 </DataGridRow>
                             </Fragment>
                         ))}
+                        <AddRow<KbHop>
+                            data={hops}
+                            onClick={(value: string) => add("hops", kbHopsState.kbToState(hopsIndex!.get(value)!))}
+                        />
                     </DataGrid>
                 </div>
                 <div>
-                    <ScreenH3 className="first:mt-3">Yeast</ScreenH3>
+                    <ScreenH3 className="lg:mt-0">Yeast</ScreenH3>
                     <DataGrid>
                         {data.yeast.map((yeast: Yeast, i) => (
                             <Fragment key={`yeast-${yeast.name}-${i}`}>
                                 <DataGridRow key={`grain-${yeast.name}-${i}`}>
-                                    <DataGridLabel>
+                                    <DataGridLabel className="ml-6">
+                                        <DataGridRemoveButton onClick={() => remove("yeast", i)} />
                                         <DataGridSelect
                                             data={yeasts.map((({ name }) => ({ value: name, name })))}
                                             value={yeast.name}
@@ -138,6 +150,10 @@ export default function Planning({ batch, recipe, onChange }: PlanningProps) {
                                 {/*</FormCheckbox>*/}
                             </Fragment>
                         ))}
+                        <AddRow<KbYeast>
+                            data={yeasts}
+                            onClick={(value: string) => add("yeast", kbYeastsState.kbToState(yeastsIndex!.get(value)!))}
+                        />
                     </DataGrid>
                 </div>
             </ScreenTwoCol>

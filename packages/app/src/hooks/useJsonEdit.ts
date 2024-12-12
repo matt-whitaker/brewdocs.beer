@@ -6,11 +6,11 @@ import {scalarFromNumberWithCurrency, scalarFromNumberWithUnit} from "@/utils/fo
 type UpdateFn = (dot: string, value?: unknown) => void;
 type UpdateScalarFn = (dot: string, value: string, lock?: boolean) => void;
 type ToggleFn = (dot: string) => void;
+type AddFn = <T>(dot: string, value: T) => void;
+type RemoveFn = (dot: string, index: number) => void;
 
-export default function useJsonEdit<T>(data: T, onChange: (data: T) => void): [T, UpdateFn, UpdateScalarFn, ToggleFn] {
+export default function useJsonEdit<T>(data: T, onChange: (data: T) => void): [T, UpdateFn, UpdateScalarFn, ToggleFn, AddFn, RemoveFn] {
     const [state, setState] = useState<T>(data);
-    useEffect(() => setState(data), [data]);
-
     const debouncedOnChange = useMemo(() => debounce(onChange, 350), [onChange]);
 
     /**
@@ -52,9 +52,27 @@ export default function useJsonEdit<T>(data: T, onChange: (data: T) => void): [T
         if (state) {
             const newState = set(cloneDeep(state), dot, !get(state, dot))
             setState(newState);
-            debouncedOnChange(newState);
+            onChange(newState);
         }
-    }, [state, debouncedOnChange]);
+    }, [state, onChange]);
+
+    const add = useCallback((dot: string, value: T) => {
+        if (state) {
+            const newState = cloneDeep(state);
+            get(newState, dot).push(value);
+            setState(newState);
+            onChange(newState);
+        }
+    }, [state, onChange]);
+
+    const remove = useCallback((dot: string, index: number) => {
+        if (state) {
+            const newState = cloneDeep(state);
+            get(newState, dot).splice(index, 1);
+            setState(newState);
+            onChange(newState);
+        }
+    }, [state, onChange]);
 
     /**
      * replaces nested data of the sub resource
@@ -67,5 +85,5 @@ export default function useJsonEdit<T>(data: T, onChange: (data: T) => void): [T
     //     }
     // }, [state, debouncedOnChange]);
 
-    return [state, update, updateScalar, toggle];
+    return [state, update, updateScalar, toggle, add, remove];
 }

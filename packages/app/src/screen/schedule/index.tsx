@@ -24,7 +24,7 @@ export default function BrewDay({ batch, onChange }: BrewDayProps) {
         <ScreenTwoCol>
             <ScreenH1 className="col-start-1 lg:col-span-2 col-span-1 mb-2">Brew Schedule</ScreenH1>
             <div>
-                <ScreenH3>1. Mash</ScreenH3>
+                <ScreenH3 className="cozy">1. Mash</ScreenH3>
                 {data.mash.map((m, i) => (
                     <Fragment key={`mash-${m.name}-${i}`}>
                         <ScreenH4>{m.name} - {m.time.value}</ScreenH4>
@@ -79,7 +79,7 @@ export default function BrewDay({ batch, onChange }: BrewDayProps) {
                 ) : <></>}
             </div>
             <div>
-                <ScreenH3>3. Yeast</ScreenH3>
+                <ScreenH3 className="lg:mt-0">3. Yeast</ScreenH3>
                 <DataGrid>
                     {data.yeast.map((yeast: Yeast, i) => (
                         <DataGridRow key={`yeast-${yeast.name}-${i}`}>
