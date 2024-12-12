@@ -23,7 +23,6 @@ export default function AddRow <T extends { name: string }>({ onClick, data }: P
                     value={selection}
                     data={data.map((({ name }) => ({ value: name, name })))}
                     onChange={(value) => {
-                        console.log("this is triggered", value);
                         setSelection(value);
                     }}
                 />
