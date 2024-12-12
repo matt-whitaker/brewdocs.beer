@@ -11,6 +11,7 @@ type PropsWithOnClick = {
 export default function AddRow <T extends { name: string }>({ onClick, data }: PropsWithOnClick & { data: T[] }) {
     const [selection, setSelection] = useState<string|null>(null);
     const _onClick = useCallback(() => {
+        console.log("this is getting called when adding");
         if (onClick && selection) onClick(selection);
     }, [onClick, selection]);
 
@@ -20,8 +21,12 @@ export default function AddRow <T extends { name: string }>({ onClick, data }: P
             <DataGridLabel className="ml-6">
                 <DataGridSelect
                     allowNull
+                    value={selection}
                     data={data.map((({ name }) => ({ value: name, name })))}
-                    onChange={setSelection}
+                    onChange={(value) => {
+                        console.log("this is triggered", value);
+                        setSelection(value);
+                    }}
                 />
             </DataGridLabel>
         </DataGridRow>

@@ -4,7 +4,7 @@ import {PropsWithClass, PropsWithOnChange} from "../../../../core";
 
 export type DataGridSelectProps = PropsWithOnChange<string> & PropsWithClass & {
     data: InputSelectOption[];
-    value?: string;
+    value?: string|null;
     allowNull?: boolean;
 }
 export default function DataGridSelect({ className, data, value, onChange, allowNull = false }: DataGridSelectProps) {
