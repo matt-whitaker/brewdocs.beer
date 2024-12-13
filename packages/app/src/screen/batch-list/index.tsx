@@ -5,6 +5,7 @@ import Screen from "../../component/screen";
 import {ScreenH1, ScreenH2, ScreenP} from "@brewdocs.beer/design";
 import Batch from "@/model/batch";
 import Recipe from "@/model/recipe";
+import {statuses} from "@/model/status";
 
 export default function BatchList({ batches, recipesIndex }: { batches: Batch[]; recipesIndex: Map<string, Recipe> }) {
     return (
@@ -17,7 +18,7 @@ export default function BatchList({ batches, recipesIndex }: { batches: Batch[];
                             <ScreenH2 className="text-lg">{recipesIndex.get(batch.recipeId)?.name || ""}</ScreenH2>
                             <ScreenP>{batch.name || ""}</ScreenP>
                             <ScreenP>by {batch.brewer || recipesIndex.get(batch.recipeId)?.brewer || ""}</ScreenP>
-                            <ScreenP>Status: {batch.status}</ScreenP>
+                            <ScreenP>Status: {statuses[batch.status]}</ScreenP>
                         </Link>
                     </li>
                 ))}

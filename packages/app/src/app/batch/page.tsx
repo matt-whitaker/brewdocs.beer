@@ -16,6 +16,7 @@ import Planning from "@/screen/planning";
 import batchState, {useBatch} from "@/state/batch";
 import {useRecipe} from "@/state/recipe";
 import updateBatch from "@/actions/updateBatch";
+import Status from "@/model/status";
 
 export default function BatchPage() {
     const batchId = useSearchParams().get("batchId");
@@ -24,7 +25,7 @@ export default function BatchPage() {
     const batch = useBatch(batchId ?? null);
     const recipe = useRecipe(batch?.recipeId ?? null);
 
-    const [active, setActive] = usePanelSwitcher("Planning");
+    const [active, setActive] = usePanelSwitcher(batch?.status > Status.PREP ? "Schedule" : "Planning");
     const onChange = useCallback((newBatch: Batch) => updateBatch(batch.id, newBatch).then(() => batchState.load(batch.id)), [batch]);
 
     if (!session || !batch || !recipe) {

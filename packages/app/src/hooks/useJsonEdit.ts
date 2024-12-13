@@ -2,6 +2,7 @@ import {cloneDeep, debounce, get, set} from "lodash";
 import {useCallback, useEffect, useMemo, useState} from "react";
 import Scalar from "@/model/scalar";
 import {scalarFromNumberWithCurrency, scalarFromNumberWithUnit} from "@/utils/formatting";
+import {Entity} from "@brewdocs.beer/core";
 
 type UpdateFn = (dot: string, value?: unknown) => void;
 type UpdateScalarFn = (dot: string, value: string, lock?: boolean) => void;
@@ -9,8 +10,13 @@ type ToggleFn = (dot: string) => void;
 type AddFn = (dot: string, value: any) => void;
 type RemoveFn = (dot: string, index: number) => void;
 
-export default function useJsonEdit<T>(data: T, onChange: (data: T) => void): [T, UpdateFn, UpdateScalarFn, ToggleFn, AddFn, RemoveFn] {
+export default function useJsonEdit<T extends Entity>(data: T, onChange: (data: T) => void): [T, UpdateFn, UpdateScalarFn, ToggleFn, AddFn, RemoveFn] {
     const [state, setState] = useState<T>(data);
+    useEffect(() => {
+        if (data.id !== state.id) {
+            setState(data);
+        }
+    }, [state, data]);
     const debouncedOnChange = useMemo(() => debounce(onChange, 350), [onChange]);
 
     /**

@@ -87,7 +87,7 @@ export default function Planning({ batch, recipe, onChange }: PlanningProps) {
                         ))}
                         <AddRow<KbGrain>
                             data={grains}
-                            onClick={(value: string) => add("grains", kbGrainsState.kbToState(grainsIndex!.get(value)!))}
+                            add={(value: string) => add("grains", kbGrainsState.kbToState(grainsIndex!.get(value)!))}
                         />
                     </DataGrid>
                     <ScreenH3>Hops</ScreenH3>
@@ -120,7 +120,7 @@ export default function Planning({ batch, recipe, onChange }: PlanningProps) {
                         ))}
                         <AddRow<KbHop>
                             data={hops}
-                            onClick={(value: string) => add("hops", kbHopsState.kbToState(hopsIndex!.get(value)!))}
+                            add={(value: string) => add("hops", kbHopsState.kbToState(hopsIndex!.get(value)!))}
                         />
                     </DataGrid>
                 </div>
@@ -152,7 +152,7 @@ export default function Planning({ batch, recipe, onChange }: PlanningProps) {
                         ))}
                         <AddRow<KbYeast>
                             data={yeasts}
-                            onClick={(value: string) => add("yeast", kbYeastsState.kbToState(yeastsIndex!.get(value)!))}
+                            add={(value: string) => add("yeast", kbYeastsState.kbToState(yeastsIndex!.get(value)!))}
                         />
                     </DataGrid>
                 </div>

@@ -31,7 +31,7 @@ export default function Shopping({ batch, session, onChange }: ShoppingProps) {
                         key={`shopping-${category.name}`}
                         title={category.name}
                         className="lg:collapse-open"
-                        openInitial={session[`shopping.${category.name.toLowerCase()}`] ?? false}>
+                        openInitial={session[`shopping.${category.name.toLowerCase()}`] ?? !category.items.every(({ purchased }) => purchased)}>
                         <DataGrid>
                             {category.items.map((item, j) => (
                                 <DataGridRow key={`shopping-item-${item.name}-${j}`}>

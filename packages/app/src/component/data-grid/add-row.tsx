@@ -5,18 +5,21 @@ import DataGridRow from "@/component/data-grid/row";
 import {useCallback, useState} from "react";
 
 type PropsWithOnClick = {
-    onClick: (value: string) => void;
+    add: (value: string) => void;
 }
 
-export default function AddRow <T extends { name: string }>({ onClick, data }: PropsWithOnClick & { data: T[] }) {
+export default function AddRow <T extends { name: string }>({ add, data }: PropsWithOnClick & { data: T[] }) {
     const [selection, setSelection] = useState<string|null>(null);
-    const _onClick = useCallback(() => {
-        if (onClick && selection) onClick(selection);
-    }, [onClick, selection]);
+    const onClick = useCallback(() => {
+        if (add && selection) {
+            add(selection);
+            setSelection(null);
+        }
+    }, [add, selection]);
 
     return (
         <DataGridRow>
-            <DataGridAddButton onClick={_onClick} />
+            <DataGridAddButton onClick={onClick} />
             <DataGridLabel className="ml-6">
                 <DataGridSelect
                     allowNull
