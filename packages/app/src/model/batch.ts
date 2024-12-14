@@ -9,7 +9,7 @@ import Hop from "@/model/hop";
 import Yeast from "@/model/yeast";
 import Additive from "@/model/additive";
 import Scalar from "@/model/scalar";
-import Status from "@/model/status";
+import Statuses from "@/model/statuses";
 
 export interface ShoppingListItem {
     name: string;
@@ -37,7 +37,7 @@ export default interface Batch extends Entity {
     name: string;
     brewDate: string;
     recipeId: string;
-    status: Status;
+    status: Statuses;
 
     brewer?: string;
     batchSize: Scalar;

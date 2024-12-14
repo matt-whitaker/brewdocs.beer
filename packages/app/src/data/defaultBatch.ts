@@ -1,5 +1,6 @@
 import Batch from "@/model/batch";
 import {Units} from "@brewdocs.beer/core";
+import Statuses from "@/model/statuses";
 
 const defaultBatch  = {
     batchSize: {
@@ -14,7 +15,7 @@ const defaultBatch  = {
         value: "60min",
         unit: Units.MINUTES
     },
-    status: "prep",
+    status: Statuses.PREP,
     actuals: {
         og: {
             value: "0.00°P",

@@ -6,7 +6,7 @@ import equipment from "@/data/equipment";
 import {cloneDeep, intersection} from "lodash";
 import defaultBatch from "@/data/defaultBatch";
 import _updateShopping from "@/actions/_updateShopping";
-import Status from "@/model/status";
+import Statuses from "@/model/statuses";
 
 export default async function createBatch(recipe: Recipe, inputs: CreateBatchState) {
     const id = await batchesStorage.generateId();
@@ -14,7 +14,7 @@ export default async function createBatch(recipe: Recipe, inputs: CreateBatchSta
     let batch: Batch= {
         ...defaultBatch,
         id,
-        status: Status.PREP,
+        status: Statuses.PREP,
         recipeId: recipe.id,
 
         // Clone the "guts" of the recipes

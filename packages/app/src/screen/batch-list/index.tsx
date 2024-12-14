@@ -5,7 +5,7 @@ import Screen from "../../component/screen";
 import {ScreenH1, ScreenH2, ScreenP} from "@brewdocs.beer/design";
 import Batch from "@/model/batch";
 import Recipe from "@/model/recipe";
-import {statuses} from "@/model/status";
+import {statuses} from "@/model/statuses";
 
 export default function BatchList({ batches, recipesIndex }: { batches: Batch[]; recipesIndex: Map<string, Recipe> }) {
     return (
