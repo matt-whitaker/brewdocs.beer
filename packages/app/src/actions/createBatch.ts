@@ -17,7 +17,6 @@ export default async function createBatch(recipe: Recipe, inputs: CreateBatchSta
         status: Statuses.PREP,
         recipeId: recipe.id,
 
-        // Clone the "guts" of the recipes
         hops: cloneDeep(recipe.hops),
         grains: cloneDeep(recipe.grains),
         yeast: cloneDeep(recipe.yeast),

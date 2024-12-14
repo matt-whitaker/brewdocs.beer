@@ -3,12 +3,12 @@ import {Currencies, Units} from "@brewdocs.beer/core";
 import {groupBy} from "lodash";
 import Hop from "@/model/hop";
 import {parseNumberString} from "@/utils/math";
+import Grain from "@/model/grain";
 
 export default function _updateShopping(batch: Batch): Batch {
     (batch as Batch).shopping = [
         {
             name: "Hops",
-            // Hops are summed by varietal
             items: ((): ShoppingListItem[] => {
                 const groups: Record<string, Hop[]> = groupBy(batch.hops, "name");
                 return Object.keys(groups).map(hopName => {
@@ -31,15 +31,26 @@ export default function _updateShopping(batch: Batch): Batch {
         },
         {
             name: "Grain",
-            items: batch.grains.map(({ name, weight: scalar }) => ({
-                name,
-                scalar,
-                purchased: false,
-                cost: {
-                    value: "$0.00",
-                    currency: Currencies.DOLLAR
-                }
-            }))
+            items: (() => {
+                const groups: Record<string, Grain[]> = groupBy(batch.grains, "name");
+                return Object.keys(groups).map(grainName => {
+                    const unit = parseNumberString(groups[grainName][0].weight.value)[1];
+                    const weight = groups[grainName].reduce((m, v) => m + parseNumberString(v.weight.value)[0], 0.0);
+
+                    return {
+                        name: grainName,
+                        purchased: false,
+                        cost: {
+                            value: "$0.00",
+                            currency: Currencies.DOLLAR
+                        },
+                        scalar: {
+                            value: `${weight}${unit}`,
+                            unit: Units.PERCENT
+                        }
+                    }
+                })
+            })(),
         },
         {
             name: "Yeast",

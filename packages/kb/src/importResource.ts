@@ -1,6 +1,4 @@
-export type Resources = "hops"|"grains"|"yeasts"|"recipes";
-
-async function importResource<T>(resource: Resources): Promise<T[]|null> {
+async function importResource<T>(resource: "hops"|"grains"|"yeasts"|"recipes"): Promise<T[]|null> {
     try {
         switch (resource) {
             case "recipes":
