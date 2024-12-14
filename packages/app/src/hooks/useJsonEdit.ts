@@ -4,11 +4,11 @@ import Scalar from "@/model/scalar";
 import {scalarFromNumberWithCurrency, scalarFromNumberWithUnit} from "@/utils/formatting";
 import {Entity} from "@brewdocs.beer/core";
 
-type UpdateFn = (dot: string, value?: unknown) => void;
-type UpdateScalarFn = (dot: string, value: string, lock?: boolean) => void;
-type ToggleFn = (dot: string) => void;
-type AddFn = (dot: string, value: any) => void;
-type RemoveFn = (dot: string, index: number) => void;
+export type UpdateFn = (dot: string, value?: unknown) => void;
+export type UpdateScalarFn = (dot: string, value: string, lock?: boolean) => void;
+export type ToggleFn = (dot: string) => void;
+export type AddFn = (dot: string, value: any) => void;
+export type RemoveFn = (dot: string, index: number) => void;
 
 export default function useJsonEdit<T extends Entity>(data: T, onChange: (data: T) => void): [T, UpdateFn, UpdateScalarFn, ToggleFn, AddFn, RemoveFn] {
     const [state, setState] = useState<T>(data);

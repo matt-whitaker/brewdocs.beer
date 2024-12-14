@@ -4,24 +4,17 @@ import {ScreenH1, ScreenH2, ScreenH3, ScreenP, InputDate} from "@brewdocs.beer/d
 import Batch from "@/model/batch";
 import Recipe from "@/model/recipe";
 import {Fragment} from "react";
-import DataGrid from "@/component/data-grid";
-import Grain from "@/model/grain";
-import DataGridRow from "@/component/data-grid/row";
-import DataGridLabel from "@/component/data-grid/label";
-import DataGridInput from "@/component/data-grid/input";
+
 import useJsonEdit from "@/hooks/useJsonEdit";
-import Hop from "@/model/hop";
-import Yeast from "@/model/yeast";
-import DataGridSelect from "@/component/data-grid/select";
 import ScreenTwoCol from "@/component/screen/two-col";
 import Screen from "@/component/screen";
-import kbHopsState, {useKbHops} from "@/state/kbHops";
-import kbYeastsState, {useKbYeasts} from "@/state/kbYeasts";
-import kbGrainsState, {useKbGrains} from "@/state/kbGrains";
+import {useKbHops} from "@/state/kbHops";
+import {useKbYeasts} from "@/state/kbYeasts";
+import {useKbGrains} from "@/state/kbGrains";
 import useIndexBy from "@/hooks/useIndexBy";
-import DataGridRemoveButton from "@/component/data-grid/remove-button";
-import AddRow from "@/component/data-grid/add-row";
-import {KbGrain, KbHop, KbYeast} from "@brewdocs.beer/kb"
+import PlanningHops from "@/screen/planning/hops";
+import PlanningYeast from "@/screen/planning/yeast";
+import PlanningGrains from "@/screen/planning/grains";
 
 export type PlanningProps = {
     batch: Batch;
@@ -63,98 +56,11 @@ export default function Planning({ batch, recipe, onChange }: PlanningProps) {
             </Screen>
             <ScreenTwoCol>
                 <div>
-                    <ScreenH3 className="cozy">Grain</ScreenH3>
-                    <DataGrid>
-                        {data.grains.map((grain: Grain, i) => (
-                            <Fragment key={`grain-${grain.name}-${i}`}>
-                                <DataGridRow>
-                                    <DataGridLabel className="ml-6">
-                                        <DataGridRemoveButton onClick={() => remove("grains", i)} />
-                                        <DataGridSelect
-                                            data={grains.map((({ name }) => ({ value: name, name })))}
-                                            value={grain.name}
-                                            onChange={(value: string) => update(`grains[${i}]`, kbGrainsState.kbToState(grainsIndex!.get(value)!))}
-                                        />
-                                    </DataGridLabel>
-                                    <DataGridInput
-                                        col={3}
-                                        value={grain.weight.value}
-                                        onChange={(value: string) => update(`grains[${i}].weight.value`, value)}
-                                        onBlur={(value: string) => updateScalar(`grains[${i}].weight`, value)}
-                                    />
-                                </DataGridRow>
-                            </Fragment>
-                        ))}
-                        <AddRow<KbGrain>
-                            data={grains}
-                            add={(value: string) => add("grains", kbGrainsState.kbToState(grainsIndex!.get(value)!))}
-                        />
-                    </DataGrid>
-                    <ScreenH3>Hops</ScreenH3>
-                    <DataGrid>
-                        {data.hops.map((hop: Hop, i) => (
-                            <Fragment key={`grain-${hop.name}-${i}`}>
-                                <DataGridRow>
-                                    <DataGridLabel className="ml-6">
-                                        <DataGridRemoveButton onClick={() => remove("hops", i)} />
-                                        <DataGridSelect
-                                            data={hops.map((({ name }) => ({ value: name, name })))}
-                                            value={hop.name}
-                                            onChange={(value: string) => update(`hops[${i}]`, kbHopsState.kbToState(hopsIndex!.get(value)!))}
-                                        />
-                                    </DataGridLabel>
-                                    <DataGridInput
-                                        col={2}
-                                        value={hop.weight.value}
-                                        onChange={(value: string) => update(`hops[${i}].weight.value`, value)}
-                                        onBlur={(value: string) => updateScalar(`hops[${i}].weight`, value)}
-                                    />
-                                    <DataGridInput
-                                        col={3}
-                                        value={hop.boil.value}
-                                        onChange={(value: string) => update(`hops[${i}].boil.value`, value)}
-                                        onBlur={(value: string) => updateScalar(`hops[${i}].boil`, value)}
-                                    />
-                                </DataGridRow>
-                            </Fragment>
-                        ))}
-                        <AddRow<KbHop>
-                            data={hops}
-                            add={(value: string) => add("hops", kbHopsState.kbToState(hopsIndex!.get(value)!))}
-                        />
-                    </DataGrid>
+                    <PlanningGrains grains={data.grains} add={add} remove={remove} update={update} updateScalar={updateScalar} />
+                    <PlanningHops hops={data.hops} add={add} remove={remove} update={update} updateScalar={updateScalar} />
                 </div>
                 <div>
-                    <ScreenH3 className="lg:mt-0">Yeast</ScreenH3>
-                    <DataGrid>
-                        {data.yeast.map((yeast: Yeast, i) => (
-                            <Fragment key={`yeast-${yeast.name}-${i}`}>
-                                <DataGridRow key={`grain-${yeast.name}-${i}`}>
-                                    <DataGridLabel className="ml-6">
-                                        <DataGridRemoveButton onClick={() => remove("yeast", i)} />
-                                        <DataGridSelect
-                                            data={yeasts.map((({ name }) => ({ value: name, name })))}
-                                            value={yeast.name}
-                                            onChange={(value: string) => update(`yeasts[${i}]`, kbYeastsState.kbToState(yeastsIndex!.get(value)!))}
-                                        />
-                                    </DataGridLabel>
-                                    <DataGridInput
-                                        col={3}
-                                        value={yeast.temp.value}
-                                        onChange={(value: string) => update(`yeast[${i}].temp.value`, value)}
-                                        onBlur={(value: string) => updateScalar(`yeast[${i}].temp`, value)}
-                                    />
-                                </DataGridRow>
-                                {/*<FormCheckbox onChange={() => toggle(`yeast[${i}].starter`)} checked={yeast.starter}>*/}
-                                {/*    Starter?*/}
-                                {/*</FormCheckbox>*/}
-                            </Fragment>
-                        ))}
-                        <AddRow<KbYeast>
-                            data={yeasts}
-                            add={(value: string) => add("yeast", kbYeastsState.kbToState(yeastsIndex!.get(value)!))}
-                        />
-                    </DataGrid>
+                    <PlanningYeast yeast={data.yeast} add={add} remove={remove} update={update} updateScalar={updateScalar} />
                 </div>
             </ScreenTwoCol>
         </>

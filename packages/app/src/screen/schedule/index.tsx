@@ -21,101 +21,108 @@ export default function BrewDay({ batch, onChange }: BrewDayProps) {
     const [data, update, updateScalar] = useJsonEdit<Batch>(batch, onChange);
 
     return (
-        <ScreenTwoCol>
-            <ScreenH1 className="col-start-1 lg:col-span-2 col-span-1 mb-2">Brew Schedule</ScreenH1>
-            <div>
-                <ScreenH3 className="cozy">1. Mash</ScreenH3>
-                {data.mash.map((m, i) => (
-                    <Fragment key={`mash-${m.name}-${i}`}>
-                        <ScreenH4>{m.name} - {m.time.value}</ScreenH4>
-                        <DataGrid>
-                            {data.grains.map((grain: Grain, i) => (
-                                <DataGridRow key={`grain-${grain.name}-${i}`}>
-                                    <DataGridLabel>{grain.name} <DataGridLabelNote>({grain.weight.value})</DataGridLabelNote></DataGridLabel>
-                                    <DataGridInput readonly value={m.temp.value} col={3} />
-                                </DataGridRow>
-                            ))}
-                        </DataGrid>
-                    </Fragment>
-                ))}
-
-                <ScreenH3>2. Boil</ScreenH3>
-                {data.boil.map((m, i) => (
-                    <Fragment key={`boil-${m.name}-${i}`}>
-                        <ScreenH4>{m.name}  - {m.time.value}</ScreenH4>
-                        <DataGrid>
-                            {data.hops.map((hop: Hop, i) => (
-                                <DataGridRow key={`hop-${hop.name}-${i}`}>
-                                    <DataGridLabel>{hop.name} <DataGridLabelNote>({hop.alpha.value})</DataGridLabelNote></DataGridLabel>
-                                    <DataGridInput readonly value={hop.weight.value} col={2} />
-                                    <DataGridInput
-                                        col={3}
-                                        value={hop.boil.value}
-                                        onChange={(value: string) => update(`hops[${i}].boil`, value)}
-                                        onBlur={(value: string) => updateScalar(`hops[${i}].boil`, value)}
-                                    />
-                                </DataGridRow>
-                            ))}
-                        </DataGrid>
-                    </Fragment>
-                ))}
-                {data.additives.length ? (
-                    <Fragment>
-                        <ScreenH4>Additives</ScreenH4>
-                        <DataGrid>
-                            {data.additives.map((additive: Additive, i) => (
-                                <DataGridRow key={`additive-${additive.name}-${i}`}>
-                                    <DataGridLabel>{additive.name}</DataGridLabel>
-                                    <DataGridInput
-                                        col={3}
-                                        value={additive.boil.value}
-                                        onChange={(value: string) => update(`additives[${i}].scalar`, value)}
-                                        onBlur={(value: string) => updateScalar(`additives[${i}].scalar`, value)}
-                                    />
-                                </DataGridRow>
-                            ))}
-                        </DataGrid>
-                    </Fragment>
-                ) : <></>}
-            </div>
-            <div>
-                <ScreenH3 className="lg:mt-0">3. Yeast</ScreenH3>
-                <DataGrid>
-                    {data.yeast.map((yeast: Yeast, i) => (
-                        <DataGridRow key={`yeast-${yeast.name}-${i}`}>
-                            <DataGridLabel>{yeast.name}</DataGridLabel>
-                            <DataGridInput
-                                col={3}
-                                value={yeast.temp.value}
-                                onChange={(value: string) => update(`yeast[${i}].temp.value`, value)}
-                                onBlur={(value: string) => updateScalar(`yeast[${i}].temp`, value)}
-                            />
-                        </DataGridRow>
+        <>
+            <ScreenTwoCol>
+                <ScreenH1 className="col-start-1 lg:col-span-2 col-span-1 mb-2">Brew Schedule</ScreenH1>
+                <div>
+                    <ScreenH3 className="cozy">1. Mash</ScreenH3>
+                    {data.mash.map((m, i) => (
+                        <Fragment key={`mash-${m.name}-${i}`}>
+                            <ScreenH4>{m.name} - {m.time.value}</ScreenH4>
+                            <DataGrid>
+                                {data.grains.map((grain: Grain, i) => (
+                                    <DataGridRow key={`grain-${grain.name}-${i}`}>
+                                        <DataGridLabel>{grain.name} <DataGridLabelNote>({grain.weight.value})</DataGridLabelNote></DataGridLabel>
+                                        <DataGridInput readonly value={m.temp.value} col={3} />
+                                    </DataGridRow>
+                                ))}
+                            </DataGrid>
+                        </Fragment>
                     ))}
-                </DataGrid>
 
-                <ScreenH3>Gravity Readings</ScreenH3>
-                <DataGrid>
-                    {data.hydrometer.map((hydro: Hydrometer, i) => (
-                        <DataGridRow key={`hydro-${hydro.name}-${i}`}>
-                            <DataGridLabel>
+                    <ScreenH3>2. Boil</ScreenH3>
+                    {data.boil.map((m, i) => (
+                        <Fragment key={`boil-${m.name}-${i}`}>
+                            <ScreenH4>{m.name}  - {m.time.value}</ScreenH4>
+                            <DataGrid>
+                                {data.hops.map((hop: Hop, i) => (
+                                    <DataGridRow key={`hop-${hop.name}-${i}`}>
+                                        <DataGridLabel>{hop.name} <DataGridLabelNote>({hop.alpha.value})</DataGridLabelNote></DataGridLabel>
+                                        <DataGridInput readonly value={hop.weight.value} col={2} />
+                                        <DataGridInput
+                                            col={3}
+                                            value={hop.boil.value}
+                                            onChange={(value: string) => update(`hops[${i}].boil`, value)}
+                                            onBlur={(value: string) => updateScalar(`hops[${i}].boil`, value)}
+                                        />
+                                    </DataGridRow>
+                                ))}
+                            </DataGrid>
+                        </Fragment>
+                    ))}
+                    {data.additives.length ? (
+                        <Fragment>
+                            <ScreenH4>Additives</ScreenH4>
+                            <DataGrid>
+                                {data.additives.map((additive: Additive, i) => (
+                                    <DataGridRow key={`additive-${additive.name}-${i}`}>
+                                        <DataGridLabel>{additive.name}</DataGridLabel>
+                                        <DataGridInput
+                                            col={3}
+                                            value={additive.boil.value}
+                                            onChange={(value: string) => update(`additives[${i}].scalar`, value)}
+                                            onBlur={(value: string) => updateScalar(`additives[${i}].scalar`, value)}
+                                        />
+                                    </DataGridRow>
+                                ))}
+                            </DataGrid>
+                        </Fragment>
+                    ) : <></>}
+                </div>
+                <div>
+                    <ScreenH3 className="lg:mt-0">3. Yeast</ScreenH3>
+                    <DataGrid>
+                        {data.yeast.map((yeast: Yeast, i) => (
+                            <DataGridRow key={`yeast-${yeast.name}-${i}`}>
+                                <DataGridLabel>{yeast.name}</DataGridLabel>
                                 <DataGridInput
-                                    col={1}
-                                    type="date"
-                                    value={hydro.date}
-                                    onChange={(value: string) => update(`hydrometer[${i}].date`, value)}
+                                    col={3}
+                                    value={yeast.temp.value}
+                                    onChange={(value: string) => update(`yeast[${i}].temp.value`, value)}
+                                    onBlur={(value: string) => updateScalar(`yeast[${i}].temp`, value)}
                                 />
-                            </DataGridLabel>
-                            <DataGridInput
-                                col={3}
-                                value={hydro.gravity.value}
-                                onChange={(value: string) => update(`hydrometer[${i}].gravity.value`, value)}
-                                onBlur={(value: string) => updateScalar(`hydrometer[${i}].gravity`, value)}
-                            />
-                        </DataGridRow>
-                    ))}
-                </DataGrid>
-            </div>
-        </ScreenTwoCol>
+                            </DataGridRow>
+                        ))}
+                    </DataGrid>
+                </div>
+            </ScreenTwoCol>
+            <ScreenTwoCol>
+                <ScreenH1 className="col-start-1 lg:col-span-2 col-span-1 mb-2">Measurements</ScreenH1>
+                <div>
+                    <ScreenH3>Gravity Readings</ScreenH3>
+                    <DataGrid>
+                        {data.hydrometer.map((hydro: Hydrometer, i) => (
+                            <DataGridRow key={`hydro-${hydro.name}-${i}`}>
+                                <DataGridLabel>
+                                    <DataGridInput
+                                        col={1}
+                                        type="date"
+                                        value={hydro.date}
+                                        onChange={(value: string) => update(`hydrometer[${i}].date`, value)}
+                                    />
+                                </DataGridLabel>
+                                <DataGridInput
+                                    col={3}
+                                    value={hydro.gravity.value}
+                                    onChange={(value: string) => update(`hydrometer[${i}].gravity.value`, value)}
+                                    onBlur={(value: string) => updateScalar(`hydrometer[${i}].gravity`, value)}
+                                />
+                            </DataGridRow>
+                        ))}
+                    </DataGrid>
+                </div>
+                <div>dlkf</div>
+            </ScreenTwoCol>
+        </>
     )
 }
