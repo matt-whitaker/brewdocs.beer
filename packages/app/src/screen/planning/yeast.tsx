@@ -12,7 +12,7 @@ import kbYeastsState, {useKbYeasts} from "@/state/kbYeasts";
 import DataGridInput from "@/component/data-grid/input";
 import AddRow from "@/component/data-grid/add-row";
 import useIndexBy from "@/hooks/useIndexBy";
-import sessionState, {useSession} from "@/state/session";
+import sessionState, {Session, useSession} from "@/state/session";
 import Collapse from "@/component/collapse";
 
 export type PlanningYeastProps = {
@@ -21,11 +21,11 @@ export type PlanningYeastProps = {
     remove: RemoveFn;
     update: UpdateFn;
     updateScalar: UpdateScalarFn;
+    session: Session;
 }
-export default function PlanningYeast({ yeast, add, remove, update, updateScalar }: PlanningYeastProps) {
+export default function PlanningYeast({ yeast, add, remove, update, updateScalar, session }: PlanningYeastProps) {
     const kbYeasts = useKbYeasts();
     const kbYeastsIndex = useIndexBy(kbYeasts, "name");
-    const session = useSession();
 
     if (!kbYeasts || !kbYeastsIndex) {
         return null;
@@ -48,7 +48,7 @@ export default function PlanningYeast({ yeast, add, remove, update, updateScalar
                                     <DataGridSelect
                                         data={kbYeasts.map((({ name }) => ({ value: name, name })))}
                                         value={yeast.name}
-                                        onChange={(value: string) => update(`yeasts[${i}]`, kbYeastsState.kbToState(kbYeastsIndex!.get(value)!))}
+                                        onChange={(value: string) => update(`yeast[${i}]`, kbYeastsState.kbToState(kbYeastsIndex!.get(value)!))}
                                     />
                                 </DataGridLabel>
                                 <DataGridInput

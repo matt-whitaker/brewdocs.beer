@@ -12,7 +12,7 @@ import DataGridInput from "@/component/data-grid/input";
 import AddRow from "@/component/data-grid/add-row";
 import useIndexBy from "@/hooks/useIndexBy";
 import {AddFn, RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
-import sessionState, {useSession} from "@/state/session";
+import sessionState, {Session, useSession} from "@/state/session";
 import Collapse from "@/component/collapse";
 
 export type PlanningHopsProps = {
@@ -21,11 +21,11 @@ export type PlanningHopsProps = {
     remove: RemoveFn;
     update: UpdateFn;
     updateScalar: UpdateScalarFn;
+    session: Session;
 }
-export default function PlanningHops({ hops, add, remove, update, updateScalar }: PlanningHopsProps) {
+export default function PlanningHops({ hops, add, remove, update, updateScalar, session }: PlanningHopsProps) {
     const kbHops = useKbHops();
     const kbHopsIndex = useIndexBy(kbHops, "name");
-    const session = useSession();
 
     if (!kbHops || !kbHopsIndex) {
         return null;

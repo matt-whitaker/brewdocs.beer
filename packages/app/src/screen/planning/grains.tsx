@@ -12,7 +12,7 @@ import kbGrainsState, {useKbGrains} from "@/state/kbGrains";
 import DataGridInput from "@/component/data-grid/input";
 import AddRow from "@/component/data-grid/add-row";
 import useIndexBy from "@/hooks/useIndexBy";
-import sessionState, {useSession} from "@/state/session";
+import sessionState, {Session, useSession} from "@/state/session";
 import Collapse from "@/component/collapse";
 
 export type PlanningGrainsProps = {
@@ -21,11 +21,15 @@ export type PlanningGrainsProps = {
     remove: RemoveFn;
     update: UpdateFn;
     updateScalar: UpdateScalarFn;
+    session: Session;
 }
-export default function PlanningGrains({ grains, add, remove, update, updateScalar }: PlanningGrainsProps) {
+export default function PlanningGrains({ grains, add, remove, update, updateScalar, session }: PlanningGrainsProps) {
     const kbGrains = useKbGrains();
     const kbGrainsIndex = useIndexBy(kbGrains, "name");
-    const session = useSession();
+
+    if (!kbGrains || !kbGrainsIndex) {
+        return null;
+    }
 
     return (
         <>
@@ -42,7 +46,7 @@ export default function PlanningGrains({ grains, add, remove, update, updateScal
                                 <DataGridLabel className="ml-6">
                                     <DataGridRemoveButton onClick={() => remove("grains", i)} />
                                     <DataGridSelect
-                                        data={grains.map((({ name }) => ({ value: name, name })))}
+                                        data={kbGrains.map((({ name }) => ({ value: name, name })))}
                                         value={grain.name}
                                         onChange={(value: string) => update(`grains[${i}]`, kbGrainsState.kbToState(kbGrainsIndex!.get(value)!))}
                                     />

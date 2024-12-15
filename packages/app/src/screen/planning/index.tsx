@@ -3,7 +3,6 @@
 import {ScreenH1, ScreenH2, ScreenH3, ScreenP, InputDate} from "@brewdocs.beer/design";
 import Batch from "@/model/batch";
 import Recipe from "@/model/recipe";
-import {Fragment} from "react";
 
 import useJsonEdit from "@/hooks/useJsonEdit";
 import ScreenTwoCol from "@/component/screen/two-col";
@@ -15,6 +14,7 @@ import useIndexBy from "@/hooks/useIndexBy";
 import PlanningHops from "@/screen/planning/hops";
 import PlanningYeast from "@/screen/planning/yeast";
 import PlanningGrains from "@/screen/planning/grains";
+import {useSession} from "@/state/session";
 
 export type PlanningProps = {
     batch: Batch;
@@ -22,18 +22,9 @@ export type PlanningProps = {
     onChange: (batch: Batch) => void
 }
 export default function Planning({ batch, recipe, onChange }: PlanningProps) {
-    const hops = useKbHops();
-    const hopsIndex = useIndexBy(hops, "name");
-    const yeasts = useKbYeasts();
-    const yeastsIndex = useIndexBy(yeasts, "name");
-    const grains = useKbGrains();
-    const grainsIndex = useIndexBy(grains, "name");
+    const session = useSession();
 
     const [data, update, updateScalar,, add, remove] = useJsonEdit<Batch>(batch, onChange);
-
-    if (!hops || !hopsIndex || !yeasts || !yeastsIndex || !grains || !grainsIndex) {
-        return null;
-    }
 
     return (
         <>
@@ -56,11 +47,32 @@ export default function Planning({ batch, recipe, onChange }: PlanningProps) {
             </Screen>
             <ScreenTwoCol>
                 <div>
-                    <PlanningGrains grains={data.grains} add={add} remove={remove} update={update} updateScalar={updateScalar} />
-                    <PlanningHops hops={data.hops} add={add} remove={remove} update={update} updateScalar={updateScalar} />
+                    <PlanningGrains
+                        grains={data.grains}
+                        add={add}
+                        remove={remove}
+                        update={update}
+                        updateScalar={updateScalar}
+                        session={session}
+                    />
+                    <PlanningHops
+                        hops={data.hops}
+                        add={add}
+                        remove={remove}
+                        update={update}
+                        updateScalar={updateScalar}
+                        session={session}
+                    />
                 </div>
                 <div>
-                    <PlanningYeast yeast={data.yeast} add={add} remove={remove} update={update} updateScalar={updateScalar} />
+                    <PlanningYeast
+                        yeast={data.yeast}
+                        add={add}
+                        remove={remove}
+                        update={update}
+                        updateScalar={updateScalar}
+                        session={session}
+                    />
                 </div>
             </ScreenTwoCol>
         </>

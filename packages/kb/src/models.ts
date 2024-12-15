@@ -13,6 +13,9 @@ export interface KbGrain extends Entity {
 
 export interface KbYeast extends Entity {
     name: string;
+    temp: [string, string];
+    description: string;
+    origin: string;
 }
 
 export interface KbHop extends Entity {
