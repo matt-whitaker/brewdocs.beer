@@ -24,7 +24,7 @@ export default function BatchesPage() {
 
     ] = useMemo(() => [
         (batches ?? []).filter(batch => batch.status === Statuses.PREP),
-        (batches ?? []).filter(batch => batch > Statuses.PREP && batch.status < Statuses.FERMENT),
+        (batches ?? []).filter(batch => batch.status > Statuses.PREP && batch.status < Statuses.FERMENT),
         (batches ?? []).filter(batch => batch.status > Statuses.BOIL && batch.status < Statuses.COMPLETE),
         (batches ?? []).filter(batch => batch.status === Statuses.COMPLETE),
     ], [batches]);

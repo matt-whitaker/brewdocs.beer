@@ -126,8 +126,7 @@ const recipes: Recipe[] = [
                 temp: {
                     value: "62°F",
                     unit: Units.FAHRENHEIT
-                },
-                starter: false
+                }
             }
         ],
         additives: [
