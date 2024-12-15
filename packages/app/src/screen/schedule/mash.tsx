@@ -1,4 +1,4 @@
-import {ScreenH4} from "@brewdocs.beer/design";
+import {ScreenH3, ScreenH4, ScreenH5} from "@brewdocs.beer/design";
 import {Fragment} from "react";
 import DataGrid from "@/component/data-grid";
 import Grain from "@/model/grain";
@@ -9,13 +9,19 @@ import DataGridInput from "@/component/data-grid/input";
 import sessionState, {useSession} from "@/state/session";
 import Collapse from "@/component/collapse";
 import {Mash} from "@/model/mash";
+import Hydrometer from "@/model/hydrometer";
+import {UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
 
 export type ScheduleMashProps = {
     mash: Mash[];
     grains: Grain[];
+    update: UpdateFn;
+    updateScalar: UpdateScalarFn;
+    hydro: Hydrometer;
+    hydroIndex: number;
 };
 
-export default function ScheduleMash({ mash, grains }: ScheduleMashProps) {
+export default function ScheduleMash({ mash, grains, update, updateScalar, hydro, hydroIndex }: ScheduleMashProps) {
     const session = useSession();
 
     return (
@@ -39,6 +45,29 @@ export default function ScheduleMash({ mash, grains }: ScheduleMashProps) {
                         </DataGrid>
                     </Fragment>
                 ))}
+                <div className="divider"></div>
+                <ScreenH5>Gravity Reading</ScreenH5>
+                <DataGrid>
+                    <DataGridRow key={`hydro-${hydro.name}-${hydroIndex}`}>
+                        <DataGridLabel>
+                            <DataGridInput
+                                col={1}
+                                type="date"
+                                value={hydro.date}
+                                onChange={(value: string) => update(`hydrometer[${hydroIndex}].date`, value)}
+                            />
+                        </DataGridLabel>
+                        <DataGridInput
+                            col={3}
+                            value={hydro.gravity.value}
+                            onChange={(value: string) => update(`hydrometer[${hydroIndex}].gravity.value`, value)}
+                            onBlur={(value: string) => updateScalar(`hydrometer[${hydroIndex}].gravity`, value)}
+                        />
+                    </DataGridRow>
+                    {/*{data.hydrometer.map((hydro: Hydrometer, i) => (*/}
+                    {/*    */}
+                    {/*))}*/}
+                </DataGrid>
             </Collapse>
         </>
     )
