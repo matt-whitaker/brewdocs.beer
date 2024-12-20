@@ -1,27 +1,19 @@
 "use client";
 
-import {ScreenH1, ScreenH3, ScreenH4} from "@brewdocs.beer/design";
-import Hop from "@/model/hop";
-import Yeast from "@/model/yeast";
+import {ScreenH1} from "@brewdocs.beer/design";
 import Batch from "@/model/batch";
-import Grain from "@/model/grain";
-import Hydrometer from "@/model/hydrometer";
-import DataGridLabel from "@/component/data-grid/label";
-import DataGridRow from "@/component/data-grid/row";
-import DataGrid from "@/component/data-grid";
-import DataGridInput from "@/component/data-grid/input";
 import useJsonEdit from "@/hooks/useJsonEdit";
 import {Fragment} from "react";
-import Additive from "@/model/additive";
 import ScreenTwoCol from "@/component/screen/two-col";
-import DataGridLabelNote from "@/component/data-grid/label-note";
 import ScheduleMash from "@/screen/schedule/mash";
 import ScheduleBoil from "@/screen/schedule/boil";
 import SchedulePitch from "@/screen/schedule/pitch";
 import ScheduleChill from "@/screen/schedule/chill";
+import {useSession} from "@/state/session";
 
 export type BrewDayProps = { batch: Batch, onChange: (batch: Batch) => void; };
 export default function BrewDay({ batch, onChange }: BrewDayProps) {
+    const session = useSession();
     const [data, update, updateScalar] = useJsonEdit<Batch>(batch, onChange);
 
     return (
@@ -46,7 +38,7 @@ export default function BrewDay({ batch, onChange }: BrewDayProps) {
                     />
                 </div>
                 <div>
-                    <ScheduleChill />
+                    <ScheduleChill hydro={data.hydrometer[2]} hydroIndex={2} update={update} updateScalar={updateScalar} session={session} />
                     <SchedulePitch yeast={data.yeast} update={update} updateScalar={updateScalar} />
                 </div>
             </ScreenTwoCol>

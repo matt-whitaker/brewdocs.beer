@@ -45,8 +45,8 @@ export default function ScheduleMash({ mash, grains, update, updateScalar, hydro
                         </DataGrid>
                     </Fragment>
                 ))}
-                <div className="divider"></div>
-                <ScreenH5>Gravity Reading</ScreenH5>
+                <div className="divider my-0"></div>
+                <ScreenH5 className="cozy">Gravity Reading</ScreenH5>
                 <DataGrid>
                     <DataGridRow key={`hydro-${hydro.name}-${hydroIndex}`}>
                         <DataGridLabel>
