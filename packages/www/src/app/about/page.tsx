@@ -10,7 +10,7 @@ export default function About() {
 
                 <p>Designed for offline use, BrewDocs keeps the resources you need most ready at-hand.</p>
 
-                <p>If you're interested in the technical side of BrewDocs, head over to its public Github <Link className="link link-primary" href={GITHUB_URL}>repository</Link> to learn more.</p>
+                <p>If you're interested in the technical side of BrewDocs, head over to its public Github <Link className="link link-primary" href={GITHUB_URL}>repository</Link> to learn more. Or <Link className="link link-primary" href="https://app.brewdocs.beer">try it out!</Link></p>
                 {/*<p>Additionally, the software follows an <b>offline-first</b> approach. The aim is to provide fast, on-demand information as well as keeping operating costs down. Think of it as a digital booklet.</p>*/}
                 {/*<p>Built as a technical demonstration, BrewDocs showcases the use of modern web technologies like <b>Next.js</b>. <b>React</b>, <b>Tailwind</b>, and <b>Daisy UI</b> to create a streamlined and user-friendly experience.</p>*/}
                 {/*<p className="italic max-lg:text-sm">Note: BrewDocs is currently in its prototyping stage. It is deployed mostly for demonstration and is not stable yet.</p>*/}
