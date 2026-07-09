@@ -19,11 +19,17 @@ export function debounce<A extends unknown[]>(fn: (...args: A) => void, wait: nu
 }
 
 /**
- * Dot-path lookup, numeric segments index arrays (e.g. "checklists.0.items.2.completed")
+ * Splits a lodash-style path; supports dots and brackets, so
+ * "checklists.0.items.2.completed" and "shopping.[0].items.[2].purchased"
+ * both yield plain segments
  */
+function toSegments(path: string): string[] {
+    return path.replace(/\[(\w+)\]/g, ".$1").split(".").filter(Boolean);
+}
+
 export function get(obj: unknown, path: string): any {
     let node: any = obj;
-    for (const key of path.split(".")) {
+    for (const key of toSegments(path)) {
         if (node == null) return undefined;
         node = node[key];
     }
@@ -35,7 +41,7 @@ export function get(obj: unknown, path: string): any {
  * intermediate objects/arrays like lodash does
  */
 export function set<T extends object>(obj: T, path: string, value: unknown): T {
-    const segments = path.split(".");
+    const segments = toSegments(path);
     let node: any = obj;
     for (let i = 0; i < segments.length - 1; i++) {
         const key = segments[i];
