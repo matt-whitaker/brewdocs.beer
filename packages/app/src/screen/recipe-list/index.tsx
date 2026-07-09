@@ -8,7 +8,7 @@ export default function RecipeList({ recipes }: RecipeListProps) {
     return (
         <Screen>
             <ScreenH1>All Recipes</ScreenH1>
-            <ul className="menu px-0">
+            <ul className="w-full menu px-0">
                 {recipes.map((recipe, i) => (
                     <li key={i} className="odd:bg-base-200">
                         <Link to="/recipe" search={{recipeId: recipe.id}} className="text-left block">

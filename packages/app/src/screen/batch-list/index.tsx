@@ -9,7 +9,7 @@ export default function BatchList({ batches, recipesIndex }: { batches: Batch[];
     return (
         <Screen>
             <ScreenH1>Your brews</ScreenH1>
-            <ul className="menu px-0">
+            <ul className="w-full menu px-0">
                 {batches.map((batch) => (
                     <li key={batch.id} className="odd:bg-base-200">
                         <Link to="/batch" search={{batchId: batch.id}} className="text-left block">
