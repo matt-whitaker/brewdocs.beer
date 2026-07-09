@@ -1,5 +1,5 @@
 import {useCallback, useEffect, useMemo, useState} from "react";
-import {cloneDeep, get, set} from "@/utils/lang";
+import {cloneDeep, get, set} from "@/utils/func";
 
 export type ToggleFn = (dot: string) => void;
 export type AddFn = (dot: string, value: string) => void;

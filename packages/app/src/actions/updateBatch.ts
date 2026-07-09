@@ -1,7 +1,7 @@
 import Batch from "@/model/batch";
 import _updateShopping from "@/actions/_updateShopping";
 import batchesStorage from "@/storage/batches";
-import {isEqual} from "@/utils/lang";
+import {isEqual} from "@/utils/func";
 
 export default async function updateBatch(id: string, batch: Batch) {
     const current = await batchesStorage.get(id);

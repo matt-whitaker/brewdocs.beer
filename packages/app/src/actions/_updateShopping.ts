@@ -1,6 +1,6 @@
 import Batch, {ShoppingListItem} from "@/model/batch";
 import {Currencies, Units} from "@brewdocs.beer/core";
-import {groupBy} from "@/utils/lang";
+import {groupBy} from "@/utils/func";
 import Hop from "@/model/hop";
 import {parseNumberString} from "@/utils/math";
 import Grain from "@/model/grain";
