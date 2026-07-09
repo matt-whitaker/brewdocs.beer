@@ -11,6 +11,7 @@
     "packages/core",
     "packages/app",
     "packages/www",
+    "packages/www2",
     "packages/design",
     "packages/kb"
   ]
