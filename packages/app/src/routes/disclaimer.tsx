@@ -1,5 +1,10 @@
+import {createFileRoute} from "@tanstack/react-router";
 
-export default function DisclaimerPage() {
+export const Route = createFileRoute("/disclaimer")({
+    component: DisclaimerPage
+});
+
+function DisclaimerPage() {
     return (
         <div className="max-w-md p-5">
             <h1 className="font-bold mb-2 text-2xl">Disclaimer</h1>

@@ -1,4 +1,4 @@
-import {PropsWithClass} from "../../../../../core";
+import {PropsWithClass} from "@brewdocs.beer/core";
 import classNames from "classnames";
 import {PropsWithChildren, useCallback} from "react";
 import {eventValue} from "@brewdocs.beer/core";

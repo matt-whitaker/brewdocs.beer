@@ -1,4 +1,4 @@
-import {cloneDeep, debounce, get, set} from "lodash";
+import {cloneDeep, debounce, get, set} from "@/utils/lang";
 import {useCallback, useEffect, useMemo, useState} from "react";
 import Scalar from "@/model/scalar";
 import {scalarFromNumberWithCurrency, scalarFromNumberWithUnit} from "@/utils/formatting";

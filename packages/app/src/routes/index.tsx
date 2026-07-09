@@ -1,6 +1,11 @@
+import {createFileRoute} from "@tanstack/react-router";
 import Hero from "@/component/hero";
 
-export default function HomePage() {
+export const Route = createFileRoute("/")({
+    component: HomePage
+});
+
+function HomePage() {
     return (
         <Hero>
             <div className="max-w-md">

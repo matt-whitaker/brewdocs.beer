@@ -1,5 +1,3 @@
-"use client";
-
 import Batch from "@/model/batch";
 import {ScreenH1} from "@brewdocs.beer/design";
 import Screen from "@/component/screen";

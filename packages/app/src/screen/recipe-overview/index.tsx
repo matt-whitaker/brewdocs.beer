@@ -1,11 +1,9 @@
-"use client";
-
 import Screen from "@/component/screen";
 import {ScreenH1, ScreenH2, ScreenP} from "@brewdocs.beer/design";
 import Recipe from "@/model/recipe";
 import {Plus} from "@/component/svg";
 import {useCallback} from "react";
-import {useRouter} from "next/navigation";
+import {useNavigate} from "@tanstack/react-router";
 import Organics from "@/component/organics";
 import Modal from "@/component/modal";
 import ModalTitle from "@/component/modal/title";
@@ -20,11 +18,11 @@ export default function RecipeOverview({ recipe, batchesCount }: RecipeOverviewP
     const defaultBatchName = `Batch #${batchesCount+1}`;
     const [modalRef, toggle] = useModal();
     const [batchInputs, setBatchInputs, finalInputs] = useCreatBatchForm(defaultBatchName);
-    const router = useRouter();
+    const navigate = useNavigate();
 
     const onConfirm = useCallback(() =>
-            createBatch(recipe, finalInputs).then((id) => router.push(`/batch?batchId=${id}`)),
-        [router, recipe, finalInputs]);
+            createBatch(recipe, finalInputs).then((id) => navigate({to: "/batch", search: {batchId: id}})),
+        [navigate, recipe, finalInputs]);
 
     return (
         <Screen>

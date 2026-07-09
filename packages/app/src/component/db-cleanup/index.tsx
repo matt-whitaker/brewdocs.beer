@@ -1,17 +1,15 @@
-"use client";
-
 import {useEffect} from "react";
 import batchesStorage from "@/storage/batches";
 import sessionStorage from "@/storage/settings";
-import {useRouter} from "next/navigation";
+import {useNavigate} from "@tanstack/react-router";
 
 export default function DbCleanup() {
-    const router = useRouter();
+    const navigate = useNavigate();
     useEffect(() => {
         if (new URLSearchParams(location.search).get("purge") !== null) {
             batchesStorage.purge();
             sessionStorage.purge();
-            router.push("/");
+            navigate({to: "/", replace: true});
         }
 
         return () => {};

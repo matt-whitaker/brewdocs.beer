@@ -25,7 +25,7 @@ export function InputText({ className, onChange, onBlur, value, readonly, placeh
         value={value}
         type="text"
         className={classNames(
-            "input input-bordered lg:input-sm input-xs px-1 lg:px-2.5",
+            "input lg:input-sm input-xs px-1 lg:px-2.5",
             [className],
             {
                 "input-primary": primary,

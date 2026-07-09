@@ -1,6 +1,4 @@
-"use client";
-
-import {useSearchParams} from "next/navigation";
+import {createFileRoute} from "@tanstack/react-router";
 import usePanelSwitcher from "@/component/panel-switcher/usePanelSwitcher";
 import PanelSwitcher from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
@@ -11,10 +9,17 @@ import {useBatches} from "@/state/batches";
 import useIndexBy from "@/hooks/useIndexBy";
 import {useRecipe} from "@/state/recipe";
 
-export default function RecipePage() {
-    const recipeId = useSearchParams().get("recipeId");
+export const Route = createFileRoute("/recipe")({
+    validateSearch: (search: Record<string, unknown>): {recipeId?: string} => ({
+        recipeId: typeof search.recipeId === "string" ? search.recipeId : undefined
+    }),
+    component: RecipePage
+});
+
+function RecipePage() {
+    const {recipeId} = Route.useSearch();
     const batches = useBatches(batch => batch.recipeId === recipeId);
-    const recipe = useRecipe(recipeId);
+    const recipe = useRecipe(recipeId ?? null);
     const recipesIndex = useIndexBy(recipe);
 
     const [active, setActive] = usePanelSwitcher("Overview");

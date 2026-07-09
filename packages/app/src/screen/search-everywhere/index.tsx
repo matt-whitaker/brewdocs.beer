@@ -1,5 +1,3 @@
-"use client";
-
 import Screen from "@/component/screen";
 import Batch from "@/model/batch";
 import SearchEverywhereResult from "@/screen/search-everywhere/avatar";

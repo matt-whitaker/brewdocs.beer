@@ -1,6 +1,6 @@
 import {useMemo, useState} from "react";
 import Batch from "@/model/batch";
-import {omitBy, isEmpty} from "lodash";
+import {omitBy, isEmpty} from "@/utils/lang";
 
 export type CreateBatchState = Pick<Batch, "name"|"brewDate">
 export default function useCreatBatchForm(defaultName: string): [CreateBatchState, (state: CreateBatchState) => void, CreateBatchState] {

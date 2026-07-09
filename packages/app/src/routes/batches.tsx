@@ -1,6 +1,5 @@
-"use client";
-
-import BrewList from "../../screen/batch-list";
+import {createFileRoute} from "@tanstack/react-router";
+import BrewList from "@/screen/batch-list";
 import PanelSwitcher from "@/component/panel-switcher";
 import usePanelSwitcher from "@/component/panel-switcher/usePanelSwitcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
@@ -11,7 +10,11 @@ import useIndexBy from "@/hooks/useIndexBy";
 import Statuses from "@/model/statuses";
 import {useMemo} from "react";
 
-export default function BatchesPage() {
+export const Route = createFileRoute("/batches")({
+    component: BatchesPage
+});
+
+function BatchesPage() {
     const batches = useBatches();
     const recipesIndex = useIndexBy(useRecipes());
     const [active, change] = usePanelSwitcher("Ready");
