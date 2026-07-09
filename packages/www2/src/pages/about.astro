@@ -1,0 +1,16 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Hero from "@/components/hero";
+import {GITHUB_URL} from "@/data/env";
+---
+<Layout title="About BrewDocs">
+    <Hero title="About BrewDocs" className="max-lg:pt-[8rem]">
+        <div class="lg:max-w-screen-md p-4 text-left [&>p]:mt-3 [&>p]:indent-4 lg:text-lg flex flex-col">
+            <p>BrewDocs is a homebrewing documentation tool designed for beginner and hobbyist homebrewers. It simplifies the process of organizing and recording your brew days, while offering easy access to educational resources.</p>
+
+            <p>Designed for offline use, BrewDocs keeps the resources you need most ready at-hand.</p>
+
+            <p>If you're interested in the technical side of BrewDocs, head over to its public Github <a class="link link-primary" href={GITHUB_URL}>repository</a> to learn more. Or <a class="link link-primary" href="https://app.brewdocs.beer">try it out!</a></p>
+        </div>
+    </Hero>
+</Layout>
