@@ -5,4 +5,8 @@ notes.md
 .idea/
 *storybook.log
 dist
+<<<<<<< HEAD
+=======
+
+>>>>>>> mainline
 .DS_Store
