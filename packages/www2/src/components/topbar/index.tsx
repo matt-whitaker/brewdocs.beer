@@ -14,7 +14,7 @@ export default function Topbar({ nav }: TopbarProps) {
                         key={name}
                         className={classNames("btn btn-ghost max-lg:hidden", {
                             "decoration-none": !primary,
-                            "btn-sm": !primary,
+                            "btn-md": !primary,
                             "text-lg": primary
                         })}
                         href={href}>
