@@ -1,0 +1,9 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@plugin "daisyui" {
+  themes: nord;
+}
+
+@theme {
+  --font-sans: "Urbanist Variable", ui-sans-serif, system-ui, sans-serif;
+}

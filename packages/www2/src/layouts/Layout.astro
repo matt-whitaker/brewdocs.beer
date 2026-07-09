@@ -1,0 +1,24 @@
+---
+import "@fontsource-variable/urbanist";
+import "../styles/global.css";
+import Shell from "@/components/shell";
+
+interface Props {
+    title?: string;
+}
+
+const { title = "Announcing: BrewDocs!" } = Astro.props;
+---
+<html lang="en" data-theme="nord">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <title>{title}</title>
+</head>
+<body class="font-sans w-screen overscroll-none">
+<Shell>
+    <slot />
+</Shell>
+</body>
+</html>
