@@ -5,3 +5,5 @@ notes.md
 .idea/
 *storybook.log
 dist
+
+.DS_Store
