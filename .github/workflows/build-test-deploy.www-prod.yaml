@@ -7,7 +7,7 @@ on:
       - develop
       - mainline
     paths:
-      - packages/www2/**
+      - packages/www/**
       - .github/**
 
 env:
@@ -23,11 +23,11 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - run: npm ci
-      - run: npm run build -w packages/www2
+      - run: npm run build -w packages/www
       - uses: actions/upload-artifact@v4
         with:
           name: www-prod
-          path: packages/www2/dist
+          path: packages/www/dist
 
   Test:
     runs-on: ubuntu-latest
@@ -42,7 +42,7 @@ jobs:
       environment: "www-prod"
       aws_default_region: "us-west-2"
       artifact_name: "www-prod"
-      artifact_path: "packages/www2/dist"
+      artifact_path: "packages/www/dist"
     secrets:
       aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
       aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

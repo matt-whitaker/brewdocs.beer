@@ -1,2 +1,0 @@
-export const APP_URL: string = import.meta.env.PUBLIC_APP_URL || "https://app.brewdocs.beer";
-export const GITHUB_URL: string = import.meta.env.PUBLIC_GITHUB_URL || "https://github.com/matt-whitaker/brewdocs.beer";
