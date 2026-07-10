@@ -12,7 +12,7 @@ export default function BatchList({ batches, recipesIndex }: { batches: Batch[];
             <ul className="w-full menu px-0">
                 {batches.map((batch) => (
                     <li key={batch.id} className="odd:bg-base-200">
-                        <Link to="/batch" search={{batchId: batch.id}} className="text-left block">
+                        <Link to="/batch/$batchId" params={{batchId: batch.id}} className="text-left block">
                             <ScreenH2 className="text-lg">{recipesIndex.get(batch.recipeId)?.name || ""}</ScreenH2>
                             <ScreenP>{batch.name || ""}</ScreenP>
                             <ScreenP>by {batch.brewer || recipesIndex.get(batch.recipeId)?.brewer || ""}</ScreenP>

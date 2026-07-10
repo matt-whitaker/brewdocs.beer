@@ -21,7 +21,7 @@ export default function RecipeOverview({ recipe, batchesCount }: RecipeOverviewP
     const navigate = useNavigate();
 
     const onConfirm = useCallback(() =>
-            createBatch(recipe, finalInputs).then((id) => navigate({to: "/batch", search: {batchId: id}})),
+            createBatch(recipe, finalInputs).then((id) => navigate({to: "/batch/$batchId", params: {batchId: id}})),
         [navigate, recipe, finalInputs]);
 
     return (

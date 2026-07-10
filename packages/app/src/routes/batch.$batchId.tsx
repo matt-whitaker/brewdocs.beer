@@ -16,18 +16,15 @@ import {useRecipe} from "@/state/recipe";
 import updateBatch from "@/actions/updateBatch";
 import Statuses from "@/model/statuses";
 
-export const Route = createFileRoute("/batch")({
-    validateSearch: (search: Record<string, unknown>): {batchId?: string} => ({
-        batchId: typeof search.batchId === "string" ? search.batchId : undefined
-    }),
+export const Route = createFileRoute("/batch/$batchId")({
     component: BatchPage
 });
 
 function BatchPage() {
-    const {batchId} = Route.useSearch();
+    const {batchId} = Route.useParams();
     const session = useSession();
 
-    const batch = useBatch(batchId ?? null);
+    const batch = useBatch(batchId);
     const recipe = useRecipe(batch?.recipeId ?? null);
 
     const [active, setActive] = usePanelSwitcher(batch?.status > Statuses.PREP ? "Schedule" : "Planning");

@@ -11,7 +11,7 @@ export default function RecipeList({ recipes }: RecipeListProps) {
             <ul className="w-full menu px-0">
                 {recipes.map((recipe, i) => (
                     <li key={i} className="odd:bg-base-200">
-                        <Link to="/recipe" search={{recipeId: recipe.id}} className="text-left block">
+                        <Link to="/recipe/$recipeId" params={{recipeId: recipe.id}} className="text-left block">
                             <ScreenH2 className="text-lg">{recipe.name}</ScreenH2>
                             <ScreenP className="mb-1">by {recipe.brewer}</ScreenP>
                             <ScreenP>ABV {recipe.targets.abv.value}% | IBUs {recipe.targets.ibu} | O.G. {recipe.targets.og.value} | F.G. {recipe.targets.fg.value}</ScreenP>

@@ -9,17 +9,14 @@ import {useBatches} from "@/state/batches";
 import useIndexBy from "@/hooks/useIndexBy";
 import {useRecipe} from "@/state/recipe";
 
-export const Route = createFileRoute("/recipe")({
-    validateSearch: (search: Record<string, unknown>): {recipeId?: string} => ({
-        recipeId: typeof search.recipeId === "string" ? search.recipeId : undefined
-    }),
+export const Route = createFileRoute("/recipe/$recipeId")({
     component: RecipePage
 });
 
 function RecipePage() {
-    const {recipeId} = Route.useSearch();
+    const {recipeId} = Route.useParams();
     const batches = useBatches(batch => batch.recipeId === recipeId);
-    const recipe = useRecipe(recipeId ?? null);
+    const recipe = useRecipe(recipeId);
     const recipesIndex = useIndexBy(recipe);
 
     const [active, setActive] = usePanelSwitcher("Overview");
