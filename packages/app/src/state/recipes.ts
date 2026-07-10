@@ -4,11 +4,25 @@ import Recipe from "@/model/recipe";
 
 export const recipesQueryKey = ["recipes"] as const;
 
-export function kbRecipeToRecipe(kbRecipe: KbRecipe): Recipe {
+function kbRecipeToRecipe(kbRecipe: KbRecipe): Recipe {
     return kbRecipe as Recipe;
+}
+
+export async function fetchRecipes(): Promise<Recipe[]|null> {
+    const kbRecipes = await importResource<KbRecipe>("recipes");
+    return kbRecipes?.map(kbRecipeToRecipe) ?? null;
 }
 
 export const useRecipes = () => useQuery({
     queryKey: recipesQueryKey,
-    queryFn: () => importResource<KbRecipe>("recipes")
-}).data?.map(kbRecipeToRecipe);
+    queryFn: fetchRecipes
+}).data;
+
+/**
+ * Shares the "recipes" query cache with useRecipes() rather than issuing
+ * its own fetch of the same kb resource
+ */
+export const useRecipe = (id: string | null = null) => {
+    const {data} = useQuery({queryKey: recipesQueryKey, queryFn: fetchRecipes});
+    return data?.find(recipe => recipe.id === id) ?? null;
+};

@@ -8,16 +8,16 @@ import DataGridInput from "@/component/data-grid/input";
 import useJsonEdit from "@/hooks/useJsonEdit";
 import Recipe from "@/model/recipe";
 import Collapse from "@/component/collapse";
-import sessionState, {Session} from "@/state/session";
+import {saveSession, useSession} from "@/state/session";
 import DataGridCheckbox from "@/component/data-grid/checkbox";
 
 export type ShoppingProps = {
     batch: Batch;
     recipe: Recipe;
-    session: Session
     onChange: (batch: Batch) => void
 };
-export default function Shopping({ batch, session, onChange }: ShoppingProps) {
+export default function Shopping({ batch, onChange }: ShoppingProps) {
+    const session = useSession();
     const [data, update, updateScalar, toggle] = useJsonEdit<Batch>(batch, onChange);
     return (
         <Screen>
@@ -25,7 +25,7 @@ export default function Shopping({ batch, session, onChange }: ShoppingProps) {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-4 pt-2">{/* this needs to be something */}
                 {data.shopping.map((category, i) => (
                     <Collapse
-                        toggle={(open: boolean) => sessionState.set(`shopping.${category.name.toLowerCase()}`, open)}
+                        toggle={(open: boolean) => saveSession(`shopping.${category.name.toLowerCase()}`, open)}
                         key={`shopping-${category.name}`}
                         title={category.name}
                         className="lg:collapse-open"

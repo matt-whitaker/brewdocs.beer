@@ -11,10 +11,10 @@ import Shopping from "@/screen/shopping";
 import Loading from "@/screen/loading";
 import {useSession} from "@/state/session";
 import Planning from "@/screen/planning";
-import {useBatch} from "@/state/batch";
-import {useRecipe} from "@/state/recipe";
 import updateBatch from "@/actions/updateBatch";
 import Statuses from "@/model/statuses";
+import {useBatch} from "@/state/batches";
+import {useRecipe} from "@/state/recipes";
 
 export const Route = createFileRoute("/batch/$batchId")({
     component: BatchPage

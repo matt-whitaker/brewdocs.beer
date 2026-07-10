@@ -8,7 +8,7 @@ import defaultBatch from "@/data/defaultBatch";
 import _updateShopping from "@/actions/_updateShopping";
 import Statuses from "@/model/statuses";
 import queryClient from "@/queryClient";
-import {batchesQueryKey} from "@/state/batches";
+import {batchesQueryKey, saveBatch} from "@/state/batches";
 
 export default async function createBatch(recipe: Recipe, inputs: CreateBatchState) {
     const id = await batchesStorage.generateId();
@@ -41,8 +41,7 @@ export default async function createBatch(recipe: Recipe, inputs: CreateBatchSta
 
     _updateShopping(batch);
 
-    await batchesStorage.save(id, batch);
-    await queryClient.invalidateQueries({queryKey: batchesQueryKey});
+    await saveBatch(id, batch)
 
     return id;
 }

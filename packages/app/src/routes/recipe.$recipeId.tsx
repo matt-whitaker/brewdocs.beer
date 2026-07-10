@@ -7,7 +7,8 @@ import RecipeOverview from "@/screen/recipe-overview";
 import BatchList from "@/screen/batch-list";
 import {useBatches} from "@/state/batches";
 import useIndexBy from "@/hooks/useIndexBy";
-import {useRecipe} from "@/state/recipe";
+
+import {useRecipe} from "@/state/recipes";
 
 export const Route = createFileRoute("/recipe/$recipeId")({
     component: RecipePage

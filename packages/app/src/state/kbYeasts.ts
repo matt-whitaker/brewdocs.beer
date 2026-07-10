@@ -3,15 +3,10 @@ import {importResource, KbYeast} from "@brewdocs.beer/kb"
 import Yeast from "@/model/yeast";
 import {Units} from "@brewdocs.beer/core";
 
-export const useKbYeasts = () => useQuery({
-    queryKey: ["kb", "yeasts"],
-    queryFn: () => importResource<KbYeast>("yeasts")
-}).data;
-
 /**
  * Map a Knowledge-base yeast to local app model, setting defaults
  */
-export function kbYeastToYeast(kbYeast: KbYeast): Yeast {
+function kbYeastToYeast(kbYeast: KbYeast): Yeast {
     return {
         name: kbYeast.name,
         avg_attn: {
@@ -26,5 +21,12 @@ export function kbYeastToYeast(kbYeast: KbYeast): Yeast {
     } as Yeast;
 }
 
-const kbYeastsState = {kbToState: kbYeastToYeast};
-export default kbYeastsState;
+async function fetchKbYeasts(): Promise<Yeast[]|null> {
+    const kbYeasts = await importResource<KbYeast>("yeasts");
+    return kbYeasts?.map(kbYeastToYeast) ?? null;
+}
+
+export const useKbYeasts = () => useQuery({
+    queryKey: ["kb", "yeasts"],
+    queryFn: fetchKbYeasts
+}).data;

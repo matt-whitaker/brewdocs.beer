@@ -3,15 +3,10 @@ import {importResource, KbHop} from "@brewdocs.beer/kb"
 import Hop from "@/model/hop";
 import {Units} from "@brewdocs.beer/core";
 
-export const useKbHops = () => useQuery({
-    queryKey: ["kb", "hops"],
-    queryFn: () => importResource<KbHop>("hops")
-}).data;
-
 /**
  * Map a Knowledge-base hop to local app model, setting defaults
  */
-export function kbHopToHop(kbHop: KbHop): Hop {
+function kbHopToHop(kbHop: KbHop): Hop {
     return {
         name: kbHop.name,
         weight: {
@@ -30,5 +25,12 @@ export function kbHopToHop(kbHop: KbHop): Hop {
     } as Hop;
 }
 
-const kbHopsState = {kbToState: kbHopToHop};
-export default kbHopsState;
+async function fetchKbHops(): Promise<Hop[]|null> {
+    const kbHops = await importResource<KbHop>("hops");
+    return kbHops?.map(kbHopToHop) ?? null;
+}
+
+export const useKbHops = () => useQuery({
+    queryKey: ["kb", "hops"],
+    queryFn: fetchKbHops
+}).data;

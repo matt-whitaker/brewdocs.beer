@@ -1,4 +1,4 @@
-import sessionState, {Session} from "@/state/session";
+import {saveSession, useSession} from "@/state/session";
 import Collapse from "@/component/collapse";
 import {ScreenH5} from "@brewdocs.beer/design";
 import DataGridRow from "@/component/data-grid/row";
@@ -11,14 +11,15 @@ import DataGrid from "@/component/data-grid";
 export type ScheduleChillProps = {
     hydro: Hydrometer;
     hydroIndex: number;
-    session: Session;
     update: UpdateFn;
     updateScalar: UpdateScalarFn;
 }
-export default function ScheduleChill({ hydro, hydroIndex, update, updateScalar, session }: ScheduleChillProps) {
+export default function ScheduleChill({ hydro, hydroIndex, update, updateScalar }: ScheduleChillProps) {
+    const session = useSession();
+
     return (
         <Collapse
-            toggle={(open: boolean) => sessionState.set(`schedule.chill`, open)}
+            toggle={(open: boolean) => saveSession(`schedule.chill`, open)}
             key={"chill"}
             title={"3. Chill"}
             className="lg:collapse-open"

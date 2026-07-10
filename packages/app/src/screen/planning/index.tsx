@@ -20,8 +20,6 @@ export type PlanningProps = {
     onChange: (batch: Batch) => void
 }
 export default function Planning({ batch, recipe, onChange }: PlanningProps) {
-    const session = useSession();
-
     const [data, update, updateScalar,, add, remove] = useJsonEdit<Batch>(batch, onChange);
 
     return (
@@ -51,7 +49,6 @@ export default function Planning({ batch, recipe, onChange }: PlanningProps) {
                         remove={remove}
                         update={update}
                         updateScalar={updateScalar}
-                        session={session}
                     />
                     <PlanningHops
                         hops={data.hops}
@@ -59,7 +56,6 @@ export default function Planning({ batch, recipe, onChange }: PlanningProps) {
                         remove={remove}
                         update={update}
                         updateScalar={updateScalar}
-                        session={session}
                     />
                 </div>
                 <div>
@@ -69,7 +65,6 @@ export default function Planning({ batch, recipe, onChange }: PlanningProps) {
                         remove={remove}
                         update={update}
                         updateScalar={updateScalar}
-                        session={session}
                     />
                 </div>
             </ScreenTwoCol>

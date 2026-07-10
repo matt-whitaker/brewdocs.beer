@@ -11,10 +11,7 @@ export const useSession = () => useQuery({
     queryFn: () => sessionStorage.index() as Promise<Session>
 }).data ?? {};
 
-async function set(id: string, value: boolean) {
+export const saveSession = async (id: string, value: boolean) => {
     await sessionStorage.save(id, value);
     await queryClient.invalidateQueries({queryKey: sessionQueryKey});
 }
-
-const sessionState = {set};
-export default sessionState;

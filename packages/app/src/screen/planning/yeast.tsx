@@ -1,18 +1,16 @@
-import {KbYeast} from "@brewdocs.beer/kb";
 import {AddFn, RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
 import Yeast from "@/model/yeast";
-import {ScreenH3} from "@brewdocs.beer/design";
 import DataGrid from "@/component/data-grid";
 import {Fragment} from "react";
 import DataGridRow from "@/component/data-grid/row";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridRemoveButton from "@/component/data-grid/remove-button";
 import DataGridSelect from "@/component/data-grid/select";
-import kbYeastsState, {useKbYeasts} from "@/state/kbYeasts";
+import {useKbYeasts} from "@/state/kbYeasts";
 import DataGridInput from "@/component/data-grid/input";
 import AddRow from "@/component/data-grid/add-row";
 import useIndexBy from "@/hooks/useIndexBy";
-import sessionState, {Session, useSession} from "@/state/session";
+import {saveSession, useSession} from "@/state/session";
 import Collapse from "@/component/collapse";
 
 export type PlanningYeastProps = {
@@ -21,9 +19,9 @@ export type PlanningYeastProps = {
     remove: RemoveFn;
     update: UpdateFn;
     updateScalar: UpdateScalarFn;
-    session: Session;
 }
-export default function PlanningYeast({ yeast, add, remove, update, updateScalar, session }: PlanningYeastProps) {
+export default function PlanningYeast({ yeast, add, remove, update, updateScalar }: PlanningYeastProps) {
+    const session = useSession();
     const kbYeasts = useKbYeasts();
     const kbYeastsIndex = useIndexBy(kbYeasts, "name");
 
@@ -34,7 +32,7 @@ export default function PlanningYeast({ yeast, add, remove, update, updateScalar
     return (
         <>
             <Collapse
-                toggle={(open: boolean) => sessionState.set(`planning.yeast`, open)}
+                toggle={(open: boolean) => saveSession(`planning.yeast`, open)}
                 key={"yeast"}
                 title={"Yeast"}
                 className="lg:collapse-open"
@@ -48,7 +46,7 @@ export default function PlanningYeast({ yeast, add, remove, update, updateScalar
                                     <DataGridSelect
                                         data={kbYeasts.map((({ name }) => ({ value: name, name })))}
                                         value={yeast.name}
-                                        onChange={(value: string) => update(`yeast[${i}]`, kbYeastsState.kbToState(kbYeastsIndex!.get(value)!))}
+                                        onChange={(value: string) => update(`yeast[${i}]`, kbYeastsIndex!.get(value)!)}
                                     />
                                 </DataGridLabel>
                                 <DataGridInput
@@ -63,9 +61,9 @@ export default function PlanningYeast({ yeast, add, remove, update, updateScalar
                             {/*</FormCheckbox>*/}
                         </Fragment>
                     ))}
-                    <AddRow<KbYeast>
+                    <AddRow<Yeast>
                         data={kbYeasts}
-                        add={(value: string) => add("yeast", kbYeastsState.kbToState(kbYeastsIndex!.get(value)!))}
+                        add={(value: string) => add("yeast", kbYeastsIndex!.get(value)!)}
                     />
                 </DataGrid>
             </Collapse>

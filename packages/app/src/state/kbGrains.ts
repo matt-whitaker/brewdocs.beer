@@ -3,15 +3,10 @@ import {importResource, KbGrain} from "@brewdocs.beer/kb"
 import Grain from "@/model/grain";
 import {Units} from "@brewdocs.beer/core";
 
-export const useKbGrains = () => useQuery({
-    queryKey: ["kb", "grains"],
-    queryFn: () => importResource<KbGrain>("grains")
-}).data;
-
 /**
  * Map a Knowledge-base grain to local app model, setting defaults
  */
-export function kbGrainToGrain(kbGrain: KbGrain): Grain {
+function kbGrainToGrain(kbGrain: KbGrain): Grain {
     return {
         name: kbGrain.name,
         weight: {
@@ -21,5 +16,12 @@ export function kbGrainToGrain(kbGrain: KbGrain): Grain {
     } as Grain;
 }
 
-const kbGrainsState = {kbToState: kbGrainToGrain};
-export default kbGrainsState;
+async function fetchKbGrains(): Promise<Grain[]|null> {
+    const kbGrains = await importResource<KbGrain>("grains");
+    return kbGrains?.map(kbGrainToGrain) ?? null;
+}
+
+export const useKbGrains = () => useQuery({
+    queryKey: ["kb", "grains"],
+    queryFn: fetchKbGrains
+}).data;

@@ -6,7 +6,7 @@ import Checklist from "../../component/checklist";
 import ChecklistItem from "@/component/checklist/item";
 import useChecklist from "@/component/checklist/useChecklist";
 import Collapse from "@/component/collapse";
-import sessionState, {Session} from "@/state/session";
+import {saveSession, Session} from "@/state/session";
 
 export type BatchChecklistProps = {
     batch: Batch;
@@ -23,7 +23,7 @@ export default function Checklists({ batch, session, onChange }: BatchChecklistP
             <ScreenH1 className="mb-2">Equipment Checklist</ScreenH1>
             {data.checklists.map(({ items, name: title }, i) => (
                 <Collapse
-                    toggle={(open: boolean) => sessionState.set(`checklist.${title.toLowerCase()}`, open)}
+                    toggle={(open: boolean) => saveSession(`checklist.${title.toLowerCase()}`, open)}
                     key={title}
                     title={title}
                     className="lg:collapse-open"

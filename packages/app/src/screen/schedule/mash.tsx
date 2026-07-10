@@ -1,4 +1,4 @@
-import {ScreenH3, ScreenH4, ScreenH5} from "@brewdocs.beer/design";
+import {ScreenH4, ScreenH5} from "@brewdocs.beer/design";
 import {Fragment} from "react";
 import DataGrid from "@/component/data-grid";
 import Grain from "@/model/grain";
@@ -6,7 +6,7 @@ import DataGridRow from "@/component/data-grid/row";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridLabelNote from "@/component/data-grid/label-note";
 import DataGridInput from "@/component/data-grid/input";
-import sessionState, {useSession} from "@/state/session";
+import {saveSession, useSession} from "@/state/session";
 import Collapse from "@/component/collapse";
 import {Mash} from "@/model/mash";
 import Hydrometer from "@/model/hydrometer";
@@ -27,7 +27,7 @@ export default function ScheduleMash({ mash, grains, update, updateScalar, hydro
     return (
         <>
             <Collapse
-                toggle={(open: boolean) => sessionState.set(`schedule.mash`, open)}
+                toggle={(open: boolean) => saveSession(`schedule.mash`, open)}
                 key={"mash"}
                 title={"1. Mash"}
                 className="lg:collapse-open"
