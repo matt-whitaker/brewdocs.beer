@@ -13,7 +13,7 @@ export async function fetchRecipes(): Promise<Recipe[]|null> {
     return kbRecipes?.map(kbRecipeToRecipe) ?? null;
 }
 
-export const useRecipes = () => useQuery({
+export const useRecipes = (): Recipe[]|null => useQuery({
     queryKey: recipesQueryKey,
     queryFn: fetchRecipes
 }).data;
@@ -22,7 +22,7 @@ export const useRecipes = () => useQuery({
  * Shares the "recipes" query cache with useRecipes() rather than issuing
  * its own fetch of the same kb resource
  */
-export const useRecipe = (id: string | null = null) => {
+export const useRecipe = (id: string | null = null): Recipe|null => {
     const {data} = useQuery({queryKey: recipesQueryKey, queryFn: fetchRecipes});
     return data?.find(recipe => recipe.id === id) ?? null;
 };

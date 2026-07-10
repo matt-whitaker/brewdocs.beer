@@ -3,13 +3,14 @@ import sessionStorage from "@/storage/settings";
 import queryClient from "@/queryClient";
 
 export type Session = Record<string, boolean>
+export const sessionQueryKey = ["session"] as const;
 
-const sessionQueryKey = ["session"] as const;
+export const fetchSession = async (): Promise<Session> => sessionStorage.index()
 
-export const useSession = () => useQuery({
+export const useSession = (): Session|null => useQuery({
     queryKey: sessionQueryKey,
-    queryFn: () => sessionStorage.index() as Promise<Session>
-}).data ?? {};
+    queryFn: fetchSession
+}).data;
 
 export const saveSession = async (id: string, value: boolean) => {
     await sessionStorage.save(id, value);

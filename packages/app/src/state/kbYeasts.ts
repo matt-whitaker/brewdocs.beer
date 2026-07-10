@@ -26,7 +26,7 @@ async function fetchKbYeasts(): Promise<Yeast[]|null> {
     return kbYeasts?.map(kbYeastToYeast) ?? null;
 }
 
-export const useKbYeasts = () => useQuery({
+export const useKbYeasts = (): Yeast[]|null => useQuery({
     queryKey: ["kb", "yeasts"],
     queryFn: fetchKbYeasts
 }).data;

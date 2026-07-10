@@ -36,7 +36,7 @@ export default function PlanningYeast({ yeast, add, remove, update, updateScalar
                 key={"yeast"}
                 title={"Yeast"}
                 className="lg:collapse-open"
-                openInitial={session[`planning.yeast`] ?? true}>
+                openInitial={session?.[`planning.yeast`] ?? true}>
                 <DataGrid>
                     {yeast.map((yeast: Yeast, i) => (
                         <Fragment key={`yeast-${yeast.name}-${i}`}>

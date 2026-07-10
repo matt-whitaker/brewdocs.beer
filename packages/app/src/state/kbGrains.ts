@@ -21,7 +21,7 @@ async function fetchKbGrains(): Promise<Grain[]|null> {
     return kbGrains?.map(kbGrainToGrain) ?? null;
 }
 
-export const useKbGrains = () => useQuery({
+export const useKbGrains = (): Grain[]|null => useQuery({
     queryKey: ["kb", "grains"],
     queryFn: fetchKbGrains
 }).data;

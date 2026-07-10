@@ -8,11 +8,11 @@ export type FilterFn<T> = (item: T) => boolean;
 export const batchesQueryKey = ["batches"] as const;
 export const batchQueryKey = (id: string) => ["batch", id] as const;
 
-export const useBatches = (filter?: FilterFn<Batch>) => {
+export const useBatches = (filter?: FilterFn<Batch>): Batch[]|null => {
     const {data} = useQuery({queryKey: batchesQueryKey, queryFn: () => batchesStorage.list()});
     return filter && data ? data.filter(filter) : data;
 };
-export const useBatch = (id: string | null = null) => useQuery({
+export const useBatch = (id: string | null = null): Batch|null => useQuery({
     queryKey: batchQueryKey(id ?? ""),
     queryFn: () => batchesStorage.get(id!),
     enabled: !!id

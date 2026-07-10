@@ -30,7 +30,7 @@ async function fetchKbHops(): Promise<Hop[]|null> {
     return kbHops?.map(kbHopToHop) ?? null;
 }
 
-export const useKbHops = () => useQuery({
+export const useKbHops = (): Hop[]|null => useQuery({
     queryKey: ["kb", "hops"],
     queryFn: fetchKbHops
 }).data;

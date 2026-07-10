@@ -40,7 +40,7 @@ function BatchPage() {
                 <Planning batch={batch} recipe={recipe} onChange={onChange} />
             </PanelSwitcherContent>
             <PanelSwitcherContent active={active} change={setActive} title="Checklists">
-                <Shopping batch={batch} recipe={recipe} session={session} onChange={onChange} />
+                <Shopping batch={batch} recipe={recipe} onChange={onChange} />
                 <Checklists batch={batch} session={session} onChange={onChange} />
             </PanelSwitcherContent>
             <PanelSwitcherContent active={active} change={setActive} title="Schedule">
