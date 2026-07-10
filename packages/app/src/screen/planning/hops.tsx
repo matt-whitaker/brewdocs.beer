@@ -1,5 +1,3 @@
-import {KbHop} from "@brewdocs.beer/kb";
-import {ScreenH3} from "@brewdocs.beer/design";
 import DataGrid from "@/component/data-grid";
 import Hop from "@/model/hop";
 import {Fragment} from "react";
@@ -7,12 +5,12 @@ import DataGridRow from "@/component/data-grid/row";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridRemoveButton from "@/component/data-grid/remove-button";
 import DataGridSelect from "@/component/data-grid/select";
-import kbHopsState, {useKbHops} from "@/state/kbHops";
+import {useKbHops} from "@/state/kbHops";
 import DataGridInput from "@/component/data-grid/input";
 import AddRow from "@/component/data-grid/add-row";
 import useIndexBy from "@/hooks/useIndexBy";
 import {AddFn, RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
-import sessionState, {Session, useSession} from "@/state/session";
+import {saveSession, useSession} from "@/state/session";
 import Collapse from "@/component/collapse";
 
 export type PlanningHopsProps = {
@@ -21,9 +19,9 @@ export type PlanningHopsProps = {
     remove: RemoveFn;
     update: UpdateFn;
     updateScalar: UpdateScalarFn;
-    session: Session;
 }
-export default function PlanningHops({ hops, add, remove, update, updateScalar, session }: PlanningHopsProps) {
+export default function PlanningHops({ hops, add, remove, update, updateScalar }: PlanningHopsProps) {
+    const session = useSession();
     const kbHops = useKbHops();
     const kbHopsIndex = useIndexBy(kbHops, "name");
 
@@ -34,11 +32,11 @@ export default function PlanningHops({ hops, add, remove, update, updateScalar, 
     return (
         <>
             <Collapse
-                toggle={(open: boolean) => sessionState.set(`planning.hops`, open)}
+                toggle={(open: boolean) => saveSession(`planning.hops`, open)}
                 key={"hops"}
                 title={"Hops"}
                 className="lg:collapse-open"
-                openInitial={session[`planning.hops`] ?? true}>
+                openInitial={session?.[`planning.hops`] ?? true}>
                 <DataGrid>
                     {hops.map((hop: Hop, i) => (
                         <Fragment key={`hop-${hop.name}-${i}`}>
@@ -48,7 +46,7 @@ export default function PlanningHops({ hops, add, remove, update, updateScalar, 
                                     <DataGridSelect
                                         data={kbHops.map((({ name }) => ({ value: name, name })))}
                                         value={hop.name}
-                                        onChange={(value: string) => update(`hops[${i}]`, kbHopsState.kbToState(kbHopsIndex!.get(value)!))}
+                                        onChange={(value: string) => update(`hops[${i}]`, kbHopsIndex!.get(value)!)}
                                     />
                                 </DataGridLabel>
                                 <DataGridInput
@@ -66,9 +64,9 @@ export default function PlanningHops({ hops, add, remove, update, updateScalar, 
                             </DataGridRow>
                         </Fragment>
                     ))}
-                    <AddRow<KbHop>
+                    <AddRow<Hop>
                         data={kbHops}
-                        add={(value: string) => add("hops", kbHopsState.kbToState(kbHopsIndex!.get(value)!))}
+                        add={(value: string) => add("hops", kbHopsIndex!.get(value)!)}
                     />
                 </DataGrid>
             </Collapse>

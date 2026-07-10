@@ -7,6 +7,8 @@ import {cloneDeep, intersection} from "@/utils/func";
 import defaultBatch from "@/data/defaultBatch";
 import _updateShopping from "@/actions/_updateShopping";
 import Statuses from "@/model/statuses";
+import queryClient from "@/queryClient";
+import {batchesQueryKey, saveBatch} from "@/state/batches";
 
 export default async function createBatch(recipe: Recipe, inputs: CreateBatchState) {
     const id = await batchesStorage.generateId();
@@ -39,7 +41,7 @@ export default async function createBatch(recipe: Recipe, inputs: CreateBatchSta
 
     _updateShopping(batch);
 
-    await batchesStorage.save(id, batch);
+    await saveBatch(id, batch)
 
     return id;
 }

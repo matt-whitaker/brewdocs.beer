@@ -1,8 +1,7 @@
 import {useMemo} from "react";
-import {Entity} from "@brewdocs.beer/core";
 
-export default function useIndexBy<T extends Entity, K extends keyof T = keyof T>(
-    collection?: T[]|T,
+export default function useIndexBy<T extends object, K extends keyof T = keyof T>(
+    collection?: T[]|T|null,
     by: K = ("id" as K)
 ): Map<string, T>|null {
     return useMemo(() => {

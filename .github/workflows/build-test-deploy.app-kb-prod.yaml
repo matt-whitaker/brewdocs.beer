@@ -1,0 +1,51 @@
+name: Build, Test, and Deploy (App KB Prod)
+run-name: "Build, Test, and Deploy (App KB Prod)"
+
+on:
+  push:
+    branches:
+      - develop
+      - mainline
+    paths:
+      - packages/kb/**
+      - .github/**
+
+env:
+  NODE_VERSION: 22
+
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - run: npm ci
+      - run: npm run build -w packages/app
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-kb-prod
+          path: packages/kb/dist
+
+  Test:
+    runs-on: ubuntu-latest
+    needs: ["Build"]
+    steps:
+      - run: echo "No tests yet..."
+
+  Deploy:
+    needs: ["Build", "Test"]
+    uses: matt-whitaker/aws-static-site/.github/workflows/deploy-static-site.yaml@mainline
+    with:
+      environment: "app-prod"
+      aws_default_region: "us-west-2"
+      artifact_name: "app-kb-prod"
+      artifact_path: "packages/kb/dist"
+      invalidate_path: "/kb"
+    secrets:
+      aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      aws_role_to_assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+      aws_s3_bucket: ${{ secrets.APP_AWS_S3_BUCKET }}
+      aws_cloudfront_distribution_id: ${{ secrets.APP_AWS_CLOUDFRONT_DISTRIBUTION_ID }}

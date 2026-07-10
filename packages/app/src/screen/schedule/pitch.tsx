@@ -1,10 +1,9 @@
-import {ScreenH3} from "@brewdocs.beer/design";
 import DataGrid from "@/component/data-grid";
 import Yeast from "@/model/yeast";
 import DataGridRow from "@/component/data-grid/row";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridInput from "@/component/data-grid/input";
-import sessionState, {useSession} from "@/state/session";
+import {saveSession, useSession} from "@/state/session";
 import Collapse from "@/component/collapse";
 import {UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
 
@@ -19,7 +18,7 @@ export default function SchedulePitch({ yeast, update, updateScalar }: ScheduleP
     return (
         <>
             <Collapse
-                toggle={(open: boolean) => sessionState.set(`schedule.pitch`, open)}
+                toggle={(open: boolean) => saveSession(`schedule.pitch`, open)}
                 key={"pitch"}
                 title={"4. Pitch"}
                 className="lg:collapse-open"

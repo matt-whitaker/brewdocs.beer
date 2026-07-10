@@ -7,11 +7,9 @@ import ScheduleMash from "@/screen/schedule/mash";
 import ScheduleBoil from "@/screen/schedule/boil";
 import SchedulePitch from "@/screen/schedule/pitch";
 import ScheduleChill from "@/screen/schedule/chill";
-import {useSession} from "@/state/session";
 
 export type BrewDayProps = { batch: Batch, onChange: (batch: Batch) => void; };
 export default function BrewDay({ batch, onChange }: BrewDayProps) {
-    const session = useSession();
     const [data, update, updateScalar] = useJsonEdit<Batch>(batch, onChange);
 
     return (
@@ -36,7 +34,7 @@ export default function BrewDay({ batch, onChange }: BrewDayProps) {
                     />
                 </div>
                 <div>
-                    <ScheduleChill hydro={data.hydrometer[2]} hydroIndex={2} update={update} updateScalar={updateScalar} session={session} />
+                    <ScheduleChill hydro={data.hydrometer[2]} hydroIndex={2} update={update} updateScalar={updateScalar} />
                     <SchedulePitch yeast={data.yeast} update={update} updateScalar={updateScalar} />
                 </div>
             </ScreenTwoCol>

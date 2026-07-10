@@ -1,22 +1,28 @@
+import {useQuery} from "@tanstack/react-query";
 import {importResource, KbRecipe} from "@brewdocs.beer/kb";
 import Recipe from "@/model/recipe";
-import useCollectionState from "@/hooks/useCollectionState";
-import CollectionState from "@/state/collectionState";
 
-export const useRecipes = () => useCollectionState<Recipe>(recipesState);
+export const recipesQueryKey = ["recipes"] as const;
 
-export class RecipesState extends CollectionState<Recipe>{
-    async load() {
-        const kbRecipes = await importResource<KbRecipe>("recipes");
-        const recipes = kbRecipes?.map(kbRecipe => this.kbToState(kbRecipe)) ?? null;
-        this._subject.next(recipes);
-        return recipes;
-    }
-
-    kbToState(kbRecipe: KbRecipe): Recipe {
-        return kbRecipe as Recipe;
-    }
+function kbRecipeToRecipe(kbRecipe: KbRecipe): Recipe {
+    return kbRecipe as Recipe;
 }
 
-const recipesState = new RecipesState(null);
-export default recipesState;
+export async function fetchRecipes(): Promise<Recipe[]|null> {
+    const kbRecipes = await importResource<KbRecipe>("recipes");
+    return kbRecipes?.map(kbRecipeToRecipe) ?? null;
+}
+
+export const useRecipes = (): Recipe[]|null => useQuery({
+    queryKey: recipesQueryKey,
+    queryFn: fetchRecipes
+}).data;
+
+/**
+ * Shares the "recipes" query cache with useRecipes() rather than issuing
+ * its own fetch of the same kb resource
+ */
+export const useRecipe = (id: string | null = null): Recipe|null => {
+    const {data} = useQuery({queryKey: recipesQueryKey, queryFn: fetchRecipes});
+    return data?.find(recipe => recipe.id === id) ?? null;
+};

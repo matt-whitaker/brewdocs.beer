@@ -107,7 +107,8 @@
         "unit": "%"
       },
       "boil": {
-        "value": "k/o"
+        "value": "0min",
+        "unit": "min"
       },
       "phase": "boil"
     }

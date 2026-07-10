@@ -2,6 +2,8 @@ import Batch from "@/model/batch";
 import _updateShopping from "@/actions/_updateShopping";
 import batchesStorage from "@/storage/batches";
 import {isEqual} from "@/utils/func";
+import queryClient from "@/queryClient";
+import {batchesQueryKey, batchQueryKey, saveBatch} from "@/state/batches";
 
 export default async function updateBatch(id: string, batch: Batch) {
     const current = await batchesStorage.get(id);
@@ -14,5 +16,5 @@ export default async function updateBatch(id: string, batch: Batch) {
         _updateShopping(batch);
     }
 
-    batchesStorage.save(id, batch);
+    await saveBatch(id, batch)
 }

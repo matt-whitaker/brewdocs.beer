@@ -1,19 +1,18 @@
-import State from "@/state/state";
-import useObservableState from "@/hooks/useObservableState";
+import {useQuery} from "@tanstack/react-query";
 import sessionStorage from "@/storage/settings";
+import queryClient from "@/queryClient";
 
 export type Session = Record<string, boolean>
-export const useSession = () => useObservableState<Session>(sessionState, null);
+export const sessionQueryKey = ["session"] as const;
 
-export class SessionState extends State<Session> {
-    load() {
-        sessionStorage.index().then((settings: Session) => this._subject.next(settings));
-    }
+export const fetchSession = async (): Promise<Session> => sessionStorage.index()
 
-    set(id: string, value: any) {
-        sessionStorage.save(id, value).then(() => this.load());
-    }
+export const useSession = (): Session|null => useQuery({
+    queryKey: sessionQueryKey,
+    queryFn: fetchSession
+}).data;
+
+export const saveSession = async (id: string, value: boolean) => {
+    await sessionStorage.save(id, value);
+    await queryClient.invalidateQueries({queryKey: sessionQueryKey});
 }
-
-const sessionState = new SessionState(null);
-export default sessionState;
