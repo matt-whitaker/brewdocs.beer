@@ -1,36 +1,30 @@
+import {useQuery} from "@tanstack/react-query";
 import {importResource, KbYeast} from "@brewdocs.beer/kb"
 import Yeast from "@/model/yeast";
-import useCollectionState from "@/hooks/useCollectionState";
-import CollectionState from "@/state/collectionState";
 import {Units} from "@brewdocs.beer/core";
 
-export const useKbYeasts = () => useCollectionState<KbYeast>(kbYeastsState);
+export const useKbYeasts = () => useQuery({
+    queryKey: ["kb", "yeasts"],
+    queryFn: () => importResource<KbYeast>("yeasts")
+}).data;
 
-export class KbYeastsState extends CollectionState<KbYeast>{
-    async load() {
-        const yeasts = await importResource<KbYeast>("yeasts");
-        this._subject.next(yeasts);
-        return yeasts;
-    }
-
-    /**
-     * Map a Knowledge-base hop to local app model, setting defaults
-     */
-    kbToState(kbHop: KbYeast): Yeast {
-        return {
-            name: kbHop.name,
-            avg_attn: {
-                value: "70%",
-                unit: Units.PERCENT
-            },
-            temp: {
-                value: "0°F",
-                unit: Units.FAHRENHEIT
-            },
-            starter: false
-        } as Yeast;
-    }
+/**
+ * Map a Knowledge-base yeast to local app model, setting defaults
+ */
+export function kbYeastToYeast(kbYeast: KbYeast): Yeast {
+    return {
+        name: kbYeast.name,
+        avg_attn: {
+            value: "70%",
+            unit: Units.PERCENT
+        },
+        temp: {
+            value: "0°F",
+            unit: Units.FAHRENHEIT
+        },
+        starter: false
+    } as Yeast;
 }
 
-const kbYeastsState = new KbYeastsState(null);
+const kbYeastsState = {kbToState: kbYeastToYeast};
 export default kbYeastsState;

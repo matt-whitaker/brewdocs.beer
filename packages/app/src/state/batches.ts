@@ -1,17 +1,12 @@
+import {useQuery} from "@tanstack/react-query";
 import Batch from "@/model/batch";
 import batchesStorage from "@/storage/batches";
-import CollectionState from "@/state/collectionState";
-import useCollectionState, {FilterFn} from "@/hooks/useCollectionState";
 
-export const useBatches = (filter?: FilterFn<Batch>) => useCollectionState<Batch>(batchesState, null, filter);
+export type FilterFn<T> = (item: T) => boolean;
 
-export class BatchesState extends CollectionState<Batch> {
-    async load() {
-        const batches = await batchesStorage.list();
-        this._subject.next(batches);
-        return batches;
-    }
-}
+export const batchesQueryKey = ["batches"] as const;
 
-const batchesState = new BatchesState(null);
-export default batchesState;
+export const useBatches = (filter?: FilterFn<Batch>) => {
+    const {data} = useQuery({queryKey: batchesQueryKey, queryFn: () => batchesStorage.list()});
+    return filter && data ? data.filter(filter) : data;
+};

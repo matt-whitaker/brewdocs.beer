@@ -11,7 +11,7 @@ import Shopping from "@/screen/shopping";
 import Loading from "@/screen/loading";
 import {useSession} from "@/state/session";
 import Planning from "@/screen/planning";
-import batchState, {useBatch} from "@/state/batch";
+import {useBatch} from "@/state/batch";
 import {useRecipe} from "@/state/recipe";
 import updateBatch from "@/actions/updateBatch";
 import Statuses from "@/model/statuses";
@@ -27,10 +27,10 @@ function BatchPage() {
     const batch = useBatch(batchId);
     const recipe = useRecipe(batch?.recipeId ?? null);
 
-    const [active, setActive] = usePanelSwitcher(batch?.status > Statuses.PREP ? "Schedule" : "Planning");
-    const onChange = useCallback((newBatch: Batch) => updateBatch(batch.id, newBatch).then(() => batchState.load(batch.id)), [batch]);
+    const [active, setActive] = usePanelSwitcher((batch?.status ?? Statuses.PREP) > Statuses.PREP ? "Schedule" : "Planning");
+    const onChange = useCallback((newBatch: Batch) => { updateBatch(batch!.id, newBatch); }, [batch]);
 
-    if (!session || !batch || !recipe) {
+    if (!batch || !recipe) {
         return <Loading />
     }
 
