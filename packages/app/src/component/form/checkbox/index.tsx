@@ -22,7 +22,7 @@ export default function FormCheckbox({ children, onChange, checked, readonly, na
                 checked={checked}
                 onChange={_onChange}
                 type="checkbox"
-                className={classNames("ml-2 checkbox checkbox-sm rounded-sm", [cbClassName])} />
+                className={classNames("ml-2 checkbox checkbox-sm", [cbClassName])} />
         </label>
     );
 }

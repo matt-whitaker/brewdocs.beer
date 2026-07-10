@@ -12,6 +12,6 @@ export default function DataGridCheckbox({ onChange, checked, id }: DataGridChec
             onChange={onChange}
             type="checkbox"
             checked={checked}
-            className="checkbox checkbox-xs rounded-sm mr-2" />
+            className="checkbox checkbox-xs mr-2" />
     );
 }

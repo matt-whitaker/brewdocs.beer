@@ -17,7 +17,7 @@ export default function ChecklistItem({ name, onToggle, onRemove, checked, child
                 </div>
             )}
             <label htmlFor={name} key={name} className="font-normal justify-start hover:cursor-pointer flex items-center">
-                <input id={name} value={name} onChange={onToggle} type="checkbox" checked={checked} className="checkbox checkbox-xs rounded-sm mr-2" />
+                <input id={name} value={name} onChange={onToggle} type="checkbox" checked={checked} className="checkbox checkbox-xs mr-2" />
                 {children}
             </label>
         </li>

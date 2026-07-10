@@ -5,7 +5,7 @@
 @source "../../design/src";
 
 @plugin "daisyui" {
-    themes: nord --default, coffee, autumn;
+    themes: nord --default;
 }
 
 @theme {
@@ -30,4 +30,16 @@
 
     --leading-11: 2.75rem;
     --leading-12: 3rem;
+}
+
+/* daisyui defines its own theme tokens (including --radius-selector) inside
+   Tailwind's "base" layer, which always outranks the "theme" layer that
+   @theme{} compiles into — so a @theme override can never win here regardless
+   of value. This plain, unlayered rule beats any layered CSS unconditionally,
+   which is the only way to override a daisyui theme token from our own CSS.
+   nord's default (1rem) exceeds half the height of short/square elements
+   (checkboxes, badges, toggles) that key off this token, so CSS's corner
+   clamping turns them into full circles/pills; align with --radius-field */
+:root {
+    --radius-selector: 0.2rem;
 }
