@@ -29,7 +29,7 @@ export default function ScheduleBoil({ boil, hops, additives, update, updateScal
                 key={"boil"}
                 title={"2. Boil"}
                 className="lg:collapse-open"
-                openInitial={session[`schedule.boil`] ?? true}>
+                openInitial={session?.[`schedule.boil`] ?? true}>
                 {boil.map((m, i) => (
                     <Fragment key={`boil-${m.name}-${i}`}>
                         <ScreenH4 className="cozy">{m.name}  - {m.time.value}</ScreenH4>

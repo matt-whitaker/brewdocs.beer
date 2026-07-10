@@ -10,7 +10,7 @@ export const fetchSession = async (): Promise<Session> => sessionStorage.index()
 export const useSession = (): Session|null => useQuery({
     queryKey: sessionQueryKey,
     queryFn: fetchSession
-}).data;
+}).data ?? null;
 
 export const saveSession = async (id: string, value: boolean) => {
     await sessionStorage.save(id, value);

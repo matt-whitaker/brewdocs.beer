@@ -10,13 +10,13 @@ export const batchQueryKey = (id: string) => ["batch", id] as const;
 
 export const useBatches = (filter?: FilterFn<Batch>): Batch[]|null => {
     const {data} = useQuery({queryKey: batchesQueryKey, queryFn: () => batchesStorage.list()});
-    return filter && data ? data.filter(filter) : data;
+    return (filter && data ? data.filter(filter) : data) ?? null;
 };
 export const useBatch = (id: string | null = null): Batch|null => useQuery({
     queryKey: batchQueryKey(id ?? ""),
     queryFn: () => batchesStorage.get(id!),
     enabled: !!id
-}).data;
+}).data ?? null;
 
 export const saveBatch = async (id: string, batch: Batch) => {
     await batchesStorage.save(id, batch);

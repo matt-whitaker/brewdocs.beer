@@ -22,7 +22,7 @@ export default function SchedulePitch({ yeast, update, updateScalar }: ScheduleP
                 key={"pitch"}
                 title={"4. Pitch"}
                 className="lg:collapse-open"
-                openInitial={session[`schedule.pitch`] ?? true}>
+                openInitial={session?.[`schedule.pitch`] ?? true}>
                 <DataGrid>
                     {yeast.map((yeast: Yeast, i) => (
                         <DataGridRow key={`yeast-${yeast.name}-${i}`}>

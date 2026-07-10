@@ -36,7 +36,7 @@ export default function PlanningGrains({ grains, add, remove, update, updateScal
                 key={"grains"}
                 title={"Grains"}
                 className="lg:collapse-open"
-                openInitial={session[`planning.grains`] ?? true}>
+                openInitial={session?.[`planning.grains`] ?? true}>
                 <DataGrid>
                     {grains.map((grain: Grain, i) => (
                         <Fragment key={`grain-${grain.name}-${i}`}>

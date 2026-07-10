@@ -29,4 +29,4 @@ async function fetchKbYeasts(): Promise<Yeast[]|null> {
 export const useKbYeasts = (): Yeast[]|null => useQuery({
     queryKey: ["kb", "yeasts"],
     queryFn: fetchKbYeasts
-}).data;
+}).data ?? null;

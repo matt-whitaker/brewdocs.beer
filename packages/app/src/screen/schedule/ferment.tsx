@@ -29,7 +29,7 @@ export default function ScheduleFerment({ hops, update, updateScalar }: Schedule
                 key={"boil"}
                 title={"2. Boil"}
                 className="lg:collapse-open"
-                openInitial={session[`schedule.boil`] ?? true}>
+                openInitial={session?.[`schedule.boil`] ?? true}>
 
                 <p></p>
             </Collapse>

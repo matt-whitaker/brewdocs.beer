@@ -31,7 +31,7 @@ export default function ScheduleMash({ mash, grains, update, updateScalar, hydro
                 key={"mash"}
                 title={"1. Mash"}
                 className="lg:collapse-open"
-                openInitial={session[`schedule.mash`] ?? true}>
+                openInitial={session?.[`schedule.mash`] ?? true}>
                 {mash.map((m, i) => (
                     <Fragment key={`mash-${m.name}-${i}`}>
                         <ScreenH4 className="cozy">{m.name} - {m.time.value}</ScreenH4>

@@ -33,4 +33,4 @@ async function fetchKbHops(): Promise<Hop[]|null> {
 export const useKbHops = (): Hop[]|null => useQuery({
     queryKey: ["kb", "hops"],
     queryFn: fetchKbHops
-}).data;
+}).data ?? null;

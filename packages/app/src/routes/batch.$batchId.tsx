@@ -9,7 +9,6 @@ import BrewDay from "@/screen/schedule";
 import BatchSummary from "@/screen/batch-summary";
 import Shopping from "@/screen/shopping";
 import Loading from "@/screen/loading";
-import {useSession} from "@/state/session";
 import Planning from "@/screen/planning";
 import updateBatch from "@/actions/updateBatch";
 import Statuses from "@/model/statuses";
@@ -22,7 +21,6 @@ export const Route = createFileRoute("/batch/$batchId")({
 
 function BatchPage() {
     const {batchId} = Route.useParams();
-    const session = useSession();
 
     const batch = useBatch(batchId);
     const recipe = useRecipe(batch?.recipeId ?? null);
@@ -41,7 +39,7 @@ function BatchPage() {
             </PanelSwitcherContent>
             <PanelSwitcherContent active={active} change={setActive} title="Checklists">
                 <Shopping batch={batch} recipe={recipe} onChange={onChange} />
-                <Checklists batch={batch} session={session} onChange={onChange} />
+                <Checklists batch={batch} onChange={onChange} />
             </PanelSwitcherContent>
             <PanelSwitcherContent active={active} change={setActive} title="Schedule">
                 <BrewDay batch={batch} onChange={onChange} />

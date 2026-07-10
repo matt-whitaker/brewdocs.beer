@@ -16,7 +16,7 @@ export async function fetchRecipes(): Promise<Recipe[]|null> {
 export const useRecipes = (): Recipe[]|null => useQuery({
     queryKey: recipesQueryKey,
     queryFn: fetchRecipes
-}).data;
+}).data ?? null;
 
 /**
  * Shares the "recipes" query cache with useRecipes() rather than issuing

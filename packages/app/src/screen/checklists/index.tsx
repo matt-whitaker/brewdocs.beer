@@ -6,14 +6,14 @@ import Checklist from "../../component/checklist";
 import ChecklistItem from "@/component/checklist/item";
 import useChecklist from "@/component/checklist/useChecklist";
 import Collapse from "@/component/collapse";
-import {saveSession, Session} from "@/state/session";
+import {saveSession, Session, useSession} from "@/state/session";
 
 export type BatchChecklistProps = {
     batch: Batch;
-    session: Session;
     onChange: (batch: Batch) => void
 };
-export default function Checklists({ batch, session, onChange }: BatchChecklistProps) {
+export default function Checklists({ batch, onChange }: BatchChecklistProps) {
+    const session = useSession();
     const [data, toggle] = useChecklist(batch, onChange);
 
     if (!data) { return <Error>'data' missing</Error>; }
@@ -27,7 +27,7 @@ export default function Checklists({ batch, session, onChange }: BatchChecklistP
                     key={title}
                     title={title}
                     className="lg:collapse-open"
-                    openInitial={session[`checklist.${title.toLowerCase()}`] ?? !items.every(({ completed }) => completed)}>
+                    openInitial={session?.[`checklist.${title.toLowerCase()}`] ?? !items.every(({ completed }) => completed)}>
                     <Checklist className="sm:columns-2">
                         {items.map(({ name, completed }, j) => (
                             <ChecklistItem
