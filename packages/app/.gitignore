@@ -9,12 +9,10 @@
 # testing
 /coverage
 
-# next.js
-/.next/
-/out/
-
-# production
-/build
+# vite
+/dist
+/dev-dist
+.tanstack
 
 # misc
 .DS_Store
@@ -33,6 +31,5 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
-next-env.d.ts
 
 *storybook.log

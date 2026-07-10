@@ -21,7 +21,7 @@ export function InputDate({ className, onChange, value, readonly, placeholder, n
         value={value}
         type="date"
         className={classNames(
-            "input input-bordered lg:input-sm input-xs px-1.5 lg:px-2.5",
+            "input lg:input-sm input-xs px-1.5 lg:px-2.5",
             [className],
             {
                 "input-primary": primary,

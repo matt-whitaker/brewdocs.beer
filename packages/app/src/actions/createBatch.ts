@@ -3,7 +3,7 @@ import {CreateBatchState} from "@/component/create-batch-form/useCreateBatchForm
 import batchesStorage from "@/storage/batches";
 import Batch from "@/model/batch";
 import equipment from "@/data/equipment";
-import {cloneDeep, intersection} from "lodash";
+import {cloneDeep, intersection} from "@/utils/func";
 import defaultBatch from "@/data/defaultBatch";
 import _updateShopping from "@/actions/_updateShopping";
 import Statuses from "@/model/statuses";

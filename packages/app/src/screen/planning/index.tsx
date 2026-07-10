@@ -1,5 +1,3 @@
-"use client";
-
 import {ScreenH1, ScreenH2, ScreenH3, ScreenP, InputDate} from "@brewdocs.beer/design";
 import Batch from "@/model/batch";
 import Recipe from "@/model/recipe";

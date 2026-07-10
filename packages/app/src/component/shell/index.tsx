@@ -1,5 +1,3 @@
-"use client";
-
 import {PropsWithChildren} from "react";
 import nav from "@/data/nav";
 import DrawerInput from "@/component/drawer/input";

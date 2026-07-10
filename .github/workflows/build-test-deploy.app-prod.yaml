@@ -27,7 +27,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: app-prod
-          path: packages/app/out
+          path: packages/app/dist
 
   Test:
     runs-on: ubuntu-latest
@@ -42,7 +42,7 @@ jobs:
       environment: "app-prod"
       aws_default_region: "us-west-2"
       artifact_name: "app-prod"
-      artifact_path: "packages/app/out"
+      artifact_path: "packages/app/dist"
     secrets:
       aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
       aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

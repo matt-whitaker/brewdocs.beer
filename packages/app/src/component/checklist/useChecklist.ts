@@ -1,5 +1,5 @@
 import {useCallback, useEffect, useMemo, useState} from "react";
-import {cloneDeep, debounce, get, set} from "lodash";
+import {cloneDeep, get, set} from "@/utils/func";
 
 export type ToggleFn = (dot: string) => void;
 export type AddFn = (dot: string, value: string) => void;

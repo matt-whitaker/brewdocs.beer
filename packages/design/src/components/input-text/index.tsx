@@ -24,8 +24,9 @@ export function InputText({ className, onChange, onBlur, value, readonly, placeh
         readOnly={!!readonly}
         value={value}
         type="text"
+        onKeyDown={onBlur ? ({ key, currentTarget }) => { key === "Enter" && currentTarget.blur(); } : void 0}
         className={classNames(
-            "input input-bordered lg:input-sm input-xs px-1 lg:px-2.5",
+            "input lg:input-sm input-xs px-1 lg:px-2.5",
             [className],
             {
                 "input-primary": primary,

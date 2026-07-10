@@ -5,7 +5,7 @@ import {PropsWithClass} from "@brewdocs.beer/core";
 type TypographyProps = PropsWithChildren & PropsWithClass;
 
 export const ScreenH1 = ({ children, className }: TypographyProps) =>
-    (<h1 className={classNames("text-2xl capitalize -mx-2 px-2 py-1 mt-5 first:mt-0 [&+h2]:mt-0 bg-primary bg-opacity-60 rounded-badge", [className])}>{children}</h1>);
+    (<h1 className={classNames("text-2xl capitalize -mx-2 px-2 py-1 mt-5 first:mt-0 [&+h2]:mt-0 bg-primary/60 rounded-box", [className])}>{children}</h1>);
 
 export const ScreenH2 = ({ children, className }: TypographyProps) =>
     (<h2 className={classNames("text-2xl capitalize mt-5 first:mt-0 [&+h3]:mt-0", [className])}>{children}</h2>);

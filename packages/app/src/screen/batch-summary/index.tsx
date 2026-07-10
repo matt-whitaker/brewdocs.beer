@@ -1,5 +1,3 @@
-"use client";
-
 import Screen from "../../component/screen";
 import Organics from "@/component/organics";
 import Vitals from "@/component/vitals";

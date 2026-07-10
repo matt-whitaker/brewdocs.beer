@@ -22,7 +22,12 @@ export default function PanelSwitcherContent({ title, titleAlt, children, active
                 type="radio"
                 name={`tab-wrapper-${title}`}
                 role="tab"
-                className={classNames("first-of-type:ml-2 tab whitespace-nowrap lg:px-3 px-2.5", { disabled: !children })}
+                className={classNames(
+                    // daisyui v5 styles the active tab neutral and fades inactive tab text;
+                    // restore the v4 primary look and full-strength text (disabled tabs stay dim)
+                    "first-of-type:ml-2 tab whitespace-nowrap lg:px-3 px-2.5 checked:bg-primary checked:text-primary-content",
+                    { "text-base-content": !!children, disabled: !children }
+                )}
                 aria-label={title}
             />
             <div role="tabpanel" className="tab-content bg-base-100 lg:rounded-box">

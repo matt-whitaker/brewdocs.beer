@@ -1,6 +1,6 @@
 import classNames from "classnames";
-import {InputSelect, InputSelectOption} from "@brewdocs.beer/design/src/components/input-select";
-import {PropsWithClass, PropsWithOnChange} from "../../../../core";
+import {InputSelect, InputSelectOption} from "@brewdocs.beer/design";
+import {PropsWithClass, PropsWithOnChange} from "@brewdocs.beer/core";
 
 export type DataGridSelectProps = PropsWithOnChange<string> & PropsWithClass & {
     data: InputSelectOption[];

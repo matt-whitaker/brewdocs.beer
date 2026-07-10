@@ -1,4 +1,4 @@
-import {cloneDeep, debounce, get, set} from "lodash";
+import {cloneDeep, debounce, get, isEqual, set} from "@/utils/func";
 import {useCallback, useEffect, useMemo, useState} from "react";
 import Scalar from "@/model/scalar";
 import {scalarFromNumberWithCurrency, scalarFromNumberWithUnit} from "@/utils/formatting";
@@ -12,11 +12,12 @@ export type RemoveFn = (dot: string, index: number) => void;
 
 export default function useJsonEdit<T extends Entity>(data: T, onChange: (data: T) => void): [T, UpdateFn, UpdateScalarFn, ToggleFn, AddFn, RemoveFn] {
     const [state, setState] = useState<T>(data);
+    // resync whenever the store emits a batch that actually differs; sibling
+    // screens stay mounted in hidden tabs and would otherwise edit from stale
+    // copies, clobbering each other's saves
     useEffect(() => {
-        if (data.id !== state.id) {
-            setState(data);
-        }
-    }, [state, data]);
+        setState(prev => (isEqual(prev, data) ? prev : data));
+    }, [data]);
     const debouncedOnChange = useMemo(() => debounce(onChange, 350), [onChange]);
 
     /**

@@ -1,5 +1,3 @@
-"use client";
-
 import {ScreenH1} from "@brewdocs.beer/design";
 import Batch from "@/model/batch";
 import useJsonEdit from "@/hooks/useJsonEdit";

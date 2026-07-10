@@ -1,4 +1,4 @@
-import {PropsWithClass} from "../../../../../core";
+import {PropsWithClass} from "@brewdocs.beer/core";
 import classNames from "classnames";
 import {PropsWithChildren, useCallback} from "react";
 import {eventValue} from "@brewdocs.beer/core";
@@ -22,7 +22,7 @@ export default function FormCheckbox({ children, onChange, checked, readonly, na
                 checked={checked}
                 onChange={_onChange}
                 type="checkbox"
-                className={classNames("ml-2 checkbox checkbox-sm", [cbClassName])} />
+                className={classNames("ml-2 checkbox checkbox-sm rounded-sm", [cbClassName])} />
         </label>
     );
 }

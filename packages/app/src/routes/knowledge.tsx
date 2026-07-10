@@ -1,10 +1,13 @@
-"use client";
-
+import {createFileRoute} from "@tanstack/react-router";
 import SearchEverywhere from "@/screen/search-everywhere";
 import {FEATURES_SEARCH_EVERYWHERE} from "@/utils/env";
 import {useBatches} from "@/state/batches";
 
-export default function KnowledgePage() {
+export const Route = createFileRoute("/knowledge")({
+    component: KnowledgePage
+});
+
+function KnowledgePage() {
     const batches = useBatches();
 
     if (!batches) {

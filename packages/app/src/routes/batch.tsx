@@ -1,12 +1,10 @@
-"use client";
-
+import {createFileRoute} from "@tanstack/react-router";
 import {useCallback} from "react";
-import {useSearchParams} from "next/navigation";
 import Batch from "@/model/batch";
 import usePanelSwitcher from "@/component/panel-switcher/usePanelSwitcher";
 import PanelSwitcher from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
-import Checklists from "../../screen/checklists";
+import Checklists from "@/screen/checklists";
 import BrewDay from "@/screen/schedule";
 import BatchSummary from "@/screen/batch-summary";
 import Shopping from "@/screen/shopping";
@@ -18,8 +16,15 @@ import {useRecipe} from "@/state/recipe";
 import updateBatch from "@/actions/updateBatch";
 import Statuses from "@/model/statuses";
 
-export default function BatchPage() {
-    const batchId = useSearchParams().get("batchId");
+export const Route = createFileRoute("/batch")({
+    validateSearch: (search: Record<string, unknown>): {batchId?: string} => ({
+        batchId: typeof search.batchId === "string" ? search.batchId : undefined
+    }),
+    component: BatchPage
+});
+
+function BatchPage() {
+    const {batchId} = Route.useSearch();
     const session = useSession();
 
     const batch = useBatch(batchId ?? null);
