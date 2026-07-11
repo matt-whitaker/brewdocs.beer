@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 /* workspace deps are symlinked under node_modules, which Tailwind v4
    auto-detection skips — the design package must be an explicit source */

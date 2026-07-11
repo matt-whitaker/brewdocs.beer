@@ -1,7 +1,10 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
+
+@source "../../design/src";
+
 @plugin "daisyui" {
-  themes: nord;
+  themes: nord --default;
 }
 
 @theme {
