@@ -1,4 +1,4 @@
-async function importResource<T>(resource: "hops"|"grains"|"yeasts"|"recipes"): Promise<T[]|null> {
+async function importResource<T>(resource: "hops"|"grains"|"yeasts"|"recipes"): Promise<T[]> {
     try {
         switch (resource) {
             case "recipes":
@@ -11,10 +11,10 @@ async function importResource<T>(resource: "hops"|"grains"|"yeasts"|"recipes"): 
                 return (await import("../dist/yeasts.json")).data as T[];
         }
     } catch (e) {
-        console.error(`Failed to load static resource: ${resource}`, e);
+        const msg = `Failed to load static resource: ${resource}`
+        console.error(msg, e);
+        throw new Error(msg)
     }
-
-    return null;
 }
 
 export default importResource;

@@ -1,22 +1,15 @@
-import {useQuery, useSuspenseQuery} from "@tanstack/react-query";
+import {useSuspenseQuery} from "@tanstack/react-query";
 import {importResource, KbRecipe} from "@brewdocs.beer/kb";
 import Recipe from "@/model/recipe";
 
 export const recipesQueryKey = ["recipes"] as const;
 
-function kbRecipeToRecipe(kbRecipe: KbRecipe): Recipe {
-    return kbRecipe as Recipe;
-}
+export const kbRecipeToRecipe = (kbRecipe: KbRecipe): Recipe => kbRecipe as Recipe;
 
-export async function fetchRecipes(): Promise<Recipe[]|null> {
+export const fetchRecipes = async (): Promise<Recipe[]> => {
     const kbRecipes = await importResource<KbRecipe>("recipes");
-    return kbRecipes?.map(kbRecipeToRecipe) ?? null;
+    return kbRecipes.map(kbRecipeToRecipe);
 }
-
-export const useRecipes = (): Recipe[]|null => useQuery({
-    queryKey: recipesQueryKey,
-    queryFn: fetchRecipes
-}).data ?? null;
 
 export const useSuspenseRecipes = (): Recipe[] => {
     const { data } = useSuspenseQuery({
@@ -31,12 +24,7 @@ export const useSuspenseRecipes = (): Recipe[] => {
     return data;
 };
 
-export const useRecipe = (id: string | null = null): Recipe|null => {
-    const {data} = useQuery({queryKey: recipesQueryKey, queryFn: fetchRecipes });
-    return data?.find(recipe => recipe.id === id) ?? null;
-};
-
-export const useSuspenseRecipe = (id: string | null = null): Recipe => {
+export const useSuspenseRecipe = (id: string): Recipe => {
     const {data} = useSuspenseQuery({queryKey: recipesQueryKey, queryFn: fetchRecipes });
     const recipe = data?.find(recipe => recipe.id === id);
     if (!data || !recipe) {

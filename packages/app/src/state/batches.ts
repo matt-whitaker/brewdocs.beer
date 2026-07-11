@@ -24,13 +24,13 @@ export const useSuspenseBatches = (filter?: FilterFn<Batch>): Batch[] => {
 };
 
 export const useBatch = (id: string): Batch|null => useQuery({
-    queryKey: batchQueryKey(id ?? ""),
+    queryKey: batchQueryKey(id),
     queryFn: () => batchesStorage.get(id),
 }).data ?? null;
 
 export const useSuspenseBatch = (id: string): Batch => {
     const { data } = useSuspenseQuery({
-        queryKey: batchQueryKey(id ?? ""),
+        queryKey: batchQueryKey(id),
         queryFn: () => batchesStorage.get(id),
     })
 

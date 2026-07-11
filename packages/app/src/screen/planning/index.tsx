@@ -1,20 +1,15 @@
 import {ScreenH1, ScreenH2, ScreenH3, ScreenP, InputDate} from "@brewdocs.beer/design";
 import Batch from "@/model/batch";
-import Recipe from "@/model/recipe";
 
 import useJsonEdit from "@/hooks/useJsonEdit";
 import ScreenTwoCol from "@/component/screen/two-col";
 import Screen from "@/component/screen";
-import {useKbHops} from "@/state/kbHops";
-import {useKbYeasts} from "@/state/kbYeasts";
-import {useKbGrains} from "@/state/kbGrains";
-import useIndexBy from "@/hooks/useIndexBy";
 import PlanningHops from "@/screen/planning/hops";
 import PlanningYeast from "@/screen/planning/yeast";
 import PlanningGrains from "@/screen/planning/grains";
-import {useSession} from "@/state/session";
-import {useBatch, useSuspenseBatch} from "@/state/batches";
-import {useRecipe, useSuspenseRecipe} from "@/state/recipes";
+import {useSuspenseBatch} from "@/state/batches";
+import {useSuspenseRecipe} from "@/state/recipes";
+import {Suspense} from "react";
 
 export type PlanningProps = {
     batchId: string;
@@ -53,13 +48,15 @@ export default function Planning({ batchId, onChange }: PlanningProps) {
                         update={update}
                         updateScalar={updateScalar}
                     />
-                    <PlanningHops
-                        hops={data.hops}
-                        add={add}
-                        remove={remove}
-                        update={update}
-                        updateScalar={updateScalar}
-                    />
+                    <Suspense>
+                        <PlanningHops
+                            hops={data.hops}
+                            add={add}
+                            remove={remove}
+                            update={update}
+                            updateScalar={updateScalar}
+                        />
+                    </Suspense>
                 </div>
                 <div>
                     <PlanningYeast

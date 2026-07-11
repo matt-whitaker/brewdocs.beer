@@ -1,4 +1,4 @@
-import {useQuery} from "@tanstack/react-query";
+import {useSuspenseQuery} from "@tanstack/react-query";
 import {importResource, KbYeast} from "@brewdocs.beer/kb"
 import Yeast from "@/model/yeast";
 import {Units} from "@brewdocs.beer/core";
@@ -21,12 +21,20 @@ function kbYeastToYeast(kbYeast: KbYeast): Yeast {
     } as Yeast;
 }
 
-async function fetchKbYeasts(): Promise<Yeast[]|null> {
+async function fetchKbYeasts(): Promise<Yeast[]> {
     const kbYeasts = await importResource<KbYeast>("yeasts");
-    return kbYeasts?.map(kbYeastToYeast) ?? null;
+    return kbYeasts.map(kbYeastToYeast);
 }
 
-export const useKbYeasts = (): Yeast[]|null => useQuery({
-    queryKey: ["kb", "yeasts"],
-    queryFn: fetchKbYeasts
-}).data ?? null;
+export const useKbYeasts = (): Yeast[] => {
+    const { data } = useSuspenseQuery({
+        queryKey: ["kb", "yeasts"],
+        queryFn: fetchKbYeasts
+    });
+
+    if (!data) {
+        throw new Error("Unable to load yeasts from Knowledge Base")
+    }
+
+    return data;
+};

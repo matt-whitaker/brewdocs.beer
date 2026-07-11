@@ -8,12 +8,8 @@ import Checklists from "@/screen/checklists";
 import Schedule from "@/screen/schedule";
 import BatchSummary from "@/screen/batch-summary";
 import Shopping from "@/screen/shopping";
-import Loading from "@/screen/loading";
 import Planning from "@/screen/planning";
 import updateBatch from "@/actions/updateBatch";
-import Statuses from "@/model/statuses";
-import {useBatch} from "@/state/batches";
-import {useRecipe} from "@/state/recipes";
 
 export const Route = createFileRoute("/batch/$batchId")({
     component: BatchPage
@@ -35,6 +31,8 @@ function BatchPage() {
             <PanelSwitcherContent active={active} change={setActive} title="Checklists">
                 <Suspense>
                     <Shopping batchId={batchId} onChange={onChange} />
+                </Suspense>
+                <Suspense>
                     <Checklists batchId={batchId} onChange={onChange} />
                 </Suspense>
             </PanelSwitcherContent>

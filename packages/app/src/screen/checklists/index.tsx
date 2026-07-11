@@ -8,7 +8,6 @@ import useChecklist from "@/component/checklist/useChecklist";
 import Collapse from "@/component/collapse";
 import {saveSession, useSession} from "@/state/session";
 import {useSuspenseBatch} from "@/state/batches";
-import {useSuspenseRecipe} from "@/state/recipes";
 
 export type BatchChecklistProps = {
     batchId: string;

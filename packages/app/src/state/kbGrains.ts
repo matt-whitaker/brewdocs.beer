@@ -1,4 +1,4 @@
-import {useQuery} from "@tanstack/react-query";
+import {useSuspenseQuery} from "@tanstack/react-query";
 import {importResource, KbGrain} from "@brewdocs.beer/kb"
 import Grain from "@/model/grain";
 import {Units} from "@brewdocs.beer/core";
@@ -16,12 +16,20 @@ function kbGrainToGrain(kbGrain: KbGrain): Grain {
     } as Grain;
 }
 
-async function fetchKbGrains(): Promise<Grain[]|null> {
+async function fetchKbGrains(): Promise<Grain[]> {
     const kbGrains = await importResource<KbGrain>("grains");
-    return kbGrains?.map(kbGrainToGrain) ?? null;
+    return kbGrains.map(kbGrainToGrain);
 }
 
-export const useKbGrains = (): Grain[]|null => useQuery({
-    queryKey: ["kb", "grains"],
-    queryFn: fetchKbGrains
-}).data ?? null;
+export const useKbGrains = (): Grain[] => {
+    const { data } = useSuspenseQuery({
+        queryKey: ["kb", "grains"],
+        queryFn: fetchKbGrains
+    });
+
+    if (!data) {
+        throw new Error("Unable to load grains from Knowledge Base")
+    }
+
+    return data;
+};

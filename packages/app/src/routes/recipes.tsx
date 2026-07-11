@@ -3,6 +3,7 @@ import RecipeList from "@/screen/recipe-list";
 import PanelSwitcher from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
 import usePanelSwitcher from "@/component/panel-switcher/usePanelSwitcher";
+import {Suspense} from "react";
 
 export const Route = createFileRoute("/recipes")({
     component: RecipesPage
@@ -14,7 +15,9 @@ function RecipesPage() {
     return (
         <PanelSwitcher>
             <PanelSwitcherContent active={active} change={change} title="All">
-                <RecipeList />
+                <Suspense>
+                    <RecipeList />
+                </Suspense>
             </PanelSwitcherContent>
             <PanelSwitcherContent active={active} change={change} title="Starred"></PanelSwitcherContent>
             <PanelSwitcherContent active={active} change={change} title="My Recipes"></PanelSwitcherContent>

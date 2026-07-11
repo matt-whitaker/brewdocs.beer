@@ -1,4 +1,4 @@
-import {useQuery} from "@tanstack/react-query";
+import {useSuspenseQuery} from "@tanstack/react-query";
 import {importResource, KbHop} from "@brewdocs.beer/kb"
 import Hop from "@/model/hop";
 import {Units} from "@brewdocs.beer/core";
@@ -25,12 +25,20 @@ function kbHopToHop(kbHop: KbHop): Hop {
     } as Hop;
 }
 
-async function fetchKbHops(): Promise<Hop[]|null> {
+async function fetchKbHops(): Promise<Hop[]> {
     const kbHops = await importResource<KbHop>("hops");
-    return kbHops?.map(kbHopToHop) ?? null;
+    return kbHops.map(kbHopToHop);
 }
 
-export const useKbHops = (): Hop[]|null => useQuery({
-    queryKey: ["kb", "hops"],
-    queryFn: fetchKbHops
-}).data ?? null;
+export const useKbHops = (): Hop[] => {
+    const { data } = useSuspenseQuery({
+        queryKey: ["kb", "hops"],
+        queryFn: fetchKbHops
+    });
+
+    if (!data) {
+        throw new Error("Unable to load hops from Knowledge Base")
+    }
+
+    return data;
+};
