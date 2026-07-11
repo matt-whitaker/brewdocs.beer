@@ -28,7 +28,7 @@ function kbHopToHop(kbHop: KbHop): Hop {
 
 const kbHopsQueryKey = () => ["kb", "hops"]
 const fetchKbHops = async (): Promise<Hop[]> => {
-    const kbHops = await importResource<KbHop>("hops");
+    const kbHops = await importResource("hops");
     return kbHops.map(kbHopToHop);
 }
 

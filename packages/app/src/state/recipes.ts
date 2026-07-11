@@ -7,13 +7,13 @@ export const kbRecipeToRecipe = (kbRecipe: KbRecipe): Recipe => kbRecipe as Reci
 
 const recipesQueryKey = () => ["recipes"] as const;
 const fetchRecipes = async (): Promise<Recipe[]> => {
-    const kbRecipes = await importResource<KbRecipe>("recipes");
+    const kbRecipes = await importResource("recipes");
     return kbRecipes.map(kbRecipeToRecipe);
 }
 
 const recipeQueryKey = (id) => ["recipe", id];
 const fetchRecipe = async ({ queryKey: [, id] }): Promise<Recipe> => {
-    const kbRecipes = await importResource<KbRecipe>("recipes");
+    const kbRecipes = await importResource("recipes");
     return kbRecipes.map(kbRecipeToRecipe).find(recipe => recipe.id === id);
 }
 

@@ -23,7 +23,7 @@ function kbYeastToYeast(kbYeast: KbYeast): Yeast {
 
 const kbYeastsQueryKey = () => ["kb", "yeasts"];
 const fetchKbYeasts = async (): Promise<Yeast[]> => {
-    const kbYeasts = await importResource<KbYeast>("yeasts");
+    const kbYeasts = await importResource("yeasts");
     return kbYeasts.map(kbYeastToYeast);
 }
 

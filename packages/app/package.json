@@ -3,7 +3,10 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
+    "link-kb": "mkdir -p public && ln -sfn ../../kb/dist public/kb",
+    "predev": "npm run link-kb",
     "dev": "vite",
+    "prebuild": "npm run link-kb",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview"
   },
@@ -14,7 +17,6 @@
     "@fontsource-variable/urbanist": "^5.2.7",
     "@tanstack/react-query": "^5.101.2",
     "@tanstack/react-router": "^1.170.17",
-    "axios": "^1.7.8",
     "classnames": "^2.5.1",
     "daisyui": "^5.6.16",
     "localforage": "^1.10.0",

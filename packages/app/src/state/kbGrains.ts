@@ -18,7 +18,7 @@ function kbGrainToGrain(kbGrain: KbGrain): Grain {
 
 const kbGrainsQueryKey = () => ["kb", "grains"];
 const fetchKbGrains = async (): Promise<Grain[]> => {
-    const kbGrains = await importResource<KbGrain>("grains");
+    const kbGrains = await importResource("grains");
     return kbGrains.map(kbGrainToGrain);
 }
 
