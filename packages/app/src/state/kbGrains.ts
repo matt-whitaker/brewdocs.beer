@@ -16,16 +16,14 @@ function kbGrainToGrain(kbGrain: KbGrain): Grain {
     } as Grain;
 }
 
-async function fetchKbGrains(): Promise<Grain[]> {
+const kbGrainsQueryKey = () => ["kb", "grains"];
+const fetchKbGrains = async (): Promise<Grain[]> => {
     const kbGrains = await importResource<KbGrain>("grains");
     return kbGrains.map(kbGrainToGrain);
 }
 
 export const useKbGrains = (): Grain[] => {
-    const { data } = useSuspenseQuery({
-        queryKey: ["kb", "grains"],
-        queryFn: fetchKbGrains
-    });
+    const { data } = useSuspenseQuery({queryKey: kbGrainsQueryKey(), queryFn: fetchKbGrains });
 
     if (!data) {
         throw new Error("Unable to load grains from Knowledge Base")

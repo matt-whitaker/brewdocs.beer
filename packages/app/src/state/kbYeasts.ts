@@ -21,16 +21,14 @@ function kbYeastToYeast(kbYeast: KbYeast): Yeast {
     } as Yeast;
 }
 
-async function fetchKbYeasts(): Promise<Yeast[]> {
+const kbYeastsQueryKey = () => ["kb", "yeasts"];
+const fetchKbYeasts = async (): Promise<Yeast[]> => {
     const kbYeasts = await importResource<KbYeast>("yeasts");
     return kbYeasts.map(kbYeastToYeast);
 }
 
 export const useKbYeasts = (): Yeast[] => {
-    const { data } = useSuspenseQuery({
-        queryKey: ["kb", "yeasts"],
-        queryFn: fetchKbYeasts
-    });
+    const { data } = useSuspenseQuery({ queryKey: kbYeastsQueryKey(), queryFn: fetchKbYeasts });
 
     if (!data) {
         throw new Error("Unable to load yeasts from Knowledge Base")

@@ -25,16 +25,15 @@ function kbHopToHop(kbHop: KbHop): Hop {
     } as Hop;
 }
 
-async function fetchKbHops(): Promise<Hop[]> {
+
+const kbHopsQueryKey = () => ["kb", "hops"]
+const fetchKbHops = async (): Promise<Hop[]> => {
     const kbHops = await importResource<KbHop>("hops");
     return kbHops.map(kbHopToHop);
 }
 
 export const useKbHops = (): Hop[] => {
-    const { data } = useSuspenseQuery({
-        queryKey: ["kb", "hops"],
-        queryFn: fetchKbHops
-    });
+    const { data } = useSuspenseQuery({ queryKey: kbHopsQueryKey(), queryFn: fetchKbHops });
 
     if (!data) {
         throw new Error("Unable to load hops from Knowledge Base")
