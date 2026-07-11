@@ -1,5 +1,4 @@
 import Measurements from "@/model/measurements";
-import Recipe from "@/model/recipe";
 import Hydrometer from "@/model/hydrometer";
 import {Entity} from "@brewdocs.beer/core";
 import {Mash} from "@/model/mash";

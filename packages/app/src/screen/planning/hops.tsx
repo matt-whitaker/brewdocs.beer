@@ -1,3 +1,4 @@
+import {KbHop} from "@brewdocs.beer/kb";
 import DataGrid from "@/component/data-grid";
 import Hop from "@/model/hop";
 import {Fragment} from "react";
@@ -5,7 +6,7 @@ import DataGridRow from "@/component/data-grid/row";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridRemoveButton from "@/component/data-grid/remove-button";
 import DataGridSelect from "@/component/data-grid/select";
-import {useKbHops} from "@/state/kbHops";
+import {kbHopToHop, useKbHops} from "@/state/kbHops";
 import DataGridInput from "@/component/data-grid/input";
 import AddRow from "@/component/data-grid/add-row";
 import useIndexBy from "@/hooks/useIndexBy";
@@ -25,10 +26,6 @@ export default function PlanningHops({ hops, add, remove, update, updateScalar }
     const kbHops = useKbHops();
     const kbHopsIndex = useIndexBy(kbHops, "name");
 
-    if (!kbHops || !kbHopsIndex) {
-        return null;
-    }
-
     return (
         <>
             <Collapse
@@ -46,7 +43,7 @@ export default function PlanningHops({ hops, add, remove, update, updateScalar }
                                     <DataGridSelect
                                         data={kbHops.map((({ name }) => ({ value: name, name })))}
                                         value={hop.name}
-                                        onChange={(value: string) => update(`hops[${i}]`, kbHopsIndex!.get(value)!)}
+                                        onChange={(value: string) => update(`hops[${i}]`, kbHopToHop(kbHopsIndex!.get(value)!))}
                                     />
                                 </DataGridLabel>
                                 <DataGridInput
@@ -64,9 +61,9 @@ export default function PlanningHops({ hops, add, remove, update, updateScalar }
                             </DataGridRow>
                         </Fragment>
                     ))}
-                    <AddRow<Hop>
+                    <AddRow<KbHop>
                         data={kbHops}
-                        add={(value: string) => add("hops", kbHopsIndex!.get(value)!)}
+                        add={(value: string) => add("hops", kbHopToHop(kbHopsIndex!.get(value)!))}
                     />
                 </DataGrid>
             </Collapse>

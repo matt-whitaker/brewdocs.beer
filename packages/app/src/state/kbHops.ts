@@ -7,9 +7,10 @@ import {isOnline} from "@/utils/connectivity";
 import queryClient from "@/queryClient";
 
 /**
- * Map a Knowledge-base hop to local app model, setting defaults
+ * Map a Knowledge-base hop to a batch-instance app model, setting defaults.
+ * Called at the point a hop is added to a batch, not at download/cache time.
  */
-function kbHopToHop(kbHop: KbHop): Hop {
+export function kbHopToHop(kbHop: KbHop): Hop {
     return {
         name: kbHop.name,
         weight: {
@@ -29,7 +30,7 @@ function kbHopToHop(kbHop: KbHop): Hop {
 }
 
 const kbHopsQueryKey = () => ["kb", "hops"]
-const fetchKbHops = async (): Promise<Hop[]> => {
+const fetchKbHops = async (): Promise<KbHop[]> => {
     const cached = await kbStorage.getResource("hops");
     if (cached) {
         return cached;
@@ -39,13 +40,13 @@ const fetchKbHops = async (): Promise<Hop[]> => {
         throw new Error("Hops data isn't downloaded yet, and you're offline.");
     }
 
-    const hops = (await importResource("hops")).map(kbHopToHop);
+    const hops = await importResource("hops");
     return kbStorage.saveResource("hops", hops);
 }
 
 export const prefetchKbHops = () => queryClient.prefetchQuery({ queryKey: kbHopsQueryKey(), queryFn: fetchKbHops });
 
-export const useKbHops = (): Hop[] => {
+export const useKbHops = (): KbHop[] => {
     const { data } = useSuspenseQuery({ queryKey: kbHopsQueryKey(), queryFn: fetchKbHops });
 
     if (!data) {

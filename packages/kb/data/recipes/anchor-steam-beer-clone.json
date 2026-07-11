@@ -76,7 +76,7 @@
       },
       "boil": {
         "value": "60min",
-        "unit": "%"
+        "unit": "min"
       },
       "phase": "boil"
     },

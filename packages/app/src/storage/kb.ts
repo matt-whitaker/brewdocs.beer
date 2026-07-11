@@ -1,14 +1,11 @@
 import {Forage} from "@/storage/forage";
-import Grain from "@/model/grain";
-import Hop from "@/model/hop";
-import Yeast from "@/model/yeast";
-import Recipe from "@/model/recipe";
+import {KbGrain, KbHop, KbYeast, KbRecipe} from "@brewdocs.beer/kb";
 
 type KbResourceMap = {
-    grains: Grain[];
-    hops: Hop[];
-    yeasts: Yeast[];
-    recipes: Recipe[];
+    grains: KbGrain[];
+    hops: KbHop[];
+    yeasts: KbYeast[];
+    recipes: KbRecipe[];
 }
 
 export class KbStorage extends Forage<KbResourceMap[keyof KbResourceMap]> {

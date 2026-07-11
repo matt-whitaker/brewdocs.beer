@@ -7,9 +7,10 @@ import {isOnline} from "@/utils/connectivity";
 import queryClient from "@/queryClient";
 
 /**
- * Map a Knowledge-base grain to local app model, setting defaults
+ * Map a Knowledge-base grain to a batch-instance app model, setting defaults.
+ * Called at the point a grain is added to a batch, not at download/cache time.
  */
-function kbGrainToGrain(kbGrain: KbGrain): Grain {
+export function kbGrainToGrain(kbGrain: KbGrain): Grain {
     return {
         name: kbGrain.name,
         weight: {
@@ -20,7 +21,7 @@ function kbGrainToGrain(kbGrain: KbGrain): Grain {
 }
 
 const kbGrainsQueryKey = () => ["kb", "grains"];
-const fetchKbGrains = async (): Promise<Grain[]> => {
+const fetchKbGrains = async (): Promise<KbGrain[]> => {
     const cached = await kbStorage.getResource("grains");
     if (cached) {
         return cached;
@@ -30,13 +31,13 @@ const fetchKbGrains = async (): Promise<Grain[]> => {
         throw new Error("Grains data isn't downloaded yet, and you're offline.");
     }
 
-    const grains = (await importResource("grains")).map(kbGrainToGrain);
+    const grains = await importResource("grains");
     return kbStorage.saveResource("grains", grains);
 }
 
 export const prefetchKbGrains = () => queryClient.prefetchQuery({ queryKey: kbGrainsQueryKey(), queryFn: fetchKbGrains });
 
-export const useKbGrains = (): Grain[] => {
+export const useKbGrains = (): KbGrain[] => {
     const { data } = useSuspenseQuery({ queryKey: kbGrainsQueryKey(), queryFn: fetchKbGrains });
 
     if (!data) {

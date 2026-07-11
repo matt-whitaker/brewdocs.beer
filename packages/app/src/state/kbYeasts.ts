@@ -7,9 +7,10 @@ import {isOnline} from "@/utils/connectivity";
 import queryClient from "@/queryClient";
 
 /**
- * Map a Knowledge-base yeast to local app model, setting defaults
+ * Map a Knowledge-base yeast to a batch-instance app model, setting defaults.
+ * Called at the point a yeast is added to a batch, not at download/cache time.
  */
-function kbYeastToYeast(kbYeast: KbYeast): Yeast {
+export function kbYeastToYeast(kbYeast: KbYeast): Yeast {
     return {
         name: kbYeast.name,
         avg_attn: {
@@ -25,7 +26,7 @@ function kbYeastToYeast(kbYeast: KbYeast): Yeast {
 }
 
 const kbYeastsQueryKey = () => ["kb", "yeasts"];
-const fetchKbYeasts = async (): Promise<Yeast[]> => {
+const fetchKbYeasts = async (): Promise<KbYeast[]> => {
     const cached = await kbStorage.getResource("yeasts");
     if (cached) {
         return cached;
@@ -35,13 +36,13 @@ const fetchKbYeasts = async (): Promise<Yeast[]> => {
         throw new Error("Yeasts data isn't downloaded yet, and you're offline.");
     }
 
-    const yeasts = (await importResource("yeasts")).map(kbYeastToYeast);
+    const yeasts = await importResource("yeasts");
     return kbStorage.saveResource("yeasts", yeasts);
 }
 
 export const prefetchKbYeasts = () => queryClient.prefetchQuery({ queryKey: kbYeastsQueryKey(), queryFn: fetchKbYeasts });
 
-export const useKbYeasts = (): Yeast[] => {
+export const useKbYeasts = (): KbYeast[] => {
     const { data } = useSuspenseQuery({ queryKey: kbYeastsQueryKey(), queryFn: fetchKbYeasts });
 
     if (!data) {

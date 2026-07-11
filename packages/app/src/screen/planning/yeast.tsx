@@ -1,3 +1,4 @@
+import {KbYeast} from "@brewdocs.beer/kb";
 import {AddFn, RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
 import Yeast from "@/model/yeast";
 import DataGrid from "@/component/data-grid";
@@ -6,7 +7,7 @@ import DataGridRow from "@/component/data-grid/row";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridRemoveButton from "@/component/data-grid/remove-button";
 import DataGridSelect from "@/component/data-grid/select";
-import {useKbYeasts} from "@/state/kbYeasts";
+import {kbYeastToYeast, useKbYeasts} from "@/state/kbYeasts";
 import DataGridInput from "@/component/data-grid/input";
 import AddRow from "@/component/data-grid/add-row";
 import useIndexBy from "@/hooks/useIndexBy";
@@ -25,10 +26,6 @@ export default function PlanningYeast({ yeast, add, remove, update, updateScalar
     const kbYeasts = useKbYeasts();
     const kbYeastsIndex = useIndexBy(kbYeasts, "name");
 
-    if (!kbYeasts || !kbYeastsIndex) {
-        return null;
-    }
-
     return (
         <>
             <Collapse
@@ -46,7 +43,7 @@ export default function PlanningYeast({ yeast, add, remove, update, updateScalar
                                     <DataGridSelect
                                         data={kbYeasts.map((({ name }) => ({ value: name, name })))}
                                         value={yeast.name}
-                                        onChange={(value: string) => update(`yeast[${i}]`, kbYeastsIndex!.get(value)!)}
+                                        onChange={(value: string) => update(`yeast[${i}]`, kbYeastToYeast(kbYeastsIndex!.get(value)!))}
                                     />
                                 </DataGridLabel>
                                 <DataGridInput
@@ -61,9 +58,9 @@ export default function PlanningYeast({ yeast, add, remove, update, updateScalar
                             {/*</FormCheckbox>*/}
                         </Fragment>
                     ))}
-                    <AddRow<Yeast>
+                    <AddRow<KbYeast>
                         data={kbYeasts}
-                        add={(value: string) => add("yeast", kbYeastsIndex!.get(value)!)}
+                        add={(value: string) => add("yeast", kbYeastToYeast(kbYeastsIndex!.get(value)!))}
                     />
                 </DataGrid>
             </Collapse>
