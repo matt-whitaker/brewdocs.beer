@@ -1,13 +1,14 @@
 import {createFileRoute} from "@tanstack/react-router";
 import SearchEverywhere from "@/screen/search-everywhere";
 import {FEATURES_SEARCH_EVERYWHERE} from "@/utils/env";
+import Batch from "@/model/batch";
 
 export const Route = createFileRoute("/knowledge")({
     component: KnowledgePage
 });
 
 function KnowledgePage() {
-    const batches = [];
+    const batches = [] as Batch[];
 
     if (!batches) {
         return null;

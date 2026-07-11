@@ -4,7 +4,7 @@ import queryClient from "@/queryClient";
 
 export type Session = Record<string, boolean>
 
-export const sessionQueryKey = () => ["session"] as const;
+export const sessionQueryKey = () => ["session"];
 export const fetchSession = async (): Promise<Session> => sessionStorage.index()
 
 export const useSession = (): Session => {
@@ -14,5 +14,5 @@ export const useSession = (): Session => {
 
 export const saveSession = async (id: string, value: boolean) => {
     await sessionStorage.save(id, value);
-    await queryClient.invalidateQueries({queryKey: sessionQueryKey});
+    await queryClient.invalidateQueries({ queryKey: sessionQueryKey() });
 }
