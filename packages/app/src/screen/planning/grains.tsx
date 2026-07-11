@@ -7,12 +7,13 @@ import DataGridRow from "@/component/data-grid/row";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridRemoveButton from "@/component/data-grid/remove-button";
 import DataGridSelect from "@/component/data-grid/select";
-import {kbGrainToGrain, useKbGrains} from "@/state/kbGrains";
+import {useKbGrains} from "@/state/kbGrains";
 import DataGridInput from "@/component/data-grid/input";
 import AddRow from "@/component/data-grid/add-row";
 import useIndexBy from "@/hooks/useIndexBy";
 import {saveSession, useSession} from "@/state/session";
 import Collapse from "@/component/collapse";
+import {kbGrainToGrain} from "@/transform/kbGrainToGrain";
 
 export type PlanningGrainsProps = {
     grains: Grain[];

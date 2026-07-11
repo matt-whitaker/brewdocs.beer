@@ -1,33 +1,8 @@
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {importResource, KbHop} from "@brewdocs.beer/kb"
-import Hop from "@/model/hop";
-import {Units} from "@brewdocs.beer/core";
 import kbStorage from "@/storage/kb";
 import {isOnline} from "@/utils/connectivity";
 import queryClient from "@/queryClient";
-
-/**
- * Map a Knowledge-base hop to a batch-instance app model, setting defaults.
- * Called at the point a hop is added to a batch, not at download/cache time.
- */
-export function kbHopToHop(kbHop: KbHop): Hop {
-    return {
-        name: kbHop.name,
-        weight: {
-            value: "0.0oz",
-            unit: Units.OUNCES
-        },
-        alpha: {
-            value: `${kbHop.alpha}%`,
-            unit: Units.PERCENT
-        },
-        boil: {
-            value: "60min",
-            unit: Units.MINUTES
-        },
-        phase: "boil"
-    } as Hop;
-}
 
 const kbHopsQueryKey = () => ["kb", "hops"]
 const fetchKbHops = async (): Promise<KbHop[]> => {

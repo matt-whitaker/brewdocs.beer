@@ -6,13 +6,14 @@ import DataGridRow from "@/component/data-grid/row";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridRemoveButton from "@/component/data-grid/remove-button";
 import DataGridSelect from "@/component/data-grid/select";
-import {kbHopToHop, useKbHops} from "@/state/kbHops";
+import {useKbHops} from "@/state/kbHops";
 import DataGridInput from "@/component/data-grid/input";
 import AddRow from "@/component/data-grid/add-row";
 import useIndexBy from "@/hooks/useIndexBy";
 import {AddFn, RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
 import {saveSession, useSession} from "@/state/session";
 import Collapse from "@/component/collapse";
+import {kbHopToHop} from "@/transform/kbHopToHop";
 
 export type PlanningHopsProps = {
     hops: Hop[];
