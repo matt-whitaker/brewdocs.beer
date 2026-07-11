@@ -1,20 +1,17 @@
-import {useQuery, useSuspenseQuery} from "@tanstack/react-query";
+import {useSuspenseQuery} from "@tanstack/react-query";
 import Batch from "@/model/batch";
 import batchesStorage from "@/storage/batches";
 import queryClient from "@/queryClient";
+import {FilterFn} from "@/utils/func";
 
-export type FilterFn<T> = (item: T) => boolean;
+const batchesQueryKey = () => ["batches"] as const;
+const loadBatches = () => batchesStorage.list()
 
-export const batchesQueryKey = ["batches"] as const;
-export const batchQueryKey = (id: string) => ["batch", id] as const;
-
-export const useBatches = (filter?: FilterFn<Batch>): Batch[]|null => {
-    const {data} = useQuery({queryKey: batchesQueryKey, queryFn: () => batchesStorage.list()});
-    return (filter && data ? data.filter(filter) : data) ?? null;
-};
+const batchQueryKey = (id: string) => ["batch", id] as const;
+const loadBatch = ({ queryKey: [, id]}) => batchesStorage.get(id)
 
 export const useSuspenseBatches = (filter?: FilterFn<Batch>): Batch[] => {
-    const {data} = useSuspenseQuery({queryKey: batchesQueryKey, queryFn: () => batchesStorage.list()});
+    const {data} = useSuspenseQuery({ queryKey: batchesQueryKey(), queryFn: loadBatches });
 
     if (!data) {
         throw new Error("Unable to load batches")
@@ -24,10 +21,7 @@ export const useSuspenseBatches = (filter?: FilterFn<Batch>): Batch[] => {
 };
 
 export const useSuspenseBatch = (id: string): Batch => {
-    const { data } = useSuspenseQuery({
-        queryKey: batchQueryKey(id),
-        queryFn: () => batchesStorage.get(id),
-    })
+    const { data } = useSuspenseQuery({ queryKey: batchQueryKey(id), queryFn: loadBatch })
 
     if (!data) {
         throw new Error("Unable to load batch")
@@ -39,5 +33,5 @@ export const useSuspenseBatch = (id: string): Batch => {
 export const saveBatch = async (id: string, batch: Batch) => {
     await batchesStorage.save(id, batch);
     await queryClient.invalidateQueries({queryKey: batchQueryKey(id)});
-    await queryClient.invalidateQueries({queryKey: batchesQueryKey});
+    await queryClient.invalidateQueries({queryKey: batchesQueryKey()});
 }
