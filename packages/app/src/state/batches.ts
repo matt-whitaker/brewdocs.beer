@@ -10,7 +10,7 @@ const loadBatches = () => batchesStorage.list()
 const batchQueryKey = (id: string) => ["batch", id] as const;
 const loadBatch = ({ queryKey: [, id]}) => batchesStorage.get(id)
 
-export const useSuspenseBatches = (filter?: FilterFn<Batch>): Batch[] => {
+export const useBatches = (filter?: FilterFn<Batch>): Batch[] => {
     const {data} = useSuspenseQuery({ queryKey: batchesQueryKey(), queryFn: loadBatches });
 
     if (!data) {
@@ -20,7 +20,7 @@ export const useSuspenseBatches = (filter?: FilterFn<Batch>): Batch[] => {
     return filter ? data.filter(filter) : data;
 };
 
-export const useSuspenseBatch = (id: string): Batch => {
+export const useBatch = (id: string): Batch => {
     const { data } = useSuspenseQuery({ queryKey: batchQueryKey(id), queryFn: loadBatch })
 
     if (!data) {

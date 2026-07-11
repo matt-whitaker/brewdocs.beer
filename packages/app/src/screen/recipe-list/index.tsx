@@ -1,10 +1,10 @@
 import {Link} from "@tanstack/react-router";
 import Screen from "../../component/screen";
 import {ScreenH1, ScreenH2, ScreenP} from "@brewdocs.beer/design";
-import {useSuspenseRecipes} from "@/state/recipes";
+import {useRecipes} from "@/state/recipes";
 
 export default function RecipeList() {
-    const recipes = useSuspenseRecipes();
+    const recipes = useRecipes();
 
     return (
         <Screen>

@@ -10,7 +10,7 @@ import Recipe from "@/model/recipe";
 import Collapse from "@/component/collapse";
 import {saveSession, useSession} from "@/state/session";
 import DataGridCheckbox from "@/component/data-grid/checkbox";
-import {useSuspenseBatch} from "@/state/batches";
+import {useBatch} from "@/state/batches";
 import {useSuspenseRecipe} from "@/state/recipes";
 
 export type ShoppingProps = {
@@ -19,7 +19,7 @@ export type ShoppingProps = {
 };
 export default function Shopping({ batchId, onChange }: ShoppingProps) {
     const session = useSession();
-    const batch = useSuspenseBatch(batchId);
+    const batch = useBatch(batchId);
 
     const [data, update, updateScalar, toggle] = useJsonEdit<Batch>(batch, onChange);
     return (

@@ -7,7 +7,7 @@ import Screen from "@/component/screen";
 import PlanningHops from "@/screen/planning/hops";
 import PlanningYeast from "@/screen/planning/yeast";
 import PlanningGrains from "@/screen/planning/grains";
-import {useSuspenseBatch} from "@/state/batches";
+import {useBatch} from "@/state/batches";
 import {useSuspenseRecipe} from "@/state/recipes";
 import {Suspense} from "react";
 
@@ -16,7 +16,7 @@ export type PlanningProps = {
     onChange: (batch: Batch) => void
 }
 export default function Planning({ batchId, onChange }: PlanningProps) {
-    const batch = useSuspenseBatch(batchId);
+    const batch = useBatch(batchId);
     const recipe = useSuspenseRecipe(batch.recipeId);
     const [data, update, updateScalar,, add, remove] = useJsonEdit<Batch>(batch, onChange);
 

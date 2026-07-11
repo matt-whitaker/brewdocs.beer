@@ -11,12 +11,12 @@ import useModal from "@/component/modal/useModal";
 import CreateBatchForm from "@/component/create-batch-form";
 import useCreatBatchForm from "@/component/create-batch-form/useCreateBatchForm";
 import createBatch from "@/actions/createBatch";
-import {useSuspenseBatches} from "@/state/batches";
+import {useBatches} from "@/state/batches";
 import {useSuspenseRecipe} from "@/state/recipes";
 
 export type RecipeOverviewProps = { recipeId: string };
 export default function RecipeOverview({ recipeId }: RecipeOverviewProps) {
-    const batchesCount = useSuspenseBatches().length;
+    const batchesCount = useBatches().length;
     const recipe = useSuspenseRecipe(recipeId);
 
     const defaultBatchName = `Batch #${batchesCount+1}`;

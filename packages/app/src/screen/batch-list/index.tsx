@@ -2,15 +2,15 @@ import {Link} from "@tanstack/react-router";
 import Screen from "../../component/screen";
 import {ScreenH1, ScreenH2, ScreenP} from "@brewdocs.beer/design";
 import {statuses} from "@/model/statuses";
-import {useSuspenseBatches} from "@/state/batches";
-import {useSuspenseRecipes} from "@/state/recipes";
+import {useBatches} from "@/state/batches";
+import {useRecipes} from "@/state/recipes";
 import useIndexBy from "@/hooks/useIndexBy";
 import Batch from "@/model/batch";
 
 export type BatchListProps = { filter?: (b: Batch) => boolean }
 export default function BatchList({ filter }: BatchListProps) {
-    const batches = useSuspenseBatches(filter);
-    const recipes = useSuspenseRecipes();
+    const batches = useBatches(filter);
+    const recipes = useRecipes();
     const recipesIndex = useIndexBy(recipes)!;
 
     return (

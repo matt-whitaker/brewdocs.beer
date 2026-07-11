@@ -18,7 +18,7 @@ const fetchRecipe = async ({ queryKey: [, id] }): Promise<Recipe> => {
 }
 
 
-export const useSuspenseRecipes = (filter: FilterFn<Recipe>): Recipe[] => {
+export const useRecipes = (filter: FilterFn<Recipe>): Recipe[] => {
     const { data } = useSuspenseQuery({ queryKey: recipesQueryKey(), queryFn: fetchRecipes });
 
     if (!data) {

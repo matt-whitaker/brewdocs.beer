@@ -7,7 +7,7 @@ import ChecklistItem from "@/component/checklist/item";
 import useChecklist from "@/component/checklist/useChecklist";
 import Collapse from "@/component/collapse";
 import {saveSession, useSession} from "@/state/session";
-import {useSuspenseBatch} from "@/state/batches";
+import {useBatch} from "@/state/batches";
 
 export type BatchChecklistProps = {
     batchId: string;
@@ -15,7 +15,7 @@ export type BatchChecklistProps = {
 };
 export default function Checklists({ batchId, onChange }: BatchChecklistProps) {
     const session = useSession();
-    const batch = useSuspenseBatch(batchId);
+    const batch = useBatch(batchId);
     const [data, toggle] = useChecklist(batch, onChange);
 
     if (!data) { return <Error>'data' missing</Error>; }
