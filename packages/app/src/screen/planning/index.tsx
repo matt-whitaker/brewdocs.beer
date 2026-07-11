@@ -13,13 +13,16 @@ import PlanningHops from "@/screen/planning/hops";
 import PlanningYeast from "@/screen/planning/yeast";
 import PlanningGrains from "@/screen/planning/grains";
 import {useSession} from "@/state/session";
+import {useBatch, useSuspenseBatch} from "@/state/batches";
+import {useRecipe, useSuspenseRecipe} from "@/state/recipes";
 
 export type PlanningProps = {
-    batch: Batch;
-    recipe: Recipe;
+    batchId: string;
     onChange: (batch: Batch) => void
 }
-export default function Planning({ batch, recipe, onChange }: PlanningProps) {
+export default function Planning({ batchId, onChange }: PlanningProps) {
+    const batch = useSuspenseBatch(batchId);
+    const recipe = useSuspenseRecipe(batch.recipeId);
     const [data, update, updateScalar,, add, remove] = useJsonEdit<Batch>(batch, onChange);
 
     return (

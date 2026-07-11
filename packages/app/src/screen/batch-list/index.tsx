@@ -1,11 +1,18 @@
 import {Link} from "@tanstack/react-router";
 import Screen from "../../component/screen";
 import {ScreenH1, ScreenH2, ScreenP} from "@brewdocs.beer/design";
-import Batch from "@/model/batch";
-import Recipe from "@/model/recipe";
 import {statuses} from "@/model/statuses";
+import {useSuspenseBatches} from "@/state/batches";
+import {useSuspenseRecipes} from "@/state/recipes";
+import useIndexBy from "@/hooks/useIndexBy";
+import Batch from "@/model/batch";
 
-export default function BatchList({ batches, recipesIndex }: { batches: Batch[]; recipesIndex: Map<string, Recipe> }) {
+export type BatchListProps = { filter?: (b: Batch) => boolean }
+export default function BatchList({ filter }: BatchListProps) {
+    const batches = useSuspenseBatches(filter);
+    const recipes = useSuspenseRecipes();
+    const recipesIndex = useIndexBy(recipes)!;
+
     return (
         <Screen>
             <ScreenH1>Your brews</ScreenH1>

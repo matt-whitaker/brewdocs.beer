@@ -7,9 +7,12 @@ import ScheduleMash from "@/screen/schedule/mash";
 import ScheduleBoil from "@/screen/schedule/boil";
 import SchedulePitch from "@/screen/schedule/pitch";
 import ScheduleChill from "@/screen/schedule/chill";
+import {useSuspenseBatch} from "@/state/batches";
+import {useSuspenseRecipe} from "@/state/recipes";
 
-export type BrewDayProps = { batch: Batch, onChange: (batch: Batch) => void; };
-export default function BrewDay({ batch, onChange }: BrewDayProps) {
+export type ScheduleProps = { batchId: string; onChange: (batch: Batch) => void; };
+export default function Schedule({ batchId, onChange }: ScheduleProps) {
+    const batch = useSuspenseBatch(batchId);
     const [data, update, updateScalar] = useJsonEdit<Batch>(batch, onChange);
 
     return (

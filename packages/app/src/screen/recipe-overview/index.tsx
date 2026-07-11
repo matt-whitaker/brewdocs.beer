@@ -12,9 +12,15 @@ import useModal from "@/component/modal/useModal";
 import CreateBatchForm from "@/component/create-batch-form";
 import useCreatBatchForm from "@/component/create-batch-form/useCreateBatchForm";
 import createBatch from "@/actions/createBatch";
+import {useBatches, useSuspenseBatches} from "@/state/batches";
+import {useRecipe, useSuspenseRecipe} from "@/state/recipes";
+import {Route} from "@/routes/recipe.$recipeId";
 
-export type RecipeOverviewProps = { recipe: Recipe, batchesCount: number };
-export default function RecipeOverview({ recipe, batchesCount }: RecipeOverviewProps) {
+export type RecipeOverviewProps = { recipeId: string };
+export default function RecipeOverview({ recipeId }: RecipeOverviewProps) {
+    const batchesCount = useSuspenseBatches().length;
+    const recipe = useSuspenseRecipe(recipeId);
+
     const defaultBatchName = `Batch #${batchesCount+1}`;
     const [modalRef, toggle] = useModal();
     const [batchInputs, setBatchInputs, finalInputs] = useCreatBatchForm(defaultBatchName);
