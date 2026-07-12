@@ -1,5 +1,4 @@
 import {createFileRoute} from "@tanstack/react-router";
-import {Plus} from "@/component/svg";
 
 export const Route = createFileRoute("/disclaimer")({
     component: DisclaimerPage

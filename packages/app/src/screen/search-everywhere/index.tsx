@@ -25,7 +25,7 @@ import Container from "@/screen/search-everywhere/container";
  *  - max width
  *  - in rows, max two, more for mobile
  * Ingredients
- *  - avatar of each yeast, malt/grain, adjunt
+ *  - avatar of each yeasts, malt/grain, adjunt
  *  - in rows, max two, more for mobile
  *  - blended for organics; significant overlap unlikely (crystal a good test case)
  */

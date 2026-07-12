@@ -49,8 +49,8 @@ export default function RecipeOverview({ recipeId }: RecipeOverviewProps) {
             <Organics
                 className="-mt-2"
                 hops={recipe.hops}
-                grain={recipe.grains}
-                yeast={recipe.yeasts} />
+                grains={recipe.grains}
+                yeasts={recipe.yeasts} />
         </Screen>
     )
 }

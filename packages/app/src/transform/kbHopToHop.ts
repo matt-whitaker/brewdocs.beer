@@ -3,8 +3,8 @@ import {Units} from "@brewdocs.beer/core";
 import Hop from "@/model/hop";
 
 /**
- * Map a Knowledge-base yeast to a batch-instance app model, setting defaults.
- * Called at the point a yeast is added to a batch, not at download/cache time.
+ * Map a Knowledge-base yeasts to a batch-instance app model, setting defaults.
+ * Called at the point a yeasts is added to a batch, not at download/cache time.
  */
 export function kbHopToHop(kbHop: KbHop): Hop {
     return {
