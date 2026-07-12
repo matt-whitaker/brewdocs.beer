@@ -13,7 +13,7 @@ export const Route = createFileRoute("/recipe/$recipeId")({
 
 function RecipePage() {
     const {recipeId} = Route.useParams();
-    const [active, setActive] = usePanelSwitcher("Overview");
+    const [active, setActive] = usePanelSwitcher("recipe", "Overview");
     const filterBatches = useCallback((batch: Batch) => batch.recipeId === recipeId, [recipeId])
 
     return (

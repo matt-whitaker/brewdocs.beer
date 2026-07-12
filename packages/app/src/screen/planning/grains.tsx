@@ -48,7 +48,7 @@ export default function PlanningGrains({ grains, add, remove, update, updateScal
                 key={"grains"}
                 title={"Grains"}
                 className="lg:collapse-open"
-                openInitial={session?.[`planning.grains`] ?? true}>
+                openInitial={session?.[`planning.grains`] as boolean ?? true}>
                 <DataGrid>
                     {grainRows}
                     <AddRow<KbGrain>

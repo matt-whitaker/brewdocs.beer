@@ -50,7 +50,7 @@ export default function PlanningYeasts({ yeasts, add, remove, update, updateScal
                 key={"yeast"}
                 title={"Yeast"}
                 className="lg:collapse-open"
-                openInitial={session?.[`planning.yeast`] ?? true}>
+                openInitial={session?.[`planning.yeast`] as boolean ?? true}>
                 <DataGrid>
                     {yeastRows}
                     <AddRow<KbYeast>

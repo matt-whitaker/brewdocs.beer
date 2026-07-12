@@ -18,7 +18,7 @@ export const Route = createFileRoute("/batch/$batchId")({
 function BatchPage() {
     const {batchId} = Route.useParams();
 
-    const [active, setActive] = usePanelSwitcher("Planning");
+    const [active, setActive] = usePanelSwitcher("batch", "Planning");
     const onChange = useCallback((batch: Batch) => { updateBatch(batch!.id, batch); }, []);
 
     return (

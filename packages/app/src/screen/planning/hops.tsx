@@ -50,7 +50,7 @@ export default function PlanningHops({ hops, add, remove, update, updateScalar }
                 key={"hops"}
                 title={"Hops"}
                 className="lg:collapse-open"
-                openInitial={session?.[`planning.hops`] ?? true}>
+                openInitial={session?.[`planning.hops`] as boolean ?? true}>
                 <DataGrid>
                     {hopRows}
                     <AddRow<KbHop>

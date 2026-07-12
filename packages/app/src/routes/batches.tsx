@@ -12,7 +12,7 @@ export const Route = createFileRoute("/batches")({
 });
 
 function BatchesPage() {
-    const [active, change] = usePanelSwitcher("Ready");
+    const [active, change] = usePanelSwitcher("batches", "Ready");
 
     const filterReady = useCallback((batch: Batch) => batch.status === Statuses.PREP, []);
     const filterBrewing = useCallback((batch: Batch) => batch.status > Statuses.PREP && batch.status < Statuses.FERMENT, []);

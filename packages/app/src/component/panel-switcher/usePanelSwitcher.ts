@@ -1,14 +1,21 @@
 import {useCallback, useEffect, useState} from "react";
+import {saveSession, useSession} from "@/state/session";
 
-export type SwitchFn = (title: string) => void;
-export default function usePanelSwitcher(defaultTitle: string): [string, SwitchFn] {
-    const [active, setActive] = useState<string>(defaultTitle);
+export type SwitchFn = (tab: string) => void;
+export default function usePanelSwitcher(name: string, defaultTab: string): [string, SwitchFn] {
+    const sessionKey = `tabs.${name}`;
+    const session = useSession();
+    const [active, setActive] = useState<string>(session?.[sessionKey] as string ?? defaultTab);
     useEffect(() => {
-        if (active !== defaultTitle) {
-            setActive(defaultTitle);
+        if (active !== defaultTab) {
+            saveSession(sessionKey, defaultTab);
+            setActive(defaultTab);
         }
-    }, [defaultTitle]);
-    const change: SwitchFn = useCallback((title: string) => setActive(title), []);
+    }, [defaultTab]);
+    const change: SwitchFn = useCallback((tab: string) => {
+        saveSession(sessionKey, tab);
+        setActive(tab)
+    }, []);
     return [
         active,
         change,

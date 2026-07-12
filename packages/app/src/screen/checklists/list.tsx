@@ -26,7 +26,7 @@ export default function ChecklistsList({ list, items, title, toggle }: Checklist
             toggle={toggleChecklist}
             title={title}
             className="lg:collapse-open"
-            openInitial={session?.[`checklist.${title.toLowerCase()}`] ?? !items.every(({ completed }) => completed)}>
+            openInitial={session?.[`checklist.${title.toLowerCase()}`] as boolean ?? !items.every(({ completed }) => completed)}>
             <Checklist className="sm:columns-2">
                 {listItems}
             </Checklist>

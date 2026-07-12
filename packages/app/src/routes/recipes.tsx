@@ -10,7 +10,7 @@ export const Route = createFileRoute("/recipes")({
 });
 
 function RecipesPage() {
-    const [active, change] = usePanelSwitcher("All");
+    const [active, change] = usePanelSwitcher("recipes", "All");
 
     return (
         <PanelSwitcher>

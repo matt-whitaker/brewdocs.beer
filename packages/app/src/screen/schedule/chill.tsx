@@ -23,7 +23,7 @@ export default function ScheduleChill({ hydro, hydroIndex, update, updateScalar 
             key={"chill"}
             title={"3. Chill"}
             className="lg:collapse-open"
-            openInitial={session?.[`schedule.chill`] ?? true}>
+            openInitial={session?.[`schedule.chill`] as boolean ?? true}>
             <p>
                 It is critical you chill your wort as quickly as possible. Cool you wort to 60°F to 72°F, depending on what your beer style calls for.
             </p>
