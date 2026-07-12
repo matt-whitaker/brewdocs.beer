@@ -81,16 +81,5 @@ export default function useJsonEdit<T extends Entity>(data: T, onChange: (data: 
         }
     }, [state, onChange]);
 
-    /**
-     * replaces nested data of the sub resource
-     */
-    // const replace = useCallback(<T>(dot: string, value?: T) => {
-    //     if (state) {
-    //         const newState = set(cloneDeep(state), dot, value)
-    //         setState(newState);
-    //         debouncedOnChange(newState);
-    //     }
-    // }, [state, debouncedOnChange]);
-
     return [state, update, updateScalar, toggle, add, remove];
 }

@@ -1,14 +1,10 @@
 import {useMemo} from "react";
 
 export default function useIndexBy<T extends object, K extends keyof T = keyof T>(
-    collection?: T[]|T|null,
+    collection: T[]|T,
     by: K = ("id" as K)
-): Map<string, T>|null {
+): Map<string, T> {
     return useMemo(() => {
-        if (!collection) {
-            return null;
-        }
-
         if (!(collection instanceof Array)) {
             return new Map([[collection[by], collection]]);
         }
