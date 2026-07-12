@@ -1,3 +1,4 @@
+import {KbRecipe} from "@brewdocs.beer/kb";
 import {Mash} from "@/model/mash";
 import {kbScalarToScalar} from "@/utils/formatting";
 

@@ -1,3 +1,5 @@
+import {KbGrain} from "@brewdocs.beer/kb";
+import {Units} from "@brewdocs.beer/core";
 import Grain from "@/model/grain";
 
 /**

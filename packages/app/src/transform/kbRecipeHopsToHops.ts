@@ -1,3 +1,4 @@
+import {KbRecipe} from "@brewdocs.beer/kb";
 import Hop from "@/model/hop";
 import {kbScalarToScalar} from "@/utils/formatting";
 

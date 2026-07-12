@@ -1,10 +1,9 @@
 import Screen from "../../component/screen";
 import {ScreenH1} from "@brewdocs.beer/design";
 import Batch from "@/model/batch";
-import Error from "@/component/error";
 import Checklist from "../../component/checklist";
 import ChecklistItem from "@/component/checklist/item";
-import useChecklist from "@/component/checklist/useChecklist";
+import useJsonEdit from "@/hooks/useJsonEdit";
 import Collapse from "@/component/collapse";
 import {saveSession, useSession} from "@/state/session";
 import {useBatch} from "@/state/batches";
@@ -16,9 +15,7 @@ export type BatchChecklistProps = {
 export default function Checklists({ batchId, onChange }: BatchChecklistProps) {
     const session = useSession();
     const batch = useBatch(batchId);
-    const [data, toggle] = useChecklist(batch, onChange);
-
-    if (!data) { return <Error>'data' missing</Error>; }
+    const [data, , , toggle] = useJsonEdit(batch, onChange);
 
     return (
         <Screen className="join join-vertical w-full">
