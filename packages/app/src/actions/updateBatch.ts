@@ -10,7 +10,7 @@ export default async function updateBatch(id: string, batch: Batch) {
     if (
         !isEqual(batch.hops, current?.hops) ||
         !isEqual(batch.grains, current?.grains) ||
-        !isEqual(batch.yeast, current?.yeast)
+        !isEqual(batch.yeasts, current?.yeasts)
     ) {
         _updateShopping(batch);
     }

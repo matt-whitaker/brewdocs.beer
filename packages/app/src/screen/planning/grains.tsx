@@ -23,6 +23,7 @@ export default function PlanningGrains({ grains, add, remove, update, updateScal
     const kbGrains = useKbGrains();
     const kbGrainsIndex = useIndexBy(kbGrains, "name");
 
+    const toggleGrains = useCallback((open: boolean) => saveSession(`planning.grains`, open), [])
     const addGrain = useCallback((value: string) => {
         const newGrain = kbGrainToGrain(kbGrainsIndex.get(value)!);
         add("grains", newGrain);
@@ -30,6 +31,7 @@ export default function PlanningGrains({ grains, add, remove, update, updateScal
 
     const grainRows = useMemo(() => grains.map((grain: Grain, i) => (
         <PlanningGrainsRow
+            key={`grain-${grain.name}-${i}`}
             row={i}
             grain={grain}
             remove={remove}
@@ -42,7 +44,7 @@ export default function PlanningGrains({ grains, add, remove, update, updateScal
     return (
         <>
             <Collapse
-                toggle={(open: boolean) => saveSession(`planning.grains`, open)}
+                toggle={toggleGrains}
                 key={"grains"}
                 title={"Grains"}
                 className="lg:collapse-open"

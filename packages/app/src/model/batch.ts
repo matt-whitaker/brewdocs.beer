@@ -47,7 +47,7 @@ export default interface Batch extends Entity {
     boil: Boil[];
     grains: Grain[];
     hops: Hop[];
-    yeast: Yeast[];
+    yeasts: Yeast[];
     additives: Additive[];
     //adjuncts
 

@@ -2,7 +2,7 @@ import classNames from "classnames";
 import {ScreenH4} from "@brewdocs.beer/design";
 
 // accepts either real batch-instance ingredients or raw kb-recipe-embedded
-// ones (Hop[]/Grain[]/Yeast[] vs a KbRecipe's own hops/grains/yeast shape) —
+// ones (Hop[]/Grain[]/Yeast[] vs a KbRecipe's own hops/grains/yeasts shape) —
 // this component only ever displays the name, so it doesn't need the full type
 export type OrganicsProps = { hops: {name: string}[]; grain: {name: string}[]; yeast: {name: string}[]; className?: string }
 

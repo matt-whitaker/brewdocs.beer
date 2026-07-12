@@ -50,7 +50,7 @@ export default function RecipeOverview({ recipeId }: RecipeOverviewProps) {
                 className="-mt-2"
                 hops={recipe.hops}
                 grain={recipe.grains}
-                yeast={recipe.yeast} />
+                yeast={recipe.yeasts} />
         </Screen>
     )
 }

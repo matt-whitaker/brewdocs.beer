@@ -28,7 +28,7 @@ export default function BatchSummary({ batchId }: BatchSummaryProps) {
                     className="-mt-2"
                     hops={batch.hops ?? recipe.hops}
                     grain={batch.grains ?? recipe.grains}
-                    yeast={batch.yeast ?? recipe.yeast} />
+                    yeast={batch.yeasts ?? recipe.yeasts} />
             </div>
         </Screen>
     )

@@ -28,7 +28,7 @@ export default function PlanningGrainsRow({ row, grain, remove, update, updateSc
     const onBlurWeight = useCallback((value: string) => updateScalar(`grains[${row}].weight`, value), [updateScalar, row]);
 
     return (
-        <Fragment key={`grain-${grain.name}-${row}`}>
+        <Fragment>
             <DataGridRow>
                 <DataGridLabel className="ml-6">
                     <DataGridRemoveButton onClick={onRemoveGrain} />

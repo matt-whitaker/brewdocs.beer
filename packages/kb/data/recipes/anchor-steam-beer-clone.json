@@ -113,7 +113,7 @@
       "phase": "boil"
     }
   ],
-  "yeast": [
+  "yeasts": [
     {
       "name": "Wyeast 2112",
       "avg_attn": {

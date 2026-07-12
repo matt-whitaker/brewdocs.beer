@@ -31,7 +31,7 @@ export default function PlanningHopsRow({ row, hop, remove, update, updateScalar
     const onBlurBoil = useCallback((value: string) => updateScalar(`hops[${row}].boil`, value), [updateScalar, row]);
 
     return (
-        <Fragment key={`hop-${hop.name}-${row}`}>
+        <Fragment>
             <DataGridRow>
                 <DataGridLabel className="ml-6">
                     <DataGridRemoveButton onClick={onRemoveHop} />

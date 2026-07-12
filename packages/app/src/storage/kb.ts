@@ -1,5 +1,6 @@
 import {Forage} from "@/storage/forage";
 import {KbGrain, KbHop, KbYeast, KbRecipe} from "@brewdocs.beer/kb";
+import {LF_INDEXEDDB} from "@/storage/localforage";
 
 type KbResourceMap = {
     grains: KbGrain[];
@@ -10,7 +11,7 @@ type KbResourceMap = {
 
 export class KbStorage extends Forage<KbResourceMap[keyof KbResourceMap]> {
     constructor() {
-        super("kb");
+        super("kb", LF_INDEXEDDB);
     }
 
     async getResource<K extends keyof KbResourceMap>(resource: K): Promise<KbResourceMap[K]|null> {

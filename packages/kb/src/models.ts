@@ -40,7 +40,7 @@ export interface KbRecipe extends Entity {
         phase: string;
     }[];
 
-    yeast: {
+    yeasts: {
         name: string;
         avg_attn: KbScalar;
         temp: KbScalar;

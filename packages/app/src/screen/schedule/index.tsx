@@ -38,7 +38,7 @@ export default function Schedule({ batchId, onChange }: ScheduleProps) {
                 </div>
                 <div>
                     <ScheduleChill hydro={data.hydrometer[2]} hydroIndex={2} update={update} updateScalar={updateScalar} />
-                    <SchedulePitch yeast={data.yeast} update={update} updateScalar={updateScalar} />
+                    <SchedulePitch yeast={data.yeasts} update={update} updateScalar={updateScalar} />
                 </div>
             </ScreenTwoCol>
             {/*<ScreenTwoCol>*/}

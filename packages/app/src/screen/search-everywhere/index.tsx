@@ -4,7 +4,7 @@ import SearchEverywhereResult from "@/screen/search-everywhere/avatar";
 import Container from "@/screen/search-everywhere/container";
 
 /**
- * Searches recipes, equipment, general information and terminology, resource links, hops, malt, yeast, adjuncts
+ * Searches recipes, equipment, general information and terminology, resource links, hops, malt, yeasts, adjuncts
  *
  * possible categories:
  *
@@ -25,7 +25,7 @@ import Container from "@/screen/search-everywhere/container";
  *  - max width
  *  - in rows, max two, more for mobile
  * Ingredients
- *  - avatar of each hop, malt/grain, adjunt
+ *  - avatar of each yeast, malt/grain, adjunt
  *  - in rows, max two, more for mobile
  *  - blended for organics; significant overlap unlikely (crystal a good test case)
  */

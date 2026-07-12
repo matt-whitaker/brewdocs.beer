@@ -28,10 +28,12 @@ export default function PlanningHops({ hops, add, remove, update, updateScalar }
     const kbHops = useKbHops();
     const kbHopsIndex = useIndexBy(kbHops, "name");
 
+    const toggleHops = useCallback((open: boolean) => saveSession(`planning.hops`, open), []);
     const addHop = useCallback((value: string) => add("hops", kbHopToHop(kbHopsIndex!.get(value)!)), [add, kbHopsIndex]);
 
     const hopRows = useMemo(() => hops.map((hop: Hop, i) => (
         <PlanningHopsRow
+            key={`hop-${hop.name}-${i}`}
             row={i}
             hop={hop}
             remove={remove}
@@ -44,7 +46,7 @@ export default function PlanningHops({ hops, add, remove, update, updateScalar }
     return (
         <>
             <Collapse
-                toggle={(open: boolean) => saveSession(`planning.hops`, open)}
+                toggle={toggleHops}
                 key={"hops"}
                 title={"Hops"}
                 className="lg:collapse-open"

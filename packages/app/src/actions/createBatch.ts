@@ -9,7 +9,7 @@ import _updateShopping from "@/actions/_updateShopping";
 import Statuses from "@/model/statuses";
 import {saveBatch} from "@/state/batches";
 import {kbRecipeHopsToHops} from "@/transform/kbRecipeHopsToHops";
-import {kbRecipeYeastToYeast} from "@/transform/kbRecipeYeastToYeast";
+import {kbRecipeYeastsToYeasts} from "@/transform/kbRecipeYeastsToYeasts";
 import {kbRecipeAdditivesToAdditives} from "@/transform/kbRecipeAdditivesToAdditives";
 import {kbRecipeMashToMash} from "@/transform/kbRecipeMashToMash";
 import {kbRecipeBoilToBoil} from "@/transform/kbRecipeBoilToBoil";
@@ -26,7 +26,7 @@ export default async function createBatch(recipe: KbRecipe, inputs: CreateBatchS
 
         hops: kbRecipeHopsToHops(recipe.hops),
         grains: kbRecipeGrainsToGrains(recipe.grains),
-        yeast: kbRecipeYeastToYeast(recipe.yeast),
+        yeasts: kbRecipeYeastsToYeasts(recipe.yeasts),
         additives: kbRecipeAdditivesToAdditives(recipe.additives),
         mash: kbRecipeMashToMash(recipe.mash),
         boil: kbRecipeBoilToBoil(recipe.boil),

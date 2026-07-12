@@ -54,7 +54,7 @@ export default function _updateShopping(batch: Batch): Batch {
         },
         {
             name: "Yeast",
-            items: batch.yeast.map(({ name }) => ({
+            items: batch.yeasts.map(({ name }) => ({
                 name,
                 purchased: false,
                 cost: {
