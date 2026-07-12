@@ -1,0 +1,21 @@
+import {ScreenH2, ScreenP} from "@brewdocs.beer/design";
+import {KbRecipe} from "@brewdocs.beer/kb"
+import {Link} from "@tanstack/react-router";
+
+
+export type RecipeListItemProps = {
+    recipe: KbRecipe;
+}
+
+export default function RecipeListItem({ recipe }: RecipeListItemProps) {
+    return (
+        <li className="odd:bg-base-200">
+            <Link to="/recipe/$recipeId" params={{recipeId: recipe.id}} className="text-left block">
+                <ScreenH2 className="text-lg">{recipe.name}</ScreenH2>
+                <ScreenP className="mb-1">by {recipe.brewer}</ScreenP>
+                <ScreenP>ABV {recipe.targets.abv.value}% | IBUs {recipe.targets.ibu} | O.G. {recipe.targets.og.value} | F.G. {recipe.targets.fg.value}</ScreenP>
+                <ScreenP className="pt-2">{recipe.description}</ScreenP>
+            </Link>
+        </li>
+    )
+}
