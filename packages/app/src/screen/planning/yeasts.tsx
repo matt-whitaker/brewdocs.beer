@@ -28,8 +28,8 @@ export default function PlanningYeasts({ yeasts, add, remove, update, updateScal
     const kbYeasts = useKbYeasts();
     const kbYeastsIndex = useIndexBy(kbYeasts, "name");
 
-    const toggleYeasts = useCallback((open: boolean) => saveSession(`planning.yeast`, open), []);
-    const addYeast = useCallback((value: string) => add("yeast", kbYeastToYeast(kbYeastsIndex!.get(value)!)), [add, kbYeastsIndex])
+    const toggleYeasts = useCallback((open: boolean) => saveSession(`planning.yeasts`, open), []);
+    const addYeast = useCallback((value: string) => add("yeasts", kbYeastToYeast(kbYeastsIndex!.get(value)!)), [add, kbYeastsIndex])
 
     const yeastRows = useMemo(() => yeasts.map((yeast: Yeast, i) => (
         <PlanningYeastsRow
