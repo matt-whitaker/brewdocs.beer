@@ -37,7 +37,7 @@ export default function PlanningGrains({ grains, add, remove, update, updateScal
             updateScalar={updateScalar}
             kbGrains={kbGrains}
             kbGrainsIndex={kbGrainsIndex} />
-    )), [remove, update, updateScalar, kbGrains, kbGrainsIndex, grains])
+    )), [remove, update, updateScalar, kbGrains, kbGrainsIndex, grains]);
 
     return (
         <>

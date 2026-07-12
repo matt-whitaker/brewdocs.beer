@@ -24,8 +24,8 @@ export default function PlanningGrainsRow({ row, grain, remove, update, updateSc
 
     const onRemoveGrain = useCallback(() => remove("grains", row), [remove, row]);
     const onChangeGrain = useCallback((value: string) => update(`grains[${row}]`, kbGrainToGrain(kbGrainsIndex!.get(value)!)), [update, row, kbGrainsIndex]);
-    const onChangeValue = useCallback((value: string) => update(`grains[${row}].weight.value`, value), [update, row]);
-    const onBlurValue = useCallback((value: string) => updateScalar(`grains[${row}].weight`, value), [updateScalar, row]);
+    const onChangeWeightValue = useCallback((value: string) => update(`grains[${row}].weight.value`, value), [update, row]);
+    const onBlurWeight = useCallback((value: string) => updateScalar(`grains[${row}].weight`, value), [updateScalar, row]);
 
     return (
         <Fragment key={`grain-${grain.name}-${row}`}>
@@ -41,8 +41,8 @@ export default function PlanningGrainsRow({ row, grain, remove, update, updateSc
                 <DataGridInput
                     col={3}
                     value={grain.weight.value}
-                    onChange={onChangeValue}
-                    onBlur={onBlurValue}
+                    onChange={onChangeWeightValue}
+                    onBlur={onBlurWeight}
                 />
             </DataGridRow>
         </Fragment>
