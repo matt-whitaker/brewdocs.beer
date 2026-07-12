@@ -4,7 +4,10 @@
   "private": true,
   "description": "An (offline) web app prototype of a standard brew day application",
   "main": "index.ts",
-  "scripts": {},
+  "scripts": {
+    "build:app": "npm run build -w packages/app",
+    "dev:app": "npm run dev -w packages/app"
+  },
   "author": "",
   "license": "ISC",
   "workspaces": [

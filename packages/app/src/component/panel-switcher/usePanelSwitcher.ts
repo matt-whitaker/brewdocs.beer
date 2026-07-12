@@ -7,11 +7,11 @@ export default function usePanelSwitcher(name: string, defaultTab: string): [str
     const session = useSession();
     const [active, setActive] = useState<string>(session?.[sessionKey] as string ?? defaultTab);
     useEffect(() => {
-        if (active !== defaultTab) {
+        if (!session?.[sessionKey] && active !== defaultTab) {
             saveSession(sessionKey, defaultTab);
             setActive(defaultTab);
         }
-    }, [defaultTab]);
+    }, [session?.[sessionKey], defaultTab]);
     const change: SwitchFn = useCallback((tab: string) => {
         saveSession(sessionKey, tab);
         setActive(tab)
