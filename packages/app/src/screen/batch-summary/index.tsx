@@ -2,8 +2,6 @@ import Screen from "../../component/screen";
 import Organics from "@/component/organics";
 import Vitals from "@/component/vitals";
 import {ScreenH1, ScreenH2, ScreenH3, ScreenP} from "@brewdocs.beer/design";
-import Batch from "@/model/batch";
-import Recipe from "@/model/recipe";
 import {useBatch} from "@/state/batches";
 import {useSuspenseRecipe} from "@/state/recipes";
 

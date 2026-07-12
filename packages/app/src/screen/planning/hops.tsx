@@ -1,3 +1,4 @@
+import {KbHop} from "@brewdocs.beer/kb";
 import DataGrid from "@/component/data-grid";
 import Hop from "@/model/hop";
 import {Fragment} from "react";
@@ -12,6 +13,7 @@ import useIndexBy from "@/hooks/useIndexBy";
 import {AddFn, RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
 import {saveSession, useSession} from "@/state/session";
 import Collapse from "@/component/collapse";
+import {kbHopToHop} from "@/transform/kbHopToHop";
 
 export type PlanningHopsProps = {
     hops: Hop[];
@@ -24,10 +26,6 @@ export default function PlanningHops({ hops, add, remove, update, updateScalar }
     const session = useSession();
     const kbHops = useKbHops();
     const kbHopsIndex = useIndexBy(kbHops, "name");
-
-    if (!kbHops || !kbHopsIndex) {
-        return null;
-    }
 
     return (
         <>
@@ -46,7 +44,7 @@ export default function PlanningHops({ hops, add, remove, update, updateScalar }
                                     <DataGridSelect
                                         data={kbHops.map((({ name }) => ({ value: name, name })))}
                                         value={hop.name}
-                                        onChange={(value: string) => update(`hops[${i}]`, kbHopsIndex!.get(value)!)}
+                                        onChange={(value: string) => update(`hops[${i}]`, kbHopToHop(kbHopsIndex!.get(value)!))}
                                     />
                                 </DataGridLabel>
                                 <DataGridInput
@@ -64,9 +62,9 @@ export default function PlanningHops({ hops, add, remove, update, updateScalar }
                             </DataGridRow>
                         </Fragment>
                     ))}
-                    <AddRow<Hop>
+                    <AddRow<KbHop>
                         data={kbHops}
-                        add={(value: string) => add("hops", kbHopsIndex!.get(value)!)}
+                        add={(value: string) => add("hops", kbHopToHop(kbHopsIndex!.get(value)!))}
                     />
                 </DataGrid>
             </Collapse>

@@ -1,29 +1,28 @@
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {importResource, KbGrain} from "@brewdocs.beer/kb"
-import Grain from "@/model/grain";
-import {Units} from "@brewdocs.beer/core";
-
-/**
- * Map a Knowledge-base grain to local app model, setting defaults
- */
-function kbGrainToGrain(kbGrain: KbGrain): Grain {
-    return {
-        name: kbGrain.name,
-        weight: {
-            value: "0.0oz",
-            unit: Units.OUNCES
-        },
-    } as Grain;
-}
+import kbStorage from "@/storage/kb";
+import {isOnline} from "@/utils/connectivity";
+import queryClient from "@/queryClient";
 
 const kbGrainsQueryKey = () => ["kb", "grains"];
-const fetchKbGrains = async (): Promise<Grain[]> => {
-    const kbGrains = await importResource("grains");
-    return kbGrains.map(kbGrainToGrain);
+const fetchKbGrains = async (): Promise<KbGrain[]> => {
+    const cached = await kbStorage.getResource("grains");
+    if (cached) {
+        return cached;
+    }
+
+    if (!isOnline()) {
+        throw new Error("Grains data isn't downloaded yet, and you're offline.");
+    }
+
+    const grains = await importResource("grains");
+    return kbStorage.saveResource("grains", grains);
 }
 
-export const useKbGrains = (): Grain[] => {
-    const { data } = useSuspenseQuery({queryKey: kbGrainsQueryKey(), queryFn: fetchKbGrains });
+export const prefetchKbGrains = () => queryClient.prefetchQuery({ queryKey: kbGrainsQueryKey(), queryFn: fetchKbGrains });
+
+export const useKbGrains = (): KbGrain[] => {
+    const { data } = useSuspenseQuery({ queryKey: kbGrainsQueryKey(), queryFn: fetchKbGrains });
 
     if (!data) {
         throw new Error("Unable to load grains from Knowledge Base")

@@ -1,16 +1,26 @@
 import ReactDOM from "react-dom/client";
-import {createRouter, RouterProvider} from "@tanstack/react-router";
+import {createRouter, ErrorComponentProps, RouterProvider} from "@tanstack/react-router";
 import {QueryClientProvider} from "@tanstack/react-query";
 import {registerSW} from "virtual:pwa-register";
 import {routeTree} from "./routeTree.gen";
 import queryClient from "./queryClient";
+import Error from "@/component/error";
+import {prefetchKbGrains} from "@/state/kbGrains";
+import {prefetchKbHops} from "@/state/kbHops";
+import {prefetchKbYeasts} from "@/state/kbYeasts";
+import {prefetchRecipes} from "@/state/recipes";
 
 import "@fontsource-variable/urbanist";
 import "./styles.css";
 
+function RootError({error}: ErrorComponentProps) {
+    return <Error>{error instanceof Error ? error.message : String(error)}</Error>;
+}
+
 const router = createRouter({
     routeTree,
-    defaultPreload: "intent"
+    defaultPreload: "intent",
+    defaultErrorComponent: RootError
 });
 
 declare module "@tanstack/react-router" {
@@ -20,6 +30,13 @@ declare module "@tanstack/react-router" {
 }
 
 registerSW({immediate: true});
+
+// start hydrating the local kb cache as early as possible; route-level
+// Suspense boundaries join this in-flight fetch instead of re-triggering it
+prefetchKbGrains();
+prefetchKbHops();
+prefetchKbYeasts();
+prefetchRecipes();
 
 // no StrictMode: mutation actions are fire-and-forget and must not double-fire
 ReactDOM.createRoot(document.getElementById("root")!).render(

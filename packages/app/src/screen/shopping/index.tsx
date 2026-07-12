@@ -6,12 +6,10 @@ import DataGridRow from "@/component/data-grid/row";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridInput from "@/component/data-grid/input";
 import useJsonEdit from "@/hooks/useJsonEdit";
-import Recipe from "@/model/recipe";
 import Collapse from "@/component/collapse";
 import {saveSession, useSession} from "@/state/session";
 import DataGridCheckbox from "@/component/data-grid/checkbox";
 import {useBatch} from "@/state/batches";
-import {useSuspenseRecipe} from "@/state/recipes";
 
 export type ShoppingProps = {
     batchId: string;

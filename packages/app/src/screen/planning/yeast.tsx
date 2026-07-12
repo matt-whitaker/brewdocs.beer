@@ -1,3 +1,4 @@
+import {KbYeast} from "@brewdocs.beer/kb";
 import {AddFn, RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
 import Yeast from "@/model/yeast";
 import DataGrid from "@/component/data-grid";
@@ -12,6 +13,7 @@ import AddRow from "@/component/data-grid/add-row";
 import useIndexBy from "@/hooks/useIndexBy";
 import {saveSession, useSession} from "@/state/session";
 import Collapse from "@/component/collapse";
+import {kbYeastToYeast} from "@/transform/kbYeastToYeast";
 
 export type PlanningYeastProps = {
     yeast: Yeast[];
@@ -24,10 +26,6 @@ export default function PlanningYeast({ yeast, add, remove, update, updateScalar
     const session = useSession();
     const kbYeasts = useKbYeasts();
     const kbYeastsIndex = useIndexBy(kbYeasts, "name");
-
-    if (!kbYeasts || !kbYeastsIndex) {
-        return null;
-    }
 
     return (
         <>
@@ -46,7 +44,7 @@ export default function PlanningYeast({ yeast, add, remove, update, updateScalar
                                     <DataGridSelect
                                         data={kbYeasts.map((({ name }) => ({ value: name, name })))}
                                         value={yeast.name}
-                                        onChange={(value: string) => update(`yeast[${i}]`, kbYeastsIndex!.get(value)!)}
+                                        onChange={(value: string) => update(`yeast[${i}]`, kbYeastToYeast(kbYeastsIndex!.get(value)!))}
                                     />
                                 </DataGridLabel>
                                 <DataGridInput
@@ -61,9 +59,9 @@ export default function PlanningYeast({ yeast, add, remove, update, updateScalar
                             {/*</FormCheckbox>*/}
                         </Fragment>
                     ))}
-                    <AddRow<Yeast>
+                    <AddRow<KbYeast>
                         data={kbYeasts}
-                        add={(value: string) => add("yeast", kbYeastsIndex!.get(value)!)}
+                        add={(value: string) => add("yeast", kbYeastToYeast(kbYeastsIndex!.get(value)!))}
                     />
                 </DataGrid>
             </Collapse>

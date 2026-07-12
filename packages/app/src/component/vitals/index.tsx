@@ -1,9 +1,11 @@
-import Measurements from "@/model/measurements";
 import {ScreenH4, ScreenP} from "@brewdocs.beer/design";
 import classNames from "classnames";
 import {PropsWithClass} from "@brewdocs.beer/core";
 
-export type VitalsProps = Partial<PropsWithClass> & { vitals: [string, Measurements][]; };
+// accepts either a real Batch's Measurements or a KbRecipe's raw targets
+// shape (Scalar vs KbScalar) — only .value/.ibu/.srm are ever read
+type VitalsLike = {og: {value: string}; fg: {value: string}; abv: {value: string}; ibu: string; srm: string};
+export type VitalsProps = Partial<PropsWithClass> & { vitals: [string, VitalsLike][]; };
 
 export default function Vitals({ vitals, className }: VitalsProps) {
     return (

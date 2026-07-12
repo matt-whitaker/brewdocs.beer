@@ -1,5 +1,18 @@
 import {Units, Currencies} from "@brewdocs.beer/core";
+import {KbScalar} from "@brewdocs.beer/kb";
 import Scalar from "@/model/scalar";
+
+/**
+ * Coerces a raw kb scalar into the app's Scalar shape. Kb unit strings are
+ * authored to match Units enum values, so this is a safe cast, not a real
+ * conversion (verified against the actual kb data).
+ */
+export function kbScalarToScalar(kbScalar: KbScalar): Scalar {
+    return {
+        value: kbScalar.value,
+        unit: kbScalar.unit as Units
+    };
+}
 
 export const UNIT_REGEX = /^(-?\d+(?:\.\d+)?)(\D*)$/;
 export const CURRENCY_REGEX = /^(\D*)(-?\d+(?:\.\d+)?)$/;
