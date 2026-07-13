@@ -8,7 +8,7 @@ import PlanningHops from "@/screen/planning/hops";
 import PlanningYeasts from "@/screen/planning/yeasts";
 import PlanningGrains from "@/screen/planning/grains";
 import {useBatch} from "@/state/batches";
-import {useSuspenseRecipe} from "@/state/recipes";
+import {useRecipe} from "@/state/recipes";
 import {Suspense, useCallback} from "react";
 
 export type PlanningProps = {
@@ -17,7 +17,7 @@ export type PlanningProps = {
 }
 export default function Planning({ batchId, onChange }: PlanningProps) {
     const batch = useBatch(batchId);
-    const recipe = useSuspenseRecipe(batch.recipeId);
+    const recipe = useRecipe(batch.recipeId);
     const [data, update, updateScalar,, add, remove] = useJsonEdit<Batch>(batch, onChange);
 
     const updateDate = useCallback((value: string) => update(`brewDate`, value), [])
@@ -50,15 +50,13 @@ export default function Planning({ batchId, onChange }: PlanningProps) {
                         update={update}
                         updateScalar={updateScalar}
                     />
-                    <Suspense>
-                        <PlanningHops
-                            hops={data.hops}
-                            add={add}
-                            remove={remove}
-                            update={update}
-                            updateScalar={updateScalar}
-                        />
-                    </Suspense>
+                    <PlanningHops
+                        hops={data.hops}
+                        add={add}
+                        remove={remove}
+                        update={update}
+                        updateScalar={updateScalar}
+                    />
                 </div>
                 <div>
                     <PlanningYeasts

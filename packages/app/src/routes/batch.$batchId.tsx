@@ -1,7 +1,6 @@
 import {createFileRoute} from "@tanstack/react-router";
-import {Suspense, useCallback} from "react";
+import {useCallback} from "react";
 import Batch from "@/model/batch";
-import usePanelSwitcher from "@/component/panel-switcher/usePanelSwitcher";
 import PanelSwitcher from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
 import Checklists from "@/screen/checklists";
@@ -17,34 +16,22 @@ export const Route = createFileRoute("/batch/$batchId")({
 
 function BatchPage() {
     const {batchId} = Route.useParams();
-
-    const [active, setActive] = usePanelSwitcher("batch", "Planning");
     const onChange = useCallback((batch: Batch) => { updateBatch(batch!.id, batch); }, []);
 
     return (
-        <PanelSwitcher>
-            <PanelSwitcherContent active={active} change={setActive} title="Planning">
-                <Suspense>
-                    <Planning batchId={batchId} onChange={onChange} />
-                </Suspense>
+        <PanelSwitcher name="batch" defaultTab="Planning">
+            <PanelSwitcherContent title="Planning">
+                <Planning batchId={batchId} onChange={onChange} />
             </PanelSwitcherContent>
-            <PanelSwitcherContent active={active} change={setActive} title="Checklists">
-                <Suspense>
-                    <Shopping batchId={batchId} onChange={onChange} />
-                </Suspense>
-                <Suspense>
-                    <Checklists batchId={batchId} onChange={onChange} />
-                </Suspense>
+            <PanelSwitcherContent title="Checklists">
+                <Shopping batchId={batchId} onChange={onChange} />
+                <Checklists batchId={batchId} onChange={onChange} />
             </PanelSwitcherContent>
-            <PanelSwitcherContent active={active} change={setActive} title="Schedule">
-                <Suspense>
-                    <Schedule batchId={batchId} onChange={onChange} />
-                </Suspense>
+            <PanelSwitcherContent title="Schedule">
+                <Schedule batchId={batchId} onChange={onChange} />
             </PanelSwitcherContent>
-            <PanelSwitcherContent active={active} change={setActive} title="Summary">
-                <Suspense>
-                    <BatchSummary batchId={batchId} />
-                </Suspense>
+            <PanelSwitcherContent title="Summary">
+                <BatchSummary batchId={batchId} />
             </PanelSwitcherContent>
         </PanelSwitcher>
     );
