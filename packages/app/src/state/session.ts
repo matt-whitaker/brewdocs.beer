@@ -6,7 +6,7 @@ import queryClient from "@/queryClient";
 export type Session = Record<string, SessionValue>
 
 export const sessionQueryKey = () => ["session"];
-export const fetchSession = async (): Promise<Session> => sessionStorage.index()
+export const fetchSession = async (): Promise<Session> => sessionStorage.index();
 
 export const useSession = (): Session => {
     const { data } = useSuspenseQuery({ queryKey: sessionQueryKey(), queryFn: fetchSession });

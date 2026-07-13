@@ -3,12 +3,12 @@ import Organics from "@/component/organics";
 import Vitals from "@/component/vitals";
 import {ScreenH1, ScreenH2, ScreenH3, ScreenP} from "@brewdocs.beer/design";
 import {useBatch} from "@/state/batches";
-import {useSuspenseRecipe} from "@/state/recipes";
+import {useRecipe} from "@/state/recipes";
 
 export type BatchSummaryProps = { batchId: string; }
 export default function BatchSummary({ batchId }: BatchSummaryProps) {
     const batch = useBatch(batchId);
-    const recipe = useSuspenseRecipe(batch.recipeId);
+    const recipe = useRecipe(batch.recipeId);
 
     return (
         <Screen>
