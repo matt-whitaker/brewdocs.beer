@@ -1,23 +1,27 @@
-import {useCallback, useEffect, useState} from "react";
-import {saveSession, useSession} from "@/state/session";
+import {useCallback, useEffect, useState, useTransition} from "react";
+import {saveQueryParams, useQueryParams} from "@/state/query-params";
 
 export type SwitchFn = (tab: string) => void;
-export default function usePanelSwitcher(name: string, defaultTab: string): [string, SwitchFn] {
-    const sessionKey = `tabs.${name}`;
-    const session = useSession();
-    const [active, setActive] = useState<string>(session?.[sessionKey] as string ?? defaultTab);
+export default function usePanelSwitcher(name: string, defaultTab: string): [string, SwitchFn, boolean] {
+    const queryParamsKey = `tabs.${name}`;
+    const queryParams = useQueryParams();
+    const [isPending, startTransition] = useTransition();
+    const [active, setActive] = useState<string>(queryParams?.[queryParamsKey] as string ?? defaultTab);
     useEffect(() => {
-        if (!session?.[sessionKey] && active !== defaultTab) {
-            saveSession(sessionKey, defaultTab);
-            setActive(defaultTab);
+        if (!queryParams?.[queryParamsKey] && active !== defaultTab) {
+            saveQueryParams(queryParamsKey, defaultTab);
+            startTransition(() => setActive(defaultTab));
         }
-    }, [session?.[sessionKey], defaultTab]);
+    }, [queryParams?.[queryParamsKey], defaultTab]);
     const change: SwitchFn = useCallback((tab: string) => {
-        saveSession(sessionKey, tab);
-        setActive(tab)
+        saveQueryParams(queryParamsKey, tab);
+        // transition: if the newly-mounted panel suspends, the previous panel
+        // stays visible until it resolves; isPending signals the wait
+        startTransition(() => setActive(tab));
     }, []);
     return [
         active,
         change,
+        isPending,
     ];
 }

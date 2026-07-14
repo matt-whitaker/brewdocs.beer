@@ -36,7 +36,7 @@ export const useRecipes = (filter?: FilterFn<KbRecipe>): KbRecipe[] => {
  * Shares the "recipes" query/cache entry with useRecipes() rather than
  * issuing its own fetch of the same resource
  */
-export const useSuspenseRecipe = (id: string): KbRecipe => {
+export const useRecipe = (id: string): KbRecipe => {
     const { data } = useSuspenseQuery({ queryKey: recipesQueryKey(), queryFn: fetchRecipes });
     const recipe = data?.find(recipe => recipe.id === id);
 
