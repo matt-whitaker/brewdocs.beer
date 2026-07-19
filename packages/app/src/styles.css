@@ -31,6 +31,10 @@
 
     --leading-11: 2.75rem;
     --leading-12: 3rem;
+
+    /* a step below text-xs (0.75rem); matches daisyui's select-xs/input-xs font
+       size (its bespoke --font-size-min), so labels can line up with xs controls */
+    --text-2xs: 0.6875rem;
 }
 
 /* daisyui defines its own theme tokens (including --radius-selector) inside
