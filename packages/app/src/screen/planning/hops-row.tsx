@@ -1,13 +1,14 @@
 import {KbHop} from "@brewdocs.beer/kb";
 import {RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
 import Hop from "@/model/hop";
+import DataGrid from "@/component/data-grid";
 import DataGridRow from "@/component/data-grid/row";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridRemoveButton from "@/component/data-grid/remove-button";
 import DataGridSelect from "@/component/data-grid/select";
 import {kbHopToHop} from "@/transform/kbHopToHop";
 import DataGridInput from "@/component/data-grid/input";
-import {Fragment, useCallback, useMemo} from "react";
+import {useCallback, useMemo} from "react";
 
 
 export type PlanningHopsRowProps = {
@@ -29,31 +30,46 @@ export default function PlanningHopsRow({ row, hop, remove, update, updateScalar
     const onBlurWeight = useCallback((value: string) => updateScalar(`hops[${row}].weight`, value), [updateScalar, row]);
     const onChangeBoilValue = useCallback((value: string) => update(`hops[${row}].boil.value`, value), [update, row]);
     const onBlurBoil = useCallback((value: string) => updateScalar(`hops[${row}].boil`, value), [updateScalar, row]);
+    const onChangeAlphaValue = useCallback((value: string) => update(`hops[${row}].alpha.value`, value), [update, row]);
+    const onBlurAlpha = useCallback((value: string) => updateScalar(`hops[${row}].alpha`, value), [updateScalar, row]);
 
     return (
-        <Fragment>
-            <DataGridRow>
-                <DataGridLabel className="ml-6">
-                    <DataGridRemoveButton onClick={onRemoveHop} />
-                    <DataGridSelect
-                        data={hopOptions}
-                        value={hop.name}
-                        onChange={onChangeHop}
-                    />
-                </DataGridLabel>
-                <DataGridInput
-                    col={2}
-                    value={hop.weight.value}
-                    onChange={onChangeWeightValue}
-                    onBlur={onBlurWeight}
+        <DataGridRow
+            label="hop details"
+            expandContent={
+                <DataGrid>
+                    <DataGridRow zebra={false}>
+                        <DataGridLabel className="ml-6">Actual Alpha</DataGridLabel>
+                        <DataGridInput
+                            col={3}
+                            value={hop.alpha.value}
+                            onChange={onChangeAlphaValue}
+                            onBlur={onBlurAlpha}
+                        />
+                    </DataGridRow>
+                </DataGrid>
+            }
+        >
+            <DataGridLabel className="ml-6">
+                <DataGridRemoveButton onClick={onRemoveHop} />
+                <DataGridSelect
+                    data={hopOptions}
+                    value={hop.name}
+                    onChange={onChangeHop}
                 />
-                <DataGridInput
-                    col={3}
-                    value={hop.boil.value}
-                    onChange={onChangeBoilValue}
-                    onBlur={onBlurBoil}
-                />
-            </DataGridRow>
-        </Fragment>
+            </DataGridLabel>
+            <DataGridInput
+                col={2}
+                value={hop.weight.value}
+                onChange={onChangeWeightValue}
+                onBlur={onBlurWeight}
+            />
+            <DataGridInput
+                col={3}
+                value={hop.boil.value}
+                onChange={onChangeBoilValue}
+                onBlur={onBlurBoil}
+            />
+        </DataGridRow>
     );
 }
