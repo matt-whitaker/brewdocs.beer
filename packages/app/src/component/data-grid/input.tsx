@@ -1,8 +1,9 @@
 import classNames from "classnames";
-import {VALUE_COL_STARTS} from "@/component/data-grid/classes";
 import {InputText} from "@brewdocs.beer/design"
 import {Currencies, PropsWithClass, PropsWithOnBlur, PropsWithOnChange, Units} from "@brewdocs.beer/core";
 import {InputDate} from "@brewdocs.beer/design";
+
+export const VALUE_COL_STARTS = ["col-start-4", "col-start-5", "col-start-6"];
 
 export type DataGridInputProps = PropsWithClass
     & PropsWithOnChange<string>
