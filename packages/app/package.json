@@ -6,7 +6,6 @@
     "link-kb": "mkdir -p public && ln -sfn ../../kb/dist public/kb",
     "predev": "npm run link-kb",
     "dev": "vite",
-    "devprebuild": "npm run link-kb",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview"
   },
