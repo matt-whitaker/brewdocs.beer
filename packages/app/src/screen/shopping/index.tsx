@@ -34,7 +34,7 @@ export default function Shopping({ batchId, onChange }: ShoppingProps) {
                         openInitial={session?.[`shopping.${category.name.toLowerCase()}`] as boolean ?? !category.items.every(({ purchased }) => purchased)}>
                         <DataGrid>
                             {category.items.map((item, j) => (
-                                <DataGridRow key={`shopping-item-${item.name}-${j}`}>
+                                <DataGridRow zebra key={`shopping-item-${item.name}-${j}`}>
                                     <DataGridLabel className="flex items-center" htmlFor={`shopping-item-${item.name}-${j}`}>
                                         <DataGridCheckbox
                                             id={`shopping-item-${item.name}-${j}`}

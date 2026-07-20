@@ -37,7 +37,7 @@ export default function ScheduleMash({ mash, grains, update, updateScalar, hydro
                         <ScreenH4 className="cozy">{m.name} - {m.time.value}</ScreenH4>
                         <DataGrid>
                             {grains.map((grain: Grain, i) => (
-                                <DataGridRow key={`grain-${grain.name}-${i}`}>
+                                <DataGridRow zebra key={`grain-${grain.name}-${i}`}>
                                     <DataGridLabel>{grain.name} <DataGridLabelNote>({grain.weight.value})</DataGridLabelNote></DataGridLabel>
                                     <DataGridInput readonly value={m.temp.value} col={3} />
                                 </DataGridRow>
@@ -48,7 +48,7 @@ export default function ScheduleMash({ mash, grains, update, updateScalar, hydro
                 <div className="divider my-0"></div>
                 <ScreenH5 className="cozy">Gravity Reading</ScreenH5>
                 <DataGrid>
-                    <DataGridRow key={`hydro-${hydro.name}-${hydroIndex}`}>
+                    <DataGridRow zebra key={`hydro-${hydro.name}-${hydroIndex}`}>
                         <DataGridLabel>
                             <DataGridInput
                                 col={1}

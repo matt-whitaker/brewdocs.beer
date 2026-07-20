@@ -1,20 +1,13 @@
-import {KbYeast} from "@brewdocs.beer/kb";
 import {AddFn, RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
 import Yeast from "@/model/yeast";
 import DataGrid from "@/component/data-grid";
-import {Fragment, useCallback, useMemo} from "react";
-import DataGridRow from "@/component/data-grid/row";
-import DataGridLabel from "@/component/data-grid/label";
-import DataGridRemoveButton from "@/component/data-grid/remove-button";
-import DataGridSelect from "@/component/data-grid/select";
+import {useCallback, useMemo} from "react";
 import {useKbYeasts} from "@/state/kbYeasts";
-import DataGridInput from "@/component/data-grid/input";
-import AddRow from "@/component/data-grid/add-row";
 import useIndexBy from "@/hooks/useIndexBy";
 import {saveSession, useSession} from "@/state/session";
 import Collapse from "@/component/collapse";
-import {kbYeastToYeast} from "@/transform/kbYeastToYeast";
 import PlanningYeastsRow from "@/screen/planning/yeasts-row";
+import PlanningYeastsAddRow from "@/screen/planning/yeasts-add-row";
 
 export type PlanningYeastsProps = {
     yeasts: Yeast[];
@@ -29,7 +22,6 @@ export default function PlanningYeasts({ yeasts, add, remove, update, updateScal
     const kbYeastsIndex = useIndexBy(kbYeasts, "name");
 
     const toggleYeasts = useCallback((open: boolean) => saveSession(`planning.yeasts`, open), []);
-    const addYeast = useCallback((value: string) => add("yeasts", kbYeastToYeast(kbYeastsIndex!.get(value)!)), [add, kbYeastsIndex])
 
     const yeastRows = useMemo(() => yeasts.map((yeast: Yeast, i) => (
         <PlanningYeastsRow
@@ -53,10 +45,7 @@ export default function PlanningYeasts({ yeasts, add, remove, update, updateScal
                 openInitial={session?.[`planning.yeast`] as boolean ?? true}>
                 <DataGrid>
                     {yeastRows}
-                    <AddRow<KbYeast>
-                        data={kbYeasts}
-                        add={addYeast}
-                    />
+                    <PlanningYeastsAddRow add={add} kbYeasts={kbYeasts} kbYeastsIndex={kbYeastsIndex} />
                 </DataGrid>
             </Collapse>
         </>

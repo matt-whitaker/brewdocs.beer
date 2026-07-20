@@ -25,7 +25,7 @@ export default function SchedulePitch({ yeast, update, updateScalar }: ScheduleP
                 openInitial={session?.[`schedule.pitch`] as boolean ?? true}>
                 <DataGrid>
                     {yeast.map((yeast: Yeast, i) => (
-                        <DataGridRow key={`yeast-${yeast.name}-${i}`}>
+                        <DataGridRow zebra key={`yeast-${yeast.name}-${i}`}>
                             <DataGridLabel className="cozy">{yeast.name}</DataGridLabel>
                             <DataGridInput
                                 col={3}

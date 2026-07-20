@@ -2,32 +2,38 @@ import DataGridAddButton from "@/component/data-grid/add-button";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridSelect from "@/component/data-grid/select";
 import DataGridRow from "@/component/data-grid/row";
-import {useCallback, useState} from "react";
+import {ReactNode, useCallback, useMemo} from "react";
 
-type PropsWithOnClick = {
-    add: (value: string) => void;
+export type AddRowProps<T extends { name: string }> = {
+    data: T[];
+    /** current selection — owned by the parent, which also owns any advanced values */
+    value: string|null;
+    onChange: (value: string) => void;
+    /** commit the current selection; the parent reads its own state */
+    add: () => void;
+    /** optional advanced config revealed under the row — expected to be its own <DataGrid> */
+    expandContent?: ReactNode;
+    /** accessible label for the expand toggle, e.g. "hop options" */
+    label?: string;
 }
 
-export default function AddRow <T extends { name: string }>({ add, data }: PropsWithOnClick & { data: T[] }) {
-    const [selection, setSelection] = useState<string|null>(null);
+export default function AddRow<T extends { name: string }>({ data, value, onChange, add, expandContent, label }: AddRowProps<T>) {
+    const options = useMemo(() => data.map(({ name }) => ({ value: name, name })), [data]);
     const onClick = useCallback(() => {
-        if (add && selection) {
-            add(selection);
-            setSelection(null);
+        if (value) {
+            add();
         }
-    }, [add, selection]);
+    }, [add, value]);
 
     return (
-        <DataGridRow>
+        <DataGridRow zebra expandContent={expandContent} label={label}>
             <DataGridAddButton onClick={onClick} />
             <DataGridLabel className="ml-6">
                 <DataGridSelect
                     allowNull
-                    value={selection}
-                    data={data.map((({ name }) => ({ value: name, name })))}
-                    onChange={(value) => {
-                        setSelection(value);
-                    }}
+                    value={value}
+                    data={options}
+                    onChange={onChange}
                 />
             </DataGridLabel>
         </DataGridRow>

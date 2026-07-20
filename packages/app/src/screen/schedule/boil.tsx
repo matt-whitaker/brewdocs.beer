@@ -35,7 +35,7 @@ export default function ScheduleBoil({ boil, hops, additives, update, updateScal
                         <ScreenH4 className="cozy">{m.name}  - {m.time.value}</ScreenH4>
                         <DataGrid>
                             {hops.map((hop: Hop, i) => (
-                                <DataGridRow key={`hop-${hop.name}-${i}`}>
+                                <DataGridRow zebra key={`hop-${hop.name}-${i}`}>
                                     <DataGridLabel>{hop.name} <DataGridLabelNote>({hop.alpha.value})</DataGridLabelNote></DataGridLabel>
                                     <DataGridInput readonly value={hop.weight.value} col={2} />
                                     <DataGridInput
@@ -54,7 +54,7 @@ export default function ScheduleBoil({ boil, hops, additives, update, updateScal
                         <ScreenH4>Additives</ScreenH4>
                         <DataGrid>
                             {additives.map((additive: Additive, i) => (
-                                <DataGridRow key={`additive-${additive.name}-${i}`}>
+                                <DataGridRow zebra key={`additive-${additive.name}-${i}`}>
                                     <DataGridLabel>{additive.name}</DataGridLabel>
                                     <DataGridInput
                                         col={3}

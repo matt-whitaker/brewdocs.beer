@@ -16,7 +16,7 @@ export type DataGridRowProps = PropsWithClass & PropsWithChildren & {
     zebra?: boolean;
 };
 
-export default function DataGridRow({ children, className, expandContent, label, zebra = true }: DataGridRowProps) {
+export default function DataGridRow({ children, className, expandContent, label, zebra = false }: DataGridRowProps) {
     const [expanded, setExpanded] = useState(false);
 
     // no expandContent → the row is simply the grid (unchanged, backward compatible)

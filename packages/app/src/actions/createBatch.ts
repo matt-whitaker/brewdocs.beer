@@ -14,6 +14,7 @@ import {kbRecipeAdditivesToAdditives} from "@/transform/kbRecipeAdditivesToAddit
 import {kbRecipeMashToMash} from "@/transform/kbRecipeMashToMash";
 import {kbRecipeBoilToBoil} from "@/transform/kbRecipeBoilToBoil";
 import {kbRecipeGrainsToGrains} from "@/transform/kbRecipeGrainsToGrains";
+import _updateSchedule from "@/actions/_updateSchedule";
 
 export default async function createBatch(recipe: KbRecipe, inputs: CreateBatchState) {
     const id = await batchesStorage.generateId();
@@ -45,8 +46,9 @@ export default async function createBatch(recipe: KbRecipe, inputs: CreateBatchS
     }
 
     _updateShopping(batch);
+    // _updateSchedule(batch);
 
-    await saveBatch(id, batch)
+    await saveBatch(id, batch);
 
     return id;
 }
