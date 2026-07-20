@@ -88,8 +88,8 @@ export default function Shopping({ batchId, onChange }: ShoppingProps) {
         <Screen>
             <ScreenH1>Shopping List</ScreenH1>
             <DataGrid>
-                <DataGridRow>
-                    <DataGridLabel className="flex items-center gap-x-2 col-span-6">
+                <DataGridRow className="border-b-1 pb-2 border-base-200">
+                    <DataGridLabel className="mt-2 flex items-center gap-x-2 col-span-6">
                         <span className="shrink-0">Sort by</span>
                         <DataGridSelect
                             value={sort}
