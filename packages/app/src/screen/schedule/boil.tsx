@@ -1,7 +1,7 @@
-import {ScreenH4} from "@brewdocs.beer/design";
 import {Fragment, useCallback} from "react";
 import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
+import DataGridSubheaderRow from "@/component/data-grid/subheader-row";
 import Hop from "@/model/hop";
 import DataGridRow from "@/component/data-grid/row";
 import DataGridLabel from "@/component/data-grid/label";
@@ -36,7 +36,7 @@ export default function ScheduleBoil({ boil, hops, additives, update, updateScal
             </DataGridHeaderRow>
             {boil.map((m, i) => (
                 <Fragment key={`boil-${m.name}-${i}`}>
-                    <ScreenH4 className="cozy">{m.name}  - {m.time.value}</ScreenH4>
+                    <DataGridSubheaderRow>{m.name}  - {m.time.value}</DataGridSubheaderRow>
                     <DataGrid>
                         {hops.map((hop: Hop, i) => (
                             <DataGridRow zebra key={`hop-${hop.name}-${i}`}>
@@ -55,7 +55,7 @@ export default function ScheduleBoil({ boil, hops, additives, update, updateScal
             ))}
             {additives.length ? (
                 <Fragment>
-                    <ScreenH4>Additives</ScreenH4>
+                    <DataGridSubheaderRow>Additives</DataGridSubheaderRow>
                     <DataGrid>
                         {additives.map((additive: Additive, i) => (
                             <DataGridRow zebra key={`additive-${additive.name}-${i}`}>

@@ -1,8 +1,8 @@
 import {useCallback} from "react";
 import {saveSession, useSession} from "@/state/session";
-import {ScreenH5} from "@brewdocs.beer/design";
 import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
+import DataGridSubheaderRow from "@/component/data-grid/subheader-row";
 import DataGridRow from "@/component/data-grid/row";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridInput from "@/component/data-grid/input";
@@ -34,7 +34,7 @@ export default function ScheduleChill({ hydro, hydroIndex, update, updateScalar 
                 It is critical you chill your wort as quickly as possible. Cool you wort to 60°F to 72°F, depending on what your beer style calls for.
             </p>
             <div className="divider my-0"></div>
-            <ScreenH5>Gravity Reading</ScreenH5>
+            <DataGridSubheaderRow>Gravity Reading</DataGridSubheaderRow>
             <DataGrid>
                 <DataGridRow zebra key={`hydro-${hydro.name}-${hydroIndex}`}>
                     <DataGridLabel>
