@@ -145,7 +145,12 @@ CSS-first config in `src/styles.css` (no tailwind.config file, no PostCSS): `@pl
 `VITE_WWW_URL`, `VITE_DEV_TOOLS` (enables router/query devtools), `VITE_FEATURES_SEARCH_EVERYWHERE` — read only in `src/utils/env.ts`.
 
 ### kb serving during dev/build
-`npm run link-kb` (auto via `predev`/`prebuild`) symlinks `public/kb → ../../kb/dist`. Vite dereferences the symlink at build, so `dist/kb/*.json` are real files. The PWA precache glob includes `json` — that inclusion is what keeps the knowledge base available offline; don't drop it.
+`npm run link-kb` symlinks `public/kb → ../../kb/dist`, and it runs **only via `predev`** (dev). It is **deliberately not wired to `build`**: the pre-hook script is named `devprebuild`, *not* `prebuild`, on purpose — so `link-kb` does **not** fire before `vite build`, keeping the kb symlink/JSON out of the app's `dist` and therefore out of the app S3 bucket. kb ships independently to its own bucket (`app-kb-prod`, served at `/kb/*` via CloudFront), so the app must not carry its own copy. **Don't "fix" `devprebuild` to `prebuild`** — that reintroduces kb into the app publish.
+
+Consequences:
+- A **clean build** (CI / fresh checkout, no `public/kb`) produces a `dist` with **no `dist/kb`**. So in prod the service worker does *not* precache kb — offline kb comes entirely from the IndexedDB hydration flow (see *Offline-first kb data flow* above), not the PWA precache.
+- **Local-vs-prod gotcha:** once you've run the dev server, the leftover `public/kb` symlink makes a *local* `npm run build` dereference it and include+precache `dist/kb/*.json`. A local `build`/`preview` therefore shows kb precached even though the deployed app doesn't — don't infer prod offline behavior from a local build. (`rm public/kb` to reproduce the clean/CI result.)
+- The precache `globPatterns` still lists `json`; harmless to keep, but it is *not* the kb-offline mechanism.
 
 ## packages/www
 
@@ -153,7 +158,7 @@ Astro 7 static site with React islands, same styling stack as app (Tailwind v4 +
 
 ## Deployment
 
-GitHub Actions, path-filtered on push to `develop`/`mainline`, all delegating to the reusable `matt-whitaker/aws-static-site` workflow (S3 + CloudFront):
+GitHub Actions, path-filtered on push to `mainline` (the sole deploy branch), all delegating to the reusable `matt-whitaker/aws-static-site` workflow (S3 + CloudFront):
 
 - `build-test-deploy.app-prod.yaml` — app dist → app S3 bucket (app.brewdocs.beer)
 - `build-test-deploy.app-kb-prod.yaml` — **kb dist deploys independently** to a dedicated kb S3 bucket behind the app's CloudFront distribution (invalidates `/kb`). This is why `importResource` fetches the relative path `/kb/*` — same origin in prod, symlink in dev, and kb data updates ship without an app rebuild.
@@ -161,19 +166,24 @@ GitHub Actions, path-filtered on push to `develop`/`mainline`, all delegating to
 
 ## Contributing
 
-Guidance for human contributors **and** for the `@claude` GitHub integration (`.github/workflows/claude.yaml`). Sections marked _TODO_ are placeholders — fill in the canonical convention.
+Guidance for human contributors **and** for the `@claude` GitHub integration (`.github/workflows/claude.yaml`).
 
 ### Branches
 
-- Default/integration branch is `mainline`. **Both `develop` and `mainline` trigger prod deploys** (see Deployment) — a merge to either ships, so neither is a safe staging branch.
-- Branch off `mainline`. Observed naming is bare kebab-case describing the work (`derived-shopping`, `kb-rework`, `suspense-rework`, `next-to-vite`); a `feature/` prefix shows up occasionally (`feature/forage`).
-- _TODO: pin the canonical branch-naming scheme (prefix taxonomy? issue-number linkage?)._
+- `mainline` is the default branch, the target for **all** PRs, and the **only** deploy branch — a push/merge to it ships to prod (see Deployment). There is no separate staging branch, so the open PR is the staging buffer. (`develop` is retired.)
+- Branch off `mainline`, and **name branches issue-first**: `<issue#>-<kebab-summary>`, e.g. `42-derived-schedule`. Work usually has an issue because the `@claude` bot is triggered from issues; fall back to bare kebab-case (`derived-shopping`) for un-ticketed work.
 
-### Commits & pull requests
+### Commits, PRs & merging
 
-- _TODO: commit message format — Conventional Commits, or plain imperative subject?_
-- _TODO: PR title format and any required description sections (summary / testing / screenshots)._
-- _TODO: review + merge policy — squash vs merge commit, required approvals, who/what may merge to `mainline`/`develop` given both deploy._
+- **Commit messages**: plain imperative subject ("Add schedule phases") — no Conventional Commits prefix. (Conventional is the upgrade path if changelog/semver automation is ever added; not worth it without a release flow.)
+- **PR title**: same imperative style as the commit.
+- **PR description** — a light template, with *Verification* load-bearing because there's no test suite (the PR body is the only record the gate ran):
+  - **Summary** — what changed and why.
+  - **Verification** — `tsc --noEmit` ✓, `vite build` ✓, and which screens/flows were checked in the browser.
+  - **Screenshots** — for any UI change.
+- **Merge method: squash only** — one commit per feature on the deploy branch.
+- **The maintainer merges.** Contributors and the `@claude` bot open PRs; they don't merge them. No auto-merge.
+- Protect `mainline` to require the **Verify** check green before merge (`.github/workflows/verify.yaml` — `npm ci` + app/www builds on every PR, no deploy). It's the real gate: the `build-test-deploy.*` workflows run only *post*-merge on push, so they can't block a PR.
 
 ### Definition of done
 
@@ -181,10 +191,9 @@ Guidance for human contributors **and** for the `@claude` GitHub integration (`.
 - Don't hand-edit generated files (`routeTree.gen.ts`) and don't add `lodash` (the repo deliberately uses hand-rolled `utils/func.ts`).
 - Renaming files under `packages/kb/data/**` changes derived ids and is a breaking change (see packages/kb) — call it out explicitly in the PR.
 - Prefer surfacing follow-ups over silently expanding scope; note orphaned/dead code you leave behind rather than deleting adjacent things unasked.
-- _TODO: any other reviewer gates (bundle-size budget, a11y pass, changelog entry)._
 
 ### The `@claude` integration
 
 - Defined in `.github/workflows/claude.yaml`: triggers on `@claude` mentions in new issues and issue/PR-review comments; runs `anthropics/claude-code-action` on `opus` with `--max-turns 15` and write access to contents/PRs/issues.
 - Keep tasks addressed to it scoped to finish within that turn budget; large refactors should be broken up.
-- _TODO: house rules for autonomous behavior (e.g. always open a PR, never push straight to `mainline`/`develop`; when to ask vs. proceed)._
+- **House rules**: never push to a deploy branch — open a PR instead. It may open PRs, push to feature branches, and comment, but may **not** merge its own PR (the maintainer merges), edit `.github/workflows/**` or secrets, or run destructive git. It must pass the verification gate (typecheck + build) before proposing a PR. Proceed on clearly-scoped tasks; ask when a change is ambiguous, irreversible, or outward-facing.
