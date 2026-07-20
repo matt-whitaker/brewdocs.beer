@@ -102,14 +102,10 @@ export interface ScheduleItem {
     completed: boolean;
 }
 
+/** a checked-off line item; shared by phase equipment (the only consumer now) */
 export interface ChecklistItem {
     name: string;
     completed: boolean;
-}
-
-export interface Checklist {
-    name: string;
-    items: ChecklistItem[];
 }
 
 export default interface Batch extends Entity {
@@ -135,7 +131,6 @@ export default interface Batch extends Entity {
 
     actuals: Measurements;
     hydrometer: Hydrometer[];
-    checklists: Checklist[];
     shopping: ShoppingItem[];
     schedule: ScheduleItem[];
     /** configuration — how the derived schedule is sliced into tabs */
