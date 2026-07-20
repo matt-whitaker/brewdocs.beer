@@ -1,12 +1,15 @@
+import {useCallback} from "react";
 import {saveSession, useSession} from "@/state/session";
-import Collapse from "@/component/collapse";
 import {ScreenH5} from "@brewdocs.beer/design";
+import DataGrid from "@/component/data-grid";
+import DataGridHeaderRow from "@/component/data-grid/header-row";
 import DataGridRow from "@/component/data-grid/row";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridInput from "@/component/data-grid/input";
 import Hydrometer from "@/model/hydrometer";
 import {UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
-import DataGrid from "@/component/data-grid";
+
+const SESSION_KEY = "schedule.chill";
 
 export type ScheduleChillProps = {
     hydro: Hydrometer;
@@ -17,13 +20,16 @@ export type ScheduleChillProps = {
 export default function ScheduleChill({ hydro, hydroIndex, update, updateScalar }: ScheduleChillProps) {
     const session = useSession();
 
+    const onToggleCollapsed = useCallback((collapsed: boolean) => saveSession(SESSION_KEY, collapsed), []);
+
     return (
-        <Collapse
-            toggle={(open: boolean) => saveSession(`schedule.chill`, open)}
-            key={"chill"}
-            title={"3. Chill"}
-            className="lg:collapse-open"
-            openInitial={session?.[`schedule.chill`] as boolean ?? true}>
+        <div>
+            <DataGridHeaderRow
+                label="Chill"
+                defaultCollapsed={session?.[SESSION_KEY] as boolean ?? false}
+                onToggle={onToggleCollapsed}>
+                3. Chill
+            </DataGridHeaderRow>
             <p>
                 It is critical you chill your wort as quickly as possible. Cool you wort to 60°F to 72°F, depending on what your beer style calls for.
             </p>
@@ -47,6 +53,6 @@ export default function ScheduleChill({ hydro, hydroIndex, update, updateScalar 
                     />
                 </DataGridRow>
             </DataGrid>
-        </Collapse>
+        </div>
     )
 }

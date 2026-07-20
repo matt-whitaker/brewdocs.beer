@@ -49,10 +49,11 @@
     --radius-selector: 0.2rem;
 }
 
-/* A collapsed DataGridHeaderRow hides the rows after it. CSS sibling
-   combinators are unbounded, so this only stays correct because each group is
-   its own DataGrid — the grid boundary means a header's following siblings are
-   exactly its own rows, and nothing else's. */
-.data-grid > .dg-collapsed ~ * {
+/* A collapsed DataGridHeaderRow hides everything after it in its container.
+   CSS sibling combinators are unbounded, so this only stays correct because a
+   header always sits in a container holding just its own group — a DataGrid for
+   row lists, a section wrapper for the schedule steps. The container is what
+   bounds the selector; don't hoist a header up next to unrelated siblings. */
+.dg-collapsed ~ * {
     display: none;
 }

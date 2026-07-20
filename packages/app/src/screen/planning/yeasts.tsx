@@ -1,13 +1,15 @@
 import {AddFn, RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
 import Yeast from "@/model/yeast";
 import DataGrid from "@/component/data-grid";
+import DataGridHeaderRow from "@/component/data-grid/header-row";
 import {useCallback, useMemo} from "react";
 import {useKbYeasts} from "@/state/kbYeasts";
 import useIndexBy from "@/hooks/useIndexBy";
 import {saveSession, useSession} from "@/state/session";
-import Collapse from "@/component/collapse";
 import PlanningYeastsRow from "@/screen/planning/yeasts-row";
 import PlanningYeastsAddRow from "@/screen/planning/yeasts-add-row";
+
+const SESSION_KEY = "planning.yeasts";
 
 export type PlanningYeastsProps = {
     yeasts: Yeast[];
@@ -21,7 +23,7 @@ export default function PlanningYeasts({ yeasts, add, remove, update, updateScal
     const kbYeasts = useKbYeasts();
     const kbYeastsIndex = useIndexBy(kbYeasts, "name");
 
-    const toggleYeasts = useCallback((open: boolean) => saveSession(`planning.yeasts`, open), []);
+    const onToggleCollapsed = useCallback((collapsed: boolean) => saveSession(SESSION_KEY, collapsed), []);
 
     const yeastRows = useMemo(() => yeasts.map((yeast: Yeast, i) => (
         <PlanningYeastsRow
@@ -36,18 +38,15 @@ export default function PlanningYeasts({ yeasts, add, remove, update, updateScal
     )), [yeasts, remove, update, updateScalar, kbYeasts, kbYeastsIndex]);
 
     return (
-        <>
-            <Collapse
-                toggle={toggleYeasts}
-                key={"yeast"}
-                title={"Yeast"}
-                className="lg:collapse-open"
-                openInitial={session?.[`planning.yeast`] as boolean ?? true}>
-                <DataGrid>
-                    {yeastRows}
-                    <PlanningYeastsAddRow add={add} kbYeasts={kbYeasts} kbYeastsIndex={kbYeastsIndex} />
-                </DataGrid>
-            </Collapse>
-        </>
+        <DataGrid>
+            <DataGridHeaderRow
+                label="Yeast"
+                defaultCollapsed={session?.[SESSION_KEY] as boolean ?? false}
+                onToggle={onToggleCollapsed}>
+                Yeast
+            </DataGridHeaderRow>
+            {yeastRows}
+            <PlanningYeastsAddRow add={add} kbYeasts={kbYeasts} kbYeastsIndex={kbYeastsIndex} />
+        </DataGrid>
     )
 }

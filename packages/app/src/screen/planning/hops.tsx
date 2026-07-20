@@ -1,13 +1,15 @@
 import DataGrid from "@/component/data-grid";
+import DataGridHeaderRow from "@/component/data-grid/header-row";
 import Hop from "@/model/hop";
 import {useCallback, useMemo} from "react";
 import {useKbHops} from "@/state/kbHops";
 import useIndexBy from "@/hooks/useIndexBy";
 import {AddFn, RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
 import {saveSession, useSession} from "@/state/session";
-import Collapse from "@/component/collapse";
 import PlanningHopsRow from "@/screen/planning/hops-row";
 import PlanningHopsAddRow from "@/screen/planning/hops-add-row";
+
+const SESSION_KEY = "planning.hops";
 
 export type PlanningHopsProps = {
     hops: Hop[];
@@ -21,7 +23,7 @@ export default function PlanningHops({ hops, add, remove, update, updateScalar }
     const kbHops = useKbHops();
     const kbHopsIndex = useIndexBy(kbHops, "name");
 
-    const toggleHops = useCallback((open: boolean) => saveSession(`planning.hops`, open), []);
+    const onToggleCollapsed = useCallback((collapsed: boolean) => saveSession(SESSION_KEY, collapsed), []);
 
     const hopRows = useMemo(() => hops.map((hop: Hop, i) => (
         <PlanningHopsRow
@@ -36,18 +38,15 @@ export default function PlanningHops({ hops, add, remove, update, updateScalar }
     )), [hops, remove, update, updateScalar, kbHops, kbHopsIndex]);
 
     return (
-        <>
-            <Collapse
-                toggle={toggleHops}
-                key={"hops"}
-                title={"Hops"}
-                className="lg:collapse-open"
-                openInitial={session?.[`planning.hops`] as boolean ?? true}>
-                <DataGrid>
-                    {hopRows}
-                    <PlanningHopsAddRow add={add} kbHops={kbHops} kbHopsIndex={kbHopsIndex} />
-                </DataGrid>
-            </Collapse>
-        </>
+        <DataGrid>
+            <DataGridHeaderRow
+                label="Hops"
+                defaultCollapsed={session?.[SESSION_KEY] as boolean ?? false}
+                onToggle={onToggleCollapsed}>
+                Hops
+            </DataGridHeaderRow>
+            {hopRows}
+            <PlanningHopsAddRow add={add} kbHops={kbHops} kbHopsIndex={kbHopsIndex} />
+        </DataGrid>
     );
 }
