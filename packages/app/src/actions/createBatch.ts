@@ -24,9 +24,10 @@ export default async function createBatch(recipe: KbRecipe, inputs: CreateBatchS
     _updateRecipe(recipe, batch);
     _updateShopping(batch);
     _updateSchedule(batch);
-    _updateChecklists(batch);
+    _updateChecklists(recipe, batch);
 
-    await saveBatch(id, batch);
+    // the pipeline above populates every required field, so it's a Batch by here
+    await saveBatch(id, batch as Batch);
 
     return id;
 }

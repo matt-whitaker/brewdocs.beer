@@ -10,16 +10,19 @@ import Additive from "@/model/additive";
 import Scalar from "@/model/scalar";
 import Statuses from "@/model/statuses";
 
-export interface ShoppingListItem {
-    name: string;
-    cost: Scalar;
-    purchased: boolean;
-    scalar?: Scalar;
-}
+/** what an item was derived from; replaces the old shopping "groups" */
+export type ShoppingTag = "hops"|"grains"|"yeasts"|"additives";
 
-export interface ShoppingList {
+export interface ShoppingItem {
     name: string;
-    items: ShoppingListItem[];
+    /** derived — the first tag is the source ingredient type */
+    tags: ShoppingTag[];
+    /** derived — aggregate weight, absent for ingredients that aren't weighed */
+    scalar?: Scalar;
+    /** user-owned — preserved across recalculation */
+    cost: Scalar;
+    /** user-owned — preserved across recalculation */
+    purchased: boolean;
 }
 
 export interface ChecklistItem {
@@ -54,7 +57,7 @@ export default interface Batch extends Entity {
     actuals: Measurements;
     hydrometer: Hydrometer[];
     checklists: Checklist[];
-    shopping: ShoppingList[];
+    shopping: ShoppingItem[];
 
     notes?: string;
 }
