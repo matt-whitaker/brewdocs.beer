@@ -35,11 +35,12 @@ export default function PlanningHopsRow({ row, hop, remove, update, updateScalar
 
     return (
         <DataGridRow
+            zebra
             label="hop details"
             expandContent={
                 <DataGrid>
                     <DataGridRow zebra={false}>
-                        <DataGridLabel className="ml-6">Actual Alpha</DataGridLabel>
+                        <DataGridLabel tiny className="ml-6">Actual Alpha</DataGridLabel>
                         <DataGridInput
                             col={3}
                             value={hop.alpha.value}

@@ -100,3 +100,6 @@ export function intersection<T>(a: readonly T[], b: readonly T[]): T[] {
 }
 
 export type FilterFn<T> = (item: T) => boolean;
+export type PipeableFn<T> = (item: T) => T;
+
+export const pipe = <T>(...fns: PipeableFn<T>[]) => (x: T): T => fns.reduce((acc, fn) => fn(acc), x);

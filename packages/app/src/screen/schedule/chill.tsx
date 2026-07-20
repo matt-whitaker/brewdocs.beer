@@ -30,7 +30,7 @@ export default function ScheduleChill({ hydro, hydroIndex, update, updateScalar 
             <div className="divider my-0"></div>
             <ScreenH5>Gravity Reading</ScreenH5>
             <DataGrid>
-                <DataGridRow key={`hydro-${hydro.name}-${hydroIndex}`}>
+                <DataGridRow zebra key={`hydro-${hydro.name}-${hydroIndex}`}>
                     <DataGridLabel>
                         <DataGridInput
                             col={1}

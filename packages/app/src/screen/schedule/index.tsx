@@ -8,7 +8,6 @@ import ScheduleBoil from "@/screen/schedule/boil";
 import SchedulePitch from "@/screen/schedule/pitch";
 import ScheduleChill from "@/screen/schedule/chill";
 import {useBatch} from "@/state/batches";
-import {useRecipe} from "@/state/recipes";
 
 export type ScheduleProps = { batchId: string; onChange: (batch: Batch) => void; };
 export default function Schedule({ batchId, onChange }: ScheduleProps) {
