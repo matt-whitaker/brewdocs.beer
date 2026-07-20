@@ -2,6 +2,7 @@ import {PropsWithChildren, ReactNode, useState} from "react";
 import {PropsWithClass} from "@brewdocs.beer/core";
 import classNames from "classnames";
 import {Chevron} from "@/component/svg";
+import {CHEVRON, CHEVRON_ICON} from "@/component/data-grid";
 
 const ZEBRA = "odd:bg-base-200";
 const ROW_CONTAINER = "relative py-1 px-1 [.data-grid_.data-grid_&]:p-0";
@@ -36,9 +37,9 @@ export default function DataGridRow({ children, className, expandContent, label,
                     aria-expanded={expanded}
                     aria-label={`${expanded ? "Hide" : "Show"} ${label ?? "details"}`}
                     onClick={() => setExpanded(prev => !prev)}
-                    className="btn btn-xs btn-ghost p-0 shrink-0"
+                    className={CHEVRON}
                 >
-                    <Chevron className={classNames("w-4 transition-transform", {"rotate-180": expanded})} />
+                    <Chevron className={classNames(CHEVRON_ICON, {"rotate-180": expanded})} />
                 </button>
             </div>
         </div>

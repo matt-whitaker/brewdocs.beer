@@ -24,7 +24,6 @@ export default function SchedulePitch({ yeast, update, updateScalar }: ScheduleP
         <div>
             <DataGridHeaderRow
                 collapsible
-                label="Pitch"
                 defaultCollapsed={session?.[SESSION_KEY] as boolean ?? false}
                 onToggle={onToggleCollapsed}>
                 4. Pitch

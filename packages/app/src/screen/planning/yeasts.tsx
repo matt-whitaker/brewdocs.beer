@@ -41,7 +41,6 @@ export default function PlanningYeasts({ yeasts, add, remove, update, updateScal
         <DataGrid>
             <DataGridHeaderRow
                 collapsible
-                label="Yeast"
                 defaultCollapsed={session?.[SESSION_KEY] as boolean ?? false}
                 onToggle={onToggleCollapsed}>
                 Yeast

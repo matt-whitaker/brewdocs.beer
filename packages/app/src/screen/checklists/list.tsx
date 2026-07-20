@@ -38,7 +38,6 @@ export default function ChecklistsList({ list, items, title, toggle }: Checklist
         <DataGrid>
             <DataGridHeaderRow
                 collapsible
-                label={title}
                 // remembered state wins; otherwise a finished list starts folded
                 defaultCollapsed={(session?.[sessionKey] as boolean|undefined) ?? items.every(({ completed }) => completed)}
                 onToggle={onToggleCollapsed}>

@@ -41,7 +41,6 @@ export default function PlanningHops({ hops, add, remove, update, updateScalar }
         <DataGrid>
             <DataGridHeaderRow
                 collapsible
-                label="Hops"
                 defaultCollapsed={session?.[SESSION_KEY] as boolean ?? false}
                 onToggle={onToggleCollapsed}>
                 Hops

@@ -40,7 +40,7 @@ function PlanningHopsRow({ row, hop, remove, update, updateScalar, kbHops, kbHop
             expandContent={
                 <DataGrid>
                     <DataGridRow zebra={false}>
-                        <DataGridLabel tiny className="ml-6">Actual Alpha</DataGridLabel>
+                        <DataGridLabel tiny className="ml-6">Alpha %</DataGridLabel>
                         <DataGridInput
                             col={3}
                             value={hop.alpha.value}

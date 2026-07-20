@@ -26,7 +26,6 @@ export default function ScheduleChill({ hydro, hydroIndex, update, updateScalar 
         <div>
             <DataGridHeaderRow
                 collapsible
-                label="Chill"
                 defaultCollapsed={session?.[SESSION_KEY] as boolean ?? false}
                 onToggle={onToggleCollapsed}>
                 3. Chill

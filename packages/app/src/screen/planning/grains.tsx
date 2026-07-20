@@ -41,7 +41,6 @@ export default function PlanningGrains({ grains, add, remove, update, updateScal
         <DataGrid>
             <DataGridHeaderRow
                 collapsible
-                label="Grains"
                 defaultCollapsed={session?.[SESSION_KEY] as boolean ?? false}
                 onToggle={onToggleCollapsed}>
                 Grains
