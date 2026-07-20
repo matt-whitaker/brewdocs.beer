@@ -13,7 +13,7 @@ export default function BatchSummary({ batchId }: BatchSummaryProps) {
     return (
         <Screen>
             <ScreenH1>Brew Summary</ScreenH1>
-            <div className="[&>h4]:mt-2.5 [&>h4]:capitalize [&>h4]:text-lg [&>h4]:font-semibold pt-2">
+            <div className="pt-2">
                 <div className="lg:max-w-[80%] lg:pb-4">
                     <ScreenH2>{recipe.name}</ScreenH2>
                     <ScreenH3>{batch.name || ""}</ScreenH3>

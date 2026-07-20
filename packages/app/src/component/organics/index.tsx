@@ -1,6 +1,8 @@
-import classNames from "classnames";
-import {ScreenH4} from "@brewdocs.beer/design";
-import {useMemo} from "react";
+import {Fragment, useMemo} from "react";
+import DataGrid from "@/component/data-grid";
+import DataGridRow from "@/component/data-grid/row";
+import DataGridLabel from "@/component/data-grid/label";
+import DataGridHeaderRow from "@/component/data-grid/header-row";
 
 // accepts either real batch-instance ingredients or raw kb-recipe-embedded
 // ones (Hop[]/Grain[]/Yeast[] vs a KbRecipe's own hops/grains/yeasts shape) —
@@ -13,17 +15,30 @@ export type OrganicsProps = {
 }
 
 export default function Organics({ hops, grains, yeasts, className }: OrganicsProps) {
+    // hops repeat across boil additions, so collapse them to distinct names
     const hopsList = useMemo(() => [...new Set(hops.map(({ name }) => name)).values()].join(", "), [hops]);
     const grainsList = useMemo(() => grains.map(({ name }) => name).join(", "), [grains]);
-    const yeastsList = useMemo(() => yeasts.map(({ name }) => name).join(", "), [yeasts])
-    return(
-        <div className={classNames([className])}>
-            <ScreenH4>Hops</ScreenH4>
-            <p>{hopsList}</p>
-            <ScreenH4>Grain</ScreenH4>
-            <p>{grainsList}</p>
-            <ScreenH4>Yeast</ScreenH4>
-            <p>{yeastsList}</p>
-        </div>
+    const yeastsList = useMemo(() => yeasts.map(({ name }) => name).join(", "), [yeasts]);
+
+    const rows = useMemo<[string, string][]>(
+        () => [["Hops", hopsList], ["Grain", grainsList], ["Yeast", yeastsList]],
+        [hopsList, grainsList, yeastsList]
+    );
+
+    return (
+        <DataGrid className={className}>
+            {rows.map(([name, list]) => (
+                <Fragment key={name}>
+                    {/* labels — three collapsible headers in one grid would fold each
+                        other's rows, since the collapse rule takes every following
+                        sibling */}
+                    <DataGridHeaderRow>{name}</DataGridHeaderRow>
+                    <DataGridRow zebra>
+                        {/* no label in the row, so the list gets the full width to wrap into */}
+                        <div className="col-span-6 self-center text-sm">{list}</div>
+                    </DataGridRow>
+                </Fragment>
+            ))}
+        </DataGrid>
     )
 }

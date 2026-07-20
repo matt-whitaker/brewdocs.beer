@@ -29,6 +29,7 @@ export default function ScheduleBoil({ boil, hops, additives, update, updateScal
     return (
         <div>
             <DataGridHeaderRow
+                collapsible
                 label="Boil"
                 defaultCollapsed={session?.[SESSION_KEY] as boolean ?? false}
                 onToggle={onToggleCollapsed}>

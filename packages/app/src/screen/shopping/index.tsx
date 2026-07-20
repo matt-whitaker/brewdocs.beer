@@ -82,6 +82,7 @@ export default function Shopping({ batchId, onChange }: ShoppingProps) {
             <DataGrid key={label ?? `group-${i}`}>
                 {label && (
                     <DataGridHeaderRow
+                        collapsible
                         label={label}
                         defaultCollapsed={session?.[`shopping.${label.toLowerCase()}`] as boolean ?? false}
                         onToggle={collapsed => saveSession(`shopping.${label.toLowerCase()}`, collapsed)}>

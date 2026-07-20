@@ -31,6 +31,7 @@ export default function ScheduleMash({ mash, grains, update, updateScalar, hydro
     return (
         <div>
             <DataGridHeaderRow
+                collapsible
                 label="Mash"
                 defaultCollapsed={session?.[SESSION_KEY] as boolean ?? false}
                 onToggle={onToggleCollapsed}>
