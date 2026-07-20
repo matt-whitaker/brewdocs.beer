@@ -21,5 +21,5 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           claude_args: |
             --model sonnet
-            --allowedTools "Edit,Write,Bash"
+            --allowedTools "Edit,Write,Bash(npm:*),Bash(gh pr create:*)"
             --max-turns 15
