@@ -1,6 +1,5 @@
-import {Fragment, useCallback} from "react";
+import {Fragment} from "react";
 import DataGrid from "@/component/data-grid";
-import DataGridHeaderRow from "@/component/data-grid/header-row";
 import DataGridSubheaderRow from "@/component/data-grid/subheader-row";
 import Hop from "@/model/hop";
 import DataGridRow from "@/component/data-grid/row";
@@ -10,9 +9,6 @@ import DataGridInput from "@/component/data-grid/input";
 import Additive from "@/model/additive";
 import Boil from "@/model/boil";
 import {UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
-import {saveSession, useSession} from "@/state/session";
-
-const SESSION_KEY = "schedule.boil";
 
 export type ScheduleBoilTypes = {
     boil: Boil[];
@@ -22,18 +18,8 @@ export type ScheduleBoilTypes = {
     updateScalar: UpdateScalarFn;
 }
 export default function ScheduleBoil({ boil, hops, additives, update, updateScalar }: ScheduleBoilTypes) {
-    const session = useSession();
-
-    const onToggleCollapsed = useCallback((collapsed: boolean) => saveSession(SESSION_KEY, collapsed), []);
-
     return (
-        <div>
-            <DataGridHeaderRow
-                collapsible
-                defaultCollapsed={session?.[SESSION_KEY] as boolean ?? false}
-                onToggle={onToggleCollapsed}>
-                2. Boil
-            </DataGridHeaderRow>
+        <div className="pt-2">
             {boil.map((m, i) => (
                 <Fragment key={`boil-${m.name}-${i}`}>
                     <DataGridSubheaderRow>{m.name}  - {m.time.value}</DataGridSubheaderRow>

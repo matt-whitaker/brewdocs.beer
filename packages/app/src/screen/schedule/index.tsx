@@ -1,8 +1,9 @@
 import {ScreenH1} from "@brewdocs.beer/design";
 import Batch from "@/model/batch";
 import useJsonEdit from "@/hooks/useJsonEdit";
-import {Fragment} from "react";
-import ScreenTwoCol from "@/component/screen/two-col";
+import Screen from "@/component/screen";
+import PanelSwitcher from "@/component/panel-switcher";
+import PanelSwitcherContent from "@/component/panel-switcher/content";
 import ScheduleMash from "@/screen/schedule/mash";
 import ScheduleBoil from "@/screen/schedule/boil";
 import SchedulePitch from "@/screen/schedule/pitch";
@@ -16,30 +17,38 @@ export default function Schedule({ batchId, onChange }: ScheduleProps) {
 
     return (
         <>
-            <ScreenTwoCol>
-                <ScreenH1 className="col-start-1 lg:col-span-2 col-span-1 mb-2">Brew Schedule</ScreenH1>
-                <div>
-                    <ScheduleMash
-                        grains={data.grains}
-                        mash={data.mash}
-                        hydro={data.hydrometer[0]}
-                        hydroIndex={0}
-                        update={update}
-                        updateScalar={updateScalar}
-                    />
-                    <ScheduleBoil
-                        boil={data.boil}
-                        hops={data.hops}
-                        additives={data.additives}
-                        update={update}
-                        updateScalar={updateScalar}
-                    />
-                </div>
-                <div>
-                    <ScheduleChill hydro={data.hydrometer[2]} hydroIndex={2} update={update} updateScalar={updateScalar} />
-                    <SchedulePitch yeast={data.yeasts} update={update} updateScalar={updateScalar} />
-                </div>
-            </ScreenTwoCol>
+            <Screen>
+                <ScreenH1 className="mb-2">Brew Schedule</ScreenH1>
+                {/* the steps run in brew order, so the tablist is the sequence —
+                    which is why the sections no longer carry their own headings */}
+                <PanelSwitcher compact name="schedule" defaultTab="1. Mash">
+                    <PanelSwitcherContent title="1. Mash">
+                        <ScheduleMash
+                            grains={data.grains}
+                            mash={data.mash}
+                            hydro={data.hydrometer[0]}
+                            hydroIndex={0}
+                            update={update}
+                            updateScalar={updateScalar}
+                        />
+                    </PanelSwitcherContent>
+                    <PanelSwitcherContent title="2. Boil">
+                        <ScheduleBoil
+                            boil={data.boil}
+                            hops={data.hops}
+                            additives={data.additives}
+                            update={update}
+                            updateScalar={updateScalar}
+                        />
+                    </PanelSwitcherContent>
+                    <PanelSwitcherContent title="3. Chill">
+                        <ScheduleChill hydro={data.hydrometer[2]} hydroIndex={2} update={update} updateScalar={updateScalar} />
+                    </PanelSwitcherContent>
+                    <PanelSwitcherContent title="4. Pitch">
+                        <SchedulePitch yeast={data.yeasts} update={update} updateScalar={updateScalar} />
+                    </PanelSwitcherContent>
+                </PanelSwitcher>
+            </Screen>
             {/*<ScreenTwoCol>*/}
             {/*    <ScreenH1 className="col-start-1 lg:col-span-2 col-span-1 mb-2">Measurements</ScreenH1>*/}
             {/*    <div>*/}

@@ -1,15 +1,10 @@
-import {useCallback} from "react";
-import {saveSession, useSession} from "@/state/session";
 import DataGrid from "@/component/data-grid";
-import DataGridHeaderRow from "@/component/data-grid/header-row";
 import DataGridSubheaderRow from "@/component/data-grid/subheader-row";
 import DataGridRow from "@/component/data-grid/row";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridInput from "@/component/data-grid/input";
 import Hydrometer from "@/model/hydrometer";
 import {UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
-
-const SESSION_KEY = "schedule.chill";
 
 export type ScheduleChillProps = {
     hydro: Hydrometer;
@@ -18,18 +13,8 @@ export type ScheduleChillProps = {
     updateScalar: UpdateScalarFn;
 }
 export default function ScheduleChill({ hydro, hydroIndex, update, updateScalar }: ScheduleChillProps) {
-    const session = useSession();
-
-    const onToggleCollapsed = useCallback((collapsed: boolean) => saveSession(SESSION_KEY, collapsed), []);
-
     return (
-        <div>
-            <DataGridHeaderRow
-                collapsible
-                defaultCollapsed={session?.[SESSION_KEY] as boolean ?? false}
-                onToggle={onToggleCollapsed}>
-                3. Chill
-            </DataGridHeaderRow>
+        <div className="pt-2">
             <p>
                 It is critical you chill your wort as quickly as possible. Cool you wort to 60°F to 72°F, depending on what your beer style calls for.
             </p>

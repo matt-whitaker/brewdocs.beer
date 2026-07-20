@@ -44,7 +44,8 @@ core ← design ← app        core ← kb ← app        core ← design ← ww
 
 - Code in `core`/`design`/`kb` must compile under every consumer's tsconfig, and `core` must stay environment-agnostic (no `import.meta.env`, no Node APIs) — it's consumed by Vite (app), Astro (www), and plain-Node scripts (kb build).
 - Tailwind v4 does not auto-scan symlinked workspace deps: `app/src/styles.css` has a load-bearing `@source "../../design/src";`. Without it, all design-package styling silently disappears.
-- `design`'s own devDeps (tailwind 3, daisyui 4, storybook) are stale relative to consumers (tailwind 4, daisyui 5) — its components' class strings must be valid **DaisyUI v5 / Tailwind v4**, which is what app and www actually compile them with.
+- `design` declares no tailwind/daisyui of its own (removed — it never used them; nothing there imports either). Its components' class strings must be valid **DaisyUI v5 / Tailwind v4**, because app and www are what compile them, via `@source "../../design/src"` + `@plugin "daisyui"` in their own stylesheets.
+- **Don't read `node_modules/<pkg>` at the repo root to check tailwind/daisyui behavior.** daisyui is nested per-consumer (app and www, both v5), so there is no root copy; root `tailwindcss` is **3.4.19**, an auto-installed peer of www's `@tailwindcss/typography` (whose peer range starts at `>=3.0.0`) that nothing compiles with. The built CSS in `packages/app/dist/assets/*.css` is the only reliable answer to "what does this class actually do".
 
 ## packages/core
 
