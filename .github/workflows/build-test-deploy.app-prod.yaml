@@ -7,7 +7,6 @@ on:
       - mainline
     paths:
       - packages/app/**
-      - .github/**
 
 env:
   NODE_VERSION: 22
