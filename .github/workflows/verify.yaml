@@ -1,0 +1,34 @@
+name: Verify
+run-name: "Verify"
+
+# PR gate: typecheck + build every package on the way into mainline, without
+# deploying. Set the `Verify` job as a required status check on mainline — the
+# build-test-deploy workflows only run post-merge (on push), so this is the one
+# place a red build is caught *before* it ships.
+on:
+  pull_request:
+    branches:
+      - mainline
+
+# a fresh push to the PR supersedes any in-flight run
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: 22
+
+jobs:
+  Verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      # npm ci also builds packages/kb via its postinstall (a broken kb build
+      # fails here); core/design ship raw TS and are typechecked by the consumers
+      # that compile them below.
+      - run: npm ci
+      - run: npm run build -w packages/app   # tsc --noEmit && vite build
+      - run: npm run build -w packages/www   # astro check && astro build

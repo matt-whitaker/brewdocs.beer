@@ -5,7 +5,7 @@ import equipment from "@/data/equipment";
 import {EquipmentUses} from "@/model/equipment";
 import {intersection} from "@/utils/func";
 
-/** pulls the kit for a phase out of the catalog, same matching _updateChecklists uses */
+/** pulls the kit for a phase out of the catalog by matching EquipmentUses tags */
 const forUse = (...uses: EquipmentUses[]): ChecklistItem[] => equipment
     .filter(({ use }) => intersection(uses, use).length > 0)
     .map(({ name }) => ({ name, completed: false }));

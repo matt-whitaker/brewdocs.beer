@@ -4,7 +4,6 @@ run-name: "Build, Test, and Deploy (App Prod)"
 on:
   push:
     branches:
-      - develop
       - mainline
     paths:
       - packages/app/**
