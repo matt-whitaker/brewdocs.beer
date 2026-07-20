@@ -8,7 +8,7 @@ import DataGridRemoveButton from "@/component/data-grid/remove-button";
 import DataGridSelect from "@/component/data-grid/select";
 import {kbHopToHop} from "@/transform/kbHopToHop";
 import DataGridInput from "@/component/data-grid/input";
-import {useCallback, useMemo} from "react";
+import {memo, useCallback, useMemo} from "react";
 
 
 export type PlanningHopsRowProps = {
@@ -21,7 +21,7 @@ export type PlanningHopsRowProps = {
     kbHopsIndex: Map<string, KbHop>;
 }
 
-export default function PlanningHopsRow({ row, hop, remove, update, updateScalar, kbHops, kbHopsIndex }: PlanningHopsRowProps) {
+function PlanningHopsRow({ row, hop, remove, update, updateScalar, kbHops, kbHopsIndex }: PlanningHopsRowProps) {
     const hopOptions = useMemo(() => kbHops.map((({ name }) => ({ value: name, name }))), [kbHops]);
 
     const onRemoveHop = useCallback(() => remove("hops", row), [remove, row]);
@@ -74,3 +74,7 @@ export default function PlanningHopsRow({ row, hop, remove, update, updateScalar
         </DataGridRow>
     );
 }
+
+// props are referentially stable (setIn keeps untouched branches, editors are
+// stable), so editing one row no longer re-renders its siblings
+export default memo(PlanningHopsRow);

@@ -54,6 +54,36 @@ export function set<T extends object>(obj: T, path: string, value: unknown): T {
     return obj;
 }
 
+function shallowClone<T>(node: T): T {
+    return (Array.isArray(node) ? [...node] : {...node}) as T;
+}
+
+/**
+ * Immutable dot-path assignment with structural sharing: only the nodes along
+ * `path` are cloned, every untouched branch keeps its identity. Much cheaper
+ * than deep-cloning the whole tree per edit, and it lets memoized children skip
+ * re-rendering when their own branch didn't change.
+ */
+export function setIn<T extends object>(obj: T, path: string, value: unknown): T {
+    const segments = toSegments(path);
+    if (!segments.length) return obj;
+
+    const next = shallowClone(obj) as any;
+    let cursor = next;
+
+    for (let i = 0; i < segments.length - 1; i++) {
+        const key = segments[i];
+        const child = cursor[key];
+        cursor[key] = child == null
+            ? (/^\d+$/.test(segments[i + 1]) ? [] : {})
+            : shallowClone(child);
+        cursor = cursor[key];
+    }
+
+    cursor[segments[segments.length - 1]] = value;
+    return next as T;
+}
+
 export function omitBy<T extends object>(obj: T, predicate: (value: T[keyof T]) => boolean): Partial<T> {
     const result: Partial<T> = {};
     for (const key of Object.keys(obj) as (keyof T)[]) {

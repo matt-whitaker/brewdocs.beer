@@ -1,5 +1,5 @@
-import {cloneDeep, debounce, get, isEqual, set} from "@/utils/func";
-import {useCallback, useEffect, useMemo, useState} from "react";
+import {debounce, get, isEqual, setIn} from "@/utils/func";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import Scalar from "@/model/scalar";
 import {scalarFromNumberWithCurrency, scalarFromNumberWithUnit} from "@/utils/formatting";
 import {Entity} from "@brewdocs.beer/core";
@@ -12,74 +12,64 @@ export type RemoveFn = (dot: string, index: number) => void;
 
 export default function useJsonEdit<T extends Entity>(data: T, onChange: (data: T) => void): [T, UpdateFn, UpdateScalarFn, ToggleFn, AddFn, RemoveFn] {
     const [state, setState] = useState<T>(data);
+
+    // the editors below read the draft through this ref rather than closing over
+    // `state`, so their identity stays stable across edits — memoized rows
+    // downstream aren't invalidated on every keystroke
+    const stateRef = useRef(state);
+    stateRef.current = state;
+
     // resync whenever the store emits a batch that actually differs; sibling
     // screens stay mounted in hidden tabs and would otherwise edit from stale
     // copies, clobbering each other's saves
     useEffect(() => {
         setState(prev => (isEqual(prev, data) ? prev : data));
     }, [data]);
+
     const debouncedOnChange = useMemo(() => debounce(onChange, 350), [onChange]);
+
+    /** applies a new draft; edits that aren't typed character-by-character settle immediately */
+    const commit = useCallback((next: T, immediate = false) => {
+        setState(next);
+        (immediate ? onChange : debouncedOnChange)(next);
+    }, [onChange, debouncedOnChange]);
 
     /**
      * Updates a property on the JSON object
      */
-    const update = useCallback((dot: string, value: unknown) => {
-        if (state) {
-            const newState = set(cloneDeep(state), dot, value);
-            setState(newState);
-            debouncedOnChange(newState);
-        }
-    }, [state, debouncedOnChange]);
+    const update = useCallback<UpdateFn>((dot, value) => {
+        commit(setIn(stateRef.current, dot, value));
+    }, [commit]);
 
     /**
      * Updates a property on the JSON object, handles unit formatting
      */
-    const updateScalar = useCallback((dot: string, value: string, lockUnit: boolean = false) => {
-        if (state) {
-            const prevScalar = get(state, dot) as Scalar;
+    const updateScalar = useCallback<UpdateScalarFn>((dot, value, lockUnit = false) => {
+        const prev = get(stateRef.current, dot) as Scalar;
 
-            if (prevScalar.unit) {
-                const newScalar = scalarFromNumberWithUnit(value, prevScalar.unit, lockUnit);
-                const newState = set(cloneDeep(state), dot, newScalar);
-                setState(newState);
-                debouncedOnChange(newState);
-            } else if (prevScalar.currency) {
-                const newScalar = scalarFromNumberWithCurrency(value, prevScalar.currency, lockUnit);
-                const newState = set(cloneDeep(state), dot, newScalar);
-                setState(newState);
-                debouncedOnChange(newState);
-            }
+        if (prev.unit) {
+            commit(setIn(stateRef.current, dot, scalarFromNumberWithUnit(value, prev.unit, lockUnit)));
+        } else if (prev.currency) {
+            commit(setIn(stateRef.current, dot, scalarFromNumberWithCurrency(value, prev.currency, lockUnit)));
         }
-    }, [state, debouncedOnChange])
+    }, [commit]);
 
     /**
      * Toggles a boolean property on the JSON object (ie false to true and vice versa)
      */
-    const toggle = useCallback((dot: string) => {
-        if (state) {
-            const newState = set(cloneDeep(state), dot, !get(state, dot))
-            setState(newState);
-            onChange(newState);
-        }
-    }, [state, onChange]);
+    const toggle = useCallback<ToggleFn>((dot) => {
+        commit(setIn(stateRef.current, dot, !get(stateRef.current, dot)), true);
+    }, [commit]);
 
-    const add = useCallback((dot: string, value: T) => {
-        if (state) {
-            const newState = cloneDeep(state);
-            get(newState, dot).push(value);
-            setState(newState);
-            onChange(newState);
-        }
-    }, [state, onChange]);
+    const add = useCallback<AddFn>((dot, value) => {
+        const list = get(stateRef.current, dot) as unknown[];
+        commit(setIn(stateRef.current, dot, [...list, value]), true);
+    }, [commit]);
 
-    const remove = useCallback((dot: string, index: number) => {
-        if (state) {
-            const newState = cloneDeep(state);
-            get(newState, dot).splice(index, 1);
-            setState(newState);
-            onChange(newState);
-        }
-    }, [state, onChange]);
+    const remove = useCallback<RemoveFn>((dot, index) => {
+        const list = get(stateRef.current, dot) as unknown[];
+        commit(setIn(stateRef.current, dot, list.filter((_, i) => i !== index)), true);
+    }, [commit]);
 
     return [state, update, updateScalar, toggle, add, remove];
 }

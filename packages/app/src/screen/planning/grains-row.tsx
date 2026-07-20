@@ -5,7 +5,7 @@ import DataGridRemoveButton from "@/component/data-grid/remove-button";
 import DataGridSelect from "@/component/data-grid/select";
 import {kbGrainToGrain} from "@/transform/kbGrainToGrain";
 import DataGridInput from "@/component/data-grid/input";
-import {Fragment, useCallback, useMemo} from "react";
+import {Fragment, memo, useCallback, useMemo} from "react";
 import {RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
 import Grain from "@/model/grain";
 
@@ -19,7 +19,7 @@ export type PlanningGrainsRowProps = {
     kbGrainsIndex: Map<string, KbGrain>;
 }
 
-export default function PlanningGrainsRow({ row, grain, remove, update, updateScalar, kbGrains, kbGrainsIndex }: PlanningGrainsRowProps) {
+function PlanningGrainsRow({ row, grain, remove, update, updateScalar, kbGrains, kbGrainsIndex }: PlanningGrainsRowProps) {
     const grainOptions = useMemo(() => kbGrains.map((({ name }) => ({ value: name, name }))), [kbGrains]);
 
     const onRemoveGrain = useCallback(() => remove("grains", row), [remove, row]);
@@ -48,3 +48,7 @@ export default function PlanningGrainsRow({ row, grain, remove, update, updateSc
         </Fragment>
     );
 }
+
+// props are referentially stable (setIn keeps untouched branches, editors are
+// stable), so editing one row no longer re-renders its siblings
+export default memo(PlanningGrainsRow);

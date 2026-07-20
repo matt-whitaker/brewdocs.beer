@@ -5,9 +5,8 @@ import DataGrid from "@/component/data-grid";
 import DataGridRow from "@/component/data-grid/row";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
 import DataGridLabel from "@/component/data-grid/label";
-import DataGridInput from "@/component/data-grid/input";
 import DataGridSelect from "@/component/data-grid/select";
-import DataGridCheckbox from "@/component/data-grid/checkbox";
+import ShoppingItemRow from "@/screen/shopping/item-row";
 import useJsonEdit from "@/hooks/useJsonEdit";
 import {saveSession, useSession} from "@/state/session";
 import {useBatch} from "@/state/batches";
@@ -70,26 +69,17 @@ export default function Shopping({ batchId, onChange }: ShoppingProps) {
     const shoppingRows = useMemo(() => ordered.map(({ item, index }, i) => {
         const group = groupOf(item, sort);
         const previousGroup = i > 0 ? groupOf(ordered[i - 1].item, sort) : null;
-        const id = `shopping-item-${item.tags[0]}-${item.name}`;
 
         return (
-            <Fragment key={id}>
+            <Fragment key={`${item.tags[0]}-${item.name}`}>
                 {group && group !== previousGroup && <DataGridHeaderRow>{group}</DataGridHeaderRow>}
-                <DataGridRow zebra>
-                    <DataGridLabel className="flex items-center" htmlFor={id}>
-                        <DataGridCheckbox
-                            id={id}
-                            checked={item.purchased}
-                            onChange={() => toggle(`shopping.[${index}].purchased`)} />
-                        {item.name}{item.scalar ? ` - ${item.scalar.value}` : ""}
-                    </DataGridLabel>
-                    <DataGridInput
-                        col={3}
-                        value={item.cost.value}
-                        onChange={(value: string) => update(`shopping.[${index}].cost.value`, value)}
-                        onBlur={(value: string) => updateScalar(`shopping.[${index}].cost`, value, true)}
-                    />
-                </DataGridRow>
+                <ShoppingItemRow
+                    row={index}
+                    item={item}
+                    toggle={toggle}
+                    update={update}
+                    updateScalar={updateScalar}
+                />
             </Fragment>
         );
     }), [ordered, sort, toggle, update, updateScalar]);
