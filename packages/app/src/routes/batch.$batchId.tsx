@@ -3,7 +3,6 @@ import {useCallback} from "react";
 import Batch from "@/model/batch";
 import PanelSwitcher from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
-import Checklists from "@/screen/checklists";
 import Schedule from "@/screen/schedule";
 import BatchSummary from "@/screen/batch-summary";
 import Shopping from "@/screen/shopping";
@@ -25,7 +24,6 @@ function BatchPage() {
             </PanelSwitcherContent>
             <PanelSwitcherContent title="Checklists">
                 <Shopping batchId={batchId} onChange={onChange} />
-                <Checklists batchId={batchId} onChange={onChange} />
             </PanelSwitcherContent>
             <PanelSwitcherContent title="Schedule">
                 <Schedule batchId={batchId} onChange={onChange} />

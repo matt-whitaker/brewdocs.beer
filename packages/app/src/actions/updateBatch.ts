@@ -6,7 +6,7 @@ import {saveBatch} from "@/state/batches";
 import _updateSchedule from "@/actions/_updateSchedule";
 
 const shoppingTriggers: (keyof Batch)[] = ["hops", "grains", "yeasts"];
-const scheduleTriggers: (keyof Batch)[] = ["hops", "grains", "yeasts"];
+const scheduleTriggers: (keyof Batch)[] = ["hops", "grains", "yeasts", "additives", "mash", "boil", "hydrometer"];
 
 export default async function updateBatch(id: string, batch: Batch) {
     const current = await batchesStorage.get(id);

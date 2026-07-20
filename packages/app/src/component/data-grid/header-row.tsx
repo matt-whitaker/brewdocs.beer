@@ -7,7 +7,7 @@ import {CHEVRON, CHEVRON_ICON} from "@/component/data-grid";
 /** paired with the group class by the sibling rule in styles.css */
 const COLLAPSED = "dg-collapsed";
 
-const HEADER = "flex items-center gap-x-1 px-1 pt-3 pb-1 -mb-2";
+const HEADER = "flex items-center gap-x-1 px-1 pt-3 pb-1";
 const HEADING = "flex-1 min-w-0 text-left text-2xs uppercase tracking-wide font-semibold text-base-content/60";
 
 export type DataGridHeaderRowProps = PropsWithChildren & PropsWithClass & {
