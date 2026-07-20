@@ -10,7 +10,7 @@ import ShoppingItemRow from "@/screen/shopping/item-row";
 import useJsonEdit from "@/hooks/useJsonEdit";
 import {saveSession, useSession} from "@/state/session";
 import {useBatch} from "@/state/batches";
-import {Fragment, useCallback, useMemo} from "react";
+import {useCallback, useMemo} from "react";
 
 type SortKey = "type"|"name"|"purchased";
 
@@ -66,23 +66,41 @@ export default function Shopping({ batchId, onChange }: ShoppingProps) {
         .map((item, index) => ({ item, index }))
         .sort((a, b) => compare(a.item, b.item, sort)), [data.shopping, sort]);
 
-    const shoppingRows = useMemo(() => ordered.map(({ item, index }, i) => {
-        const group = groupOf(item, sort);
-        const previousGroup = i > 0 ? groupOf(ordered[i - 1].item, sort) : null;
+    const shoppingGroups = useMemo(() => {
+        // ordered is already sorted, so a group is a run of adjacent items sharing
+        // a label; each run becomes its own DataGrid, which is what bounds the
+        // collapse rule to that group's rows
+        const groups: { label: string|null; entries: typeof ordered }[] = [];
+        ordered.forEach(entry => {
+            const label = groupOf(entry.item, sort);
+            const current = groups[groups.length - 1];
+            if (current && current.label === label) current.entries.push(entry);
+            else groups.push({ label, entries: [entry] });
+        });
 
-        return (
-            <Fragment key={`${item.tags[0]}-${item.name}`}>
-                {group && group !== previousGroup && <DataGridHeaderRow>{group}</DataGridHeaderRow>}
-                <ShoppingItemRow
-                    row={index}
-                    item={item}
-                    toggle={toggle}
-                    update={update}
-                    updateScalar={updateScalar}
-                />
-            </Fragment>
-        );
-    }), [ordered, sort, toggle, update, updateScalar]);
+        return groups.map(({ label, entries }, i) => (
+            <DataGrid key={label ?? `group-${i}`}>
+                {label && (
+                    <DataGridHeaderRow
+                        label={label}
+                        defaultCollapsed={session?.[`shopping.${label.toLowerCase()}`] as boolean ?? false}
+                        onToggle={collapsed => saveSession(`shopping.${label.toLowerCase()}`, collapsed)}>
+                        {label}
+                    </DataGridHeaderRow>
+                )}
+                {entries.map(({ item, index }) => (
+                    <ShoppingItemRow
+                        key={`${item.tags[0]}-${item.name}`}
+                        row={index}
+                        item={item}
+                        toggle={toggle}
+                        update={update}
+                        updateScalar={updateScalar}
+                    />
+                ))}
+            </DataGrid>
+        ));
+    }, [ordered, sort, toggle, update, updateScalar, session]);
 
     return (
         <Screen>
@@ -98,8 +116,8 @@ export default function Shopping({ batchId, onChange }: ShoppingProps) {
                         />
                     </DataGridLabel>
                 </DataGridRow>
-                {shoppingRows}
             </DataGrid>
+            {shoppingGroups}
         </Screen>
     );
 }

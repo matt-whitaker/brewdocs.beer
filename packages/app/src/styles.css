@@ -48,3 +48,11 @@
 :root {
     --radius-selector: 0.2rem;
 }
+
+/* A collapsed DataGridHeaderRow hides the rows after it. CSS sibling
+   combinators are unbounded, so this only stays correct because each group is
+   its own DataGrid — the grid boundary means a header's following siblings are
+   exactly its own rows, and nothing else's. */
+.data-grid > .dg-collapsed ~ * {
+    display: none;
+}

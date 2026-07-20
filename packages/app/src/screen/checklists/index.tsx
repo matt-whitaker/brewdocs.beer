@@ -16,10 +16,10 @@ export default function Checklists({ batchId, onChange }: BatchChecklistProps) {
 
     const checklists = useMemo(() => data.checklists.map(({ items, name: title }, i) => (
         <ChecklistsList key={title} list={i} items={items} title={title} toggle={toggle} />
-    )), [data])
+    )), [data.checklists, toggle])
 
     return (
-        <Screen className="join join-vertical w-full">
+        <Screen>
             <ScreenH1 className="mb-2">Equipment Checklist</ScreenH1>
             {checklists}
         </Screen>
