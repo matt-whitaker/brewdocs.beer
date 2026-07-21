@@ -38,6 +38,7 @@ const outDir = path.join(process.cwd(), "dist");
       try {
         const data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
         data.id = path.basename(file, path.extname(file));
+        data.version = pkg.version;
         combinedData.push(data);
       } catch (error) {
         console.error(`Error reading JSON from ${filePath}:`, error);
