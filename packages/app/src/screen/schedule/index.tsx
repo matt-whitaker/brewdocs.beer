@@ -79,7 +79,7 @@ export default function Schedule({ batchId, onChange }: ScheduleProps) {
     return (
         <Screen>
             <ScreenH1 className="mb-2">Brew Schedule</ScreenH1>
-            <DataGrid className="max-w-xs mt-2">
+            <DataGrid className="max-w-xs mt-2 mb-2">
                 <DataGridRow>
                     <DataGridLabel cols={3}>Status</DataGridLabel>
                     <DataGridSelect cols={3} data={STATUS_OPTIONS} value={String(data.status)} onChange={updateStatus} />
