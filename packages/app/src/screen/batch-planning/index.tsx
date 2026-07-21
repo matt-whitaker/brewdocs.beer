@@ -27,7 +27,7 @@ export default function BatchPlanning({ batchId, onChange }: BatchPlanningProps)
     const recipe = useRecipe(batch.recipeId);
     const [data, update, updateScalar,, add, remove, move] = useJsonEdit<Batch>(batch, onChange);
 
-    const updateDate = useCallback((value: string) => update(`brewDate`, value), [])
+    const updateDate = useCallback((value: string) => update(`brewDate`, value), [update])
 
     return (
         <Screen>

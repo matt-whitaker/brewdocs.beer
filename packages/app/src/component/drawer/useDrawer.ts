@@ -1,7 +1,7 @@
-import {MutableRefObject, useCallback, useRef} from "react";
+import {RefObject, useCallback, useRef} from "react";
 
-export default function useDrawer(): [MutableRefObject<HTMLInputElement|undefined>, () => void] {
-    const ref = useRef<HTMLInputElement>();
+export default function useDrawer(): [RefObject<HTMLInputElement>, () => void] {
+    const ref = useRef<HTMLInputElement>(null);
     const closeDrawer = useCallback(() => {
         if (ref && ref.current) {
             ref.current.checked = false

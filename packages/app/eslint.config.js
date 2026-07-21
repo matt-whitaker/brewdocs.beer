@@ -26,7 +26,24 @@ export default tseslint.config(
         },
         rules: {
             ...reactHooks.configs.recommended.rules,
-            "react-refresh/only-export-components": ["warn", { allowConstantExport: true }]
+            "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
+            // the codebase already uses a leading _ for deliberate throwaways —
+            // destructured skips (`const [_, x] = ...`) and unused stub params.
+            // Honor that convention rather than editing each site.
+            "@typescript-eslint/no-unused-vars": ["error", {
+                argsIgnorePattern: "^_",
+                varsIgnorePattern: "^_",
+                caughtErrorsIgnorePattern: "^_",
+                destructuredArrayIgnorePattern: "^_"
+            }]
         }
+    },
+    {
+        // the hand-rolled lodash replacement: dot-path get/set over arbitrary
+        // object shapes is inherently untyped, and `any` is the intended contract
+        // (callers cast the result). CLAUDE.md points here as the deliberate
+        // dynamic-access layer.
+        files: ["src/utils/func.ts"],
+        rules: { "@typescript-eslint/no-explicit-any": "off" }
     }
 );

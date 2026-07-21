@@ -7,7 +7,7 @@ import {Entity} from "@brewdocs.beer/core";
 export type UpdateFn = (dot: string, value?: unknown) => void;
 export type UpdateScalarFn = (dot: string, value: string, lock?: boolean) => void;
 export type ToggleFn = (dot: string) => void;
-export type AddFn = (dot: string, value: any) => void;
+export type AddFn = (dot: string, value: unknown) => void;
 export type RemoveFn = (dot: string, index: number) => void;
 export type MoveFn = (dot: string, from: number, to: number) => void;
 

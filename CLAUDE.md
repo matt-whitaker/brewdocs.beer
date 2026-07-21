@@ -30,9 +30,10 @@ npm run storybook -w packages/design
 ```
 
 - **Node ≥22 required** (CI uses 22). On this machine, non-interactive shells resolve `node` to an ancient nvm default (v10) — if commands fail with syntax errors in node_modules, prefix with `PATH="$HOME/.nvm/versions/node/v22.23.1/bin:$PATH"`.
-- **No test framework exists anywhere** (CI's Test job is a placeholder echo). Verification = typecheck + build + manual browser checks.
-- **No linting in `app`** (deliberately removed). `core`/`design` carry eslint configs but they're not part of any enforced flow.
-- Typecheck app only: `cd packages/app && ../../node_modules/.bin/tsc --noEmit`.
+- **No unit-test framework** — `npm test` in `app` runs **eslint** (`"test": "npm run lint"`), which is the verification gate alongside typecheck + build + manual browser checks. There are no runtime tests.
+- **`app` is linted** (eslint 9 flat config, `packages/app/eslint.config.js`). Ratchet policy: **errors block, warnings inform** — `npm test` exits 0 while warnings remain (currently `react-hooks/exhaustive-deps` and `react-refresh/only-export-components`, both left as warnings on purpose). `core`/`design` carry their own eslint configs, not part of any enforced flow.
+- The app's eslint resolves to **9.x** (nested); the repo root still hoists eslint **8.57.1**, which is eslintrc-era and chokes on flat config — always run lint from inside `packages/app`.
+- Typecheck app only: `cd packages/app && ../../node_modules/.bin/tsc --noEmit`. Lint: `npm run lint -w packages/app`.
 
 ## How the packages depend on each other
 
@@ -195,7 +196,7 @@ Guidance for human contributors **and** for the `@claude` GitHub integration (`.
 
 ### Definition of done
 
-- **There is no test framework** (CI's Test job is a placeholder echo). The verification gate is `tsc --noEmit` **and** `vite build` clean, plus manual browser checks for any UI change — see Commands. A green typecheck + build is the floor for every change.
+- **There is no unit-test framework.** The verification gate is `npm test` (eslint, errors-only) **and** `tsc --noEmit` **and** `vite build` clean, plus manual browser checks for any UI change — see Commands. `verify.yaml` runs lint then both builds on every PR; the app-prod deploy's `Test` job runs `npm test` post-merge. A green lint + typecheck + build is the floor for every change.
 - Don't hand-edit generated files (`routeTree.gen.ts`) and don't add `lodash` (the repo deliberately uses hand-rolled `utils/func.ts`).
 - Renaming files under `packages/kb/data/**` changes derived ids and is a breaking change (see packages/kb) — call it out explicitly in the PR.
 - Prefer surfacing follow-ups over silently expanding scope; note orphaned/dead code you leave behind rather than deleting adjacent things unasked.

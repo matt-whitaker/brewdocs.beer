@@ -2,8 +2,8 @@ import {Plus} from "@/component/svg";
 import { useState} from "react";
 import {InputText} from "@brewdocs.beer/design";
 
-export type ChecklistAddProps<T> = { add: (value: string) => void; disallow: string[] }
-export default function ChecklistAdd<T>({ add, disallow }: ChecklistAddProps<T>) {
+export type ChecklistAddProps = { add: (value: string) => void; disallow: string[] }
+export default function ChecklistAdd({ add, disallow }: ChecklistAddProps) {
     const [state, setState] = useState("");
     return (
         <li className="pl-1 w-full overflow-hidden max-lg:[&>label]:odd:btn-ghost flex items-center flex-grow pr-1 leading-8">

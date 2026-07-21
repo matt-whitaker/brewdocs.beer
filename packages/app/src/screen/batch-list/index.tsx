@@ -23,7 +23,7 @@ export default function BatchList({ filter }: BatchListProps) {
                 <ScreenP>Status: {statuses[batch.status]}</ScreenP>
             </Link>
         </li>
-    )), [batches]);
+    )), [batches, recipesIndex]);
     return (
         <Screen>
             <ScreenH1>Your brews</ScreenH1>
