@@ -1,11 +1,12 @@
 import {createFetchClient} from "@brewdocs.beer/core";
-import {KbGrain, KbHop, KbRecipe, KbYeast} from "./models";
+import {KbAdditive, KbGrain, KbHop, KbRecipe, KbYeast} from "./models";
 
 interface ResourceTypeMap {
     hops: KbHop;
     grains: KbGrain;
     yeasts: KbYeast;
     recipes: KbRecipe;
+    additives: KbAdditive;
 }
 
 type ResourceFile<T> = {

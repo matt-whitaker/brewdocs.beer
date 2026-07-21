@@ -97,6 +97,16 @@ export interface KbHop extends Entity {
     usage: string;
 }
 
+export interface KbAdditive extends Entity {
+    /** item schema version; hard-coded as KB_MODEL_VERSION in build-json.js, stamped at build time */
+    version: number;
+    name: string;
+    type: string;
+    dosage: string;
+    stage: string;
+    notes: string;
+}
+
 export interface KbEquipment extends Entity {
     /** item schema version; hard-coded as KB_MODEL_VERSION in build-json.js, stamped at build time */
     version: number;
