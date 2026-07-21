@@ -33,7 +33,7 @@ export type ScheduleKind = "grains"|"hops"|"yeasts"|"additives"|"gravity"|"equip
 export type ScheduleTag = SchedulePhase|ScheduleKind;
 
 /**
- * A configurable slice of the schedule — one tab on the Schedule screen.
+ * A configurable slice of the schedule — one tab on the BatchSchedule screen.
  *
  * `tags` is an intersection: an item belongs to the phase when it carries *every*
  * listed tag. So `["boil"]` is the whole boil, while `["boil","hops"]` narrows to

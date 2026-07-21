@@ -7,7 +7,7 @@ import DataGridRow from "@/component/data-grid/row";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridCheckbox from "@/component/data-grid/checkbox";
 
-type ScheduleEquipmentItemProps = {
+type BatchScheduleEquipmentItemProps = {
     /** index into batch.phases */
     phase: number;
     phaseName: string;
@@ -18,7 +18,7 @@ type ScheduleEquipmentItemProps = {
     toggle: ToggleFn;
 }
 
-function ScheduleEquipmentItem({ phase, phaseName, row, name, completed, toggle }: ScheduleEquipmentItemProps) {
+function BatchScheduleEquipmentItem({ phase, phaseName, row, name, completed, toggle }: BatchScheduleEquipmentItemProps) {
     const id = `equipment-${phaseName}-${name}`;
     const toggleItem = useCallback(
         () => toggle(`phases[${phase}].equipment[${row}].completed`),
@@ -41,9 +41,9 @@ function ScheduleEquipmentItem({ phase, phaseName, row, name, completed, toggle 
 
 // props are primitives plus a stable toggle, so ticking one item doesn't
 // re-render the rest of the list
-const Item = memo(ScheduleEquipmentItem);
+const Item = memo(BatchScheduleEquipmentItem);
 
-export type ScheduleEquipmentProps = {
+export type BatchScheduleEquipmentProps = {
     /** index into batch.phases — the toggle path's real position */
     phase: number;
     phaseName: string;
@@ -56,7 +56,7 @@ export type ScheduleEquipmentProps = {
  * own DataGrid — the grid boundary is what would scope a collapse to these rows
  * rather than the ingredient groups below (same pattern as the shopping groups).
  */
-export default function ScheduleEquipment({ phase, phaseName, items, toggle }: ScheduleEquipmentProps) {
+export default function BatchScheduleEquipment({ phase, phaseName, items, toggle }: BatchScheduleEquipmentProps) {
     const rows = useMemo(() => items.map(({ name, completed }, row) => (
         <Item
             key={name}

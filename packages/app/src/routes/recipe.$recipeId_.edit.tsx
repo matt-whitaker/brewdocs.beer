@@ -24,7 +24,7 @@ function RecipeEditPage() {
             <PanelSwitcherContent title="Ingredients">
                 <RecipeEditIngredients recipeId={recipeId} onChange={onChange} />
             </PanelSwitcherContent>
-            <PanelSwitcherContent title="Schedule">
+            <PanelSwitcherContent title="BatchSchedule">
                 <RecipeEditSchedule recipeId={recipeId} onChange={onChange} />
             </PanelSwitcherContent>
         </PanelSwitcher>

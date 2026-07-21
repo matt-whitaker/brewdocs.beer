@@ -8,7 +8,7 @@ import DataGridLabelNote from "@/component/data-grid/label-note";
 import DataGridInput from "@/component/data-grid/input";
 import DataGridCheckbox from "@/component/data-grid/checkbox";
 
-type ScheduleItemDetailProps = {
+type BatchScheduleItemDetailProps = {
     detail: ScheduleDetail;
     value: string;
     update: UpdateFn;
@@ -16,7 +16,7 @@ type ScheduleItemDetailProps = {
 }
 
 /** one row of the nested grid behind a row's expander */
-function ScheduleItemDetail({ detail, value, update, updateScalar }: ScheduleItemDetailProps) {
+function BatchScheduleItemDetail({ detail, value, update, updateScalar }: BatchScheduleItemDetailProps) {
     // a date is a plain string at the path, not a scalar, so it's written whole
     const onChangeDate = useCallback((next: string) => update(detail.path, next), [update, detail.path]);
     const onChangeValue = useCallback((next: string) => update(`${detail.path}.value`, next), [update, detail.path]);
@@ -40,7 +40,7 @@ function ScheduleItemDetail({ detail, value, update, updateScalar }: ScheduleIte
     );
 }
 
-export type ScheduleItemRowProps = {
+export type BatchScheduleItemRowProps = {
     /** index into batch.schedule — display order is sorted, so this is the real position */
     row: number;
     item: ScheduleItem;
@@ -53,7 +53,7 @@ export type ScheduleItemRowProps = {
     updateScalar: UpdateScalarFn;
 }
 
-function ScheduleItemRow({ row, item, value, extraValues, toggle, update, updateScalar }: ScheduleItemRowProps) {
+function BatchScheduleItemRow({ row, item, value, extraValues, toggle, update, updateScalar }: BatchScheduleItemRowProps) {
     const id = `schedule-item-${item.tags[0]}-${item.tags[1]}-${item.name}`;
     const amountPath = `schedule[${row}].actual`;
 
@@ -89,7 +89,7 @@ function ScheduleItemRow({ row, item, value, extraValues, toggle, update, update
             expandContent={item.extra?.length ? (
                 <DataGrid>
                     {item.extra.map((detail, i) => (
-                        <ScheduleItemDetail
+                        <BatchScheduleItemDetail
                             key={detail.name}
                             detail={detail}
                             value={extraValues?.[i] ?? ""}
@@ -129,4 +129,4 @@ function ScheduleItemRow({ row, item, value, extraValues, toggle, update, update
 
 // props are referentially stable (setIn keeps untouched branches, editors are
 // stable), so editing one row no longer re-renders its siblings
-export default memo(ScheduleItemRow);
+export default memo(BatchScheduleItemRow);

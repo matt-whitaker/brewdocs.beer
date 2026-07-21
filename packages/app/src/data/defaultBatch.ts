@@ -11,7 +11,7 @@ const forUse = (phase: SchedulePhase, ...uses: EquipmentUses[]) => equipment
     .filter(({ use }) => intersection(uses, use).length > 0)
     .map(item => equipmentToScheduleItem(item, phase));
 
-/** the out-of-the-box Schedule tabs: one per brew-day stage */
+/** the out-of-the-box BatchSchedule tabs: one per brew-day stage */
 const phases: Phase[] = [
     { name: "Mash", tags: ["mash"], equipment: forUse("mash", "mash", "clean", "measure") },
     // chilling is just the closing gravity reading, so it rides along with the boil

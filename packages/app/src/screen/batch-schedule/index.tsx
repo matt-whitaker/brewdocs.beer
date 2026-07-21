@@ -8,8 +8,8 @@ import DataGridHeaderRow from "@/component/data-grid/header-row";
 import DataGridRow from "@/component/data-grid/row";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridSelect from "@/component/data-grid/select";
-import ScheduleItemRow from "@/screen/schedule/item-row";
-import ScheduleEquipment from "@/screen/schedule/equipment";
+import ScheduleItemRow from "@/screen/batch-schedule/item-row";
+import BatchScheduleEquipment from "@/screen/batch-schedule/equipment";
 import useJsonEdit from "@/hooks/useJsonEdit";
 import {saveSession, useSession} from "@/state/session";
 import {useBatch} from "@/state/batches";
@@ -21,7 +21,7 @@ import {statuses} from "@/model/statuses";
 const STATUS_OPTIONS = Object.entries(statuses).map(([value, name]) => ({name, value}));
 
 // "equipment" never appears in batch.schedule (it lives on phase.equipment,
-// rendered separately by ScheduleEquipment) — listed for Record completeness
+// rendered separately by BatchScheduleEquipment) — listed for Record completeness
 const KIND_LABELS: Record<ScheduleKind, string> = {
     grains: "Grains",
     hops: "Hops",
@@ -40,8 +40,8 @@ function valueAt(data: Batch, path: string): string {
     return typeof node === "string" ? node : (node as Scalar|undefined)?.value ?? "";
 }
 
-export type ScheduleProps = { batchId: string; onChange: (batch: Batch) => void; };
-export default function Schedule({ batchId, onChange }: ScheduleProps) {
+export type BatchScheduleProps = { batchId: string; onChange: (batch: Batch) => void; };
+export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps) {
     const session = useSession();
     const batch = useBatch(batchId);
 
@@ -97,7 +97,7 @@ export default function Schedule({ batchId, onChange }: ScheduleProps) {
                         {groups.length || phase.equipment.length ? (
                             <div className="pt-2">
                                 {/* what to gather before the phase starts, ahead of the work itself */}
-                                <ScheduleEquipment
+                                <BatchScheduleEquipment
                                     phase={index}
                                     phaseName={phase.name}
                                     items={phase.equipment}
