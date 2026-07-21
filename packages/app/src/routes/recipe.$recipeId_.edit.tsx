@@ -1,7 +1,7 @@
 import {createFileRoute} from "@tanstack/react-router";
 import RecipeEdit from "@/screen/recipe-edit";
 
-export const Route = createFileRoute("/recipe/$recipeId/edit")({
+export const Route = createFileRoute("/recipe/$recipeId_/edit")({
     component: RecipeEditPage
 });
 
