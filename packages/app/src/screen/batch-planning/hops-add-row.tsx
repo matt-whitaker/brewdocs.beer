@@ -10,13 +10,13 @@ import {AddFn} from "@/hooks/useJsonEdit";
 import {scalarFromNumberWithUnit} from "@/utils/formatting";
 import {kbHopToHop} from "@/transform/kbHopToHop";
 
-export type PlanningHopsAddRowProps = {
+export type BatchPlanningHopsAddRowProps = {
     add: AddFn;
     kbHops: KbHop[];
     kbHopsIndex: Map<string, KbHop>;
 }
 
-export default function PlanningHopsAddRow({ add, kbHops, kbHopsIndex }: PlanningHopsAddRowProps) {
+export default function BatchPlanningHopsAddRow({ add, kbHops, kbHopsIndex }: BatchPlanningHopsAddRowProps) {
     const [selection, setSelection] = useState<string|null>(null);
     // null = "not overridden" → fall back to the selected hop's kb alpha
     const [actualAlpha, setActualAlpha] = useState<string|null>(null);

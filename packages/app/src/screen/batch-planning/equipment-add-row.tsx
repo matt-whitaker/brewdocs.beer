@@ -5,7 +5,7 @@ import AddRow from "@/component/data-grid/add-row";
 import {AddFn} from "@/hooks/useJsonEdit";
 import {equipmentToScheduleItem} from "@/transform/equipmentToScheduleItem";
 
-export type PlanningEquipmentAddRowProps = {
+export type BatchPlanningEquipmentAddRowProps = {
     /** index into batch.phases */
     phase: number;
     schedulePhase: SchedulePhase;
@@ -14,7 +14,7 @@ export type PlanningEquipmentAddRowProps = {
     equipmentIndex: Map<string, Equipment>;
 }
 
-export default function PlanningEquipmentAddRow({ phase, schedulePhase, add, equipment, equipmentIndex }: PlanningEquipmentAddRowProps) {
+export default function BatchPlanningEquipmentAddRow({ phase, schedulePhase, add, equipment, equipmentIndex }: BatchPlanningEquipmentAddRowProps) {
     const [selection, setSelection] = useState<string|null>(null);
 
     const addItem = useCallback(() => {

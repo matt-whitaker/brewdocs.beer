@@ -6,19 +6,19 @@ import {useCallback, useMemo} from "react";
 import {useKbGrains} from "@/state/kbGrains";
 import useIndexBy from "@/hooks/useIndexBy";
 import {saveSession, useSession} from "@/state/session";
-import PlanningGrainsRow from "@/screen/planning/grains-row";
-import PlanningGrainsAddRow from "@/screen/planning/grains-add-row";
+import PlanningGrainsRow from "@/screen/batch-planning/grains-row";
+import BatchPlanningGrainsAddRow from "@/screen/batch-planning/grains-add-row";
 
 const SESSION_KEY = "planning.grains";
 
-export type PlanningGrainsProps = {
+export type BatchPlanningGrainsProps = {
     grains: Grain[];
     add: AddFn;
     remove: RemoveFn;
     update: UpdateFn;
     updateScalar: UpdateScalarFn;
 }
-export default function PlanningGrains({ grains, add, remove, update, updateScalar }: PlanningGrainsProps) {
+export default function BatchPlanningGrains({ grains, add, remove, update, updateScalar }: BatchPlanningGrainsProps) {
     const session = useSession();
     const kbGrains = useKbGrains();
     const kbGrainsIndex = useIndexBy(kbGrains, "name");
@@ -46,7 +46,7 @@ export default function PlanningGrains({ grains, add, remove, update, updateScal
                 Grains
             </DataGridHeaderRow>
             {grainRows}
-            <PlanningGrainsAddRow add={add} kbGrains={kbGrains} kbGrainsIndex={kbGrainsIndex} />
+            <BatchPlanningGrainsAddRow add={add} kbGrains={kbGrains} kbGrainsIndex={kbGrainsIndex} />
         </DataGrid>
     )
 }

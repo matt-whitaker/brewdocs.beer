@@ -4,13 +4,13 @@ import AddRow from "@/component/data-grid/add-row";
 import {AddFn} from "@/hooks/useJsonEdit";
 import {kbGrainToGrain} from "@/transform/kbGrainToGrain";
 
-export type PlanningGrainsAddRowProps = {
+export type BatchPlanningGrainsAddRowProps = {
     add: AddFn;
     kbGrains: KbGrain[];
     kbGrainsIndex: Map<string, KbGrain>;
 }
 
-export default function PlanningGrainsAddRow({ add, kbGrains, kbGrainsIndex }: PlanningGrainsAddRowProps) {
+export default function BatchPlanningGrainsAddRow({ add, kbGrains, kbGrainsIndex }: BatchPlanningGrainsAddRowProps) {
     const [selection, setSelection] = useState<string|null>(null);
 
     const addGrain = useCallback(() => {

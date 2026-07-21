@@ -4,18 +4,18 @@ import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
 import {useCallback, useMemo} from "react";
 import {saveSession, useSession} from "@/state/session";
-import PlanningPhasesRow from "@/screen/planning/phases-row";
-import PlanningPhasesAddRow from "@/screen/planning/phases-add-row";
+import PlanningPhasesRow from "@/screen/batch-planning/phases-row";
+import BatchPlanningPhasesAddRow from "@/screen/batch-planning/phases-add-row";
 
 const SESSION_KEY = "planning.phases";
 
-export type PlanningPhasesProps = {
+export type BatchPlanningPhasesProps = {
     phases: Phase[];
     add: AddFn;
     remove: RemoveFn;
     move: MoveFn;
 }
-export default function PlanningPhases({ phases, add, remove, move }: PlanningPhasesProps) {
+export default function BatchPlanningPhases({ phases, add, remove, move }: BatchPlanningPhasesProps) {
     const session = useSession();
 
     const onToggleCollapsed = useCallback((collapsed: boolean) => saveSession(SESSION_KEY, collapsed), []);
@@ -44,7 +44,7 @@ export default function PlanningPhases({ phases, add, remove, move }: PlanningPh
                 Phases
             </DataGridHeaderRow>
             {phaseRows}
-            <PlanningPhasesAddRow add={add} existingNames={existingNames} />
+            <BatchPlanningPhasesAddRow add={add} existingNames={existingNames} />
         </DataGrid>
     )
 }

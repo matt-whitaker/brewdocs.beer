@@ -8,7 +8,7 @@ import {Chevron} from "@/component/svg";
 import {CHEVRON, CHEVRON_ICON} from "@/component/data-grid";
 import classNames from "classnames";
 
-export type PlanningPhasesRowProps = {
+export type BatchPlanningPhasesRowProps = {
     row: number;
     phase: Phase;
     /** false once only one phase is left — the schedule screen always reads phases[0] */
@@ -19,7 +19,7 @@ export type PlanningPhasesRowProps = {
     move: MoveFn;
 }
 
-function PlanningPhasesRow({ row, phase, removable, first, last, remove, move }: PlanningPhasesRowProps) {
+function BatchPlanningPhasesRow({ row, phase, removable, first, last, remove, move }: BatchPlanningPhasesRowProps) {
     const onRemovePhase = useCallback(() => remove("phases", row), [remove, row]);
     const onMoveUp = useCallback(() => move("phases", row, row - 1), [move, row]);
     const onMoveDown = useCallback(() => move("phases", row, row + 1), [move, row]);
@@ -59,4 +59,4 @@ function PlanningPhasesRow({ row, phase, removable, first, last, remove, move }:
 
 // props are referentially stable (setIn keeps untouched branches, editors are
 // stable), so editing one row no longer re-renders its siblings
-export default memo(PlanningPhasesRow);
+export default memo(BatchPlanningPhasesRow);

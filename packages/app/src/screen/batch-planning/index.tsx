@@ -5,11 +5,11 @@ import useJsonEdit from "@/hooks/useJsonEdit";
 import Screen from "@/component/screen";
 import PanelSwitcher from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
-import PlanningHops from "@/screen/planning/hops";
-import PlanningYeasts from "@/screen/planning/yeasts";
-import PlanningGrains from "@/screen/planning/grains";
-import PlanningEquipment from "@/screen/planning/equipment";
-import PlanningPhases from "@/screen/planning/phases";
+import BatchPlanningHops from "@/screen/batch-planning/hops";
+import BatchPlanningYeasts from "@/screen/batch-planning/yeasts";
+import BatchPlanningGrains from "@/screen/batch-planning/grains";
+import BatchPlanningEquipment from "@/screen/batch-planning/equipment";
+import BatchPlanningPhases from "@/screen/batch-planning/phases";
 import DataGrid from "@/component/data-grid";
 import DataGridRow from "@/component/data-grid/row";
 import DataGridLabel from "@/component/data-grid/label";
@@ -18,11 +18,11 @@ import {useBatch} from "@/state/batches";
 import {useRecipe} from "@/state/recipes";
 import {useCallback} from "react";
 
-export type PlanningProps = {
+export type BatchPlanningProps = {
     batchId: string;
     onChange: (batch: Batch) => void
 }
-export default function Planning({ batchId, onChange }: PlanningProps) {
+export default function BatchPlanning({ batchId, onChange }: BatchPlanningProps) {
     const batch = useBatch(batchId);
     const recipe = useRecipe(batch.recipeId);
     const [data, update, updateScalar,, add, remove, move] = useJsonEdit<Batch>(batch, onChange);
@@ -47,14 +47,14 @@ export default function Planning({ batchId, onChange }: PlanningProps) {
                 <PanelSwitcherContent title="Ingredients">
                     <div className="pt-2 grid grid-cols-1 lg:grid-cols-2 gap-x-4">
                         <div>
-                            <PlanningGrains
+                            <BatchPlanningGrains
                                 grains={data.grains}
                                 add={add}
                                 remove={remove}
                                 update={update}
                                 updateScalar={updateScalar}
                             />
-                            <PlanningHops
+                            <BatchPlanningHops
                                 hops={data.hops}
                                 add={add}
                                 remove={remove}
@@ -63,7 +63,7 @@ export default function Planning({ batchId, onChange }: PlanningProps) {
                             />
                         </div>
                         <div>
-                            <PlanningYeasts
+                            <BatchPlanningYeasts
                                 yeasts={data.yeasts}
                                 add={add}
                                 remove={remove}
@@ -74,7 +74,7 @@ export default function Planning({ batchId, onChange }: PlanningProps) {
                     </div>
                 </PanelSwitcherContent>
                 <PanelSwitcherContent title="Equipment">
-                    <PlanningEquipment
+                    <BatchPlanningEquipment
                         phases={data.phases}
                         add={add}
                         remove={remove}
@@ -83,7 +83,7 @@ export default function Planning({ batchId, onChange }: PlanningProps) {
                 </PanelSwitcherContent>
                 <PanelSwitcherContent title="Phases">
                     <div className="pt-2">
-                        <PlanningPhases
+                        <BatchPlanningPhases
                             phases={data.phases}
                             add={add}
                             remove={remove}

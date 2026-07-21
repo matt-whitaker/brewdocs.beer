@@ -6,10 +6,10 @@ import {useCallback, useMemo} from "react";
 import equipmentCatalog from "@/data/equipment";
 import useIndexBy from "@/hooks/useIndexBy";
 import {saveSession, useSession} from "@/state/session";
-import PlanningEquipmentRow from "@/screen/planning/equipment-row";
-import PlanningEquipmentAddRow from "@/screen/planning/equipment-add-row";
+import PlanningEquipmentRow from "@/screen/batch-planning/equipment-row";
+import BatchPlanningEquipmentAddRow from "@/screen/batch-planning/equipment-add-row";
 
-export type PlanningEquipmentPhaseProps = {
+export type BatchPlanningEquipmentPhaseProps = {
     /** index into batch.phases */
     phase: number;
     /** identity — used for the session key and item keys; stays stable across reorders */
@@ -23,7 +23,7 @@ export type PlanningEquipmentPhaseProps = {
     remove: RemoveFn;
     update: UpdateFn;
 }
-export default function PlanningEquipmentPhase({ phase, name, label, schedulePhase, items, add, remove, update }: PlanningEquipmentPhaseProps) {
+export default function BatchPlanningEquipmentPhase({ phase, name, label, schedulePhase, items, add, remove, update }: BatchPlanningEquipmentPhaseProps) {
     const session = useSession();
     const equipmentIndex = useIndexBy(equipmentCatalog, "name");
     const sessionKey = `planning.equipment.${name}`;
@@ -52,7 +52,7 @@ export default function PlanningEquipmentPhase({ phase, name, label, schedulePha
                 {label}
             </DataGridHeaderRow>
             {rows}
-            <PlanningEquipmentAddRow phase={phase} schedulePhase={schedulePhase} add={add} equipment={equipmentCatalog} equipmentIndex={equipmentIndex} />
+            <BatchPlanningEquipmentAddRow phase={phase} schedulePhase={schedulePhase} add={add} equipment={equipmentCatalog} equipmentIndex={equipmentIndex} />
         </DataGrid>
     )
 }

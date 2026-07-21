@@ -9,7 +9,7 @@ import {Fragment, memo, useCallback, useMemo} from "react";
 import {RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
 import Grain from "@/model/grain";
 
-export type PlanningGrainsRowProps = {
+export type BatchPlanningGrainsRowProps = {
     row: number;
     grain: Grain;
     remove: RemoveFn;
@@ -19,7 +19,7 @@ export type PlanningGrainsRowProps = {
     kbGrainsIndex: Map<string, KbGrain>;
 }
 
-function PlanningGrainsRow({ row, grain, remove, update, updateScalar, kbGrains, kbGrainsIndex }: PlanningGrainsRowProps) {
+function BatchPlanningGrainsRow({ row, grain, remove, update, updateScalar, kbGrains, kbGrainsIndex }: BatchPlanningGrainsRowProps) {
     const grainOptions = useMemo(() => kbGrains.map((({ name }) => ({ value: name, name }))), [kbGrains]);
 
     const onRemoveGrain = useCallback(() => remove("grains", row), [remove, row]);
@@ -51,4 +51,4 @@ function PlanningGrainsRow({ row, grain, remove, update, updateScalar, kbGrains,
 
 // props are referentially stable (setIn keeps untouched branches, editors are
 // stable), so editing one row no longer re-renders its siblings
-export default memo(PlanningGrainsRow);
+export default memo(BatchPlanningGrainsRow);

@@ -50,7 +50,7 @@ export interface Phase {
      *
      * These are `ScheduleItem`s tagged `[phase, "equipment"]` rather than derived
      * `_updateSchedule` output — equipment stays user-managed (added/removed from
-     * Planning) and lives here, not in `batch.schedule`. `path` is unused (there's
+     * BatchPlanning) and lives here, not in `batch.schedule`. `path` is unused (there's
      * no ingredient value to point at) and left `""`.
      */
     equipment: ScheduleItem[];

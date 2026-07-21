@@ -10,7 +10,7 @@ import DataGridInput from "@/component/data-grid/input";
 import {Fragment, memo, useCallback, useMemo} from "react";
 
 
-export type PlanningYeastsRowProps = {
+export type BatchPlanningYeastsRowProps = {
   row: number;
   yeast: Yeast;
   remove: RemoveFn;
@@ -20,7 +20,7 @@ export type PlanningYeastsRowProps = {
   kbYeastsIndex: Map<string, KbYeast>;
 }
 
-function PlanningYeastsRow({ row, yeast, remove, update, updateScalar, kbYeasts, kbYeastsIndex }: PlanningYeastsRowProps) {
+function BatchPlanningYeastsRow({ row, yeast, remove, update, updateScalar, kbYeasts, kbYeastsIndex }: BatchPlanningYeastsRowProps) {
   const yeastOptions = useMemo(() => kbYeasts.map((({ name }) => ({ value: name, name }))), [kbYeasts]);
 
   const onRemoveYeast = useCallback(() => remove("yeasts", row), [remove, row]);
@@ -55,4 +55,4 @@ function PlanningYeastsRow({ row, yeast, remove, update, updateScalar, kbYeasts,
 
 // props are referentially stable (setIn keeps untouched branches, editors are
 // stable), so editing one row no longer re-renders its siblings
-export default memo(PlanningYeastsRow);
+export default memo(BatchPlanningYeastsRow);

@@ -6,19 +6,19 @@ import {useKbHops} from "@/state/kbHops";
 import useIndexBy from "@/hooks/useIndexBy";
 import {AddFn, RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
 import {saveSession, useSession} from "@/state/session";
-import PlanningHopsRow from "@/screen/planning/hops-row";
-import PlanningHopsAddRow from "@/screen/planning/hops-add-row";
+import PlanningHopsRow from "@/screen/batch-planning/hops-row";
+import BatchPlanningHopsAddRow from "@/screen/batch-planning/hops-add-row";
 
 const SESSION_KEY = "planning.hops";
 
-export type PlanningHopsProps = {
+export type BatchPlanningHopsProps = {
     hops: Hop[];
     add: AddFn;
     remove: RemoveFn;
     update: UpdateFn;
     updateScalar: UpdateScalarFn;
 }
-export default function PlanningHops({ hops, add, remove, update, updateScalar }: PlanningHopsProps) {
+export default function BatchPlanningHops({ hops, add, remove, update, updateScalar }: BatchPlanningHopsProps) {
     const session = useSession();
     const kbHops = useKbHops();
     const kbHopsIndex = useIndexBy(kbHops, "name");
@@ -46,7 +46,7 @@ export default function PlanningHops({ hops, add, remove, update, updateScalar }
                 Hops
             </DataGridHeaderRow>
             {hopRows}
-            <PlanningHopsAddRow add={add} kbHops={kbHops} kbHopsIndex={kbHopsIndex} />
+            <BatchPlanningHopsAddRow add={add} kbHops={kbHops} kbHopsIndex={kbHopsIndex} />
         </DataGrid>
     );
 }

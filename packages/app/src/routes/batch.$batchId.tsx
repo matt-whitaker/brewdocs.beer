@@ -6,7 +6,7 @@ import PanelSwitcherContent from "@/component/panel-switcher/content";
 import BatchSchedule from "../screen/batch-schedule";
 import BatchSummary from "@/screen/batch-summary";
 import Shopping from "@/screen/shopping";
-import Planning from "@/screen/planning";
+import BatchPlanning from "../screen/batch-planning";
 import updateBatch from "@/actions/updateBatch";
 
 export const Route = createFileRoute("/batch/$batchId")({
@@ -20,12 +20,12 @@ function BatchPage() {
     return (
         <PanelSwitcher name="batch" defaultTab="Planning">
             <PanelSwitcherContent title="Planning">
-                <Planning batchId={batchId} onChange={onChange} />
+                <BatchPlanning batchId={batchId} onChange={onChange} />
             </PanelSwitcherContent>
             <PanelSwitcherContent title="Shopping">
                 <Shopping batchId={batchId} onChange={onChange} />
             </PanelSwitcherContent>
-            <PanelSwitcherContent title="BatchSchedule">
+            <PanelSwitcherContent title="Schedule">
                 <BatchSchedule batchId={batchId} onChange={onChange} />
             </PanelSwitcherContent>
             <PanelSwitcherContent title="Summary">

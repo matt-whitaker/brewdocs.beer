@@ -5,7 +5,7 @@ import DataGridLabel from "@/component/data-grid/label";
 import DataGridAddButton from "@/component/data-grid/add-button";
 import {AddFn} from "@/hooks/useJsonEdit";
 
-export type PlanningPhasesAddRowProps = {
+export type BatchPlanningPhasesAddRowProps = {
     add: AddFn;
     existingNames: string[];
 }
@@ -13,7 +13,7 @@ export type PlanningPhasesAddRowProps = {
 // freeform, unlike every other AddRow: a phase isn't picked from a catalog, and
 // its name is fixed once created (it's the phase's identity), so this is the
 // only place a name is ever entered
-export default function PlanningPhasesAddRow({ add, existingNames }: PlanningPhasesAddRowProps) {
+export default function BatchPlanningPhasesAddRow({ add, existingNames }: BatchPlanningPhasesAddRowProps) {
     const [name, setName] = useState("");
 
     const trimmed = name.trim();

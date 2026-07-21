@@ -8,7 +8,7 @@ import {equipmentToScheduleItem} from "@/transform/equipmentToScheduleItem";
 import {Fragment, memo, useCallback, useMemo} from "react";
 import {RemoveFn, UpdateFn} from "@/hooks/useJsonEdit";
 
-export type PlanningEquipmentRowProps = {
+export type BatchPlanningEquipmentRowProps = {
     /** index into batch.phases */
     phase: number;
     schedulePhase: SchedulePhase;
@@ -21,7 +21,7 @@ export type PlanningEquipmentRowProps = {
     equipmentIndex: Map<string, Equipment>;
 }
 
-function PlanningEquipmentRow({ phase, schedulePhase, row, item, remove, update, equipment, equipmentIndex }: PlanningEquipmentRowProps) {
+function BatchPlanningEquipmentRow({ phase, schedulePhase, row, item, remove, update, equipment, equipmentIndex }: BatchPlanningEquipmentRowProps) {
     const equipmentOptions = useMemo(() => equipment.map((({ name }) => ({ value: name, name }))), [equipment]);
 
     const onRemoveItem = useCallback(() => remove(`phases[${phase}].equipment`, row), [remove, phase, row]);
@@ -45,4 +45,4 @@ function PlanningEquipmentRow({ phase, schedulePhase, row, item, remove, update,
 
 // props are referentially stable (setIn keeps untouched branches, editors are
 // stable), so editing one row no longer re-renders its siblings
-export default memo(PlanningEquipmentRow);
+export default memo(BatchPlanningEquipmentRow);

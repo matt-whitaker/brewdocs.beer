@@ -11,7 +11,7 @@ import DataGridInput from "@/component/data-grid/input";
 import {memo, useCallback, useMemo} from "react";
 
 
-export type PlanningHopsRowProps = {
+export type BatchPlanningHopsRowProps = {
     row: number;
     hop: Hop;
     remove: RemoveFn;
@@ -21,7 +21,7 @@ export type PlanningHopsRowProps = {
     kbHopsIndex: Map<string, KbHop>;
 }
 
-function PlanningHopsRow({ row, hop, remove, update, updateScalar, kbHops, kbHopsIndex }: PlanningHopsRowProps) {
+function BatchPlanningHopsRow({ row, hop, remove, update, updateScalar, kbHops, kbHopsIndex }: BatchPlanningHopsRowProps) {
     const hopOptions = useMemo(() => kbHops.map((({ name }) => ({ value: name, name }))), [kbHops]);
 
     const onRemoveHop = useCallback(() => remove("hops", row), [remove, row]);
@@ -77,4 +77,4 @@ function PlanningHopsRow({ row, hop, remove, update, updateScalar, kbHops, kbHop
 
 // props are referentially stable (setIn keeps untouched branches, editors are
 // stable), so editing one row no longer re-renders its siblings
-export default memo(PlanningHopsRow);
+export default memo(BatchPlanningHopsRow);

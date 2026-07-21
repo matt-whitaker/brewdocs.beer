@@ -6,19 +6,19 @@ import {useCallback, useMemo} from "react";
 import {useKbYeasts} from "@/state/kbYeasts";
 import useIndexBy from "@/hooks/useIndexBy";
 import {saveSession, useSession} from "@/state/session";
-import PlanningYeastsRow from "@/screen/planning/yeasts-row";
-import PlanningYeastsAddRow from "@/screen/planning/yeasts-add-row";
+import PlanningYeastsRow from "@/screen/batch-planning/yeasts-row";
+import BatchPlanningYeastsAddRow from "@/screen/batch-planning/yeasts-add-row";
 
 const SESSION_KEY = "planning.yeasts";
 
-export type PlanningYeastsProps = {
+export type BatchPlanningYeastsProps = {
     yeasts: Yeast[];
     add: AddFn;
     remove: RemoveFn;
     update: UpdateFn;
     updateScalar: UpdateScalarFn;
 }
-export default function PlanningYeasts({ yeasts, add, remove, update, updateScalar }: PlanningYeastsProps) {
+export default function BatchPlanningYeasts({ yeasts, add, remove, update, updateScalar }: BatchPlanningYeastsProps) {
     const session = useSession();
     const kbYeasts = useKbYeasts();
     const kbYeastsIndex = useIndexBy(kbYeasts, "name");
@@ -46,7 +46,7 @@ export default function PlanningYeasts({ yeasts, add, remove, update, updateScal
                 Yeast
             </DataGridHeaderRow>
             {yeastRows}
-            <PlanningYeastsAddRow add={add} kbYeasts={kbYeasts} kbYeastsIndex={kbYeastsIndex} />
+            <BatchPlanningYeastsAddRow add={add} kbYeasts={kbYeasts} kbYeastsIndex={kbYeastsIndex} />
         </DataGrid>
     )
 }

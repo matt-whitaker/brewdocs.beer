@@ -20,7 +20,7 @@ export type DataGridRowProps = PropsWithClass & PropsWithChildren & {
      * Without it, an expandable row's grid is squeezed into `flex-1` beside the
      * chevron while a plain row's grid spans the full width — so the two don't
      * line up. Set this on the plain rows of any list that contains at least one
-     * expandable row (Planning's grains/yeasts alongside hops, say).
+     * expandable row (BatchPlanning's grains/yeasts alongside hops, say).
      */
     reserveExpand?: boolean;
 
