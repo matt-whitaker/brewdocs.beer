@@ -1,4 +1,4 @@
-import {Phase} from "@/model/batch";
+import {Phase, phaseLabel} from "@/model/batch";
 import DataGridRow from "@/component/data-grid/row";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridRemoveButton from "@/component/data-grid/remove-button";
@@ -23,18 +23,19 @@ function PlanningPhasesRow({ row, phase, removable, first, last, remove, move }:
     const onRemovePhase = useCallback(() => remove("phases", row), [remove, row]);
     const onMoveUp = useCallback(() => move("phases", row, row - 1), [move, row]);
     const onMoveDown = useCallback(() => move("phases", row, row + 1), [move, row]);
+    const label = phaseLabel(phase, row);
 
     return (
         <Fragment>
             <DataGridRow zebra>
                 <DataGridLabel className={removable ? "ml-6" : ""} cols={4}>
                     {removable && <DataGridRemoveButton onClick={onRemovePhase} />}
-                    {phase.name}
+                    {label}
                 </DataGridLabel>
                 <div className="col-start-5 col-span-2 flex items-center justify-end gap-x-1">
                     <button
                         type="button"
-                        aria-label={`Move ${phase.name} earlier`}
+                        aria-label={`Move ${label} earlier`}
                         disabled={first}
                         onClick={onMoveUp}
                         className={CHEVRON}
@@ -43,7 +44,7 @@ function PlanningPhasesRow({ row, phase, removable, first, last, remove, move }:
                     </button>
                     <button
                         type="button"
-                        aria-label={`Move ${phase.name} later`}
+                        aria-label={`Move ${label} later`}
                         disabled={last}
                         onClick={onMoveDown}
                         className={CHEVRON}

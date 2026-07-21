@@ -1,4 +1,4 @@
-import Batch, {ScheduleKind} from "@/model/batch";
+import Batch, {phaseLabel, ScheduleKind} from "@/model/batch";
 import {ScreenH1} from "@brewdocs.beer/design";
 import Screen from "@/component/screen";
 import PanelSwitcher from "@/component/panel-switcher";
@@ -76,6 +76,7 @@ export default function Schedule({ batchId, onChange }: ScheduleProps) {
                     <PanelSwitcherContent
                         key={phase.name}
                         title={phase.name}
+                        label={phaseLabel(phase, index)}
                         // a phase with nothing in it renders as a disabled tab; say why,
                         // or it inherits the switcher's "Not implemented" tooltip
                         titleAlt={groups.length || phase.equipment.length ? "" : "Nothing scheduled in this step"}>

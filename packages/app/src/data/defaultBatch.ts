@@ -13,10 +13,10 @@ const forUse = (phase: SchedulePhase, ...uses: EquipmentUses[]) => equipment
 
 /** the out-of-the-box Schedule tabs: one per brew-day stage */
 const phases: Phase[] = [
-    { name: "1. Mash", tags: ["mash"], equipment: forUse("mash", "mash", "clean", "measure") },
+    { name: "Mash", tags: ["mash"], equipment: forUse("mash", "mash", "clean", "measure") },
     // chilling is just the closing gravity reading, so it rides along with the boil
-    { name: "2. Boil", tags: ["boil"], equipment: forUse("boil", "boil", "measure", "transfer") },
-    { name: "3. Ferment", tags: ["ferment"], equipment: forUse("ferment", "starter", "primary", "secondary") }
+    { name: "Boil", tags: ["boil"], equipment: forUse("boil", "boil", "measure", "transfer") },
+    { name: "Ferment", tags: ["ferment"], equipment: forUse("ferment", "starter", "primary", "secondary") }
 ];
 
 const defaultBatch  = {

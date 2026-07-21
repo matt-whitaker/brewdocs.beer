@@ -12,7 +12,10 @@ import PlanningEquipmentAddRow from "@/screen/planning/equipment-add-row";
 export type PlanningEquipmentPhaseProps = {
     /** index into batch.phases */
     phase: number;
+    /** identity — used for the session key and item keys; stays stable across reorders */
     name: string;
+    /** what the header displays, e.g. the numbered phase name */
+    label: string;
     /** the phase's own SchedulePhase tag — stamped onto equipment items added here */
     schedulePhase: SchedulePhase;
     items: ScheduleItem[];
@@ -20,7 +23,7 @@ export type PlanningEquipmentPhaseProps = {
     remove: RemoveFn;
     update: UpdateFn;
 }
-export default function PlanningEquipmentPhase({ phase, name, schedulePhase, items, add, remove, update }: PlanningEquipmentPhaseProps) {
+export default function PlanningEquipmentPhase({ phase, name, label, schedulePhase, items, add, remove, update }: PlanningEquipmentPhaseProps) {
     const session = useSession();
     const equipmentIndex = useIndexBy(equipmentCatalog, "name");
     const sessionKey = `planning.equipment.${name}`;
@@ -46,7 +49,7 @@ export default function PlanningEquipmentPhase({ phase, name, schedulePhase, ite
                 collapsible
                 defaultCollapsed={session?.[sessionKey] as boolean ?? false}
                 onToggle={onToggleCollapsed}>
-                {name}
+                {label}
             </DataGridHeaderRow>
             {rows}
             <PlanningEquipmentAddRow phase={phase} schedulePhase={schedulePhase} add={add} equipment={equipmentCatalog} equipmentIndex={equipmentIndex} />
