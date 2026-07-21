@@ -1,0 +1,5 @@
+{
+  "name": "Digital Hydrometer",
+  "use": ["measure"],
+  "notes": "Electronic instrument used to measure specific gravity of wort and beer."
+}
