@@ -58,13 +58,19 @@ jobs:
             style, and the PR description template.
 
             When you change code, open a pull request against `mainline` yourself —
-            do not stop at pushing a branch and returning a PR link. Run the
-            verification gate (`npm ci`, then `npm run build -w packages/app` and
-            `npm run build -w packages/www`) and record the result under the PR's
-            Verification heading before opening it.
+            do not stop at pushing a branch and returning a PR link.
+
+            Do NOT run `npm ci` or the package builds as a matter of course. The
+            Verify workflow runs the build gate on the PR, and installing plus
+            building both packages burns most of the turn budget before any code
+            is written. Under the PR's Verification heading, say that Verify
+            covers the build and note anything a human should check by hand.
+
+            The exception: if Verify has already reported a failure you were
+            asked to fix, run the specific failing build to confirm the fix.
 
             Never merge the PR. The maintainer merges.
           claude_args: |
             --model sonnet
             --allowedTools "Edit,Write,Bash(npm:*),Bash(gh pr create:*)"
-            --max-turns 15
+            --max-turns 30
