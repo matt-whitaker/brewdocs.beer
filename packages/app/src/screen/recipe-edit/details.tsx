@@ -51,25 +51,25 @@ export default function RecipeEditDetails({ recipe, update, updateScalar }: Reci
                 Details
             </DataGridHeaderRow>
 
-            <DataGridRow>
+            <DataGridRow zebra>
                 <DataGridLabel cols={3}>Name</DataGridLabel>
                 <DataGridInput col={1} cols={3} value={recipe.name} onChange={onChangeName} />
             </DataGridRow>
-            <DataGridRow>
+            <DataGridRow zebra>
                 <DataGridLabel cols={3}>Brewer</DataGridLabel>
                 <DataGridInput col={1} cols={3} value={recipe.brewer} onChange={onChangeBrewer} />
             </DataGridRow>
-            <DataGridRow>
+            <DataGridRow zebra>
                 <DataGridLabel cols={3}>Type</DataGridLabel>
                 <DataGridInput col={1} cols={3} value={recipe.type} onChange={onChangeType} />
             </DataGridRow>
-            <DataGridRow>
+            <DataGridRow zebra>
                 <DataGridLabel cols={3}>Description</DataGridLabel>
                 <DataGridInput col={1} cols={3} value={recipe.description} onChange={onChangeDescription} />
             </DataGridRow>
 
             <DataGridSubheaderRow>Measurements</DataGridSubheaderRow>
-            <DataGridRow>
+            <DataGridRow zebra>
                 <DataGridLabel cols={3}>Batch Size</DataGridLabel>
                 <DataGridInput
                     col={1}
@@ -79,7 +79,7 @@ export default function RecipeEditDetails({ recipe, update, updateScalar }: Reci
                     onBlur={onBlurBatchSize}
                 />
             </DataGridRow>
-            <DataGridRow>
+            <DataGridRow zebra>
                 <DataGridLabel cols={3}>Boil Time</DataGridLabel>
                 <DataGridInput
                     col={1}
@@ -89,7 +89,7 @@ export default function RecipeEditDetails({ recipe, update, updateScalar }: Reci
                     onBlur={onBlurBoilTime}
                 />
             </DataGridRow>
-            <DataGridRow>
+            <DataGridRow zebra>
                 <DataGridLabel cols={3}>Efficiency</DataGridLabel>
                 <DataGridInput
                     col={1}
@@ -101,7 +101,7 @@ export default function RecipeEditDetails({ recipe, update, updateScalar }: Reci
             </DataGridRow>
 
             <DataGridSubheaderRow>Targets</DataGridSubheaderRow>
-            <DataGridRow>
+            <DataGridRow zebra>
                 <DataGridLabel cols={3}>OG</DataGridLabel>
                 <DataGridInput
                     col={1}
@@ -111,7 +111,7 @@ export default function RecipeEditDetails({ recipe, update, updateScalar }: Reci
                     onBlur={onBlurOg}
                 />
             </DataGridRow>
-            <DataGridRow>
+            <DataGridRow zebra>
                 <DataGridLabel cols={3}>FG</DataGridLabel>
                 <DataGridInput
                     col={1}
@@ -121,7 +121,7 @@ export default function RecipeEditDetails({ recipe, update, updateScalar }: Reci
                     onBlur={onBlurFg}
                 />
             </DataGridRow>
-            <DataGridRow>
+            <DataGridRow zebra>
                 <DataGridLabel cols={3}>ABV</DataGridLabel>
                 <DataGridInput
                     col={1}
@@ -131,11 +131,11 @@ export default function RecipeEditDetails({ recipe, update, updateScalar }: Reci
                     onBlur={onBlurAbv}
                 />
             </DataGridRow>
-            <DataGridRow>
+            <DataGridRow zebra>
                 <DataGridLabel cols={3}>IBU</DataGridLabel>
                 <DataGridInput col={1} cols={3} value={recipe.targets.ibu} onChange={onChangeIbu} />
             </DataGridRow>
-            <DataGridRow>
+            <DataGridRow zebra>
                 <DataGridLabel cols={3}>SRM</DataGridLabel>
                 <DataGridInput col={1} cols={3} value={recipe.targets.srm} onChange={onChangeSrm} />
             </DataGridRow>
