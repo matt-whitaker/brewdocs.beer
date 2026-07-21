@@ -14,12 +14,15 @@ import {get} from "@/utils/func";
 import {useMemo} from "react";
 import Scalar from "@/model/scalar";
 
+// "equipment" never appears in batch.schedule (it lives on phase.equipment,
+// rendered separately by ScheduleEquipment) — listed for Record completeness
 const KIND_LABELS: Record<ScheduleKind, string> = {
     grains: "Grains",
     hops: "Hops",
     yeasts: "Yeasts",
     additives: "Additives",
-    gravity: "Gravity"
+    gravity: "Gravity",
+    equipment: "Equipment"
 };
 
 /** within a phase, rows read in the order you'd actually work through them */

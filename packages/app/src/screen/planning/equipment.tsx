@@ -1,4 +1,4 @@
-import {Phase} from "@/model/batch";
+import {Phase, SchedulePhase} from "@/model/batch";
 import {AddFn, RemoveFn, UpdateFn} from "@/hooks/useJsonEdit";
 import PlanningEquipmentPhase from "@/screen/planning/equipment-phase";
 
@@ -16,6 +16,7 @@ export default function PlanningEquipment({ phases, add, remove, update }: Plann
                     key={phase.name}
                     phase={i}
                     name={phase.name}
+                    schedulePhase={phase.tags[0] as SchedulePhase}
                     items={phase.equipment}
                     add={add}
                     remove={remove}

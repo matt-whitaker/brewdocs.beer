@@ -1,30 +1,31 @@
-import {ChecklistItem} from "@/model/batch";
+import {ScheduleItem, SchedulePhase} from "@/model/batch";
 import Equipment from "@/model/equipment";
 import DataGridRow from "@/component/data-grid/row";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridRemoveButton from "@/component/data-grid/remove-button";
 import DataGridSelect from "@/component/data-grid/select";
-import {equipmentToChecklistItem} from "@/transform/equipmentToChecklistItem";
+import {equipmentToScheduleItem} from "@/transform/equipmentToScheduleItem";
 import {Fragment, memo, useCallback, useMemo} from "react";
 import {RemoveFn, UpdateFn} from "@/hooks/useJsonEdit";
 
 export type PlanningEquipmentRowProps = {
     /** index into batch.phases */
     phase: number;
+    schedulePhase: SchedulePhase;
     /** index into that phase's equipment */
     row: number;
-    item: ChecklistItem;
+    item: ScheduleItem;
     remove: RemoveFn;
     update: UpdateFn;
     equipment: Equipment[];
     equipmentIndex: Map<string, Equipment>;
 }
 
-function PlanningEquipmentRow({ phase, row, item, remove, update, equipment, equipmentIndex }: PlanningEquipmentRowProps) {
+function PlanningEquipmentRow({ phase, schedulePhase, row, item, remove, update, equipment, equipmentIndex }: PlanningEquipmentRowProps) {
     const equipmentOptions = useMemo(() => equipment.map((({ name }) => ({ value: name, name }))), [equipment]);
 
     const onRemoveItem = useCallback(() => remove(`phases[${phase}].equipment`, row), [remove, phase, row]);
-    const onChangeItem = useCallback((value: string) => update(`phases[${phase}].equipment[${row}]`, equipmentToChecklistItem(equipmentIndex!.get(value)!)), [update, phase, row, equipmentIndex]);
+    const onChangeItem = useCallback((value: string) => update(`phases[${phase}].equipment[${row}]`, equipmentToScheduleItem(equipmentIndex!.get(value)!, schedulePhase)), [update, phase, row, schedulePhase, equipmentIndex]);
 
     return (
         <Fragment>
