@@ -12,6 +12,8 @@ function DisclaimerPage() {
             <div className="divider divider-secondary"></div>
             <p>If you run into issues with it, you can use the button below to perform a wipe and start fresh.</p>
             <p><a className="btn btn-primary btn-sm mt-1" href="/?purge=true">Purge Data</a></p>
+            <p>If your locally cached data is out of date, you can use the button below to run pending migrations.</p>
+            <p><a className="btn btn-secondary btn-sm mt-1" href="/?migrate=true">Migrate Data</a></p>
         </div>
     );
 }
