@@ -81,20 +81,22 @@ function ferment(batch: Partial<Batch>): Derived[] {
     }));
 }
 
-/**
- * Only the brew-day readings; the primary/secondary ones happen days later.
- * "After boil" is taken once the wort is chilled, which is the tail end of the
- * boil phase rather than a stage of its own.
- */
-const BREW_DAY_READINGS: [index: number, phase: SchedulePhase][] = [[0, "mash"], [1, "boil"]];
+/** each entry is a slot in `batch.hydrometer`, in the order the readings are taken */
+const READINGS: [index: number, phase: SchedulePhase][] = [
+    [0, "mash"],
+    [1, "boil"],
+    [2, "ferment"]
+];
 
+/** exact date taken matters less than the reading itself, so it rides behind the row's expander, same as the yeast pitch date */
 function gravity(batch: Partial<Batch>): Derived[] {
-    return BREW_DAY_READINGS
+    return READINGS
         .filter(([i]) => (batch.hydrometer ?? [])[i])
         .map(([i, phase]) => ({
             name: batch.hydrometer![i].name,
             tags: tags(phase, "gravity"),
-            path: `hydrometer[${i}].gravity`
+            path: `hydrometer[${i}].gravity`,
+            extra: [{ name: "Reading Taken", path: `hydrometer[${i}].date`, input: "date" as const }]
         }));
 }
 
