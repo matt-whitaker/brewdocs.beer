@@ -9,3 +9,7 @@ BrewDocs is an offline homebrewing application and info handbook.
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Daisy UI](https://daisyui.com/)
 - [Astro](https://astro.build/)
+
+### Claude Code
+
+[Claude Code](https://claude.com/claude-code) enabled with [`@claude` integration](.github/workflows/claude.yaml)
