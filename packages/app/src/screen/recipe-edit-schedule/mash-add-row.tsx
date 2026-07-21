@@ -8,7 +8,7 @@ import {AddFn} from "@/hooks/useJsonEdit";
 
 export type RecipeEditMashAddRowProps = {
     add: AddFn;
-}
+};
 
 // mash steps are recipe-authored, not picked from a catalog — freeform like a
 // batch phase (see planning/phases-add-row.tsx)

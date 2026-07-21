@@ -14,7 +14,7 @@ export type RecipeEditMashRowProps = {
     remove: RemoveFn;
     update: UpdateFn;
     updateScalar: UpdateScalarFn;
-}
+};
 
 function RecipeEditMashRow({ row, step, remove, update, updateScalar }: RecipeEditMashRowProps) {
     const onRemoveStep = useCallback(() => remove("mash", row), [remove, row]);

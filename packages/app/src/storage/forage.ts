@@ -19,7 +19,7 @@ export abstract class Forage<T> {
     async list(): Promise<T[]> {
         const items: T[] = [];
         await this._forage.iterate((val: T) => {
-            items.push(val)
+            items.push(val);
         });
         return items;
     }
@@ -47,7 +47,7 @@ export abstract class Forage<T> {
     }
 
     protected buildKey(id: string) {
-        return `${this._name}#${id}`
+        return `${this._name}#${id}`;
     }
 
     async purge() {

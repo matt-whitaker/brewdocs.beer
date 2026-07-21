@@ -7,7 +7,7 @@ type KbResourceMap = {
     hops: KbHop[];
     yeasts: KbYeast[];
     recipes: KbRecipe[];
-}
+};
 
 export class KbStorage extends Forage<KbResourceMap[keyof KbResourceMap]> {
     constructor() {

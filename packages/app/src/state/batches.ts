@@ -5,33 +5,33 @@ import queryClient from "@/queryClient";
 import {FilterFn} from "@/utils/func";
 
 const batchesQueryKey = () => ["batches"];
-const loadBatches = () => batchesStorage.list()
+const loadBatches = () => batchesStorage.list();
 
 const batchQueryKey = (id: string): [string, string] => ["batch", id];
-const loadBatch = ({ queryKey: [, id]}: { queryKey: [string, string]}) => batchesStorage.get(id)
+const loadBatch = ({ queryKey: [, id]}: { queryKey: [string, string]}) => batchesStorage.get(id);
 
 export const useBatches = (filter?: FilterFn<Batch>): Batch[] => {
     const {data} = useSuspenseQuery({ queryKey: batchesQueryKey(), queryFn: loadBatches });
 
     if (!data) {
-        throw new Error("Unable to load batches")
+        throw new Error("Unable to load batches");
     }
 
     return filter ? data.filter(filter) : data;
 };
 
 export const useBatch = (id: string): Batch => {
-    const { data } = useSuspenseQuery({ queryKey: batchQueryKey(id), queryFn: loadBatch })
+    const { data } = useSuspenseQuery({ queryKey: batchQueryKey(id), queryFn: loadBatch });
 
     if (!data) {
-        throw new Error("Unable to load batch")
+        throw new Error("Unable to load batch");
     }
 
-    return data
+    return data;
 };
 
 export const saveBatch = async (id: string, batch: Batch) => {
     await batchesStorage.save(id, batch);
     await queryClient.invalidateQueries({queryKey: batchQueryKey(id)});
     await queryClient.invalidateQueries({queryKey: batchesQueryKey()});
-}
+};

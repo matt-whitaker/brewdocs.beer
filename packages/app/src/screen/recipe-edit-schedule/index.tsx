@@ -40,5 +40,5 @@ export default function RecipeEditSchedule({ recipeId, onChange }: RecipeEditSch
                 </div>
             </div>
         </Screen>
-    )
+    );
 }

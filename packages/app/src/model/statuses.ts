@@ -17,6 +17,6 @@ export const statuses = {
     [Statuses.SECONDARY]: "secondary",
     [Statuses.TERTIARY]: "tertiary",
     [Statuses.COMPLETE]: "complete"
-}
+};
 
 export default Statuses;

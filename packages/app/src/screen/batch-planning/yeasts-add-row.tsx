@@ -8,7 +8,7 @@ export type BatchPlanningYeastsAddRowProps = {
     add: AddFn;
     kbYeasts: KbYeast[];
     kbYeastsIndex: Map<string, KbYeast>;
-}
+};
 
 export default function BatchPlanningYeastsAddRow({ add, kbYeasts, kbYeastsIndex }: BatchPlanningYeastsAddRowProps) {
     const [selection, setSelection] = useState<string|null>(null);

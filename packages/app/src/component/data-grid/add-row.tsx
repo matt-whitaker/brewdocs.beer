@@ -17,7 +17,7 @@ export type AddRowProps<T extends { name: string }> = {
     label?: string;
 
     reserveExpand?: boolean;
-}
+};
 
 export default function AddRow<T extends { name: string }>({ data, value, onChange, add, expandContent, label, reserveExpand = false }: AddRowProps<T>) {
     const options = useMemo(() => data.map(({ name }) => ({ value: name, name })), [data]);
@@ -39,5 +39,5 @@ export default function AddRow<T extends { name: string }>({ data, value, onChan
                 />
             </DataGridLabel>
         </DataGridRow>
-    )
+    );
 }

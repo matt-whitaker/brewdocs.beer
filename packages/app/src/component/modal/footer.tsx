@@ -3,7 +3,7 @@ import {PropsWithClass} from "@brewdocs.beer/core";
 export type ModalFooterProps = PropsWithClass & {
     cancel: () => void;
     confirm: () => void;
-}
+};
 export default function ModalFooter({ cancel, confirm }: ModalFooterProps) {
     return (
         <div className="modal-action">
@@ -12,5 +12,5 @@ export default function ModalFooter({ cancel, confirm }: ModalFooterProps) {
                 {confirm ? <button className="btn btn-primary btn-sm" onClick={confirm}>Confirm</button> : <></>}
             </form>
         </div>
-    )
+    );
 }

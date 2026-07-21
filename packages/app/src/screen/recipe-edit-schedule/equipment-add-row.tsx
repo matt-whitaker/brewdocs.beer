@@ -7,7 +7,7 @@ export type RecipeEditEquipmentAddRowProps = {
     add: AddFn;
     equipment: Equipment[];
     equipmentIndex: Map<string, Equipment>;
-}
+};
 
 export default function RecipeEditEquipmentAddRow({ add, equipment, equipmentIndex }: RecipeEditEquipmentAddRowProps) {
     const [selection, setSelection] = useState<string|null>(null);

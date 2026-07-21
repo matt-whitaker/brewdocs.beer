@@ -9,7 +9,7 @@ export type DataGridSelectProps = PropsWithOnChange<string> & PropsWithClass & {
     allowNull?: boolean;
     /** columns to span when used directly in a row (inert inside a label) */
     cols?: number;
-}
+};
 export default function DataGridSelect({ className, data, value, onChange, allowNull = false, cols = 4 }: DataGridSelectProps) {
     const optionalProps = onChange? { onChange } : {};
 

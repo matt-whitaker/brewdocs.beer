@@ -1,7 +1,7 @@
 import {PropsWithChildren} from "react";
 import {ScreenH1} from "@brewdocs.beer/design";
 
-export type ContainerProps = { title: string } & PropsWithChildren
+export type ContainerProps = { title: string } & PropsWithChildren;
 export default function Container({ children, title }: ContainerProps) {
     return (
         <div>
@@ -10,5 +10,5 @@ export default function Container({ children, title }: ContainerProps) {
                 {children}
             </div>
         </div>
-    )
+    );
 }

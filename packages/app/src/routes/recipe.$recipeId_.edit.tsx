@@ -29,5 +29,5 @@ function RecipeEditPage() {
                 <RecipeEditSchedule recipeId={recipeId} onChange={onChange} />
             </PanelSwitcherContent>
         </PanelSwitcher>
-    )
+    );
 }

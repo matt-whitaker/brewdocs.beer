@@ -5,7 +5,7 @@ export type PanelSwitcherContentProps = PropsWithChildren & {
     /** what the tab button displays; defaults to title. Lets a tab's identity (key, query param) stay stable while its visible text is derived, e.g. a numbered phase name */
     label?: string;
     titleAlt?: string;
-}
+};
 
 /**
  * Declarative panel definition — never renders itself. PanelSwitcher reads

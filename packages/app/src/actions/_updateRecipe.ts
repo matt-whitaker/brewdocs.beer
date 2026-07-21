@@ -16,6 +16,6 @@ export default function _updateRecipe(recipe: KbRecipe, batch: Partial<Batch>) {
         additives: kbRecipeAdditivesToAdditives(recipe.additives),
         mash: kbRecipeMashToMash(recipe.mash),
         boil: kbRecipeBoilToBoil(recipe.boil),
-    })
+    });
 }
 

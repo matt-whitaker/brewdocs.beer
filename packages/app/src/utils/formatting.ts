@@ -36,7 +36,7 @@ export function scalarFromNumberWithUnit(input: string, defaultUnit: Units, lock
     return {
         value: numericPart + defaultUnit,
         unit: defaultUnit,
-    }
+    };
 }
 
 export function scalarFromNumberWithCurrency(input: string, defaultCurrency: Currencies, lock: boolean = false): Scalar {

@@ -13,7 +13,7 @@ export type BatchShoppingItemRowProps = {
     toggle: ToggleFn;
     update: UpdateFn;
     updateScalar: UpdateScalarFn;
-}
+};
 
 function BatchShoppingItemRow({ row, item, toggle, update, updateScalar }: BatchShoppingItemRowProps) {
     const id = `shopping-item-${item.tags[0]}-${item.name}`;

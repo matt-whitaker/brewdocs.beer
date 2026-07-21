@@ -21,13 +21,13 @@ import {useCallback} from "react";
 export type BatchPlanningProps = {
     batchId: string;
     onChange: (batch: Batch) => void
-}
+};
 export default function BatchPlanning({ batchId, onChange }: BatchPlanningProps) {
     const batch = useBatch(batchId);
     const recipe = useRecipe(batch.recipeId);
     const [data, update, updateScalar,, add, remove, move] = useJsonEdit<Batch>(batch, onChange);
 
-    const updateDate = useCallback((value: string) => update(`brewDate`, value), [update])
+    const updateDate = useCallback((value: string) => update("brewDate", value), [update]);
 
     return (
         <Screen>
@@ -93,5 +93,5 @@ export default function BatchPlanning({ batchId, onChange }: BatchPlanningProps)
                 </PanelSwitcherContent>
             </PanelSwitcher>
         </Screen>
-    )
+    );
 }

@@ -1,4 +1,4 @@
-import {PropsWithClass} from "@brewdocs.beer/core"
+import {PropsWithClass} from "@brewdocs.beer/core";
 import classNames from "classnames";
 export const Hamburger = ({ className }: PropsWithClass) => (
     <svg

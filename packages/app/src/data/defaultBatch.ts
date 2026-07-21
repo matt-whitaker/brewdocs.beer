@@ -87,6 +87,6 @@ const defaultBatch  = {
             name: "After secondary",
         }
     ],
-}
+};
 
-export default defaultBatch as Pick<Batch, keyof typeof defaultBatch>
+export default defaultBatch as Pick<Batch, keyof typeof defaultBatch>;

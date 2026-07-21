@@ -11,5 +11,5 @@ export default function useModal(): [RefObject<HTMLDialogElement>, () => void] {
             }
         }
     }, [ref]);
-    return [ref, toggleModal]
+    return [ref, toggleModal];
 }

@@ -12,7 +12,7 @@ export const Route = createFileRoute("/recipe/$recipeId")({
 
 function RecipePage() {
     const {recipeId} = Route.useParams();
-    const filterBatches = useCallback((batch: Batch) => batch.recipeId === recipeId, [recipeId])
+    const filterBatches = useCallback((batch: Batch) => batch.recipeId === recipeId, [recipeId]);
 
     return (
         <PanelSwitcher name="recipe" defaultTab="Overview">

@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import {InputText} from "@brewdocs.beer/design"
+import {InputText} from "@brewdocs.beer/design";
 import {Currencies, PropsWithClass, PropsWithOnBlur, PropsWithOnChange, Units} from "@brewdocs.beer/core";
 import {InputDate} from "@brewdocs.beer/design";
 import {COL_SPANS} from "@/component/data-grid";
@@ -11,14 +11,14 @@ export type DataGridInputProps = PropsWithClass
     & PropsWithOnBlur<string>
     & {
     /** which value column to start at (1-3) */
-    col: number;
-    /** columns to span from `col` */
-    cols?: number;
-    readonly?: boolean;
-    value: string;
-    type?: "text"|"date";
-    unit?: Units | Currencies
-}
+        col: number;
+        /** columns to span from `col` */
+        cols?: number;
+        readonly?: boolean;
+        value: string;
+        type?: "text"|"date";
+        unit?: Units | Currencies
+    };
 export default function DataGridInput({ col, cols = 1, readonly = false, value, onChange, onBlur, className, type = "text" }: DataGridInputProps) {
     const classes = classNames(
         VALUE_COL_STARTS[col - 1],

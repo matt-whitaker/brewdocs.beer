@@ -13,7 +13,7 @@ type BatchScheduleItemDetailProps = {
     value: string;
     update: UpdateFn;
     updateScalar: UpdateScalarFn;
-}
+};
 
 /** one row of the nested grid behind a row's expander */
 function BatchScheduleItemDetail({ detail, value, update, updateScalar }: BatchScheduleItemDetailProps) {
@@ -51,7 +51,7 @@ export type BatchScheduleItemRowProps = {
     toggle: ToggleFn;
     update: UpdateFn;
     updateScalar: UpdateScalarFn;
-}
+};
 
 function BatchScheduleItemRow({ row, item, value, extraValues, toggle, update, updateScalar }: BatchScheduleItemRowProps) {
     const id = `schedule-item-${item.tags[0]}-${item.tags[1]}-${item.name}`;

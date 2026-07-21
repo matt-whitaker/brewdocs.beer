@@ -6,5 +6,5 @@ export default function Error({ children }: PropsWithChildren) {
             <h1 className="text-2xl">Error</h1>
             <p>{children}</p>
         </div>
-    )
+    );
 }

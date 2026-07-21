@@ -5,7 +5,7 @@ import {PropsWithClass} from "@brewdocs.beer/core";
 
 export type SrmAvatarProps = Partial<PropsWithClass> & {
     srm: number;
-}
+};
 
 function findHexClasses(srm: number) {
     const match = Array.from(SRM_TO_HEX.entries()).find(([key]) => srm <= key);
@@ -33,5 +33,5 @@ export default function SrmAvatar({ srm, className }: SrmAvatarProps){
                 "sm:w-[50px] sm:h-[100px] w-[30px] h-[60px] p-[2px]"
             )} />
         </div>
-    )
+    );
 }

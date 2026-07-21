@@ -17,7 +17,7 @@ export type BatchPlanningPhasesRowProps = {
     last: boolean;
     remove: RemoveFn;
     move: MoveFn;
-}
+};
 
 function BatchPlanningPhasesRow({ row, phase, removable, first, last, remove, move }: BatchPlanningPhasesRowProps) {
     const onRemovePhase = useCallback(() => remove("phases", row), [remove, row]);

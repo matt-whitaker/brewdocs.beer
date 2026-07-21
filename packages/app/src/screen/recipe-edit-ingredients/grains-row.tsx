@@ -29,7 +29,7 @@ export type RecipeEditGrainsRowProps = {
     updateScalar: UpdateScalarFn;
     kbGrains: KbGrain[];
     kbGrainsIndex: Map<string, KbGrain>;
-}
+};
 
 function RecipeEditGrainsRow({ row, grain, remove, update, updateScalar, kbGrains, kbGrainsIndex }: RecipeEditGrainsRowProps) {
     const grainOptions = useMemo(() => kbGrains.map((({ name }) => ({ value: name, name }))), [kbGrains]);

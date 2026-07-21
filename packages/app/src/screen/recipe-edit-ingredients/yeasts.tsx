@@ -17,7 +17,7 @@ export type RecipeEditYeastsProps = {
     update: UpdateFn;
     updateScalar: UpdateScalarFn;
     toggle: ToggleFn;
-}
+};
 export default function RecipeEditYeasts({ yeasts, add, remove, update, updateScalar, toggle }: RecipeEditYeastsProps) {
     const session = useSession();
     const kbYeasts = useKbYeasts();
@@ -49,5 +49,5 @@ export default function RecipeEditYeasts({ yeasts, add, remove, update, updateSc
             {yeastRows}
             <RecipeEditYeastsAddRow add={add} kbYeasts={kbYeasts} kbYeastsIndex={kbYeastsIndex} />
         </DataGrid>
-    )
+    );
 }

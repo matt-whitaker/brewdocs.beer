@@ -2,7 +2,7 @@ import {Link, useRouter} from "@tanstack/react-router";
 
 export type NavListProps = {
     nav: [string, string?][];
-}
+};
 
 export default function Navlist({ nav }: NavListProps) {
     const router = useRouter();

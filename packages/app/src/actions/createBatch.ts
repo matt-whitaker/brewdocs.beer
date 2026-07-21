@@ -18,7 +18,7 @@ export default async function createBatch(recipe: KbRecipe, inputs: CreateBatchS
         status: Statuses.PREP,
         recipeId: recipe.id,
         ...inputs
-    }
+    };
 
     _updateRecipe(recipe, batch);
     _updateShopping(batch);

@@ -1,7 +1,7 @@
 import Navlist from "@/component/navlist";
 import {DEV_TOOLS} from "@/utils/env";
 
-export type DrawerSidebarProps = { nav: [string, string?][]; close: () => void; }
+export type DrawerSidebarProps = { nav: [string, string?][]; close: () => void; };
 export default function DrawerSidebar({ nav, close }: DrawerSidebarProps) {
     return (
         <div className="drawer-side z-[20] lg:w-auto w-screen">

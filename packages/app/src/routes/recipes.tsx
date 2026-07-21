@@ -16,5 +16,5 @@ function RecipesPage() {
             <PanelSwitcherContent title="Starred"></PanelSwitcherContent>
             <PanelSwitcherContent title="My Recipes"></PanelSwitcherContent>
         </PanelSwitcher>
-    )
+    );
 }

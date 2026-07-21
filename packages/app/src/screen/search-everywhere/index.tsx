@@ -50,5 +50,5 @@ export default function SearchEverywhere({ batches }: { batches: Batch[] }) {
                 <SearchEverywhereResult name="D" type="text" />
             </Container>
         </Screen>
-    )
+    );
 }

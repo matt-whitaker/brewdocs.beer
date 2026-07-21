@@ -16,7 +16,7 @@ export type RecipeEditGrainsProps = {
     remove: RemoveFn;
     update: UpdateFn;
     updateScalar: UpdateScalarFn;
-}
+};
 export default function RecipeEditGrains({ grains, add, remove, update, updateScalar }: RecipeEditGrainsProps) {
     const session = useSession();
     const kbGrains = useKbGrains();
@@ -47,5 +47,5 @@ export default function RecipeEditGrains({ grains, add, remove, update, updateSc
             {grainRows}
             <RecipeEditGrainsAddRow add={add} kbGrains={kbGrains} kbGrainsIndex={kbGrainsIndex} />
         </DataGrid>
-    )
+    );
 }

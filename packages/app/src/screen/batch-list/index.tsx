@@ -8,7 +8,7 @@ import useIndexBy from "@/hooks/useIndexBy";
 import Batch from "@/model/batch";
 import {useMemo} from "react";
 
-export type BatchListProps = { filter?: (b: Batch) => boolean }
+export type BatchListProps = { filter?: (b: Batch) => boolean };
 export default function BatchList({ filter }: BatchListProps) {
     const batches = useBatches(filter);
     const recipes = useRecipes();
@@ -31,5 +31,5 @@ export default function BatchList({ filter }: BatchListProps) {
                 {batchList}
             </ul>
         </Screen>
-    )
+    );
 }

@@ -16,7 +16,7 @@ const SESSION_KEY = "recipe-edit.details";
 export type RecipeEditDetailsProps = {
     recipeId: string;
     onChange: (recipe: KbRecipe) => void
-}
+};
 export default function RecipeEditDetails({ recipeId, onChange }: RecipeEditDetailsProps) {
     const recipe = useRecipe(recipeId);
     const session = useSession();

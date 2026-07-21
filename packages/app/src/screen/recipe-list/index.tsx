@@ -18,5 +18,5 @@ export default function RecipeList() {
                 {recipeListItems}
             </ul>
         </Screen>
-    )
+    );
 }

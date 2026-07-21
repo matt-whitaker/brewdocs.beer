@@ -22,7 +22,7 @@ export type BatchPlanningEquipmentPhaseProps = {
     add: AddFn;
     remove: RemoveFn;
     update: UpdateFn;
-}
+};
 export default function BatchPlanningEquipmentPhase({ phase, name, label, schedulePhase, items, add, remove, update }: BatchPlanningEquipmentPhaseProps) {
     const session = useSession();
     const equipmentIndex = useIndexBy(equipmentCatalog, "name");
@@ -54,5 +54,5 @@ export default function BatchPlanningEquipmentPhase({ phase, name, label, schedu
             {rows}
             <BatchPlanningEquipmentAddRow phase={phase} schedulePhase={schedulePhase} add={add} equipment={equipmentCatalog} equipmentIndex={equipmentIndex} />
         </DataGrid>
-    )
+    );
 }

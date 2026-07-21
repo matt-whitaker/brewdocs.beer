@@ -15,7 +15,7 @@ export type RecipeEditBoilProps = {
     remove: RemoveFn;
     update: UpdateFn;
     updateScalar: UpdateScalarFn;
-}
+};
 export default function RecipeEditBoil({ boil, add, remove, update, updateScalar }: RecipeEditBoilProps) {
     const session = useSession();
 

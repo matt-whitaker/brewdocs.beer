@@ -11,5 +11,5 @@ export default function RemoveButton({ className, onClick }: PropsWithClass & Pr
         >
             <Minus className="w-4" />
         </button>
-    )
+    );
 }

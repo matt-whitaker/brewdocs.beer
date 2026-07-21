@@ -36,7 +36,7 @@ export type RecipeEditYeastsRowProps = {
     toggle: ToggleFn;
     kbYeasts: KbYeast[];
     kbYeastsIndex: Map<string, KbYeast>;
-}
+};
 
 function RecipeEditYeastsRow({ row, yeast, remove, update, updateScalar, toggle, kbYeasts, kbYeastsIndex }: RecipeEditYeastsRowProps) {
     const yeastOptions = useMemo(() => kbYeasts.map((({ name }) => ({ value: name, name }))), [kbYeasts]);

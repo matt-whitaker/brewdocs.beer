@@ -2,6 +2,7 @@ import js from "@eslint/js";
 import globals from "globals";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
+import stylistic from "@stylistic/eslint-plugin";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
@@ -22,11 +23,26 @@ export default tseslint.config(
         },
         plugins: {
             "react-hooks": reactHooks,
-            "react-refresh": reactRefresh
+            "react-refresh": reactRefresh,
+            "@stylistic": stylistic
         },
         rules: {
             ...reactHooks.configs.recommended.rules,
             "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
+
+            // style conventions — codify what the code already does (double quotes,
+            // semicolons), so these are near-zero auto-fixes rather than a reflow.
+            "@stylistic/quotes": ["error", "double", { avoidEscape: true }],
+            "@stylistic/semi": ["error", "always"],
+            // the codebase is already uniformly 4-space; this just locks it in
+            "@stylistic/indent": ["error", 4],
+
+            // enforce the "no lodash" rule that until now lived only in CLAUDE.md —
+            // the repo uses the hand-rolled utils/func.ts instead
+            "no-restricted-imports": ["error", {
+                paths: [{ name: "lodash", message: "Use the hand-rolled helpers in @/utils/func instead." }],
+                patterns: [{ group: ["lodash", "lodash/*"], message: "Use the hand-rolled helpers in @/utils/func instead." }]
+            }],
             // the codebase already uses a leading _ for deliberate throwaways —
             // destructured skips (`const [_, x] = ...`) and unused stub params.
             // Honor that convention rather than editing each site.

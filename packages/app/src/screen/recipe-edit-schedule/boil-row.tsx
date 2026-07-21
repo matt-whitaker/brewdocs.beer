@@ -13,7 +13,7 @@ export type RecipeEditBoilRowProps = {
     remove: RemoveFn;
     update: UpdateFn;
     updateScalar: UpdateScalarFn;
-}
+};
 
 function RecipeEditBoilRow({ row, step, remove, update, updateScalar }: RecipeEditBoilRowProps) {
     const onRemoveStep = useCallback(() => remove("boil", row), [remove, row]);

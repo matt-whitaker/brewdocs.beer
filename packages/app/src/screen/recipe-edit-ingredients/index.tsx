@@ -10,7 +10,7 @@ import {useRecipe} from "@/state/recipes";
 export type RecipeEditIngredientsProps = {
     recipeId: string;
     onChange: (recipe: KbRecipe) => void
-}
+};
 export default function RecipeEditIngredients({ recipeId, onChange }: RecipeEditIngredientsProps) {
     const recipe = useRecipe(recipeId);
     const [data, update, updateScalar, toggle, add, remove] = useJsonEdit<KbRecipe>(recipe, onChange);
@@ -52,5 +52,5 @@ export default function RecipeEditIngredients({ recipeId, onChange }: RecipeEdit
                 </div>
             </div>
         </Screen>
-    )
+    );
 }

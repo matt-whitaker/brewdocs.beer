@@ -1,10 +1,10 @@
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {importResource, KbHop} from "@brewdocs.beer/kb"
+import {importResource, KbHop} from "@brewdocs.beer/kb";
 import kbStorage from "@/storage/kb";
 import {isOnline} from "@/utils/connectivity";
 import queryClient from "@/queryClient";
 
-const kbHopsQueryKey = () => ["kb", "hops"]
+const kbHopsQueryKey = () => ["kb", "hops"];
 const fetchKbHops = async (): Promise<KbHop[]> => {
     const cached = await kbStorage.getResource("hops");
     if (cached) {
@@ -17,7 +17,7 @@ const fetchKbHops = async (): Promise<KbHop[]> => {
 
     const hops = await importResource("hops");
     return kbStorage.saveResource("hops", hops);
-}
+};
 
 export const prefetchKbHops = () => queryClient.prefetchQuery({ queryKey: kbHopsQueryKey(), queryFn: fetchKbHops });
 
@@ -25,7 +25,7 @@ export const useKbHops = (): KbHop[] => {
     const { data } = useSuspenseQuery({ queryKey: kbHopsQueryKey(), queryFn: fetchKbHops });
 
     if (!data) {
-        throw new Error("Unable to load hops from Knowledge Base")
+        throw new Error("Unable to load hops from Knowledge Base");
     }
 
     return data;

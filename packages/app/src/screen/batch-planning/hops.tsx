@@ -17,7 +17,7 @@ export type BatchPlanningHopsProps = {
     remove: RemoveFn;
     update: UpdateFn;
     updateScalar: UpdateScalarFn;
-}
+};
 export default function BatchPlanningHops({ hops, add, remove, update, updateScalar }: BatchPlanningHopsProps) {
     const session = useSession();
     const kbHops = useKbHops();

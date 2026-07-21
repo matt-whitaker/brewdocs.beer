@@ -2,7 +2,7 @@ import {useMemo, useState} from "react";
 import Batch from "@/model/batch";
 import {omitBy, isEmpty} from "@/utils/func";
 
-export type CreateBatchState = Pick<Batch, "name"|"brewDate">
+export type CreateBatchState = Pick<Batch, "name"|"brewDate">;
 export default function useCreatBatchForm(defaultName: string): [CreateBatchState, (state: CreateBatchState) => void, CreateBatchState] {
     const [state, setState] = useState<CreateBatchState>({ name: "", brewDate: "" });
     const finalState = useMemo<CreateBatchState>(() => ({
@@ -15,5 +15,5 @@ export default function useCreatBatchForm(defaultName: string): [CreateBatchStat
         state,
         setState,
         finalState
-    ]
+    ];
 }

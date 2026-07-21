@@ -15,7 +15,7 @@ export type RecipeEditEquipmentRowProps = {
     update: UpdateFn;
     equipment: Equipment[];
     equipmentIndex: Map<string, Equipment>;
-}
+};
 
 function RecipeEditEquipmentRow({ row, item, remove, update, equipment, equipmentIndex }: RecipeEditEquipmentRowProps) {
     const equipmentOptions = useMemo(() => equipment.map((({ name }) => ({ value: name, name }))), [equipment]);

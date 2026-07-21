@@ -15,7 +15,7 @@ export type RecipeEditMashProps = {
     remove: RemoveFn;
     update: UpdateFn;
     updateScalar: UpdateScalarFn;
-}
+};
 export default function RecipeEditMash({ mash, add, remove, update, updateScalar }: RecipeEditMashProps) {
     const session = useSession();
 

@@ -34,5 +34,5 @@ export default function Vitals({ vitals, className }: VitalsProps) {
                 </DataGrid>
             ))}
         </div>
-    )
+    );
 }

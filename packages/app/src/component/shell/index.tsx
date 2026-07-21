@@ -16,5 +16,5 @@ export default function Shell({ children }: ShellProps) {
             <DrawerContent>{children}</DrawerContent>
             <DrawerSidebar close={close} nav={nav} />
         </Drawer>
-    )
+    );
 }

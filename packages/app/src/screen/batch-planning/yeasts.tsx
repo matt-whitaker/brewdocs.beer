@@ -17,7 +17,7 @@ export type BatchPlanningYeastsProps = {
     remove: RemoveFn;
     update: UpdateFn;
     updateScalar: UpdateScalarFn;
-}
+};
 export default function BatchPlanningYeasts({ yeasts, add, remove, update, updateScalar }: BatchPlanningYeastsProps) {
     const session = useSession();
     const kbYeasts = useKbYeasts();
@@ -48,5 +48,5 @@ export default function BatchPlanningYeasts({ yeasts, add, remove, update, updat
             {yeastRows}
             <BatchPlanningYeastsAddRow add={add} kbYeasts={kbYeasts} kbYeastsIndex={kbYeastsIndex} />
         </DataGrid>
-    )
+    );
 }

@@ -18,7 +18,7 @@ const fetchRecipes = async (): Promise<KbRecipe[]> => {
 
     const recipes = await importResource("recipes");
     return kbStorage.saveResource("recipes", recipes);
-}
+};
 
 export const prefetchRecipes = () => queryClient.prefetchQuery({ queryKey: recipesQueryKey(), queryFn: fetchRecipes });
 
@@ -26,7 +26,7 @@ export const useRecipes = (filter?: FilterFn<KbRecipe>): KbRecipe[] => {
     const { data } = useSuspenseQuery({ queryKey: recipesQueryKey(), queryFn: fetchRecipes });
 
     if (!data) {
-        throw new Error("Unable to load recipes")
+        throw new Error("Unable to load recipes");
     }
 
     return filter ? data.filter(filter) : data;
@@ -41,7 +41,7 @@ export const useRecipe = (id: string): KbRecipe => {
     const recipe = data?.find(recipe => recipe.id === id);
 
     if (!recipe) {
-        throw new Error("Unable to load recipe from Knowledge Base")
+        throw new Error("Unable to load recipe from Knowledge Base");
     }
 
     return recipe;

@@ -22,7 +22,7 @@ export type DataGridHeaderRowProps = PropsWithChildren & PropsWithClass & {
      * grid, or leave them as labels.
      */
     collapsible?: boolean;
-}
+};
 
 /**
  * A group heading inside a DataGrid — a plain label unless `collapsible` is set.

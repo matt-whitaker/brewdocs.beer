@@ -12,7 +12,7 @@ export type BatchPlanningEquipmentAddRowProps = {
     add: AddFn;
     equipment: Equipment[];
     equipmentIndex: Map<string, Equipment>;
-}
+};
 
 export default function BatchPlanningEquipmentAddRow({ phase, schedulePhase, add, equipment, equipmentIndex }: BatchPlanningEquipmentAddRowProps) {
     const [selection, setSelection] = useState<string|null>(null);

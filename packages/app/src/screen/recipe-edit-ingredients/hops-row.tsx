@@ -46,7 +46,7 @@ export type RecipeEditHopsRowProps = {
     updateScalar: UpdateScalarFn;
     kbHops: KbHop[];
     kbHopsIndex: Map<string, KbHop>;
-}
+};
 
 function RecipeEditHopsRow({ row, hop, remove, update, updateScalar, kbHops, kbHopsIndex }: RecipeEditHopsRowProps) {
     const hopOptions = useMemo(() => kbHops.map((({ name }) => ({ value: name, name }))), [kbHops]);

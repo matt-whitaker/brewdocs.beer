@@ -1,11 +1,11 @@
 import {ScreenH2, ScreenP} from "@brewdocs.beer/design";
-import {KbRecipe} from "@brewdocs.beer/kb"
+import {KbRecipe} from "@brewdocs.beer/kb";
 import {Link} from "@tanstack/react-router";
 
 
 export type RecipeListItemProps = {
     recipe: KbRecipe;
-}
+};
 
 export default function RecipeListItem({ recipe }: RecipeListItemProps) {
     return (
@@ -17,5 +17,5 @@ export default function RecipeListItem({ recipe }: RecipeListItemProps) {
                 <ScreenP className="pt-2">{recipe.description}</ScreenP>
             </Link>
         </li>
-    )
+    );
 }

@@ -16,7 +16,7 @@ export type RecipeEditEquipmentProps = {
     add: AddFn;
     remove: RemoveFn;
     update: UpdateFn;
-}
+};
 export default function RecipeEditEquipment({ equipment, add, remove, update }: RecipeEditEquipmentProps) {
     const session = useSession();
     const equipmentIndex = useIndexBy(equipmentCatalog, "name");

@@ -5,5 +5,5 @@ export default function Loading() {
         <Screen>
             Loading...
         </Screen>
-    )
+    );
 }

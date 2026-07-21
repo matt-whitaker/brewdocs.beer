@@ -8,7 +8,7 @@ export type BatchPlanningGrainsAddRowProps = {
     add: AddFn;
     kbGrains: KbGrain[];
     kbGrainsIndex: Map<string, KbGrain>;
-}
+};
 
 export default function BatchPlanningGrainsAddRow({ add, kbGrains, kbGrainsIndex }: BatchPlanningGrainsAddRowProps) {
     const [selection, setSelection] = useState<string|null>(null);

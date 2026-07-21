@@ -14,7 +14,7 @@ export type RecipeEditAdditivesProps = {
     remove: RemoveFn;
     update: UpdateFn;
     updateScalar: UpdateScalarFn;
-}
+};
 export default function RecipeEditAdditives({ additives, add, remove, update, updateScalar }: RecipeEditAdditivesProps) {
     const session = useSession();
 
@@ -41,5 +41,5 @@ export default function RecipeEditAdditives({ additives, add, remove, update, up
             {additiveRows}
             <RecipeEditAdditivesAddRow add={add} />
         </DataGrid>
-    )
+    );
 }

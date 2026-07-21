@@ -16,7 +16,7 @@ type BatchScheduleEquipmentItemProps = {
     name: string;
     completed: boolean;
     toggle: ToggleFn;
-}
+};
 
 function BatchScheduleEquipmentItem({ phase, phaseName, row, name, completed, toggle }: BatchScheduleEquipmentItemProps) {
     const id = `equipment-${phaseName}-${name}`;
@@ -49,7 +49,7 @@ export type BatchScheduleEquipmentProps = {
     phaseName: string;
     items: ScheduleItem[];
     toggle: ToggleFn;
-}
+};
 
 /**
  * What to have ready before a phase starts. Sits above the phase's grids as its

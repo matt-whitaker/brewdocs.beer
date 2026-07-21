@@ -11,46 +11,46 @@ import {Fragment, memo, useCallback, useMemo} from "react";
 
 
 export type BatchPlanningYeastsRowProps = {
-  row: number;
-  yeast: Yeast;
-  remove: RemoveFn;
-  update: UpdateFn;
-  updateScalar: UpdateScalarFn;
-  kbYeasts: KbYeast[];
-  kbYeastsIndex: Map<string, KbYeast>;
-}
+    row: number;
+    yeast: Yeast;
+    remove: RemoveFn;
+    update: UpdateFn;
+    updateScalar: UpdateScalarFn;
+    kbYeasts: KbYeast[];
+    kbYeastsIndex: Map<string, KbYeast>;
+};
 
 function BatchPlanningYeastsRow({ row, yeast, remove, update, updateScalar, kbYeasts, kbYeastsIndex }: BatchPlanningYeastsRowProps) {
-  const yeastOptions = useMemo(() => kbYeasts.map((({ name }) => ({ value: name, name }))), [kbYeasts]);
+    const yeastOptions = useMemo(() => kbYeasts.map((({ name }) => ({ value: name, name }))), [kbYeasts]);
 
-  const onRemoveYeast = useCallback(() => remove("yeasts", row), [remove, row]);
-  const onChangeYeast = useCallback((value: string) => update(`yeasts[${row}]`, kbYeastToYeast(kbYeastsIndex!.get(value)!)), [update, row, kbYeastsIndex]);
-  const onChangeTempValue = useCallback((value: string) => update(`yeasts[${row}].temp.value`, value), [update, row]);
-  const onBlurTemp = useCallback((value: string) => updateScalar(`yeasts[${row}].temp`, value), [updateScalar, row]);
+    const onRemoveYeast = useCallback(() => remove("yeasts", row), [remove, row]);
+    const onChangeYeast = useCallback((value: string) => update(`yeasts[${row}]`, kbYeastToYeast(kbYeastsIndex!.get(value)!)), [update, row, kbYeastsIndex]);
+    const onChangeTempValue = useCallback((value: string) => update(`yeasts[${row}].temp.value`, value), [update, row]);
+    const onBlurTemp = useCallback((value: string) => updateScalar(`yeasts[${row}].temp`, value), [updateScalar, row]);
 
-  return (
-      <Fragment>
-        <DataGridRow zebra reserveExpand>
-          <DataGridLabel className="ml-6">
-            <DataGridRemoveButton onClick={onRemoveYeast} />
-            <DataGridSelect
-                data={yeastOptions}
-                value={yeast.name}
-                onChange={onChangeYeast}
-            />
-          </DataGridLabel>
-          <DataGridInput
-              col={3}
-              value={yeast.temp.value}
-              onChange={onChangeTempValue}
-              onBlur={onBlurTemp}
-          />
-        </DataGridRow>
-        {/*<FormCheckbox onChange={() => toggle(`yeasts[${row}].starter`)} checked={yeasts.starter}>*/}
-        {/*    Starter?*/}
-        {/*</FormCheckbox>*/}
-      </Fragment>
-  );
+    return (
+        <Fragment>
+            <DataGridRow zebra reserveExpand>
+                <DataGridLabel className="ml-6">
+                    <DataGridRemoveButton onClick={onRemoveYeast} />
+                    <DataGridSelect
+                        data={yeastOptions}
+                        value={yeast.name}
+                        onChange={onChangeYeast}
+                    />
+                </DataGridLabel>
+                <DataGridInput
+                    col={3}
+                    value={yeast.temp.value}
+                    onChange={onChangeTempValue}
+                    onBlur={onBlurTemp}
+                />
+            </DataGridRow>
+            {/*<FormCheckbox onChange={() => toggle(`yeasts[${row}].starter`)} checked={yeasts.starter}>*/}
+            {/*    Starter?*/}
+            {/*</FormCheckbox>*/}
+        </Fragment>
+    );
 }
 
 // props are referentially stable (setIn keeps untouched branches, editors are

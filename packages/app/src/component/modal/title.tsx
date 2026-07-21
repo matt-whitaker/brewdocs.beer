@@ -4,5 +4,5 @@ import classNames from "classnames";
 
 export type ModalTitleProps = PropsWithChildren & PropsWithClass;
 export default function ModalTitle({ children, className }: ModalTitleProps) {
-    return <h3 className={classNames("font-bold text-lg", [className])}>{children}</h3>
+    return <h3 className={classNames("font-bold text-lg", [className])}>{children}</h3>;
 }

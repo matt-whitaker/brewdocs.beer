@@ -2,7 +2,7 @@ import {Named} from "@/model/type";
 import classNames from "classnames";
 
 const fallbackSrc = "";
-export type SearchEverywhereResultProps = Named & { type: "placeholder"|"icon"|"text"|"image", src?: string; }
+export type SearchEverywhereResultProps = Named & { type: "placeholder"|"icon"|"text"|"image", src?: string; };
 export default function SearchEverywhereResult({ name, type, src }: SearchEverywhereResultProps) {
 
     return (
@@ -35,5 +35,5 @@ export default function SearchEverywhereResult({ name, type, src }: SearchEveryw
                 <p>super brief description here, eventually to be cutoff</p>
             </div>
         </div>
-    )
+    );
 }

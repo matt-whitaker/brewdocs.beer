@@ -17,7 +17,7 @@ export type BatchPlanningGrainsProps = {
     remove: RemoveFn;
     update: UpdateFn;
     updateScalar: UpdateScalarFn;
-}
+};
 export default function BatchPlanningGrains({ grains, add, remove, update, updateScalar }: BatchPlanningGrainsProps) {
     const session = useSession();
     const kbGrains = useKbGrains();
@@ -48,5 +48,5 @@ export default function BatchPlanningGrains({ grains, add, remove, update, updat
             {grainRows}
             <BatchPlanningGrainsAddRow add={add} kbGrains={kbGrains} kbGrainsIndex={kbGrainsIndex} />
         </DataGrid>
-    )
+    );
 }

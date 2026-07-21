@@ -14,7 +14,7 @@ export type RecipeEditHopsAddRowProps = {
     add: AddFn;
     kbHops: KbHop[];
     kbHopsIndex: Map<string, KbHop>;
-}
+};
 
 export default function RecipeEditHopsAddRow({ add, kbHops, kbHopsIndex }: RecipeEditHopsAddRowProps) {
     const [selection, setSelection] = useState<string|null>(null);

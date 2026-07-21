@@ -19,7 +19,7 @@ export type BatchPlanningEquipmentRowProps = {
     update: UpdateFn;
     equipment: Equipment[];
     equipmentIndex: Map<string, Equipment>;
-}
+};
 
 function BatchPlanningEquipmentRow({ phase, schedulePhase, row, item, remove, update, equipment, equipmentIndex }: BatchPlanningEquipmentRowProps) {
     const equipmentOptions = useMemo(() => equipment.map((({ name }) => ({ value: name, name }))), [equipment]);

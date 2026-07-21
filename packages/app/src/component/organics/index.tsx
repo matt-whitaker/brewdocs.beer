@@ -11,7 +11,7 @@ export type OrganicsProps = {
     grains: {name: string}[];
     yeasts: {name: string}[];
     className?: string
-}
+};
 
 export default function Organics({ hops, grains, yeasts, className }: OrganicsProps) {
     // hops repeat across boil additions, so collapse them to distinct names
@@ -39,5 +39,5 @@ export default function Organics({ hops, grains, yeasts, className }: OrganicsPr
                 </Fragment>
             ))}
         </DataGrid>
-    )
+    );
 }

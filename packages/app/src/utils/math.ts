@@ -11,9 +11,9 @@ export function parseNumberString(numberString: string): [number, string] {
     if (match) {
         const unit = match[0];
 
-        let number = numberString.replace(unit, '');
+        let number = numberString.replace(unit, "");
         if (CURRENCY_REGEX.test(unit)) {
-            number = number.replace(COMMAS_REGEX, '');
+            number = number.replace(COMMAS_REGEX, "");
         }
 
         return [parseFloat(number), unit];
@@ -21,16 +21,16 @@ export function parseNumberString(numberString: string): [number, string] {
 
     let number = numberString;
     if (COMMAS_REGEX.test(numberString)) {
-        number = numberString.replace(COMMAS_REGEX, '');
+        number = numberString.replace(COMMAS_REGEX, "");
     }
 
-    return [parseFloat(number), ''];
+    return [parseFloat(number), ""];
 }
 
 export function calculateNewHopWeight(originalAlpha: string, originalWeight: string, newAlpha: string) {
-    const originalAlphaNum = parseFloat(originalAlpha.replace('%', ''));
-    const originalWeightNum = parseFloat(originalWeight.replace('lb', ''));
-    const newAlphaNum = parseFloat(newAlpha.replace('%', ''));
+    const originalAlphaNum = parseFloat(originalAlpha.replace("%", ""));
+    const originalWeightNum = parseFloat(originalWeight.replace("lb", ""));
+    const newAlphaNum = parseFloat(newAlpha.replace("%", ""));
 
     return (originalAlphaNum * originalWeightNum) / newAlphaNum;
 }

@@ -14,7 +14,7 @@ export type BatchPlanningPhasesProps = {
     add: AddFn;
     remove: RemoveFn;
     move: MoveFn;
-}
+};
 export default function BatchPlanningPhases({ phases, add, remove, move }: BatchPlanningPhasesProps) {
     const session = useSession();
 
@@ -46,5 +46,5 @@ export default function BatchPlanningPhases({ phases, add, remove, move }: Batch
             {phaseRows}
             <BatchPlanningPhasesAddRow add={add} existingNames={existingNames} />
         </DataGrid>
-    )
+    );
 }

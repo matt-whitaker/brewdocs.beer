@@ -8,7 +8,7 @@ export type RecipeEditGrainsAddRowProps = {
     add: AddFn;
     kbGrains: KbGrain[];
     kbGrainsIndex: Map<string, KbGrain>;
-}
+};
 
 export default function RecipeEditGrainsAddRow({ add, kbGrains, kbGrainsIndex }: RecipeEditGrainsAddRowProps) {
     const [selection, setSelection] = useState<string|null>(null);

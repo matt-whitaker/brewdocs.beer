@@ -8,7 +8,7 @@ export type RecipeEditYeastsAddRowProps = {
     add: AddFn;
     kbYeasts: KbYeast[];
     kbYeastsIndex: Map<string, KbYeast>;
-}
+};
 
 export default function RecipeEditYeastsAddRow({ add, kbYeasts, kbYeastsIndex }: RecipeEditYeastsAddRowProps) {
     const [selection, setSelection] = useState<string|null>(null);

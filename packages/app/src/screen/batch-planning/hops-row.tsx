@@ -19,7 +19,7 @@ export type BatchPlanningHopsRowProps = {
     updateScalar: UpdateScalarFn;
     kbHops: KbHop[];
     kbHopsIndex: Map<string, KbHop>;
-}
+};
 
 function BatchPlanningHopsRow({ row, hop, remove, update, updateScalar, kbHops, kbHopsIndex }: BatchPlanningHopsRowProps) {
     const hopOptions = useMemo(() => kbHops.map((({ name }) => ({ value: name, name }))), [kbHops]);

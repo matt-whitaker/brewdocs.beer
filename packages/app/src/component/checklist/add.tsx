@@ -2,7 +2,7 @@ import {Plus} from "@/component/svg";
 import { useState} from "react";
 import {InputText} from "@brewdocs.beer/design";
 
-export type ChecklistAddProps = { add: (value: string) => void; disallow: string[] }
+export type ChecklistAddProps = { add: (value: string) => void; disallow: string[] };
 export default function ChecklistAdd({ add, disallow }: ChecklistAddProps) {
     const [state, setState] = useState("");
     return (
@@ -23,5 +23,5 @@ export default function ChecklistAdd({ add, disallow }: ChecklistAddProps) {
                 onChange={setState}
                 className="lg:input-xs lg:input-primary input-ghost flex-grow ml-2 outline-0" />
         </li>
-    )
+    );
 }

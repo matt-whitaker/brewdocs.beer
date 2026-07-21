@@ -15,7 +15,7 @@ export type RecipeEditAdditivesRowProps = {
     remove: RemoveFn;
     update: UpdateFn;
     updateScalar: UpdateScalarFn;
-}
+};
 
 function RecipeEditAdditivesRow({ row, additive, remove, update, updateScalar }: RecipeEditAdditivesRowProps) {
     const onRemoveAdditive = useCallback(() => remove("additives", row), [remove, row]);

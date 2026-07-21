@@ -16,7 +16,7 @@ export type RecipeEditHopsProps = {
     remove: RemoveFn;
     update: UpdateFn;
     updateScalar: UpdateScalarFn;
-}
+};
 export default function RecipeEditHops({ hops, add, remove, update, updateScalar }: RecipeEditHopsProps) {
     const session = useSession();
     const kbHops = useKbHops();

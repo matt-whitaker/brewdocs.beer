@@ -5,7 +5,7 @@ import {ScreenH1, ScreenH2, ScreenH3, ScreenP} from "@brewdocs.beer/design";
 import {useBatch} from "@/state/batches";
 import {useRecipe} from "@/state/recipes";
 
-export type BatchSummaryProps = { batchId: string; }
+export type BatchSummaryProps = { batchId: string; };
 export default function BatchSummary({ batchId }: BatchSummaryProps) {
     const batch = useBatch(batchId);
     const recipe = useRecipe(batch.recipeId);
@@ -32,5 +32,5 @@ export default function BatchSummary({ batchId }: BatchSummaryProps) {
                     yeasts={batch.yeasts ?? recipe.yeasts} />
             </div>
         </Screen>
-    )
+    );
 }

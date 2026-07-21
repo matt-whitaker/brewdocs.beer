@@ -14,7 +14,7 @@ export type BatchPlanningHopsAddRowProps = {
     add: AddFn;
     kbHops: KbHop[];
     kbHopsIndex: Map<string, KbHop>;
-}
+};
 
 export default function BatchPlanningHopsAddRow({ add, kbHops, kbHopsIndex }: BatchPlanningHopsAddRowProps) {
     const [selection, setSelection] = useState<string|null>(null);

@@ -8,7 +8,7 @@ import {AddFn} from "@/hooks/useJsonEdit";
 export type BatchPlanningPhasesAddRowProps = {
     add: AddFn;
     existingNames: string[];
-}
+};
 
 // freeform, unlike every other AddRow: a phase isn't picked from a catalog, and
 // its name is fixed once created (it's the phase's identity), so this is the

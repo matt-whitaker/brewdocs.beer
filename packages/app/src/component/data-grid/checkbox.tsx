@@ -3,7 +3,7 @@ export type DataGridCheckboxProps = {
     checked: boolean;
     onChange: () => void;
     id?: string;
-}
+};
 
 export default function DataGridCheckbox({ onChange, checked, id }: DataGridCheckboxProps) {
     return (

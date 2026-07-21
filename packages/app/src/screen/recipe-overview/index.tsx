@@ -25,8 +25,8 @@ export default function RecipeOverview({ recipeId }: RecipeOverviewProps) {
     const navigate = useNavigate();
 
     const onConfirm = useCallback(() =>
-            createBatch(recipe, finalInputs).then((id) => navigate({to: "/batch/$batchId", params: {batchId: id}})),
-        [navigate, recipe, finalInputs]);
+        createBatch(recipe, finalInputs).then((id) => navigate({to: "/batch/$batchId", params: {batchId: id}})),
+    [navigate, recipe, finalInputs]);
 
     return (
         <Screen>
@@ -52,5 +52,5 @@ export default function RecipeOverview({ recipeId }: RecipeOverviewProps) {
                 grains={recipe.grains}
                 yeasts={recipe.yeasts} />
         </Screen>
-    )
+    );
 }

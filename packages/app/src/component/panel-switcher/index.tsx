@@ -1,4 +1,4 @@
-import {PropsWithClass} from "@brewdocs.beer/core"
+import {PropsWithClass} from "@brewdocs.beer/core";
 import classNames from "classnames";
 import {Children, isValidElement, PropsWithChildren, ReactElement, Suspense} from "react";
 import Loading from "@/screen/loading";
@@ -10,7 +10,7 @@ export type PanelSwitcherProps = PropsWithChildren & Partial<PropsWithClass> & {
     defaultTab: string;
     /** tighter tabs, for a sub-nav nested inside another switcher's panel */
     compact?: boolean;
-}
+};
 
 /**
  * Screen-level tabs go full-bleed on mobile — w-screen plus a leading gutter on
@@ -86,5 +86,5 @@ export default function PanelSwitcher({ name, defaultTab, children, className, c
                 </Suspense>
             </div>
         </div>
-    )
+    );
 }

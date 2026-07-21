@@ -8,7 +8,7 @@ import {RecipeAdditive} from "@/screen/recipe-edit-ingredients/additives-row";
 
 export type RecipeEditAdditivesAddRowProps = {
     add: AddFn;
-}
+};
 
 // freeform, like planning's phases add-row: there's no additive catalog, so
 // the name is typed rather than picked

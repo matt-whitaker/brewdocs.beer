@@ -7,7 +7,7 @@ export type BatchPlanningEquipmentProps = {
     add: AddFn;
     remove: RemoveFn;
     update: UpdateFn;
-}
+};
 export default function BatchPlanningEquipment({ phases, add, remove, update }: BatchPlanningEquipmentProps) {
     return (
         <div className="pt-2 grid grid-cols-1 lg:grid-cols-2 gap-x-4">

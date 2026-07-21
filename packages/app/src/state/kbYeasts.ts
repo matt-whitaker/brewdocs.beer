@@ -1,5 +1,5 @@
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {importResource, KbYeast} from "@brewdocs.beer/kb"
+import {importResource, KbYeast} from "@brewdocs.beer/kb";
 import kbStorage from "@/storage/kb";
 import {isOnline} from "@/utils/connectivity";
 import queryClient from "@/queryClient";
@@ -17,7 +17,7 @@ const fetchKbYeasts = async (): Promise<KbYeast[]> => {
 
     const yeasts = await importResource("yeasts");
     return kbStorage.saveResource("yeasts", yeasts);
-}
+};
 
 export const prefetchKbYeasts = () => queryClient.prefetchQuery({ queryKey: kbYeastsQueryKey(), queryFn: fetchKbYeasts });
 
@@ -25,7 +25,7 @@ export const useKbYeasts = (): KbYeast[] => {
     const { data } = useSuspenseQuery({ queryKey: kbYeastsQueryKey(), queryFn: fetchKbYeasts });
 
     if (!data) {
-        throw new Error("Unable to load yeasts from Knowledge Base")
+        throw new Error("Unable to load yeasts from Knowledge Base");
     }
 
     return data;

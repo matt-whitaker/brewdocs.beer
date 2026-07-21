@@ -6,5 +6,5 @@ export default function Drawer({ children }: PropsWithChildren) {
         <div className={classNames("drawer lg:drawer-open lg:max-h-none max-h-[100vh] lg:mt-0 mt-12 w-screen")}>
             {children}
         </div>
-    )
+    );
 }

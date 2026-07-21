@@ -17,7 +17,7 @@ export type BatchPlanningGrainsRowProps = {
     updateScalar: UpdateScalarFn;
     kbGrains: KbGrain[];
     kbGrainsIndex: Map<string, KbGrain>;
-}
+};
 
 function BatchPlanningGrainsRow({ row, grain, remove, update, updateScalar, kbGrains, kbGrainsIndex }: BatchPlanningGrainsRowProps) {
     const grainOptions = useMemo(() => kbGrains.map((({ name }) => ({ value: name, name }))), [kbGrains]);
