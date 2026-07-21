@@ -8,6 +8,7 @@ import PanelSwitcherContent from "@/component/panel-switcher/content";
 import PlanningHops from "@/screen/planning/hops";
 import PlanningYeasts from "@/screen/planning/yeasts";
 import PlanningGrains from "@/screen/planning/grains";
+import PlanningEquipment from "@/screen/planning/equipment";
 import {useBatch} from "@/state/batches";
 import {useRecipe} from "@/state/recipes";
 import {useCallback} from "react";
@@ -70,9 +71,14 @@ export default function Planning({ batchId, onChange }: PlanningProps) {
                         </div>
                     </div>
                 </PanelSwitcherContent>
-                {/* no children yet — PanelSwitcher renders a panel without
-                    content as a disabled "Not implemented" tab */}
-                <PanelSwitcherContent title="Equipment" />
+                <PanelSwitcherContent title="Equipment">
+                    <PlanningEquipment
+                        phases={data.phases}
+                        add={add}
+                        remove={remove}
+                        update={update}
+                    />
+                </PanelSwitcherContent>
             </PanelSwitcher>
         </Screen>
     )
