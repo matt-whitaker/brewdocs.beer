@@ -9,6 +9,7 @@ import PlanningHops from "@/screen/planning/hops";
 import PlanningYeasts from "@/screen/planning/yeasts";
 import PlanningGrains from "@/screen/planning/grains";
 import PlanningEquipment from "@/screen/planning/equipment";
+import PlanningPhases from "@/screen/planning/phases";
 import DataGrid from "@/component/data-grid";
 import DataGridRow from "@/component/data-grid/row";
 import DataGridLabel from "@/component/data-grid/label";
@@ -24,7 +25,7 @@ export type PlanningProps = {
 export default function Planning({ batchId, onChange }: PlanningProps) {
     const batch = useBatch(batchId);
     const recipe = useRecipe(batch.recipeId);
-    const [data, update, updateScalar,, add, remove] = useJsonEdit<Batch>(batch, onChange);
+    const [data, update, updateScalar,, add, remove, move] = useJsonEdit<Batch>(batch, onChange);
 
     const updateDate = useCallback((value: string) => update(`brewDate`, value), [])
 
@@ -79,6 +80,16 @@ export default function Planning({ batchId, onChange }: PlanningProps) {
                         remove={remove}
                         update={update}
                     />
+                </PanelSwitcherContent>
+                <PanelSwitcherContent title="Phases">
+                    <div className="pt-2">
+                        <PlanningPhases
+                            phases={data.phases}
+                            add={add}
+                            remove={remove}
+                            move={move}
+                        />
+                    </div>
                 </PanelSwitcherContent>
             </PanelSwitcher>
         </Screen>
