@@ -69,8 +69,14 @@ jobs:
             The exception: if Verify has already reported a failure you were
             asked to fix, run the specific failing build to confirm the fix.
 
+            When the work came from an issue, close the loop on it for the
+            record: put `Closes #<issue>` in the PR body so GitHub cross-links
+            them, and post one short comment on the issue saying what changed
+            and linking the PR. A few lines is enough — the PR is the detailed
+            record, the issue comment is the pointer to it.
+
             Never merge the PR. The maintainer merges.
           claude_args: |
             --model sonnet
-            --allowedTools "Edit,Write,Bash(npm:*),Bash(gh pr create:*)"
+            --allowedTools "Edit,Write,Bash(npm:*),Bash(gh pr create:*),Bash(gh issue comment:*)"
             --max-turns 30

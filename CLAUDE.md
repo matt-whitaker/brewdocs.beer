@@ -178,7 +178,7 @@ Guidance for human contributors **and** for the `@claude` GitHub integration (`.
 - **Commit messages**: plain imperative subject ("Add schedule phases") — no Conventional Commits prefix. (Conventional is the upgrade path if changelog/semver automation is ever added; not worth it without a release flow.)
 - **PR title**: same imperative style as the commit.
 - **PR description** — a light template, with *Verification* load-bearing because there's no test suite (the PR body is the only record the gate ran):
-  - **Summary** — what changed and why.
+  - **Summary** — what changed and why, with `Closes #<issue>` when there's a ticket (GitHub then cross-links the two and closes the issue on merge).
   - **Verification** — `tsc --noEmit` ✓, `vite build` ✓, and which screens/flows were checked in the browser.
   - **Screenshots** — for any UI change.
 - **Merge method: squash only** — one commit per feature on the deploy branch.
@@ -196,6 +196,7 @@ Guidance for human contributors **and** for the `@claude` GitHub integration (`.
 
 - Defined in `.github/workflows/claude.yaml`. Two ways in: an `@claude` mention in an issue/PR comment, an inline review comment, or a submitted PR review — **or** applying the **`claude` label to an issue**. Runs `anthropics/claude-code-action` on `sonnet` with `--max-turns 30` and write access to contents/PRs/issues (plus `actions: read`, so it can read a failed **Verify** run).
 - **It does not run the build gate itself.** `npm ci` plus both package builds ate most of the turn budget before any code got written, so the prompt tells it to leave verification to the **Verify** workflow on the PR and only run a build when asked to fix one Verify already failed.
+- **It writes back to the issue.** For label-triggered work it posts a short summary comment with the PR link, on top of the progress comment `track_progress` already maintains — so the issue carries the record even though the detail lives in the PR.
 - **Verify on a bot-opened PR waits for approval.** A PR opened by a workflow using `GITHUB_TOKEN` creates `pull_request` runs that require a maintainer to click *Approve and run* — the check isn't broken, it's held. Since the maintainer merges anyway this is one extra click in the same pass; swapping `GH_TOKEN` for a PAT/App token would remove it, at the cost of letting bot-authored code into CI unattended.
 - **Issues are label-triggered, not mention-triggered.** `issues: [opened]` is deliberately *not* subscribed: a job-level `if:` can't stop a workflow run from being created, so subscribing to `opened` would grey-out a skipped run for every new issue. Subscribing to `[labeled]` instead means creating an issue produces no run at all, and only the `claude` label gets past the `if:`. `label_trigger` tells the action to treat the label as the trigger — without it, it looks for an `@claude` mention and finds none.
 - The action's default is to push a branch and hand back a *pre-filled PR link*. A `prompt` overrides that so it opens the PR itself; `track_progress: true` keeps `@claude` mention handling alive alongside that prompt, and `GH_TOKEN` is passed through so the allow-listed `gh pr create` can authenticate.
