@@ -67,8 +67,6 @@ body:
     attributes:
       label: Acceptance criteria
       description: How you'll know it's done. A short checklist works well.
-      value: |
-        - [ ]
     validations:
       required: false
 
