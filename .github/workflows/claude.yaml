@@ -79,4 +79,4 @@ jobs:
           claude_args: |
             --model sonnet
             --allowedTools "Edit,Write,Bash(npm:*),Bash(gh pr create:*),Bash(gh issue comment:*)"
-            --max-turns 30
+            --max-turns 50
