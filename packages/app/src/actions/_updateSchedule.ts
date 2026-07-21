@@ -81,27 +81,22 @@ function ferment(batch: Partial<Batch>): Derived[] {
     }));
 }
 
-/**
- * The mash/boil readings are taken in the moment, so the row's own timing tells
- * you when; "After boil" itself is taken once the wort is chilled, the tail end
- * of the boil phase rather than a stage of its own. The ferment reading happens
- * days later with no anchoring step nearby, so — like the yeast pitch date — its
- * date rides behind the row's expander instead.
- */
-const READINGS: [index: number, phase: SchedulePhase, dated?: true][] = [
+/** each entry is a slot in `batch.hydrometer`, in the order the readings are taken */
+const READINGS: [index: number, phase: SchedulePhase][] = [
     [0, "mash"],
     [1, "boil"],
-    [2, "ferment", true]
+    [2, "ferment"]
 ];
 
+/** exact date taken matters less than the reading itself, so it rides behind the row's expander, same as the yeast pitch date */
 function gravity(batch: Partial<Batch>): Derived[] {
     return READINGS
         .filter(([i]) => (batch.hydrometer ?? [])[i])
-        .map(([i, phase, dated]) => ({
+        .map(([i, phase]) => ({
             name: batch.hydrometer![i].name,
             tags: tags(phase, "gravity"),
             path: `hydrometer[${i}].gravity`,
-            ...(dated ? { extra: [{ name: "Reading Taken", path: `hydrometer[${i}].date`, input: "date" as const }] } : {})
+            extra: [{ name: "Reading Taken", path: `hydrometer[${i}].date`, input: "date" as const }]
         }));
 }
 
