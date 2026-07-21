@@ -75,7 +75,7 @@ const defaultBatch  = {
                 value: "0.00°P",
                 unit: Units.PLATO
             },
-            name: "After primary",
+            name: "After Ferment",
         },
         {
             date: "0000-00-00",
