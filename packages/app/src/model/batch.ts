@@ -40,6 +40,7 @@ export type ScheduleTag = SchedulePhase|ScheduleKind;
  * just the hop additions in it. An empty list matches everything.
  */
 export interface Phase {
+    /** identity — React key, tab title, query-param and session-key value; stays stable across reorders */
     name: string;
     tags: ScheduleTag[];
     /**
@@ -106,6 +107,9 @@ export interface ScheduleItem {
     /** user-owned — preserved across recalculation */
     completed: boolean;
 }
+
+/** display label for a phase — the "1.", "2." prefix is derived from position, never stored */
+export const phaseLabel = (phase: Phase, index: number): string => `${index + 1}. ${phase.name}`;
 
 /** current shape of the Batch model — bump when a stored batch would no longer parse/derive correctly */
 export const BATCH_MODEL_VERSION = 1;

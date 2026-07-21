@@ -2,6 +2,8 @@ import {PropsWithChildren} from "react";
 
 export type PanelSwitcherContentProps = PropsWithChildren & {
     title: string;
+    /** what the tab button displays; defaults to title. Lets a tab's identity (key, query param) stay stable while its visible text is derived, e.g. a numbered phase name */
+    label?: string;
     titleAlt?: string;
 }
 

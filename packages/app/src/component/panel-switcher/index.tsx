@@ -46,7 +46,7 @@ export default function PanelSwitcher({ name, defaultTab, children, className, c
             {/* the tablist lives outside the Suspense boundary so tabs stay
                 visible while panel content loads */}
             <div role="tablist" className={styles.tablist}>
-                {panels.map(({ props: { title, titleAlt, children: content } }) => (
+                {panels.map(({ props: { title, label, titleAlt, children: content } }) => (
                     <button
                         key={title}
                         type="button"
@@ -66,7 +66,7 @@ export default function PanelSwitcher({ name, defaultTab, children, className, c
                                 disabled: !content
                             }
                         )}>
-                        {title}
+                        {label || title}
                     </button>
                 ))}
             </div>
