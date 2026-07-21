@@ -99,5 +99,5 @@ jobs:
           # block scalar below — they'd be passed to the CLI as arguments.)
           claude_args: |
             --model sonnet
-            --allowedTools "Edit,Write,Bash(npm:*),Bash(git status:*),Bash(git diff:*),Bash(gh pr create:*),Bash(gh issue comment:*)"
+            --allowedTools "Edit,Write,Bash(npm:*),Bash(git status:*),Bash(git diff:*),Bash(git checkout:*),Bash(git add:*),Bash(git commit:*),Bash(git push:*),Bash(gh pr create:*),Bash(gh issue comment:*)"
             --max-turns ${{ github.event_name == 'issues' && 40 || 20 }}
