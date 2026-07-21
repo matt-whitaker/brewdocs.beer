@@ -29,7 +29,7 @@ function PlanningGrainsRow({ row, grain, remove, update, updateScalar, kbGrains,
 
     return (
         <Fragment>
-            <DataGridRow zebra>
+            <DataGridRow zebra reserveExpand>
                 <DataGridLabel className="ml-6">
                     <DataGridRemoveButton onClick={onRemoveGrain} />
                     <DataGridSelect

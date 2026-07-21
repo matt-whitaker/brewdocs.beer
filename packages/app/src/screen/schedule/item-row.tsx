@@ -98,6 +98,7 @@ function ScheduleItemRow({ row, item, value, extraValues, toggle, update, update
                     ))}
                 </DataGrid>
             ) : undefined}
+            reserveExpand
         >
             <DataGridLabel className="flex items-center" htmlFor={id}>
                 <DataGridCheckbox

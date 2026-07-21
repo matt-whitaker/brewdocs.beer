@@ -25,6 +25,7 @@ export default function PlanningGrainsAddRow({ add, kbGrains, kbGrainsIndex }: P
             value={selection}
             onChange={setSelection}
             add={addGrain}
+            reserveExpand
         />
     );
 }

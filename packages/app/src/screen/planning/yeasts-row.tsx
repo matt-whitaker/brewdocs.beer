@@ -30,7 +30,7 @@ function PlanningYeastsRow({ row, yeast, remove, update, updateScalar, kbYeasts,
 
   return (
       <Fragment>
-        <DataGridRow zebra>
+        <DataGridRow zebra reserveExpand>
           <DataGridLabel className="ml-6">
             <DataGridRemoveButton onClick={onRemoveYeast} />
             <DataGridSelect

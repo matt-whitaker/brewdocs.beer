@@ -25,6 +25,7 @@ export default function PlanningYeastsAddRow({ add, kbYeasts, kbYeastsIndex }: P
             value={selection}
             onChange={setSelection}
             add={addYeast}
+            reserveExpand
         />
     );
 }
