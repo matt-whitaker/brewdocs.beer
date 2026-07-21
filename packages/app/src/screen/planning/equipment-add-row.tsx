@@ -1,25 +1,27 @@
 import Equipment from "@/model/equipment";
+import {SchedulePhase} from "@/model/batch";
 import {useCallback, useState} from "react";
 import AddRow from "@/component/data-grid/add-row";
 import {AddFn} from "@/hooks/useJsonEdit";
-import {equipmentToChecklistItem} from "@/transform/equipmentToChecklistItem";
+import {equipmentToScheduleItem} from "@/transform/equipmentToScheduleItem";
 
 export type PlanningEquipmentAddRowProps = {
     /** index into batch.phases */
     phase: number;
+    schedulePhase: SchedulePhase;
     add: AddFn;
     equipment: Equipment[];
     equipmentIndex: Map<string, Equipment>;
 }
 
-export default function PlanningEquipmentAddRow({ phase, add, equipment, equipmentIndex }: PlanningEquipmentAddRowProps) {
+export default function PlanningEquipmentAddRow({ phase, schedulePhase, add, equipment, equipmentIndex }: PlanningEquipmentAddRowProps) {
     const [selection, setSelection] = useState<string|null>(null);
 
     const addItem = useCallback(() => {
         if (!selection) return;
-        add(`phases[${phase}].equipment`, equipmentToChecklistItem(equipmentIndex.get(selection)!));
+        add(`phases[${phase}].equipment`, equipmentToScheduleItem(equipmentIndex.get(selection)!, schedulePhase));
         setSelection(null);
-    }, [add, phase, equipmentIndex, selection]);
+    }, [add, phase, schedulePhase, equipmentIndex, selection]);
 
     return (
         <AddRow<Equipment>

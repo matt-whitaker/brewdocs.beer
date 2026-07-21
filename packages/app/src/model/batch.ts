@@ -27,8 +27,8 @@ export interface ShoppingItem {
 
 /** the brew-day stage a schedule item happens in */
 export type SchedulePhase = "mash"|"boil"|"ferment";
-/** what the item is — the shopping vocabulary plus readings, which aren't ingredients */
-export type ScheduleKind = "grains"|"hops"|"yeasts"|"additives"|"gravity";
+/** what the item is — the shopping vocabulary plus readings and equipment, which aren't ingredients */
+export type ScheduleKind = "grains"|"hops"|"yeasts"|"additives"|"gravity"|"equipment";
 /** either facet; a Phase filters on these without caring which kind it is */
 export type ScheduleTag = SchedulePhase|ScheduleKind;
 
@@ -43,11 +43,16 @@ export interface Phase {
     name: string;
     tags: ScheduleTag[];
     /**
-     * The kit to have ready before this phase starts, checked off in place —
-     * so it's config *and* state on the same object. That's fine here: phases
-     * already live per-batch, so there's nothing shared to contaminate.
+     * The kit to have ready before this phase starts, checked off in place — so
+     * it's config *and* state on the same object. That's fine here: phases already
+     * live per-batch, so there's nothing shared to contaminate.
+     *
+     * These are `ScheduleItem`s tagged `[phase, "equipment"]` rather than derived
+     * `_updateSchedule` output — equipment stays user-managed (added/removed from
+     * Planning) and lives here, not in `batch.schedule`. `path` is unused (there's
+     * no ingredient value to point at) and left `""`.
      */
-    equipment: ChecklistItem[];
+    equipment: ScheduleItem[];
 }
 
 /**
@@ -99,12 +104,6 @@ export interface ScheduleItem {
     /** derived — secondary fields, revealed only when the row is expanded */
     extra?: ScheduleDetail[];
     /** user-owned — preserved across recalculation */
-    completed: boolean;
-}
-
-/** a checked-off line item; shared by phase equipment (the only consumer now) */
-export interface ChecklistItem {
-    name: string;
     completed: boolean;
 }
 

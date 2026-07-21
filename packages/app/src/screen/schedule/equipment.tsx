@@ -1,5 +1,5 @@
 import {memo, useCallback, useMemo} from "react";
-import {ChecklistItem} from "@/model/batch";
+import {ScheduleItem} from "@/model/batch";
 import {ToggleFn} from "@/hooks/useJsonEdit";
 import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
@@ -47,7 +47,7 @@ export type ScheduleEquipmentProps = {
     /** index into batch.phases — the toggle path's real position */
     phase: number;
     phaseName: string;
-    items: ChecklistItem[];
+    items: ScheduleItem[];
     toggle: ToggleFn;
 }
 

@@ -1,21 +1,22 @@
-import Batch, {BATCH_MODEL_VERSION, ChecklistItem, Phase} from "@/model/batch";
+import Batch, {BATCH_MODEL_VERSION, Phase, SchedulePhase} from "@/model/batch";
 import {Units} from "@brewdocs.beer/core";
 import Statuses from "@/model/statuses";
 import equipment from "@/data/equipment";
 import {EquipmentUses} from "@/model/equipment";
 import {intersection} from "@/utils/func";
+import {equipmentToScheduleItem} from "@/transform/equipmentToScheduleItem";
 
 /** pulls the kit for a phase out of the catalog by matching EquipmentUses tags */
-const forUse = (...uses: EquipmentUses[]): ChecklistItem[] => equipment
+const forUse = (phase: SchedulePhase, ...uses: EquipmentUses[]) => equipment
     .filter(({ use }) => intersection(uses, use).length > 0)
-    .map(({ name }) => ({ name, completed: false }));
+    .map(item => equipmentToScheduleItem(item, phase));
 
 /** the out-of-the-box Schedule tabs: one per brew-day stage */
 const phases: Phase[] = [
-    { name: "1. Mash", tags: ["mash"], equipment: forUse("mash", "clean", "measure") },
+    { name: "1. Mash", tags: ["mash"], equipment: forUse("mash", "mash", "clean", "measure") },
     // chilling is just the closing gravity reading, so it rides along with the boil
-    { name: "2. Boil", tags: ["boil"], equipment: forUse("boil", "measure", "transfer") },
-    { name: "3. Ferment", tags: ["ferment"], equipment: forUse("starter", "primary", "secondary") }
+    { name: "2. Boil", tags: ["boil"], equipment: forUse("boil", "boil", "measure", "transfer") },
+    { name: "3. Ferment", tags: ["ferment"], equipment: forUse("ferment", "starter", "primary", "secondary") }
 ];
 
 const defaultBatch  = {

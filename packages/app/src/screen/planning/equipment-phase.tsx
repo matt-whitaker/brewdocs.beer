@@ -1,4 +1,4 @@
-import {ChecklistItem} from "@/model/batch";
+import {ScheduleItem, SchedulePhase} from "@/model/batch";
 import {AddFn, RemoveFn, UpdateFn} from "@/hooks/useJsonEdit";
 import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
@@ -13,29 +13,32 @@ export type PlanningEquipmentPhaseProps = {
     /** index into batch.phases */
     phase: number;
     name: string;
-    items: ChecklistItem[];
+    /** the phase's own SchedulePhase tag — stamped onto equipment items added here */
+    schedulePhase: SchedulePhase;
+    items: ScheduleItem[];
     add: AddFn;
     remove: RemoveFn;
     update: UpdateFn;
 }
-export default function PlanningEquipmentPhase({ phase, name, items, add, remove, update }: PlanningEquipmentPhaseProps) {
+export default function PlanningEquipmentPhase({ phase, name, schedulePhase, items, add, remove, update }: PlanningEquipmentPhaseProps) {
     const session = useSession();
     const equipmentIndex = useIndexBy(equipmentCatalog, "name");
     const sessionKey = `planning.equipment.${name}`;
 
     const onToggleCollapsed = useCallback((collapsed: boolean) => saveSession(sessionKey, collapsed), [sessionKey]);
 
-    const rows = useMemo(() => items.map((item: ChecklistItem, i) => (
+    const rows = useMemo(() => items.map((item: ScheduleItem, i) => (
         <PlanningEquipmentRow
             key={`equipment-${name}-${item.name}-${i}`}
             phase={phase}
+            schedulePhase={schedulePhase}
             row={i}
             item={item}
             remove={remove}
             update={update}
             equipment={equipmentCatalog}
             equipmentIndex={equipmentIndex} />
-    )), [items, phase, name, remove, update, equipmentIndex]);
+    )), [items, phase, schedulePhase, name, remove, update, equipmentIndex]);
 
     return (
         <DataGrid>
@@ -46,7 +49,7 @@ export default function PlanningEquipmentPhase({ phase, name, items, add, remove
                 {name}
             </DataGridHeaderRow>
             {rows}
-            <PlanningEquipmentAddRow phase={phase} add={add} equipment={equipmentCatalog} equipmentIndex={equipmentIndex} />
+            <PlanningEquipmentAddRow phase={phase} schedulePhase={schedulePhase} add={add} equipment={equipmentCatalog} equipmentIndex={equipmentIndex} />
         </DataGrid>
     )
 }
