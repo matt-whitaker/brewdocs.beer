@@ -5,14 +5,20 @@ import PanelSwitcher from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
 import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
+import DataGridRow from "@/component/data-grid/row";
+import DataGridLabel from "@/component/data-grid/label";
+import DataGridSelect from "@/component/data-grid/select";
 import ScheduleItemRow from "@/screen/schedule/item-row";
 import ScheduleEquipment from "@/screen/schedule/equipment";
 import useJsonEdit from "@/hooks/useJsonEdit";
 import {saveSession, useSession} from "@/state/session";
 import {useBatch} from "@/state/batches";
 import {get} from "@/utils/func";
-import {useMemo} from "react";
+import {useCallback, useMemo} from "react";
 import Scalar from "@/model/scalar";
+import {statuses} from "@/model/statuses";
+
+const STATUS_OPTIONS = Object.entries(statuses).map(([value, name]) => ({name, value}));
 
 // "equipment" never appears in batch.schedule (it lives on phase.equipment,
 // rendered separately by ScheduleEquipment) — listed for Record completeness
@@ -40,6 +46,8 @@ export default function Schedule({ batchId, onChange }: ScheduleProps) {
     const batch = useBatch(batchId);
 
     const [data, update, updateScalar, toggle] = useJsonEdit<Batch>(batch, onChange);
+
+    const updateStatus = useCallback((value: string) => update("status", Number(value)), []);
 
     const panels = useMemo(() => {
         // keep each item's index, so edit paths point at the real position in
@@ -71,6 +79,12 @@ export default function Schedule({ batchId, onChange }: ScheduleProps) {
     return (
         <Screen>
             <ScreenH1 className="mb-2">Brew Schedule</ScreenH1>
+            <DataGrid className="max-w-xs mt-2 mb-2">
+                <DataGridRow>
+                    <DataGridLabel cols={3}>Status</DataGridLabel>
+                    <DataGridSelect cols={3} data={STATUS_OPTIONS} value={String(data.status)} onChange={updateStatus} />
+                </DataGridRow>
+            </DataGrid>
             <PanelSwitcher compact name="schedule" defaultTab={data.phases[0].name}>
                 {panels.map(({ phase, index, groups }) => (
                     <PanelSwitcherContent
