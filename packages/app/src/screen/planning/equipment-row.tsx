@@ -30,7 +30,7 @@ function PlanningEquipmentRow({ phase, schedulePhase, row, item, remove, update,
     return (
         <Fragment>
             <DataGridRow zebra>
-                <DataGridLabel className="ml-6" cols={6}>
+                <DataGridLabel className="ml-6" cols={4}>
                     <DataGridRemoveButton onClick={onRemoveItem} />
                     <DataGridSelect
                         data={equipmentOptions}
