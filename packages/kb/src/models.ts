@@ -6,6 +6,8 @@ export interface KbScalar {
 }
 
 export interface KbRecipe extends Entity {
+    /** item schema version; hard-coded as KB_MODEL_VERSION in build-json.js, stamped at build time */
+    version: number;
     name: string;
     brewer: string;
     description: string;
@@ -73,6 +75,8 @@ export interface KbRecipe extends Entity {
 }
 
 export interface KbGrain extends Entity {
+    /** item schema version; hard-coded as KB_MODEL_VERSION in build-json.js, stamped at build time */
+    version: number;
     name: string;
     lovibond: number;
     origin: string;
@@ -80,6 +84,8 @@ export interface KbGrain extends Entity {
 }
 
 export interface KbYeast extends Entity {
+    /** item schema version; hard-coded as KB_MODEL_VERSION in build-json.js, stamped at build time */
+    version: number;
     name: string;
     temp: [string, string];
     description: string;
@@ -87,6 +93,8 @@ export interface KbYeast extends Entity {
 }
 
 export interface KbHop extends Entity {
+    /** item schema version; hard-coded as KB_MODEL_VERSION in build-json.js, stamped at build time */
+    version: number;
     name: string;
     alpha: number;
     origin: string;

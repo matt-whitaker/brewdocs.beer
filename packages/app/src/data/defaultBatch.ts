@@ -1,4 +1,4 @@
-import Batch, {ChecklistItem, Phase} from "@/model/batch";
+import Batch, {BATCH_MODEL_VERSION, ChecklistItem, Phase} from "@/model/batch";
 import {Units} from "@brewdocs.beer/core";
 import Statuses from "@/model/statuses";
 import equipment from "@/data/equipment";
@@ -19,6 +19,7 @@ const phases: Phase[] = [
 ];
 
 const defaultBatch  = {
+    version: BATCH_MODEL_VERSION,
     phases,
     // same placeholder the hydrometer dates use
     pitchedDate: "0000-00-00",
