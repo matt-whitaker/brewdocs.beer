@@ -9,8 +9,9 @@ export type UpdateScalarFn = (dot: string, value: string, lock?: boolean) => voi
 export type ToggleFn = (dot: string) => void;
 export type AddFn = (dot: string, value: any) => void;
 export type RemoveFn = (dot: string, index: number) => void;
+export type MoveFn = (dot: string, from: number, to: number) => void;
 
-export default function useJsonEdit<T extends Entity>(data: T, onChange: (data: T) => void): [T, UpdateFn, UpdateScalarFn, ToggleFn, AddFn, RemoveFn] {
+export default function useJsonEdit<T extends Entity>(data: T, onChange: (data: T) => void): [T, UpdateFn, UpdateScalarFn, ToggleFn, AddFn, RemoveFn, MoveFn] {
     const [state, setState] = useState<T>(data);
 
     // the editors below read the draft through this ref rather than closing over
@@ -71,5 +72,16 @@ export default function useJsonEdit<T extends Entity>(data: T, onChange: (data: 
         commit(setIn(stateRef.current, dot, list.filter((_, i) => i !== index)), true);
     }, [commit]);
 
-    return [state, update, updateScalar, toggle, add, remove];
+    /**
+     * Swaps two items in a list — used for reordering (e.g. drag-free "move up"/"move down" controls)
+     */
+    const move = useCallback<MoveFn>((dot, from, to) => {
+        const list = get(stateRef.current, dot) as unknown[];
+        if (to < 0 || to >= list.length) return;
+        const next = [...list];
+        [next[from], next[to]] = [next[to], next[from]];
+        commit(setIn(stateRef.current, dot, next), true);
+    }, [commit]);
+
+    return [state, update, updateScalar, toggle, add, remove, move];
 }
