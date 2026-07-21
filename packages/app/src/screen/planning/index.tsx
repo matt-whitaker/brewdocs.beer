@@ -1,4 +1,4 @@
-import {ScreenH1, ScreenH2, ScreenH3, ScreenP, InputDate} from "@brewdocs.beer/design";
+import {ScreenH1, ScreenH2, ScreenH3, ScreenP} from "@brewdocs.beer/design";
 import Batch from "@/model/batch";
 
 import useJsonEdit from "@/hooks/useJsonEdit";
@@ -9,6 +9,10 @@ import PlanningHops from "@/screen/planning/hops";
 import PlanningYeasts from "@/screen/planning/yeasts";
 import PlanningGrains from "@/screen/planning/grains";
 import PlanningEquipment from "@/screen/planning/equipment";
+import DataGrid from "@/component/data-grid";
+import DataGridRow from "@/component/data-grid/row";
+import DataGridLabel from "@/component/data-grid/label";
+import DataGridInput from "@/component/data-grid/input";
 import {useBatch} from "@/state/batches";
 import {useRecipe} from "@/state/recipes";
 import {useCallback} from "react";
@@ -31,15 +35,12 @@ export default function Planning({ batchId, onChange }: PlanningProps) {
                 <ScreenH2 className="first-of-type:mt-0">{recipe.name}</ScreenH2>
                 <ScreenH3>{batch.name || ""}</ScreenH3>
                 <ScreenP>By {`${recipe.brewer}`}</ScreenP>
-                <ScreenP>
-                    Brewed on:
-                    <InputDate
-                        className="ml-1"
-                        primary
-                        align="right"
-                        onChange={updateDate}
-                        value={data.brewDate} />
-                </ScreenP>
+                <DataGrid className="max-w-xs mt-2">
+                    <DataGridRow>
+                        <DataGridLabel cols={3}>Brewed on</DataGridLabel>
+                        <DataGridInput col={1} cols={3} type="date" value={data.brewDate} onChange={updateDate} />
+                    </DataGridRow>
+                </DataGrid>
             </div>
             <PanelSwitcher compact name="planning" defaultTab="Ingredients">
                 <PanelSwitcherContent title="Ingredients">
