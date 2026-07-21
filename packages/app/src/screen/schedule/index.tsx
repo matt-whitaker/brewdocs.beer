@@ -36,7 +36,7 @@ export default function Schedule({ batchId, onChange }: ScheduleProps) {
     const session = useSession();
     const batch = useBatch(batchId);
 
-    const [data, update, updateScalar, toggle] = useJsonEdit<Batch>(batch, onChange);
+    const [data, update, updateScalar, toggle, add, remove] = useJsonEdit<Batch>(batch, onChange);
 
     const panels = useMemo(() => {
         // keep each item's index, so edit paths point at the real position in
@@ -70,44 +70,42 @@ export default function Schedule({ batchId, onChange }: ScheduleProps) {
             <ScreenH1 className="mb-2">Brew Schedule</ScreenH1>
             <PanelSwitcher compact name="schedule" defaultTab={data.phases[0].name}>
                 {panels.map(({ phase, index, groups }) => (
-                    <PanelSwitcherContent
-                        key={phase.name}
-                        title={phase.name}
-                        // a phase with nothing in it renders as a disabled tab; say why,
-                        // or it inherits the switcher's "Not implemented" tooltip
-                        titleAlt={groups.length || phase.equipment.length ? "" : "Nothing scheduled in this step"}>
-                        {groups.length || phase.equipment.length ? (
-                            <div className="pt-2">
-                                {/* what to gather before the phase starts, ahead of the work itself */}
-                                <ScheduleEquipment
-                                    phase={index}
-                                    phaseName={phase.name}
-                                    items={phase.equipment}
-                                    toggle={toggle} />
-                                {groups.map(({ label, entries }) => (
-                                    <DataGrid key={label}>
-                                        <DataGridHeaderRow
-                                            defaultCollapsed={session?.[`schedule.${phase.name.toLowerCase()}.${label.toLowerCase()}`] as boolean ?? false}
-                                            onToggle={collapsed => saveSession(`schedule.${phase.name.toLowerCase()}.${label.toLowerCase()}`, collapsed)}>
-                                            {label}
-                                        </DataGridHeaderRow>
-                                        {entries.map(({ item, index }) => (
-                                            <ScheduleItemRow
-                                                key={`${item.tags[1]}-${item.name}-${index}`}
-                                                row={index}
-                                                item={item}
-                                                // the ingredient's live value, never a copy on the item
-                                                value={valueAt(data, item.path)}
-                                                extraValues={item.extra?.map(({ path }) => valueAt(data, path))}
-                                                toggle={toggle}
-                                                update={update}
-                                                updateScalar={updateScalar}
-                                            />
-                                        ))}
-                                    </DataGrid>
-                                ))}
-                            </div>
-                        ) : null}
+                    <PanelSwitcherContent key={phase.name} title={phase.name}>
+                        <div className="pt-2">
+                            {/* what to gather before the phase starts, ahead of the work itself;
+                                always rendered (even with nothing else scheduled) so its add-row
+                                stays reachable */}
+                            <ScheduleEquipment
+                                phase={index}
+                                phaseName={phase.name}
+                                items={phase.equipment}
+                                toggle={toggle}
+                                update={update}
+                                add={add}
+                                remove={remove} />
+                            {groups.map(({ label, entries }) => (
+                                <DataGrid key={label}>
+                                    <DataGridHeaderRow
+                                        defaultCollapsed={session?.[`schedule.${phase.name.toLowerCase()}.${label.toLowerCase()}`] as boolean ?? false}
+                                        onToggle={collapsed => saveSession(`schedule.${phase.name.toLowerCase()}.${label.toLowerCase()}`, collapsed)}>
+                                        {label}
+                                    </DataGridHeaderRow>
+                                    {entries.map(({ item, index }) => (
+                                        <ScheduleItemRow
+                                            key={`${item.tags[1]}-${item.name}-${index}`}
+                                            row={index}
+                                            item={item}
+                                            // the ingredient's live value, never a copy on the item
+                                            value={valueAt(data, item.path)}
+                                            extraValues={item.extra?.map(({ path }) => valueAt(data, path))}
+                                            toggle={toggle}
+                                            update={update}
+                                            updateScalar={updateScalar}
+                                        />
+                                    ))}
+                                </DataGrid>
+                            ))}
+                        </div>
                     </PanelSwitcherContent>
                 ))}
             </PanelSwitcher>
