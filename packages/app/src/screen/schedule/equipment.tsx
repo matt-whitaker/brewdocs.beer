@@ -1,49 +1,79 @@
-import {useMemo} from "react";
+import {memo, useCallback, useMemo} from "react";
 import {ChecklistItem} from "@/model/batch";
-import {AddFn, RemoveFn, ToggleFn, UpdateFn} from "@/hooks/useJsonEdit";
+import {ToggleFn} from "@/hooks/useJsonEdit";
 import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
-import ScheduleEquipmentRow from "@/screen/schedule/equipment-row";
-import ScheduleEquipmentAddRow from "@/screen/schedule/equipment-add-row";
+import DataGridRow from "@/component/data-grid/row";
+import DataGridLabel from "@/component/data-grid/label";
+import DataGridCheckbox from "@/component/data-grid/checkbox";
+
+type ScheduleEquipmentItemProps = {
+    /** index into batch.phases */
+    phase: number;
+    phaseName: string;
+    /** index into that phase's equipment */
+    row: number;
+    name: string;
+    completed: boolean;
+    toggle: ToggleFn;
+}
+
+function ScheduleEquipmentItem({ phase, phaseName, row, name, completed, toggle }: ScheduleEquipmentItemProps) {
+    const id = `equipment-${phaseName}-${name}`;
+    const toggleItem = useCallback(
+        () => toggle(`phases[${phase}].equipment[${row}].completed`),
+        [toggle, phase, row]
+    );
+
+    return (
+        <DataGridRow zebra>
+            {/* no value column here, so the label spans the full grid */}
+            <DataGridLabel className="flex items-center col-span-6" htmlFor={id}>
+                <DataGridCheckbox
+                    id={id}
+                    checked={completed}
+                    onChange={toggleItem} />
+                {name}
+            </DataGridLabel>
+        </DataGridRow>
+    );
+}
+
+// props are primitives plus a stable toggle, so ticking one item doesn't
+// re-render the rest of the list
+const Item = memo(ScheduleEquipmentItem);
 
 export type ScheduleEquipmentProps = {
-    /** index into batch.phases — the edit paths' real position */
+    /** index into batch.phases — the toggle path's real position */
     phase: number;
     phaseName: string;
     items: ChecklistItem[];
     toggle: ToggleFn;
-    update: UpdateFn;
-    add: AddFn;
-    remove: RemoveFn;
 }
 
 /**
  * What to have ready before a phase starts. Sits above the phase's grids as its
  * own DataGrid — the grid boundary is what would scope a collapse to these rows
  * rather than the ingredient groups below (same pattern as the shopping groups).
- * Editable the same way as Planning's hops/grains/yeasts: pick from a catalog,
- * remove, or add a row — the add-row always renders so an empty phase still has
- * a way to add its first item.
  */
-export default function ScheduleEquipment({ phase, phaseName, items, toggle, update, add, remove }: ScheduleEquipmentProps) {
+export default function ScheduleEquipment({ phase, phaseName, items, toggle }: ScheduleEquipmentProps) {
     const rows = useMemo(() => items.map(({ name, completed }, row) => (
-        <ScheduleEquipmentRow
-            key={`equipment-${name}-${row}`}
+        <Item
+            key={name}
             phase={phase}
             phaseName={phaseName}
             row={row}
             name={name}
             completed={completed}
-            toggle={toggle}
-            update={update}
-            remove={remove} />
-    )), [items, phase, phaseName, toggle, update, remove]);
+            toggle={toggle} />
+    )), [items, phase, phaseName, toggle]);
+
+    if (!items.length) return null;
 
     return (
         <DataGrid>
             <DataGridHeaderRow collapsible>Equipment</DataGridHeaderRow>
             {rows}
-            <ScheduleEquipmentAddRow phase={phase} add={add} />
         </DataGrid>
     );
 }
