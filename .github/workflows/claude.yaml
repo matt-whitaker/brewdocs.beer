@@ -101,3 +101,21 @@ jobs:
             --model sonnet
             --allowedTools "Edit,Write,Bash(npm:*),Bash(git status:*),Bash(git diff:*),Bash(git checkout:*),Bash(git add:*),Bash(git commit:*),Bash(git push:*),Bash(gh pr create:*),Bash(gh issue comment:*)"
             --max-turns ${{ github.event_name == 'issues' && 40 || 20 }}
+
+      # DEBUGGING AID — remove once turn-budget/denial tuning is settled.
+      #
+      # The execution log lives on the runner and is destroyed with the job, so it
+      # has to be captured here or not at all. `always()` is load-bearing: hitting
+      # --max-turns fails the step above, and a failed run is exactly the one worth
+      # inspecting.
+      #
+      # This repo is public and artifacts on public repos are downloadable by
+      # anyone. The log contains the full conversation, so retention is kept to a
+      # day rather than the 90-day default.
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: claude-execution-log-${{ github.run_id }}
+          path: ${{ runner.temp }}/claude-execution-output.json
+          retention-days: 1
+          if-no-files-found: warn
