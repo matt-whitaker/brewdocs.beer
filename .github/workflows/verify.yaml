@@ -5,6 +5,13 @@ run-name: "Verify"
 # deploying. Set the `Verify` job as a required status check on mainline — the
 # build-test-deploy workflows only run post-merge (on push), so this is the one
 # place a red build is caught *before* it ships.
+#
+# TODO (maintainer decision): claude.yaml opens PRs with the default
+# GITHUB_TOKEN. GitHub holds `pull_request` runs created that way pending an
+# "Approve and run" click, so this gate does not go green on a bot-opened PR
+# until you approve it (later pushes to the branch run normally). Swapping
+# claude.yaml's GH_TOKEN for a PAT or GitHub App token removes the click, at the
+# cost of running bot-authored code in CI unattended. Left as-is deliberately.
 on:
   pull_request:
     branches:

@@ -34,10 +34,10 @@ body:
         field — the more specific, the fewer turns Claude spends searching. Adjust the
         examples to your actual paths.
       placeholder: |
-        - Models: packages/app/src/models/
-        - Knowledge-base objects: packages/app/src/kb/
-        - New migrations go in: packages/app/src/migrations/
-        - Related: packages/app/src/storage/localCache.ts
+        - App models: packages/app/src/model/
+        - Knowledge base (data + Kb* types): packages/kb/
+        - Migrations: packages/app/migrations/
+        - Related: packages/app/src/storage/batches.ts
     validations:
       required: true
 
@@ -61,8 +61,8 @@ body:
       label: Patterns to follow
       description: Point to an existing file or pattern to mirror, so the output matches your conventions.
       placeholder: |
-        - Mirror the model structure in packages/app/src/models/batch.ts.
-        - Follow the reactive/RxJS patterns already used in the storage layer.
+        - Mirror the model structure in packages/app/src/model/batch.ts.
+        - Follow the TanStack Query suspense-hook pattern in packages/app/src/state/.
     validations:
       required: false
 

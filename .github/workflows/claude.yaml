@@ -16,17 +16,28 @@ on:
   issues:
     types: [labeled]
 
+# one Claude run at a time per issue/PR. Queue rather than cancel: killing a run
+# midway can leave a half-pushed branch and no PR.
+concurrency:
+  group: claude-${{ github.event.issue.number || github.event.pull_request.number }}
+  cancel-in-progress: false
+
 jobs:
   claude:
     # Scope the mention check per event. `github.event.issue.body` is the issue/PR
     # *description*, not the new comment — checking it on issue_comment re-runs
     # Claude on every comment to any thread whose description mentions @claude
     # (including PRs Claude itself opened).
+    #
+    # The actor guard stops a self-trigger loop: track_progress posts comments as
+    # github-actions[bot], and one quoting "@claude" would otherwise re-enter here.
     if: |
-      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
-      (github.event_name == 'issues' && github.event.label.name == 'claude')
+      github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]' && (
+        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+        (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
+        (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
+        (github.event_name == 'issues' && github.event.label.name == 'claude')
+      )
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -75,8 +86,18 @@ jobs:
             and linking the PR. A few lines is enough — the PR is the detailed
             record, the issue comment is the pointer to it.
 
+            Keep your task checklist to at most 3-5 coarse, outcome-level items
+            ("Add the version field to the models", not one line per file). Group
+            related edits under a single item and do not expand into a long
+            granular plan. Update the PR comment only at those few milestones —
+            a checklist item costs a turn to narrate, so a 10-item list spends
+            most of the budget before any code is written.
+
             Never merge the PR. The maintainer merges.
+          # tiered budget: a label-triggered run is real feature work; an @claude
+          # poke on a comment is usually small. (Comments can't live inside the
+          # block scalar below — they'd be passed to the CLI as arguments.)
           claude_args: |
             --model sonnet
-            --allowedTools "Edit,Write,Bash(npm:*),Bash(gh pr create:*),Bash(gh issue comment:*)"
-            --max-turns 50
+            --allowedTools "Edit,Write,Bash(npm:*),Bash(git status:*),Bash(git diff:*),Bash(gh pr create:*),Bash(gh issue comment:*)"
+            --max-turns ${{ github.event_name == 'issues' && 40 || 20 }}
