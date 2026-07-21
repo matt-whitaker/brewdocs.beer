@@ -31,9 +31,9 @@ body:
 
         - App models: packages/app/src/model/
         - State hooks (TanStack Query, suspense): packages/app/src/state/
-        - Derived batch data: packages/app/src/actions/
+        - Actions: packages/app/src/actions/
         - Screens: packages/app/src/screen/
-        - Shared UI primitives: packages/design/src/components/
+        - Components: packages/design/src/components/
         - Knowledge base (data + Kb* types): packages/kb/
     validations:
       required: true
