@@ -6,8 +6,8 @@ import {useCallback, useMemo} from "react";
 import equipmentCatalog from "@/data/equipment";
 import useIndexBy from "@/hooks/useIndexBy";
 import {saveSession, useSession} from "@/state/session";
-import RecipeEditEquipmentRow from "@/screen/recipe-edit/equipment-row";
-import RecipeEditEquipmentAddRow from "@/screen/recipe-edit/equipment-add-row";
+import RecipeEditEquipmentRow from "@/screen/recipe-edit-schedule/equipment-row";
+import RecipeEditEquipmentAddRow from "@/screen/recipe-edit-schedule/equipment-add-row";
 
 const SESSION_KEY = "recipeEdit.equipment";
 

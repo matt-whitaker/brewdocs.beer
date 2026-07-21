@@ -4,8 +4,8 @@ import DataGridHeaderRow from "@/component/data-grid/header-row";
 import {AddFn, RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
 import {useCallback, useMemo} from "react";
 import {saveSession, useSession} from "@/state/session";
-import RecipeEditBoilRow from "@/screen/recipe-edit/boil-row";
-import RecipeEditBoilAddRow from "@/screen/recipe-edit/boil-add-row";
+import RecipeEditBoilRow from "@/screen/recipe-edit-schedule/boil-row";
+import RecipeEditBoilAddRow from "@/screen/recipe-edit-schedule/boil-add-row";
 
 const SESSION_KEY = "recipeEdit.boil";
 

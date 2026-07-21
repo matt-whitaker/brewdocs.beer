@@ -5,8 +5,8 @@ import {useKbHops} from "@/state/kbHops";
 import useIndexBy from "@/hooks/useIndexBy";
 import {AddFn, RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
 import {saveSession, useSession} from "@/state/session";
-import RecipeEditHopsRow, {RecipeHop} from "@/screen/recipe-edit/hops-row";
-import RecipeEditHopsAddRow from "@/screen/recipe-edit/hops-add-row";
+import RecipeEditHopsRow, {RecipeHop} from "@/screen/recipe-edit-ingredients/hops-row";
+import RecipeEditHopsAddRow from "@/screen/recipe-edit-ingredients/hops-add-row";
 
 const SESSION_KEY = "recipe-edit.hops";
 

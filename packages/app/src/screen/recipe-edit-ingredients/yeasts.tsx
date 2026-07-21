@@ -5,8 +5,8 @@ import {useCallback, useMemo} from "react";
 import {useKbYeasts} from "@/state/kbYeasts";
 import useIndexBy from "@/hooks/useIndexBy";
 import {saveSession, useSession} from "@/state/session";
-import RecipeEditYeastsRow, {RecipeYeast} from "@/screen/recipe-edit/yeasts-row";
-import RecipeEditYeastsAddRow from "@/screen/recipe-edit/yeasts-add-row";
+import RecipeEditYeastsRow, {RecipeYeast} from "@/screen/recipe-edit-ingredients/yeasts-row";
+import RecipeEditYeastsAddRow from "@/screen/recipe-edit-ingredients/yeasts-add-row";
 
 const SESSION_KEY = "recipe-edit.yeasts";
 

@@ -4,7 +4,7 @@ import DataGridRow from "@/component/data-grid/row";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridAddButton from "@/component/data-grid/add-button";
 import {AddFn} from "@/hooks/useJsonEdit";
-import {RecipeAdditive} from "@/screen/recipe-edit/additives-row";
+import {RecipeAdditive} from "@/screen/recipe-edit-ingredients/additives-row";
 
 export type RecipeEditAdditivesAddRowProps = {
     add: AddFn;

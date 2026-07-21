@@ -5,8 +5,8 @@ import {useCallback, useMemo} from "react";
 import {useKbGrains} from "@/state/kbGrains";
 import useIndexBy from "@/hooks/useIndexBy";
 import {saveSession, useSession} from "@/state/session";
-import RecipeEditGrainsRow, {RecipeGrain} from "@/screen/recipe-edit/grains-row";
-import RecipeEditGrainsAddRow from "@/screen/recipe-edit/grains-add-row";
+import RecipeEditGrainsRow, {RecipeGrain} from "@/screen/recipe-edit-ingredients/grains-row";
+import RecipeEditGrainsAddRow from "@/screen/recipe-edit-ingredients/grains-add-row";
 
 const SESSION_KEY = "recipe-edit.grains";
 

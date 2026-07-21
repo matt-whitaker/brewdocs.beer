@@ -1,5 +1,5 @@
-import {KbGrain, KbRecipe} from "@brewdocs.beer/kb";
-import {Units} from "@brewdocs.beer/core";
+import {KbGrain, KbRecipe} from "../../../../kb";
+import {Units} from "../../../../core";
 import DataGridRow from "@/component/data-grid/row";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridRemoveButton from "@/component/data-grid/remove-button";

@@ -1,8 +1,8 @@
-import {KbGrain} from "@brewdocs.beer/kb";
+import {KbGrain} from "../../../../kb";
 import {useCallback, useState} from "react";
 import AddRow from "@/component/data-grid/add-row";
 import {AddFn} from "@/hooks/useJsonEdit";
-import {kbGrainToRecipeGrain} from "@/screen/recipe-edit/grains-row";
+import {kbGrainToRecipeGrain} from "@/screen/recipe-edit-ingredients/grains-row";
 
 export type RecipeEditGrainsAddRowProps = {
     add: AddFn;

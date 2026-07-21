@@ -1,4 +1,4 @@
-import {KbRecipe} from "@brewdocs.beer/kb";
+import {KbRecipe} from "../../../../kb";
 import {InputText} from "@brewdocs.beer/design";
 import DataGridRow from "@/component/data-grid/row";
 import DataGridLabel from "@/component/data-grid/label";

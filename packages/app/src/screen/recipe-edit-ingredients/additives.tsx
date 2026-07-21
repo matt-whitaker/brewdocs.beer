@@ -3,8 +3,8 @@ import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
 import {useCallback, useMemo} from "react";
 import {saveSession, useSession} from "@/state/session";
-import RecipeEditAdditivesRow, {RecipeAdditive} from "@/screen/recipe-edit/additives-row";
-import RecipeEditAdditivesAddRow from "@/screen/recipe-edit/additives-add-row";
+import RecipeEditAdditivesRow, {RecipeAdditive} from "@/screen/recipe-edit-ingredients/additives-row";
+import RecipeEditAdditivesAddRow from "@/screen/recipe-edit-ingredients/additives-add-row";
 
 const SESSION_KEY = "recipe-edit.additives";
 
