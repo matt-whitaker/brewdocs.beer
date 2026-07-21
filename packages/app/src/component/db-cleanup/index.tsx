@@ -13,9 +13,9 @@ export default function DbCleanup() {
             kbStorage.purge();
             navigate({to: "/", replace: true});
         }
-
-        return () => {};
-    }, []);
+        // navigate is stable, and the ?purge= guard makes any re-run a no-op
+        // (navigating away drops the param), so listing it can't loop
+    }, [navigate]);
 
     return null;
 }

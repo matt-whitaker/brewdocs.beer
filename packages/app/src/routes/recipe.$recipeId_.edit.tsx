@@ -3,7 +3,6 @@ import RecipeEditDetails from "@/screen/recipe-edit-details";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
 import PanelSwitcher from "@/component/panel-switcher";
 import {useCallback} from "react";
-import updateBatch from "@/actions/updateBatch";
 import {KbRecipe} from "../../../kb";
 import RecipeEditIngredients from "@/screen/recipe-edit-ingredients";
 import RecipeEditSchedule from "@/screen/recipe-edit-schedule";
@@ -14,7 +13,9 @@ export const Route = createFileRoute("/recipe/$recipeId_/edit")({
 
 function RecipeEditPage() {
     const {recipeId} = Route.useParams();
-    const onChange = useCallback((recipe: KbRecipe) => {  }, []);
+    // persistence is out of scope for the recipe-edit prototype — no recipes store
+    // exists yet, so edits live only in the draft and this is intentionally a no-op
+    const onChange = useCallback((_recipe: KbRecipe) => {  }, []);
 
     return (
         <PanelSwitcher name="recipe.edit" defaultTab="Details">

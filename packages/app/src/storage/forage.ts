@@ -17,7 +17,7 @@ export abstract class Forage<T> {
     }
 
     async list(): Promise<T[]> {
-        let items: T[] = [];
+        const items: T[] = [];
         await this._forage.iterate((val: T) => {
             items.push(val)
         });
@@ -25,7 +25,7 @@ export abstract class Forage<T> {
     }
 
     async index(): Promise<Record<string, T>> {
-        let items: Record<string, T> = {};
+        const items: Record<string, T> = {};
         await this._forage.iterate((val: T, key: string) => {
             items[key.replace(`${this._name}#`, "")] = val;
         });

@@ -8,7 +8,7 @@ export type SrmAvatarProps = Partial<PropsWithClass> & {
 }
 
 function findHexClasses(srm: number) {
-    const match = Array.from(SRM_TO_HEX.entries()).find(([key, hex]) => srm <= key);
+    const match = Array.from(SRM_TO_HEX.entries()).find(([key]) => srm <= key);
 
     if (match) {
         return match[1];

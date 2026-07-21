@@ -47,7 +47,7 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
 
     const [data, update, updateScalar, toggle] = useJsonEdit<Batch>(batch, onChange);
 
-    const updateStatus = useCallback((value: string) => update("status", Number(value)), []);
+    const updateStatus = useCallback((value: string) => update("status", Number(value)), [update]);
 
     const panels = useMemo(() => {
         // keep each item's index, so edit paths point at the real position in

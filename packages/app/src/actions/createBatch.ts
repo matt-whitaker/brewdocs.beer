@@ -12,7 +12,7 @@ import _updateRecipe from "@/actions/_updateRecipe";
 export default async function createBatch(recipe: KbRecipe, inputs: CreateBatchState) {
     const id = await batchesStorage.generateId();
 
-    let batch: Partial<Batch> = {
+    const batch: Partial<Batch> = {
         ...defaultBatch,
         id,
         status: Statuses.PREP,

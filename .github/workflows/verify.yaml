@@ -37,5 +37,7 @@ jobs:
       # fails here); core/design ship raw TS and are typechecked by the consumers
       # that compile them below.
       - run: npm ci
-      - run: npm run build -w packages/app   # tsc --noEmit && vite build
-      - run: npm run build -w packages/www   # astro check && astro build
+      # static gate first — lint is fast, so fail before the heavier builds
+      - run: npm run test:app    # eslint
+      - run: npm run build:app   # tsc --noEmit && vite build
+      - run: npm run build:www   # astro check && astro build

@@ -1,6 +1,6 @@
 import {Units} from "@brewdocs.beer/core";
 
-export const CURRENCY_REGEX = /^[\$\€\£\¥\₹\₽\₩\₫\₪\₱\₭\฿\₦\₲\₵\₮\₡\₸]/; // todo web safe to do this?
+export const CURRENCY_REGEX = /^[$€£¥₹₽₩₫₪₱₭฿₦₲₵₮₡₸]/; // todo web safe to do this?
 export const UNIT_REGEX = /[^\d.,]+/;
 export const COMMAS_REGEX = /,/g;
 export const UNIT_SPLIT_REGEX = /^(-?\d+(?:\.\d+)?)(\D*)$/;

@@ -1,7 +1,6 @@
 import {Fragment, useMemo} from "react";
 import DataGrid from "@/component/data-grid";
 import DataGridRow from "@/component/data-grid/row";
-import DataGridLabel from "@/component/data-grid/label";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
 
 // accepts either real batch-instance ingredients or raw kb-recipe-embedded
