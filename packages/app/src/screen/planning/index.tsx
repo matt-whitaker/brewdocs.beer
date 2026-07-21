@@ -26,7 +26,7 @@ export default function Planning({ batchId, onChange }: PlanningProps) {
     return (
         <Screen>
             <ScreenH1 className="mb-2">Batch Planning</ScreenH1>
-            <div className="lg:max-w-[80%] lg:pb-4 relative">
+            <div className="lg:max-w-[80%] pb-4 relative">
                 <ScreenH2 className="first-of-type:mt-0">{recipe.name}</ScreenH2>
                 <ScreenH3>{batch.name || ""}</ScreenH3>
                 <ScreenP>By {`${recipe.brewer}`}</ScreenP>
