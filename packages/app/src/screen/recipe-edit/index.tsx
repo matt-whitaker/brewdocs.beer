@@ -8,6 +8,9 @@ import RecipeEditGrains from "@/screen/recipe-edit/grains";
 import RecipeEditHops from "@/screen/recipe-edit/hops";
 import RecipeEditYeasts from "@/screen/recipe-edit/yeasts";
 import RecipeEditAdditives from "@/screen/recipe-edit/additives";
+import RecipeEditMash from "@/screen/recipe-edit/mash";
+import RecipeEditBoil from "@/screen/recipe-edit/boil";
+import RecipeEditEquipment from "@/screen/recipe-edit/equipment";
 
 export type RecipeEditProps = { recipeId: string };
 export default function RecipeEdit({ recipeId }: RecipeEditProps) {
@@ -53,6 +56,32 @@ export default function RecipeEdit({ recipeId }: RecipeEditProps) {
                         remove={remove}
                         update={update}
                         updateScalar={updateScalar}
+                    />
+                </div>
+            </div>
+            <div className="pt-2 grid grid-cols-1 lg:grid-cols-2 gap-x-4">
+                <div>
+                    <RecipeEditMash
+                        mash={data.mash}
+                        add={add}
+                        remove={remove}
+                        update={update}
+                        updateScalar={updateScalar}
+                    />
+                    <RecipeEditBoil
+                        boil={data.boil}
+                        add={add}
+                        remove={remove}
+                        update={update}
+                        updateScalar={updateScalar}
+                    />
+                </div>
+                <div>
+                    <RecipeEditEquipment
+                        equipment={data.equipment}
+                        add={add}
+                        remove={remove}
+                        update={update}
                     />
                 </div>
             </div>
