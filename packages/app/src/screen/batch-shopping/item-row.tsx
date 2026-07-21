@@ -6,7 +6,7 @@ import DataGridLabel from "@/component/data-grid/label";
 import DataGridInput from "@/component/data-grid/input";
 import DataGridCheckbox from "@/component/data-grid/checkbox";
 
-export type ShoppingItemRowProps = {
+export type BatchShoppingItemRowProps = {
     /** index into batch.shopping — display order is sorted, so this is the real position */
     row: number;
     item: ShoppingItem;
@@ -15,7 +15,7 @@ export type ShoppingItemRowProps = {
     updateScalar: UpdateScalarFn;
 }
 
-function ShoppingItemRow({ row, item, toggle, update, updateScalar }: ShoppingItemRowProps) {
+function BatchShoppingItemRow({ row, item, toggle, update, updateScalar }: BatchShoppingItemRowProps) {
     const id = `shopping-item-${item.tags[0]}-${item.name}`;
 
     const onTogglePurchased = useCallback(() => toggle(`shopping[${row}].purchased`), [toggle, row]);
@@ -43,4 +43,4 @@ function ShoppingItemRow({ row, item, toggle, update, updateScalar }: ShoppingIt
 
 // props are referentially stable (setIn keeps untouched branches, editors are
 // stable), so editing one row no longer re-renders its siblings
-export default memo(ShoppingItemRow);
+export default memo(BatchShoppingItemRow);

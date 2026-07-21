@@ -6,7 +6,7 @@ import DataGridRow from "@/component/data-grid/row";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridSelect from "@/component/data-grid/select";
-import ShoppingItemRow from "@/screen/shopping/item-row";
+import ShoppingItemRow from "@/screen/batch-shopping/item-row";
 import useJsonEdit from "@/hooks/useJsonEdit";
 import {saveSession, useSession} from "@/state/session";
 import {useBatch} from "@/state/batches";
@@ -47,11 +47,11 @@ function compare(a: ShoppingItem, b: ShoppingItem, sort: SortKey): number {
     return a.name.localeCompare(b.name);
 }
 
-export type ShoppingProps = {
+export type BatchShoppingProps = {
     batchId: string;
     onChange: (batch: Batch) => void
 };
-export default function Shopping({ batchId, onChange }: ShoppingProps) {
+export default function BatchShopping({ batchId, onChange }: BatchShoppingProps) {
     const session = useSession();
     const batch = useBatch(batchId);
 

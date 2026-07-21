@@ -5,7 +5,7 @@ import PanelSwitcher from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
 import BatchSchedule from "../screen/batch-schedule";
 import BatchSummary from "@/screen/batch-summary";
-import Shopping from "@/screen/shopping";
+import BatchShopping from "../screen/batch-shopping";
 import BatchPlanning from "../screen/batch-planning";
 import updateBatch from "@/actions/updateBatch";
 
@@ -23,7 +23,7 @@ function BatchPage() {
                 <BatchPlanning batchId={batchId} onChange={onChange} />
             </PanelSwitcherContent>
             <PanelSwitcherContent title="Shopping">
-                <Shopping batchId={batchId} onChange={onChange} />
+                <BatchShopping batchId={batchId} onChange={onChange} />
             </PanelSwitcherContent>
             <PanelSwitcherContent title="Schedule">
                 <BatchSchedule batchId={batchId} onChange={onChange} />
