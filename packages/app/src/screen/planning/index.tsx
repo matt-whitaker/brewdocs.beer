@@ -2,14 +2,15 @@ import {ScreenH1, ScreenH2, ScreenH3, ScreenP, InputDate} from "@brewdocs.beer/d
 import Batch from "@/model/batch";
 
 import useJsonEdit from "@/hooks/useJsonEdit";
-import ScreenTwoCol from "@/component/screen/two-col";
 import Screen from "@/component/screen";
+import PanelSwitcher from "@/component/panel-switcher";
+import PanelSwitcherContent from "@/component/panel-switcher/content";
 import PlanningHops from "@/screen/planning/hops";
 import PlanningYeasts from "@/screen/planning/yeasts";
 import PlanningGrains from "@/screen/planning/grains";
 import {useBatch} from "@/state/batches";
 import {useRecipe} from "@/state/recipes";
-import {Suspense, useCallback} from "react";
+import {useCallback} from "react";
 
 export type PlanningProps = {
     batchId: string;
@@ -23,51 +24,56 @@ export default function Planning({ batchId, onChange }: PlanningProps) {
     const updateDate = useCallback((value: string) => update(`brewDate`, value), [])
 
     return (
-        <>
-            <Screen>
-                <ScreenH1 className="mb-2">Batch Planning</ScreenH1>
-                <div className="lg:max-w-[80%] lg:pb-4 relative">
-                    <ScreenH2 className="first-of-type:mt-0">{recipe.name}</ScreenH2>
-                    <ScreenH3>{batch.name || ""}</ScreenH3>
-                    <ScreenP>By {`${recipe.brewer}`}</ScreenP>
-                    <ScreenP>
-                        Brewed on:
-                        <InputDate
-                            className="ml-1"
-                            primary
-                            align="right"
-                            onChange={updateDate}
-                            value={data.brewDate} />
-                    </ScreenP>
-                </div>
-            </Screen>
-            <ScreenTwoCol>
-                <div>
-                    <PlanningGrains
-                        grains={data.grains}
-                        add={add}
-                        remove={remove}
-                        update={update}
-                        updateScalar={updateScalar}
-                    />
-                    <PlanningHops
-                        hops={data.hops}
-                        add={add}
-                        remove={remove}
-                        update={update}
-                        updateScalar={updateScalar}
-                    />
-                </div>
-                <div>
-                    <PlanningYeasts
-                        yeasts={data.yeasts}
-                        add={add}
-                        remove={remove}
-                        update={update}
-                        updateScalar={updateScalar}
-                    />
-                </div>
-            </ScreenTwoCol>
-        </>
+        <Screen>
+            <ScreenH1 className="mb-2">Batch Planning</ScreenH1>
+            <div className="lg:max-w-[80%] lg:pb-4 relative">
+                <ScreenH2 className="first-of-type:mt-0">{recipe.name}</ScreenH2>
+                <ScreenH3>{batch.name || ""}</ScreenH3>
+                <ScreenP>By {`${recipe.brewer}`}</ScreenP>
+                <ScreenP>
+                    Brewed on:
+                    <InputDate
+                        className="ml-1"
+                        primary
+                        align="right"
+                        onChange={updateDate}
+                        value={data.brewDate} />
+                </ScreenP>
+            </div>
+            <PanelSwitcher compact name="planning" defaultTab="Ingredients">
+                <PanelSwitcherContent title="Ingredients">
+                    <div className="pt-2 grid grid-cols-1 lg:grid-cols-2 gap-x-4">
+                        <div>
+                            <PlanningGrains
+                                grains={data.grains}
+                                add={add}
+                                remove={remove}
+                                update={update}
+                                updateScalar={updateScalar}
+                            />
+                            <PlanningHops
+                                hops={data.hops}
+                                add={add}
+                                remove={remove}
+                                update={update}
+                                updateScalar={updateScalar}
+                            />
+                        </div>
+                        <div>
+                            <PlanningYeasts
+                                yeasts={data.yeasts}
+                                add={add}
+                                remove={remove}
+                                update={update}
+                                updateScalar={updateScalar}
+                            />
+                        </div>
+                    </div>
+                </PanelSwitcherContent>
+                {/* no children yet — PanelSwitcher renders a panel without
+                    content as a disabled "Not implemented" tab */}
+                <PanelSwitcherContent title="Equipment" />
+            </PanelSwitcher>
+        </Screen>
     )
 }
