@@ -60,11 +60,6 @@ export interface KbRecipe extends Entity {
         count?: number;
     }[];
 
-    checklist: {
-        name: string;
-        uses: string[];
-    }[];
-
     targets: {
         og: KbScalar;
         fg: KbScalar;
