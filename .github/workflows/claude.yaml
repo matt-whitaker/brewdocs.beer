@@ -1,24 +1,69 @@
 name: Claude
+run-name: "Claude"
+
 on:
   issue_comment:
     types: [created]
   pull_request_review_comment:
     types: [created]
+  # review submissions (approve / request-changes) carry their text in
+  # github.event.review.body, not github.event.comment.body
+  pull_request_review:
+    types: [submitted]
+  # issues are label-triggered, not mention-triggered: `opened` is deliberately
+  # not subscribed, so creating an issue produces no workflow run at all. Only
+  # applying a label does, and only the `claude` label gets past the `if:`.
+  issues:
+    types: [labeled]
 
 jobs:
   claude:
-    if: contains(github.event.comment.body, '@claude') || contains(github.event.issue.body, '@claude')
+    # Scope the mention check per event. `github.event.issue.body` is the issue/PR
+    # *description*, not the new comment — checking it on issue_comment re-runs
+    # Claude on every comment to any thread whose description mentions @claude
+    # (including PRs Claude itself opened).
+    if: |
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
+      (github.event_name == 'issues' && github.event.label.name == 'claude')
     runs-on: ubuntu-latest
     permissions:
       contents: write
       pull-requests: write
       issues: write
       id-token: write
+      # lets Claude read the Verify workflow's logs when a PR gate goes red
+      actions: read
     steps:
       - uses: actions/checkout@v4
+        with:
+          # full history so it can branch from and diff against mainline
+          fetch-depth: 0
       - uses: anthropics/claude-code-action@v1
+        env:
+          # the gh CLI authenticates from this; without it `gh pr create` fails
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # without this the action looks for an @claude mention and finds none
+          # on a label-triggered run
+          label_trigger: "claude"
+          # keeps mention handling alive alongside the prompt below
+          track_progress: true
+          # the action's default is to push a branch and hand back a pre-filled
+          # PR *link*; this overrides that to open the PR outright
+          prompt: |
+            Follow the Contributing section of CLAUDE.md for branch naming, commit
+            style, and the PR description template.
+
+            When you change code, open a pull request against `mainline` yourself —
+            do not stop at pushing a branch and returning a PR link. Run the
+            verification gate (`npm ci`, then `npm run build -w packages/app` and
+            `npm run build -w packages/www`) and record the result under the PR's
+            Verification heading before opening it.
+
+            Never merge the PR. The maintainer merges.
           claude_args: |
             --model sonnet
             --allowedTools "Edit,Write,Bash(npm:*),Bash(gh pr create:*)"
