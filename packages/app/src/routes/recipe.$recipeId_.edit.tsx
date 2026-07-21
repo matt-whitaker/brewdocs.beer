@@ -14,7 +14,7 @@ export const Route = createFileRoute("/recipe/$recipeId_/edit")({
 
 function RecipeEditPage() {
     const {recipeId} = Route.useParams();
-    const onChange = useCallback((recipe: KbRecipe) => { updateBatch(recipe!.id, recipe); }, []);
+    const onChange = useCallback((recipe: KbRecipe) => {  }, []);
 
     return (
         <PanelSwitcher name="recipe.edit" defaultTab="Details">
