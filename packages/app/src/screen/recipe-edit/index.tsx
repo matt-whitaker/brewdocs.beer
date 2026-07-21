@@ -4,6 +4,7 @@ import Screen from "@/component/screen";
 import useJsonEdit from "@/hooks/useJsonEdit";
 import {useRecipe} from "@/state/recipes";
 import {useCallback} from "react";
+import RecipeEditDetails from "@/screen/recipe-edit/details";
 import RecipeEditGrains from "@/screen/recipe-edit/grains";
 import RecipeEditHops from "@/screen/recipe-edit/hops";
 import RecipeEditYeasts from "@/screen/recipe-edit/yeasts";
@@ -24,6 +25,7 @@ export default function RecipeEdit({ recipeId }: RecipeEditProps) {
     return (
         <Screen>
             <ScreenH1>{data.name}</ScreenH1>
+            <RecipeEditDetails recipe={data} update={update} updateScalar={updateScalar} />
             <div className="pt-2 grid grid-cols-1 lg:grid-cols-2 gap-x-4">
                 <div>
                     <RecipeEditGrains
