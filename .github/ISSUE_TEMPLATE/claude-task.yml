@@ -4,24 +4,18 @@ title: "[Claude]: "
 # NOTE: intentionally NOT auto-applying the `claude` label here, so you can
 # review the filled-in issue before it triggers. Add `labels: ["claude"]`
 # below if you'd rather it kick off the moment the issue is created.
+#
+# Fields use `value:` rather than `placeholder:` so the text is prefilled and
+# lands in the created issue. Keep defaults to things that are true for *every*
+# task here — a worked example left unedited would read as the actual request.
 body:
-  - type: markdown
-    attributes:
-      value: |
-        Claude runs on a **fresh checkout with no memory of this repo**, so every field
-        you fill in is turns it *doesn't* spend hunting through `packages/*` before it
-        writes a line. The two highest-value fields are **Where the code lives** and
-        **Out of scope** — be concrete.
-
-        Keep each task small enough to be **one reviewable PR**. Split big features into
-        several issues rather than one sprawling one.
-
   - type: textarea
     id: summary
     attributes:
       label: Summary
       description: What needs to happen and why, in a sentence or two.
-      placeholder: Add a version field to our data models so we can run graceful automatic migrations.
+      placeholder: |
+        What needs to happen, and why.
     validations:
       required: true
 
@@ -31,13 +25,16 @@ body:
       label: Where the code lives
       description: >
         The package(s), directories, and key files this touches. The single most useful
-        field — the more specific, the fewer turns Claude spends searching. Adjust the
-        examples to your actual paths.
-      placeholder: |
+        field — the more specific, the fewer turns Claude spends searching.
+      value: |
+        Common packages to provide:
+
         - App models: packages/app/src/model/
+        - State hooks (TanStack Query, suspense): packages/app/src/state/
+        - Derived batch data: packages/app/src/actions/
+        - Screens: packages/app/src/screen/
+        - Shared UI primitives: packages/design/src/components/
         - Knowledge base (data + Kb* types): packages/kb/
-        - Migrations: packages/app/migrations/
-        - Related: packages/app/src/storage/batches.ts
     validations:
       required: true
 
@@ -46,12 +43,6 @@ body:
     attributes:
       label: What to change
       description: Concrete, specific requirements. Bullet them.
-      placeholder: |
-        - Add a `version` field to locally stored and knowledge-base object models.
-        - Add a migrations folder using a `v1_v2` naming convention.
-        - First migration: unversioned -> v1.
-        - Gate migrations on the presence of migrated objects (not a log in local cache),
-          so stragglers migrate automatically.
     validations:
       required: true
 
@@ -60,9 +51,6 @@ body:
     attributes:
       label: Patterns to follow
       description: Point to an existing file or pattern to mirror, so the output matches your conventions.
-      placeholder: |
-        - Mirror the model structure in packages/app/src/model/batch.ts.
-        - Follow the TanStack Query suspense-hook pattern in packages/app/src/state/.
     validations:
       required: false
 
@@ -71,10 +59,6 @@ body:
     attributes:
       label: Out of scope
       description: What NOT to touch or build. Prevents over-engineering and wasted turns.
-      placeholder: |
-        - Don't change the existing BrewDocs data schemas yet.
-        - No UI changes.
-        - Don't add a migration-history log.
     validations:
       required: false
 
@@ -83,10 +67,8 @@ body:
     attributes:
       label: Acceptance criteria
       description: How you'll know it's done. A short checklist works well.
-      placeholder: |
-        - [ ] All target models carry a `version`.
-        - [ ] A v1 migration exists and runs on unversioned objects.
-        - [ ] Re-running is idempotent (already-migrated objects are skipped).
+      value: |
+        - [ ]
     validations:
       required: false
 
