@@ -1,0 +1,5 @@
+{
+  "name": "Erlenmeyer Flask",
+  "use": ["starter"],
+  "notes": "Flask used to grow a yeast starter on a stir plate before pitching."
+}
