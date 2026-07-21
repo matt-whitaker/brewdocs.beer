@@ -22,6 +22,9 @@ concurrency:
   group: claude-${{ github.event.issue.number || github.event.pull_request.number }}
   cancel-in-progress: false
 
+env:
+  NODE_VERSION: 22
+
 jobs:
   claude:
     # Scope the mention check per event. `github.event.issue.body` is the issue/PR
@@ -51,6 +54,15 @@ jobs:
         with:
           # full history so it can branch from and diff against mainline
           fetch-depth: 0
+      # Install as workflow steps, not from inside the run: this costs Claude zero
+      # turns, and without it there's no node_modules — `tsc` then resolves to the
+      # runner image's global TypeScript (a different major) and fails on config
+      # this repo pins as valid. That phantom error once ate half a run.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
       - uses: anthropics/claude-code-action@v1
         env:
           # the gh CLI authenticates from this; without it `gh pr create` fails
@@ -71,14 +83,33 @@ jobs:
             When you change code, open a pull request against `mainline` yourself —
             do not stop at pushing a branch and returning a PR link.
 
-            Do NOT run `npm ci` or the package builds as a matter of course. The
-            Verify workflow runs the build gate on the PR, and installing plus
-            building both packages burns most of the turn budget before any code
-            is written. Under the PR's Verification heading, say that Verify
-            covers the build and note anything a human should check by hand.
+            A denied tool call is settled. The permission layer is policy, not a
+            syntax problem, so rewording or re-quoting the same operation will be
+            denied identically — you are spending turns to learn nothing. Note
+            what you couldn't do, and move on. The one documented exception is the
+            `$` escape for route filenames, below.
 
-            The exception: if Verify has already reported a failure you were
-            asked to fix, run the specific failing build to confirm the fix.
+            Dependencies are already installed by the workflow — do not run
+            `npm ci` or `npm install`.
+
+            If you changed code, run the build once before opening the PR:
+            `npm run build -w packages/app` (and `-w packages/www` if you touched
+            it). Record the result under the PR's Verification heading.
+
+            If that build fails, the fault is in the change you just made — fix it.
+            Do NOT investigate node, tsc, or dependency versions, and do not go
+            looking through node_modules or tsconfig for an explanation. A previous
+            run spent eleven turns chasing a toolchain problem that did not exist.
+            If two attempts don't fix it, stop and say so in the PR.
+
+            Use Edit / Write / Read for file contents rather than shelling out.
+
+            Before any shell command touching a file under `src/routes/`, read the
+            Routing section of CLAUDE.md — param filenames contain `$` and need a
+            specific escape. Retrying with different outer quoting never works.
+
+            Run one command per Bash call. Chaining with `&&` or `;` trips the
+            "multiple operations" check and the whole call is denied.
 
             When the work came from an issue, close the loop on it for the
             record: put `Closes #<issue>` in the PR body so GitHub cross-links
@@ -99,7 +130,7 @@ jobs:
           # block scalar below — they'd be passed to the CLI as arguments.)
           claude_args: |
             --model sonnet
-            --allowedTools "Edit,Write,Bash(npm:*),Bash(git status:*),Bash(git diff:*),Bash(git checkout:*),Bash(git add:*),Bash(git commit:*),Bash(git push:*),Bash(gh pr create:*),Bash(gh issue comment:*)"
+            --allowedTools "Edit,Write,Bash(npm run build:*),Bash(git status:*),Bash(git diff:*),Bash(git checkout:*),Bash(git add:*),Bash(git commit:*),Bash(git push:*),Bash(gh pr create:*),Bash(gh issue comment:*)"
             --max-turns ${{ github.event_name == 'issues' && 40 || 20 }}
 
       # DEBUGGING AID — remove once turn-budget/denial tuning is settled.
