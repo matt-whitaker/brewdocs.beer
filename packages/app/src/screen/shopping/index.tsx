@@ -105,16 +105,15 @@ export default function Shopping({ batchId, onChange }: ShoppingProps) {
     return (
         <Screen>
             <ScreenH1>Shopping List</ScreenH1>
-            <DataGrid>
+            <DataGrid className="mt-2">
                 <DataGridRow className="border-b-1 pb-2 border-base-200">
-                    <DataGridLabel className="mt-2 flex items-center gap-x-2 col-span-6">
-                        <span className="shrink-0">Sort by</span>
-                        <DataGridSelect
-                            value={sort}
-                            data={SORT_OPTIONS}
-                            onChange={onChangeSort}
-                        />
-                    </DataGridLabel>
+                    <DataGridLabel cols={3}>Sort by</DataGridLabel>
+                    <DataGridSelect
+                        cols={3}
+                        value={sort}
+                        data={SORT_OPTIONS}
+                        onChange={onChangeSort}
+                    />
                 </DataGridRow>
             </DataGrid>
             {shoppingGroups}

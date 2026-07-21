@@ -36,7 +36,7 @@ export default function Planning({ batchId, onChange }: PlanningProps) {
                 <ScreenH2 className="first-of-type:mt-0">{recipe.name}</ScreenH2>
                 <ScreenH3>{batch.name || ""}</ScreenH3>
                 <ScreenP>By {`${recipe.brewer}`}</ScreenP>
-                <DataGrid className="max-w-xs mt-2">
+                <DataGrid className="mt-2">
                     <DataGridRow>
                         <DataGridLabel cols={3}>Brewed on</DataGridLabel>
                         <DataGridInput col={1} cols={3} type="date" value={data.brewDate} onChange={updateDate} />
