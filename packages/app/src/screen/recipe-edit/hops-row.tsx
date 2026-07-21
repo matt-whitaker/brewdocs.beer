@@ -67,7 +67,7 @@ function RecipeEditHopsRow({ row, hop, remove, update, updateScalar, kbHops, kbH
             label="hop details"
             expandContent={
                 <DataGrid>
-                    <DataGridRow zebra={false}>
+                    <DataGridRow>
                         <DataGridLabel tiny className="ml-6">Alpha %</DataGridLabel>
                         <DataGridInput
                             col={3}
@@ -76,7 +76,7 @@ function RecipeEditHopsRow({ row, hop, remove, update, updateScalar, kbHops, kbH
                             onBlur={onBlurAlpha}
                         />
                     </DataGridRow>
-                    <DataGridRow zebra={false}>
+                    <DataGridRow>
                         <DataGridLabel tiny className="ml-6">Phase</DataGridLabel>
                         <DataGridSelect
                             cols={2}
