@@ -142,3 +142,20 @@ jobs:
             --model sonnet
             --allowedTools "Edit,Write,Bash(git:*),Bash(gh:*),Bash(npm:*)"
             --max-turns ${{ github.event_name == 'issues' && 40 || 20 }}
+
+      # DEBUGGING AID — remove once tool-permission tuning is settled.
+      #
+      # The execution log lives on the runner and is destroyed with the job, so it
+      # has to be captured here or not at all. `always()` is load-bearing: a denied
+      # tool / hit turn cap fails the step above, and a failed run is exactly the one
+      # worth inspecting. The log's tool_use / tool_result entries name the denied tool.
+      #
+      # This repo is public and artifacts on public repos are downloadable by anyone;
+      # the log holds the full conversation, so retention is kept to a day.
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: claude-execution-log-${{ github.run_id }}
+          path: ${{ runner.temp }}/claude-execution-output.json
+          retention-days: 1
+          if-no-files-found: warn
