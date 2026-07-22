@@ -1,3 +1,4 @@
+import {useCallback} from "react";
 import Screen from "@/component/screen";
 import useJsonEdit from "@/hooks/useJsonEdit";
 import Recipe from "@/model/recipe";
@@ -5,14 +6,14 @@ import RecipeEditAdditives from "@/screen/recipe-edit-ingredients/additives";
 import RecipeEditGrains from "@/screen/recipe-edit-ingredients/grains";
 import RecipeEditHops from "@/screen/recipe-edit-ingredients/hops";
 import RecipeEditYeasts from "@/screen/recipe-edit-ingredients/yeasts";
-import {useRecipe} from "@/state/recipes";
+import {saveRecipe, useRecipe} from "@/state/recipes";
 
 export type RecipeEditIngredientsProps = {
     recipeId: string;
-    onChange: (recipe: Recipe) => void
 };
-export default function RecipeEditIngredients({ recipeId, onChange }: RecipeEditIngredientsProps) {
+export default function RecipeEditIngredients({ recipeId }: RecipeEditIngredientsProps) {
     const recipe = useRecipe(recipeId);
+    const onChange = useCallback((r: Recipe) => saveRecipe(recipeId, r), [recipeId]);
     const [data, update, updateScalar, toggle, add, remove] = useJsonEdit<Recipe>(recipe, onChange);
     return (
         <Screen>
