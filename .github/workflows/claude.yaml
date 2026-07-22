@@ -125,10 +125,20 @@ jobs:
             most of the budget before any code is written.
 
             Never merge the PR. The maintainer merges.
-          # tiered budget: a label-triggered run is real feature work; an @claude
-          # poke on a comment is usually small. (Comments can't live inside the
-          # block scalar below — they'd be passed to the CLI as arguments.)
+          # Allowlist by *family*, not per-subcommand — enumerating individual git/gh/npm
+          # commands meant every new task discovered a fresh denial. git/gh/npm can't run
+          # arbitrary shell, so this stays well short of a blank cheque.
+          #
+          # Deliberately NOT bare `Bash`: this runner carries GH_TOKEN and the Claude OAuth
+          # token in env, and arbitrary shell (curl, cat env) could exfiltrate them. The one
+          # residual edge is `npm install <pkg>` running a malicious postinstall script —
+          # acceptable because only write-access actors can trigger a run (see the `if:`
+          # actor gate). Narrow npm to `Bash(npm run:*),Bash(npm test:*)` to close even that.
+          #
+          # tiered budget: a label-triggered run is real feature work; an @claude poke on a
+          # comment is usually small. (Comments can't live inside the block scalar below —
+          # they'd be passed to the CLI as arguments.)
           claude_args: |
             --model sonnet
-            --allowedTools "Edit,Write,Bash(npm run build:*),Bash(git status:*),Bash(git diff:*),Bash(git checkout:*),Bash(git add:*),Bash(git commit:*),Bash(git push:*),Bash(gh pr create:*),Bash(gh issue comment:*)"
+            --allowedTools "Edit,Write,Bash(git:*),Bash(gh:*),Bash(npm:*)"
             --max-turns ${{ github.event_name == 'issues' && 40 || 20 }}
