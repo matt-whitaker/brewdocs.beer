@@ -152,10 +152,10 @@ jobs:
       #
       # This repo is public and artifacts on public repos are downloadable by anyone;
       # the log holds the full conversation, so retention is kept to a day.
-#      - if: always()
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: claude-execution-log-${{ github.run_id }}
-#          path: ${{ runner.temp }}/claude-execution-output.json
-#          retention-days: 1
-#          if-no-files-found: warn
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: claude-execution-log-${{ github.run_id }}
+          path: ${{ runner.temp }}/claude-execution-output.json
+          retention-days: 1
+          if-no-files-found: warn
