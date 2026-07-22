@@ -5,9 +5,9 @@ import kbStorage from "@/storage/kb";
 import {isOnline} from "@/utils/connectivity";
 import {FilterFn} from "@/utils/func";
 
-const recipesQueryKey = () => ["recipes"];
-const fetchRecipes = async (): Promise<KbRecipe[]> => {
-    const cached = await kbStorage.getResource("recipes");
+const kbRecipesQueryKey = () => ["kb.recipes"];
+const fetchKbRecipes = async (): Promise<KbRecipe[]> => {
+    const cached = await kbStorage.getResource("kbRecipes");
     if (cached) {
         return cached;
     }
@@ -16,28 +16,28 @@ const fetchRecipes = async (): Promise<KbRecipe[]> => {
         throw new Error("Recipe data isn't downloaded yet, and you're offline.");
     }
 
-    const recipes = await importResource("recipes");
-    return kbStorage.saveResource("recipes", recipes);
+    const kbRecipes = await importResource("kbRecipes");
+    return kbStorage.saveResource("kbRecipes", kbRecipes);
 };
 
-export const prefetchRecipes = () => queryClient.prefetchQuery({ queryKey: recipesQueryKey(), queryFn: fetchRecipes });
+export const prefetchKbRecipes = () => queryClient.prefetchQuery({ queryKey: kbRecipesQueryKey(), queryFn: fetchKbRecipes });
 
-export const useRecipes = (filter?: FilterFn<KbRecipe>): KbRecipe[] => {
-    const { data } = useSuspenseQuery({ queryKey: recipesQueryKey(), queryFn: fetchRecipes });
+export const useKbRecipes = (filter?: FilterFn<KbRecipe>): KbRecipe[] => {
+    const { data } = useSuspenseQuery({ queryKey: kbRecipesQueryKey(), queryFn: fetchKbRecipes });
 
     if (!data) {
-        throw new Error("Unable to load recipes");
+        throw new Error("Unable to load kbRecipes");
     }
 
     return filter ? data.filter(filter) : data;
 };
 
 /**
- * Shares the "recipes" query/cache entry with useRecipes() rather than
+ * Shares the "kbRecipes" query/cache entry with useRecipes() rather than
  * issuing its own fetch of the same resource
  */
-export const useRecipe = (id: string): KbRecipe => {
-    const { data } = useSuspenseQuery({ queryKey: recipesQueryKey(), queryFn: fetchRecipes });
+export const useKbRecipe = (id: string): KbRecipe => {
+    const { data } = useSuspenseQuery({ queryKey: kbRecipesQueryKey(), queryFn: fetchKbRecipes });
     const recipe = data?.find(recipe => recipe.id === id);
 
     if (!recipe) {
