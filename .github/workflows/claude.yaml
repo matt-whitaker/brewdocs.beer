@@ -83,6 +83,15 @@ jobs:
             When you change code, open a pull request against `mainline` yourself —
             do not stop at pushing a branch and returning a PR link.
 
+            If you were triggered from an existing PR (a review or comment asking
+            for a change), that PR's branch is already checked out and the prior
+            work is already in the tree. Do NOT re-survey the codebase to rebuild
+            context. Orient with a single `git diff mainline...HEAD`, then read
+            only the specific files named in the feedback. Push follow-up commits
+            to the same branch — the PR already exists, so do not open a new one.
+            Re-reading the whole area from scratch is the single biggest way these
+            runs exhaust their turn budget before making the small requested change.
+
             A denied tool call is settled. The permission layer is policy, not a
             syntax problem, so rewording or re-quoting the same operation will be
             denied identically — you are spending turns to learn nothing. Note
@@ -135,13 +144,19 @@ jobs:
           # acceptable because only write-access actors can trigger a run (see the `if:`
           # actor gate). Narrow npm to `Bash(npm run:*),Bash(npm test:*)` to close even that.
           #
-          # tiered budget: a label-triggered run is real feature work; an @claude poke on a
-          # comment is usually small. (Comments can't live inside the block scalar below —
-          # they'd be passed to the CLI as arguments.)
+          # Flat 40-turn budget across triggers. The old tiering gave anything that
+          # wasn't a label (i.e. every PR-review iteration) only 20 turns, on the
+          # premise that "an @claude comment is usually small". That premise is false:
+          # a PR comment fires `issue_comment` (GitHub models PRs as issues), and each
+          # run is a cold container that re-explores the codebase from scratch before
+          # making the requested change. Even labelled 40-turn runs barely finished;
+          # 20 left the PR-feedback loop no chance. The prompt's PR-orientation note
+          # above is the real fix for the exploration cost — this just stops starving
+          # the path you actually use.
           claude_args: |
             --model sonnet
             --allowedTools "Edit,Write,Bash(git:*),Bash(gh:*),Bash(npm:*)"
-            --max-turns ${{ github.event_name == 'issues' && 40 || 20 }}
+            --max-turns 40
 
       # DEBUGGING AID — remove once tool-permission tuning is settled.
       #
@@ -152,10 +167,10 @@ jobs:
       #
       # This repo is public and artifacts on public repos are downloadable by anyone;
       # the log holds the full conversation, so retention is kept to a day.
-      - if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: claude-execution-log-${{ github.run_id }}
-          path: ${{ runner.temp }}/claude-execution-output.json
-          retention-days: 1
-          if-no-files-found: warn
+#      - if: always()
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: claude-execution-log-${{ github.run_id }}
+#          path: ${{ runner.temp }}/claude-execution-output.json
+#          retention-days: 1
+#          if-no-files-found: warn
