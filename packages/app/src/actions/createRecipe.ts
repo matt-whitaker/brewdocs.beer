@@ -6,12 +6,18 @@ import recipesStorage from "@/storage/recipes";
 import {kbRecipeToRecipe} from "@/transform/kbRecipeToRecipe";
 import {cloneDeep} from "@/utils/func";
 
-export default async function createRecipe(source?: KbRecipe): Promise<string> {
+export default async function createRecipe(source?: KbRecipe, name?: string): Promise<string> {
     const id = await recipesStorage.generateId();
 
     const recipe: Recipe = source
         ? {...kbRecipeToRecipe(source), id}
         : {...cloneDeep(defaultRecipe), id};
+
+    // let a caller (re)name the clone — e.g. "Edit" clones a catalog recipe into
+    // a local one under a user-chosen name
+    if (name) {
+        recipe.name = name;
+    }
 
     await saveRecipe(id, recipe);
 

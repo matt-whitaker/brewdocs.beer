@@ -92,7 +92,9 @@ export default function PanelSwitcher({ name, defaultTab, children, className, c
                     <div className="flex items-center justify-between gap-2">
                         {tablist}
                         <div className="flex items-center shrink-0 pr-2 lg:pr-0">
-                            {actions}
+                            {/* toArray keys an array of actions, so callers can pass
+                                a bare array instead of wrapping them in a fragment */}
+                            {Children.toArray(actions)}
                         </div>
                     </div>
                 )
