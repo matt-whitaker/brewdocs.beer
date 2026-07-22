@@ -2,7 +2,6 @@ import {useNavigate} from "@tanstack/react-router";
 import {useCallback} from "react";
 import {ScreenH1, ScreenH2, ScreenP} from "@brewdocs.beer/design";
 import createBatch from "@/actions/createBatch";
-import createRecipe from "@/actions/createRecipe";
 import CreateBatchForm from "@/component/create-batch-form";
 import useCreatBatchForm from "@/component/create-batch-form/useCreateBatchForm";
 import Modal from "@/component/modal";
@@ -29,9 +28,9 @@ export default function RecipeOverview({ recipeId }: RecipeOverviewProps) {
         createBatch(recipe, finalInputs).then((id) => navigate({to: "/batch/$batchId", params: {batchId: id}})),
     [navigate, recipe, finalInputs]);
 
-    const onEdit = useCallback(() =>
-        createRecipe(recipe).then((id) => navigate({to: "/recipe/$recipeId/edit", params: {recipeId: id}})),
-    [navigate, recipe]);
+    // const onEdit = useCallback(() =>
+    //     createRecipe(recipe).then((id) => navigate({to: "/recipe/$recipeId/edit", params: {recipeId: id}})),
+    // [navigate, recipe]);
 
     return (
         <Screen>
