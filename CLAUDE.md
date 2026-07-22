@@ -130,7 +130,7 @@ useKbX() → IndexedDB hit? return it
 
 ### Storage (`src/storage/`)
 **Purpose.** localforage wrappers for the app's persisted state.
-**Where.** `forage.ts` (`Forage<T>` base; keys are `` `${name}#${id}` ``), `batches` (IndexedDB), `kb` (IndexedDB, one entry per resource), `session` (sessionStorage — collapse/toggle memory, cleared on tab close), `query` + `queryStorageDriver.ts`, `localforage.ts` (driver registration).
+**Where.** `forage.ts` (`Forage<T>` base; keys are `` `${name}#${id}` ``), `batches` (IndexedDB), `recipes` (IndexedDB, store name `"recipes-local"` — user-owned recipes, distinct from the `kb` cache's `"recipes"` resource entry), `kb` (IndexedDB, one entry per resource), `session` (sessionStorage — collapse/toggle memory, cleared on tab close), `query` + `queryStorageDriver.ts`, `localforage.ts` (driver registration).
 **How it works.** `queryStorageDriver.ts` is a **custom localforage driver backed by the URL query string** — a synchronous `Storage`-shaped shim over `URLSearchParams` + `history.replaceState`, using localforage's serializer (values keep JSON types) and a `name/` key-prefix (ignores foreign params). Registered as `LF_QUERYSTORAGE`.
 **Invariants.** ⚠️ Query-driver values must be small (they sit in the address bar) and JSON-serializable.
 **Gotchas.** URL-backed state **survives an inline refresh but resets on navigation** (the query string is dropped) — which is exactly why the panel switcher stores the active tab there.
@@ -141,7 +141,7 @@ useKbX() → IndexedDB hit? return it
 **Where.** `src/model/` (app models: `Batch`, `Grain`, `Hop`, `Yeast`, `Scalar`…), `src/transform/` (the mappers), `kbScalarToScalar` in `utils/formatting.ts`.
 **How it works.** **Kb models** (`KbGrain`/`KbHop`/`KbYeast`/`KbRecipe`) are richer catalog/reference shapes; they flow through kb hooks, caches, dropdowns, and knowledge screens **untransformed**. The transform to app models happens **only at the moment of use** — picking a catalog item in a BatchPlanning dropdown (`kbHopToHop` etc., fills instance defaults like `weight: "0.0oz"`), or instantiating a recipe into a batch (`createBatch` → `kbRecipe*To*` mappers, preserving the recipe's real values via `kbScalarToScalar`).
 **Invariants.** ⚠️ Never map Kb → app models at download/cache time. `Scalar` convention: `{value: "9.0lb", unit: "lb"}` — the display string embeds the unit; `unit` is the parsing/fallback hint.
-**Gotchas.** `model/recipe.ts` is intentionally unused — reserved for a future user-created-recipes feature. KB-sourced recipes flow as `KbRecipe` everywhere.
+**Gotchas.** `model/recipe.ts` is now the live editable app model for user-owned recipes — `Recipe extends Entity`, built on app `Scalar`/models (the editable complement to `KbRecipe`), versioned via `RECIPE_MODEL_VERSION` and persisted through `storage/recipes.ts` + `state/recipes-local.ts`. KB-sourced recipes still flow as `KbRecipe` everywhere via `state/recipes.ts`, untransformed. `model/checklist-definition.ts` is now orphaned (only `model/recipe.ts` imported it, and that import was dropped in the rewrite).
 **Example.** _None._
 
 ### Derived batch data (`src/actions/`)
