@@ -1,8 +1,8 @@
 import {useMemo} from "react";
 import {ScreenH1} from "@brewdocs.beer/design";
+import Screen from "@/component/screen";
 import RecipeListItem from "@/screen/recipe-list/item";
 import {useRecipes} from "@/state/recipes";
-import Screen from "../../component/screen";
 
 export default function RecipeList() {
     const recipes = useRecipes();

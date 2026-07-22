@@ -4,10 +4,10 @@ import updateBatch from "@/actions/updateBatch";
 import PanelSwitcher from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
 import Batch from "@/model/batch";
+import BatchPlanning from "@/screen/batch-planning";
+import BatchSchedule from "@/screen/batch-schedule";
+import BatchShopping from "@/screen/batch-shopping";
 import BatchSummary from "@/screen/batch-summary";
-import BatchPlanning from "../screen/batch-planning";
-import BatchSchedule from "../screen/batch-schedule";
-import BatchShopping from "../screen/batch-shopping";
 
 export const Route = createFileRoute("/batch/$batchId")({
     component: BatchPage

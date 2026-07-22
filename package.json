@@ -13,7 +13,9 @@
     "test:app": "npm run test -w packages/app",
     "build:kb": "npm run build -w packages/kb",
     "dev:kb": "npm run dev -w packages/kb",
-    "test:kb": "npm run test -w packages/kb"
+    "test:kb": "npm run test -w packages/kb",
+    "build": "npm run build -ws",
+    "test": "npm test -ws"
   },
   "author": "",
   "license": "ISC",

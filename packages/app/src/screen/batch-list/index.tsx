@@ -1,12 +1,12 @@
 import {Link} from "@tanstack/react-router";
 import {useMemo} from "react";
 import {ScreenH1, ScreenH2, ScreenP} from "@brewdocs.beer/design";
+import Screen from "@/component/screen";
 import useIndexBy from "@/hooks/useIndexBy";
 import Batch from "@/model/batch";
 import {statuses} from "@/model/statuses";
 import {useBatches} from "@/state/batches";
 import {useRecipes} from "@/state/recipes";
-import Screen from "../../component/screen";
 
 export type BatchListProps = { filter?: (b: Batch) => boolean };
 export default function BatchList({ filter }: BatchListProps) {

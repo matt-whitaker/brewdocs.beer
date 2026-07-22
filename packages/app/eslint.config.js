@@ -55,13 +55,6 @@ export default tseslint.config(
                 "newlines-between": "never",
                 alphabetize: { order: "asc", caseInsensitive: true }
             }],
-
-            // enforce the "no lodash" rule that until now lived only in CLAUDE.md —
-            // the repo uses the hand-rolled utils/func.ts instead
-            "no-restricted-imports": ["error", {
-                paths: [{ name: "lodash", message: "Use the hand-rolled helpers in @/utils/func instead." }],
-                patterns: [{ group: ["lodash", "lodash/*"], message: "Use the hand-rolled helpers in @/utils/func instead." }]
-            }],
             // the codebase already uses a leading _ for deliberate throwaways —
             // destructured skips (`const [_, x] = ...`) and unused stub params.
             // Honor that convention rather than editing each site.
@@ -70,6 +63,27 @@ export default tseslint.config(
                 varsIgnorePattern: "^_",
                 caughtErrorsIgnorePattern: "^_",
                 destructuredArrayIgnorePattern: "^_"
+            }]
+        }
+    },
+    {
+        // Import conventions scoped to app source. Deliberately NOT applied to
+        // build/script files at the package root (vite.config.ts, migrations/*),
+        // which legitimately reach into sibling packages' internals by relative
+        // path — the @/ alias and package-name rules are src concerns.
+        files: ["src/**/*.{ts,tsx}"],
+        rules: {
+            // enforce the "no lodash" rule that until now lived only in CLAUDE.md —
+            // the repo uses the hand-rolled utils/func.ts instead
+            "no-restricted-imports": ["error", {
+                paths: [{ name: "lodash", message: "Use the hand-rolled helpers in @/utils/func instead." }],
+                patterns: [
+                    { group: ["lodash", "lodash/*"], message: "Use the hand-rolled helpers in @/utils/func instead." },
+                    // intra-app modules go through the @/ alias, not a relative path
+                    // that climbs out of the current directory (../screen/x → @/screen/x).
+                    // Same-dir ./ imports are fine.
+                    { group: ["../*", "../**"], message: "Import intra-app modules via the @/ alias, not a relative parent path." }
+                ]
             }]
         }
     },
