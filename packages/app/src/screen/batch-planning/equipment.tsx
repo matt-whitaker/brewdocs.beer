@@ -9,21 +9,17 @@ export type BatchPlanningEquipmentProps = {
     update: UpdateFn;
 };
 export default function BatchPlanningEquipment({ phases, add, remove, update }: BatchPlanningEquipmentProps) {
-    return (
-        <div className="pt-2 grid grid-cols-1 lg:grid-cols-2 gap-x-4">
-            {phases.map((phase, i) => (
-                <BatchPlanningEquipmentPhase
-                    key={phase.name}
-                    phase={i}
-                    name={phase.name}
-                    label={phaseLabel(phase, i)}
-                    schedulePhase={phase.tags[0] as SchedulePhase}
-                    items={phase.equipment}
-                    add={add}
-                    remove={remove}
-                    update={update}
-                />
-            ))}
-        </div>
-    );
+    return phases.map((phase, i) => (
+        <BatchPlanningEquipmentPhase
+            key={phase.name}
+            phase={i}
+            name={phase.name}
+            label={phaseLabel(phase, i)}
+            schedulePhase={phase.tags[0] as SchedulePhase}
+            items={phase.equipment}
+            add={add}
+            remove={remove}
+            update={update}
+        />
+    ));
 }

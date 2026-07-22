@@ -44,33 +44,27 @@ export default function BatchPlanning({ batchId, onChange }: BatchPlanningProps)
             </div>
             <PanelSwitcher compact name="planning" defaultTab="Ingredients">
                 <PanelSwitcherContent title="Ingredients">
-                    <div className="pt-2 grid grid-cols-1 lg:grid-cols-2 gap-x-4">
-                        <div>
-                            <BatchPlanningGrains
-                                grains={data.grains}
-                                add={add}
-                                remove={remove}
-                                update={update}
-                                updateScalar={updateScalar}
-                            />
-                            <BatchPlanningHops
-                                hops={data.hops}
-                                add={add}
-                                remove={remove}
-                                update={update}
-                                updateScalar={updateScalar}
-                            />
-                        </div>
-                        <div>
-                            <BatchPlanningYeasts
-                                yeasts={data.yeasts}
-                                add={add}
-                                remove={remove}
-                                update={update}
-                                updateScalar={updateScalar}
-                            />
-                        </div>
-                    </div>
+                    <BatchPlanningGrains
+                        grains={data.grains}
+                        add={add}
+                        remove={remove}
+                        update={update}
+                        updateScalar={updateScalar}
+                    />
+                    <BatchPlanningHops
+                        hops={data.hops}
+                        add={add}
+                        remove={remove}
+                        update={update}
+                        updateScalar={updateScalar}
+                    />
+                    <BatchPlanningYeasts
+                        yeasts={data.yeasts}
+                        add={add}
+                        remove={remove}
+                        update={update}
+                        updateScalar={updateScalar}
+                    />
                 </PanelSwitcherContent>
                 <PanelSwitcherContent title="Equipment">
                     <BatchPlanningEquipment
@@ -81,14 +75,12 @@ export default function BatchPlanning({ batchId, onChange }: BatchPlanningProps)
                     />
                 </PanelSwitcherContent>
                 <PanelSwitcherContent title="Phases">
-                    <div className="pt-2">
-                        <BatchPlanningPhases
-                            phases={data.phases}
-                            add={add}
-                            remove={remove}
-                            move={move}
-                        />
-                    </div>
+                    <BatchPlanningPhases
+                        phases={data.phases}
+                        add={add}
+                        remove={remove}
+                        move={move}
+                    />
                 </PanelSwitcherContent>
             </PanelSwitcher>
         </Screen>
