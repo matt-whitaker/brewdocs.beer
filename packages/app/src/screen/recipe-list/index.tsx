@@ -22,7 +22,7 @@ export default function RecipeList() {
     return (
         <Screen>
             <ScreenH1>All Recipes</ScreenH1>
-            <button className="btn btn-primary btn-sm" onClick={onCreate}>
+            <button className="btn btn-primary btn-sm mt-2" onClick={onCreate}>
                 <Plus className="w-4 -ml-1" /> Create Recipe
             </button>
             <ul className="w-full menu px-0">

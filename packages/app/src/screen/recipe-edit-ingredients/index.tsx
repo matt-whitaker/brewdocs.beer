@@ -1,5 +1,4 @@
 import {useCallback} from "react";
-import Screen from "@/component/screen";
 import useJsonEdit from "@/hooks/useJsonEdit";
 import Recipe from "@/model/recipe";
 import RecipeEditAdditives from "@/screen/recipe-edit-ingredients/additives";
@@ -16,42 +15,40 @@ export default function RecipeEditIngredients({ recipeId }: RecipeEditIngredient
     const onChange = useCallback((r: Recipe) => saveRecipe(recipeId, r), [recipeId]);
     const [data, update, updateScalar, toggle, add, remove] = useJsonEdit<Recipe>(recipe, onChange);
     return (
-        <Screen>
-            <div className="pt-2 grid grid-cols-1 lg:grid-cols-2 gap-x-4">
-                <div>
-                    <RecipeEditGrains
-                        grains={data.grains}
-                        add={add}
-                        remove={remove}
-                        update={update}
-                        updateScalar={updateScalar}
-                    />
-                    <RecipeEditHops
-                        hops={data.hops}
-                        add={add}
-                        remove={remove}
-                        update={update}
-                        updateScalar={updateScalar}
-                    />
-                </div>
-                <div>
-                    <RecipeEditYeasts
-                        yeasts={data.yeasts}
-                        add={add}
-                        remove={remove}
-                        update={update}
-                        updateScalar={updateScalar}
-                        toggle={toggle}
-                    />
-                    <RecipeEditAdditives
-                        additives={data.additives}
-                        add={add}
-                        remove={remove}
-                        update={update}
-                        updateScalar={updateScalar}
-                    />
-                </div>
+        <div className="pt-2 grid grid-cols-1 lg:grid-cols-2 gap-x-4">
+            <div>
+                <RecipeEditGrains
+                    grains={data.grains}
+                    add={add}
+                    remove={remove}
+                    update={update}
+                    updateScalar={updateScalar}
+                />
+                <RecipeEditHops
+                    hops={data.hops}
+                    add={add}
+                    remove={remove}
+                    update={update}
+                    updateScalar={updateScalar}
+                />
             </div>
-        </Screen>
+            <div>
+                <RecipeEditYeasts
+                    yeasts={data.yeasts}
+                    add={add}
+                    remove={remove}
+                    update={update}
+                    updateScalar={updateScalar}
+                    toggle={toggle}
+                />
+                <RecipeEditAdditives
+                    additives={data.additives}
+                    add={add}
+                    remove={remove}
+                    update={update}
+                    updateScalar={updateScalar}
+                />
+            </div>
+        </div>
     );
 }
