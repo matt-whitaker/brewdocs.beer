@@ -1,16 +1,16 @@
 import {memo, useCallback} from "react";
 import {InputText} from "@brewdocs.beer/design";
-import {KbRecipe} from "@brewdocs.beer/kb";
 import DataGrid from "@/component/data-grid";
 import DataGridInput from "@/component/data-grid/input";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridRemoveButton from "@/component/data-grid/remove-button";
 import DataGridRow from "@/component/data-grid/row";
 import {RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
+import Recipe from "@/model/recipe";
 
 export type RecipeEditMashRowProps = {
     row: number;
-    step: KbRecipe["mash"][number];
+    step: Recipe["mash"][number];
     remove: RemoveFn;
     update: UpdateFn;
     updateScalar: UpdateScalarFn;

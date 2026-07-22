@@ -1,6 +1,6 @@
 import {memo, useCallback, useMemo} from "react";
 import {Units} from "@brewdocs.beer/core";
-import {KbHop, KbRecipe} from "@brewdocs.beer/kb";
+import {KbHop} from "@brewdocs.beer/kb";
 import DataGrid from "@/component/data-grid";
 import DataGridInput from "@/component/data-grid/input";
 import DataGridLabel from "@/component/data-grid/label";
@@ -8,8 +8,9 @@ import DataGridRemoveButton from "@/component/data-grid/remove-button";
 import DataGridRow from "@/component/data-grid/row";
 import DataGridSelect from "@/component/data-grid/select";
 import {RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
+import Hop from "@/model/hop";
 
-export type RecipeHop = KbRecipe["hops"][number];
+export type RecipeHop = Hop;
 
 /** the only phases a hop addition can land in — mirrors the app Hop model's phase union */
 export const HOP_PHASE_OPTIONS = [

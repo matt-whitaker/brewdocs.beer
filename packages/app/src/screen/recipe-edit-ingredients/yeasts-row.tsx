@@ -1,6 +1,6 @@
 import {memo, useCallback, useMemo} from "react";
 import {Units} from "@brewdocs.beer/core";
-import {KbYeast, KbRecipe} from "@brewdocs.beer/kb";
+import {KbYeast} from "@brewdocs.beer/kb";
 import DataGridCheckbox from "@/component/data-grid/checkbox";
 import DataGridInput from "@/component/data-grid/input";
 import DataGridLabel from "@/component/data-grid/label";
@@ -8,8 +8,9 @@ import DataGridRemoveButton from "@/component/data-grid/remove-button";
 import DataGridRow from "@/component/data-grid/row";
 import DataGridSelect from "@/component/data-grid/select";
 import {RemoveFn, ToggleFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
+import Yeast from "@/model/yeast";
 
-export type RecipeYeast = KbRecipe["yeasts"][number];
+export type RecipeYeast = Yeast;
 
 /** Default attenuation/temp for a yeast newly picked from the catalog. */
 export function kbYeastToRecipeYeast(kbYeast: KbYeast): RecipeYeast {

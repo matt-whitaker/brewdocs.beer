@@ -8,5 +8,5 @@ export function kbRecipeYeastsToYeasts(yeasts: KbRecipe["yeasts"]): Yeast[] {
         avg_attn: kbScalarToScalar(avg_attn),
         temp: kbScalarToScalar(temp),
         starter
-    } as Yeast));
+    }));
 }

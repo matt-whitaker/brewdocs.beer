@@ -1,10 +1,10 @@
 import {useCallback, useMemo} from "react";
-import {KbRecipe} from "@brewdocs.beer/kb";
 import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
 import equipmentCatalog from "@/data/equipment";
 import useIndexBy from "@/hooks/useIndexBy";
 import {AddFn, RemoveFn, UpdateFn} from "@/hooks/useJsonEdit";
+import Recipe from "@/model/recipe";
 import RecipeEditEquipmentAddRow from "@/screen/recipe-edit-schedule/equipment-add-row";
 import RecipeEditEquipmentRow from "@/screen/recipe-edit-schedule/equipment-row";
 import {saveSession, useSession} from "@/state/session";
@@ -12,7 +12,7 @@ import {saveSession, useSession} from "@/state/session";
 const SESSION_KEY = "recipeEdit.equipment";
 
 export type RecipeEditEquipmentProps = {
-    equipment: KbRecipe["equipment"];
+    equipment: Recipe["equipment"];
     add: AddFn;
     remove: RemoveFn;
     update: UpdateFn;

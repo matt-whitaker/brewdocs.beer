@@ -8,14 +8,14 @@ import DataGridSubheaderRow from "@/component/data-grid/subheader-row";
 import Screen from "@/component/screen";
 import useJsonEdit from "@/hooks/useJsonEdit";
 import Recipe from "@/model/recipe";
-import {saveRecipe, useRecipe} from "@/state/recipes";
+import {useRecipe} from "@/state/recipes";
 import {saveSession, useSession} from "@/state/session";
-import {PropsWithOnChange} from "@brewdocs.beer/core";
 
 const SESSION_KEY = "recipe-edit.details";
 
-export type RecipeEditDetailsProps = PropsWithOnChange<Recipe> & {
+export type RecipeEditDetailsProps = {
     recipeId: string;
+    onChange: (recipe: Recipe) => void;
 };
 export default function RecipeEditDetails({ recipeId, onChange }: RecipeEditDetailsProps) {
     const recipe = useRecipe(recipeId);

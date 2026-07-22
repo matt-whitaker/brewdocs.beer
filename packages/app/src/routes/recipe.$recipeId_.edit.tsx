@@ -1,12 +1,11 @@
 import {createFileRoute} from "@tanstack/react-router";
 import {useCallback} from "react";
-import {KbRecipe} from "@brewdocs.beer/kb";
 import PanelSwitcher from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
+import Recipe from "@/model/recipe";
 import RecipeEditDetails from "@/screen/recipe-edit-details";
 import RecipeEditIngredients from "@/screen/recipe-edit-ingredients";
 import RecipeEditSchedule from "@/screen/recipe-edit-schedule";
-import Recipe from "@/model/recipe";
 import {saveRecipe} from "@/state/recipes";
 
 export const Route = createFileRoute("/recipe/$recipeId_/edit")({

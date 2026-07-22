@@ -1,13 +1,13 @@
 import {memo, useCallback} from "react";
 import {InputText} from "@brewdocs.beer/design";
-import {KbRecipe} from "@brewdocs.beer/kb";
 import DataGridInput from "@/component/data-grid/input";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridRemoveButton from "@/component/data-grid/remove-button";
 import DataGridRow from "@/component/data-grid/row";
 import {RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
+import Additive from "@/model/additive";
 
-export type RecipeAdditive = KbRecipe["additives"][number];
+export type RecipeAdditive = Additive;
 
 export type RecipeEditAdditivesRowProps = {
     row: number;

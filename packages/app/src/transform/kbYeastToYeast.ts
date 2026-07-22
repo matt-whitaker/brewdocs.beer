@@ -18,5 +18,5 @@ export function kbYeastToYeast(kbYeast: KbYeast): Yeast {
             unit: Units.FAHRENHEIT
         },
         starter: false
-    } as Yeast;
+    };
 }

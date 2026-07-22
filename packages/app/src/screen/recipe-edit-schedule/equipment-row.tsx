@@ -1,5 +1,4 @@
 import {memo, useCallback, useEffect, useMemo, useState} from "react";
-import {KbRecipe} from "@brewdocs.beer/kb";
 import DataGridInput from "@/component/data-grid/input";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridRemoveButton from "@/component/data-grid/remove-button";
@@ -7,10 +6,11 @@ import DataGridRow from "@/component/data-grid/row";
 import DataGridSelect from "@/component/data-grid/select";
 import {RemoveFn, UpdateFn} from "@/hooks/useJsonEdit";
 import Equipment from "@/model/equipment";
+import Recipe from "@/model/recipe";
 
 export type RecipeEditEquipmentRowProps = {
     row: number;
-    item: KbRecipe["equipment"][number];
+    item: Recipe["equipment"][number];
     remove: RemoveFn;
     update: UpdateFn;
     equipment: Equipment[];
