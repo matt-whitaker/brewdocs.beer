@@ -7,8 +7,6 @@ React UI primitives that emit Tailwind/DaisyUI class strings.
 - [`src/index.ts`](src/index.ts) — exported primitives (`ScreenH1`–`H5`, `ScreenP`, `InputText`, `InputDate`, `InputSelect`)
 - [`src/components/`](src/components/) — the components
 
-Declares no Tailwind/DaisyUI of its own — the app and www compile the class strings. Ships raw TypeScript (no build).
-
 ## Stack
 
 - [React](https://react.dev/)

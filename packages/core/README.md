@@ -10,6 +10,4 @@ Shared, environment-agnostic types and helpers used by every other package.
 - [`src/fetchClient.ts`](src/fetchClient.ts) — `createFetchClient`
 - [`src/migration.ts`](src/migration.ts) — the version-migration framework
 
-Ships raw TypeScript (no build) — consumers compile it. Must stay environment-agnostic: no DOM, Node, or Vite APIs.
-
 See the [`core` section of CLAUDE.md](/CLAUDE.md#packagescore) for detail.
