@@ -20,7 +20,7 @@ function RecipeEditPage() {
     return (
         <PanelSwitcher name="recipe.edit" defaultTab="Details">
             <PanelSwitcherContent title="Details">
-                <RecipeEditDetails recipeId={recipeId} onChange={onChange} />
+                <RecipeEditDetails recipeId={recipeId} />
             </PanelSwitcherContent>
             <PanelSwitcherContent title="Ingredients">
                 <RecipeEditIngredients recipeId={recipeId} onChange={onChange} />

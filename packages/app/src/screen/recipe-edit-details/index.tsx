@@ -1,5 +1,4 @@
 import {useCallback} from "react";
-import {KbRecipe} from "@brewdocs.beer/kb";
 import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
 import DataGridInput from "@/component/data-grid/input";
@@ -8,19 +7,20 @@ import DataGridRow from "@/component/data-grid/row";
 import DataGridSubheaderRow from "@/component/data-grid/subheader-row";
 import Screen from "@/component/screen";
 import useJsonEdit from "@/hooks/useJsonEdit";
-import {useKbRecipe} from "@/state/kbRecipes";
+import Recipe from "@/model/recipe";
+import {saveRecipe, useRecipe} from "@/state/recipes";
 import {saveSession, useSession} from "@/state/session";
 
 const SESSION_KEY = "recipe-edit.details";
 
 export type RecipeEditDetailsProps = {
     recipeId: string;
-    onChange: (recipe: KbRecipe) => void
 };
-export default function RecipeEditDetails({ recipeId, onChange }: RecipeEditDetailsProps) {
-    const recipe = useKbRecipe(recipeId);
+export default function RecipeEditDetails({ recipeId }: RecipeEditDetailsProps) {
+    const recipe = useRecipe(recipeId);
     const session = useSession();
-    const [data, update, updateScalar] = useJsonEdit<KbRecipe>(recipe, onChange);
+    const onChange = useCallback((r: Recipe) => saveRecipe(recipeId, r), [recipeId]);
+    const [data, update, updateScalar] = useJsonEdit<Recipe>(recipe, onChange);
 
     const onToggleCollapsed = useCallback((collapsed: boolean) => saveSession(SESSION_KEY, collapsed), []);
 
