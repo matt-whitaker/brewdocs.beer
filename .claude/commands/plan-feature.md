@@ -21,9 +21,28 @@ The overall goal and why, the shared constraints, and a short codebase map of wh
 relevant code lives. This is the review artifact — it's what the maintainer reads to
 decide whether the decomposition is right.
 
-## 3. Decompose into 2–5 sub-issues
+## 3. Decompose into sub-issues sized for a bounded-turn worker
 
-Each one independently implementable and small enough for a single reviewable PR.
+Each sub-issue is implemented by a worker with a **fixed turn budget** (~40 turns on the
+label tier) that must **read the files it will touch before it can edit them** — reading
+is most of what it spends turns on. So a sub-issue that's "one reviewable PR" for a human
+can still be too big for the worker: if it has to read ~40 files to understand the change,
+it exhausts the budget on exploration and runs out before writing code. This has actually
+happened — a single "wire the edit page" issue that spanned a whole screen tree died at the
+turn cap having made almost no edits.
+
+**Size by exploration cost, not just human-reviewability:**
+
+- Keep each sub-issue to a **small, cohesive set of files** — roughly a handful, not a
+  whole directory tree.
+- ⚠️ If a sub-issue would touch a **directory of screens/rows** (e.g. `recipe-edit-ingredients/`
+  and its per-ingredient row files), that's the signal to **split it further** — one
+  screen, or one slice, per sub-issue — rather than let one issue span the tree.
+- **Size is the hard constraint; the number of sub-issues is soft.** Prefer more small
+  issues over one that balloons — seven right-sized children beat five oversized ones. (If
+  a feature genuinely needs a dozen, that's a signal to narrow its scope with the maintainer.)
+- Precise paths in *Where the code lives* directly cut exploration cost — the more exact,
+  the fewer files the worker reads to orient.
 
 **Write every sub-issue self-contained.** There is no runtime parent lookup — a worker
 picks up one labeled issue and sees only that issue. Restating shared constraints in
@@ -59,7 +78,9 @@ Don't ask a worker to run builds. The **Verify** workflow runs the gate on the P
 ## 5. Close with a plan of attack
 
 After the blocks, summarize: each sub-issue's title, which are independent vs. blocked
-and on what, and the order to apply the `claude` label.
+and on what, and the order to apply the `claude` label. Remind the maintainer to **start a
+sub-issue by applying the `claude` label** (the full feature-work turn budget) — an `@claude`
+comment runs on the smaller poke budget and can time out on real implementation work.
 
 ## Boundaries
 
