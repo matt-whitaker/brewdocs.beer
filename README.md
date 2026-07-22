@@ -21,4 +21,4 @@ BrewDocs is an offline homebrewing application and info handbook.
 
 [Claude Code](https://claude.com/claude-code) enabled with [`@claude` integration](.github/workflows/claude.yaml)
 
-See [Claude.md](Claude.md)
+See [Claude.md](/blob/mainline/CLAUDE.md)
