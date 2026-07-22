@@ -9,6 +9,7 @@ import useJsonEdit from "@/hooks/useJsonEdit";
 import Recipe from "@/model/recipe";
 import {saveRecipe, useRecipe} from "@/state/recipes";
 import {saveSession, useSession} from "@/state/session";
+import Screen from "@/component/screen";
 
 const SESSION_KEY = "recipe-edit.details";
 
@@ -45,102 +46,104 @@ export default function RecipeEditDetails({ recipeId }: RecipeEditDetailsProps) 
     const onChangeSrm = useCallback((value: string) => update("targets.srm", value), [update]);
 
     return (
-        <DataGrid>
-            <DataGridHeaderRow
-                collapsible
-                defaultCollapsed={session?.[SESSION_KEY] as boolean ?? false}
-                onToggle={onToggleCollapsed}>
-                Details
-            </DataGridHeaderRow>
+        <Screen>
+            <DataGrid>
+                <DataGridHeaderRow
+                    collapsible
+                    defaultCollapsed={session?.[SESSION_KEY] as boolean ?? false}
+                    onToggle={onToggleCollapsed}>
+                    Details
+                </DataGridHeaderRow>
 
-            <DataGridRow zebra>
-                <DataGridLabel cols={3}>Name</DataGridLabel>
-                <DataGridInput col={1} cols={3} value={data.name} onChange={onChangeName} />
-            </DataGridRow>
-            <DataGridRow zebra>
-                <DataGridLabel cols={3}>Brewer</DataGridLabel>
-                <DataGridInput col={1} cols={3} value={data.brewer} onChange={onChangeBrewer} />
-            </DataGridRow>
-            <DataGridRow zebra>
-                <DataGridLabel cols={3}>Type</DataGridLabel>
-                <DataGridInput col={1} cols={3} value={data.type} onChange={onChangeType} />
-            </DataGridRow>
-            <DataGridRow zebra>
-                <DataGridLabel cols={3}>Description</DataGridLabel>
-                <DataGridInput col={1} cols={3} value={data.description} onChange={onChangeDescription} />
-            </DataGridRow>
+                <DataGridRow zebra>
+                    <DataGridLabel cols={3}>Name</DataGridLabel>
+                    <DataGridInput col={1} cols={3} value={data.name} onChange={onChangeName} />
+                </DataGridRow>
+                <DataGridRow zebra>
+                    <DataGridLabel cols={3}>Brewer</DataGridLabel>
+                    <DataGridInput col={1} cols={3} value={data.brewer} onChange={onChangeBrewer} />
+                </DataGridRow>
+                <DataGridRow zebra>
+                    <DataGridLabel cols={3}>Type</DataGridLabel>
+                    <DataGridInput col={1} cols={3} value={data.type} onChange={onChangeType} />
+                </DataGridRow>
+                <DataGridRow zebra>
+                    <DataGridLabel cols={3}>Description</DataGridLabel>
+                    <DataGridInput col={1} cols={3} value={data.description} onChange={onChangeDescription} />
+                </DataGridRow>
 
-            <DataGridSubheaderRow>Measurements</DataGridSubheaderRow>
-            <DataGridRow zebra>
-                <DataGridLabel cols={3}>Batch Size</DataGridLabel>
-                <DataGridInput
-                    col={1}
-                    cols={3}
-                    value={data.batchSize.value}
-                    onChange={onChangeBatchSizeValue}
-                    onBlur={onBlurBatchSize}
-                />
-            </DataGridRow>
-            <DataGridRow zebra>
-                <DataGridLabel cols={3}>Boil Time</DataGridLabel>
-                <DataGridInput
-                    col={1}
-                    cols={3}
-                    value={data.boilTime.value}
-                    onChange={onChangeBoilTimeValue}
-                    onBlur={onBlurBoilTime}
-                />
-            </DataGridRow>
-            <DataGridRow zebra>
-                <DataGridLabel cols={3}>Efficiency</DataGridLabel>
-                <DataGridInput
-                    col={1}
-                    cols={3}
-                    value={data.efficiency.value}
-                    onChange={onChangeEfficiencyValue}
-                    onBlur={onBlurEfficiency}
-                />
-            </DataGridRow>
+                <DataGridSubheaderRow>Measurements</DataGridSubheaderRow>
+                <DataGridRow zebra>
+                    <DataGridLabel cols={3}>Batch Size</DataGridLabel>
+                    <DataGridInput
+                        col={1}
+                        cols={3}
+                        value={data.batchSize.value}
+                        onChange={onChangeBatchSizeValue}
+                        onBlur={onBlurBatchSize}
+                    />
+                </DataGridRow>
+                <DataGridRow zebra>
+                    <DataGridLabel cols={3}>Boil Time</DataGridLabel>
+                    <DataGridInput
+                        col={1}
+                        cols={3}
+                        value={data.boilTime.value}
+                        onChange={onChangeBoilTimeValue}
+                        onBlur={onBlurBoilTime}
+                    />
+                </DataGridRow>
+                <DataGridRow zebra>
+                    <DataGridLabel cols={3}>Efficiency</DataGridLabel>
+                    <DataGridInput
+                        col={1}
+                        cols={3}
+                        value={data.efficiency.value}
+                        onChange={onChangeEfficiencyValue}
+                        onBlur={onBlurEfficiency}
+                    />
+                </DataGridRow>
 
-            <DataGridSubheaderRow>Targets</DataGridSubheaderRow>
-            <DataGridRow zebra>
-                <DataGridLabel cols={3}>OG</DataGridLabel>
-                <DataGridInput
-                    col={1}
-                    cols={3}
-                    value={data.targets.og.value}
-                    onChange={onChangeOgValue}
-                    onBlur={onBlurOg}
-                />
-            </DataGridRow>
-            <DataGridRow zebra>
-                <DataGridLabel cols={3}>FG</DataGridLabel>
-                <DataGridInput
-                    col={1}
-                    cols={3}
-                    value={data.targets.fg.value}
-                    onChange={onChangeFgValue}
-                    onBlur={onBlurFg}
-                />
-            </DataGridRow>
-            <DataGridRow zebra>
-                <DataGridLabel cols={3}>ABV</DataGridLabel>
-                <DataGridInput
-                    col={1}
-                    cols={3}
-                    value={data.targets.abv.value}
-                    onChange={onChangeAbvValue}
-                    onBlur={onBlurAbv}
-                />
-            </DataGridRow>
-            <DataGridRow zebra>
-                <DataGridLabel cols={3}>IBU</DataGridLabel>
-                <DataGridInput col={1} cols={3} value={data.targets.ibu} onChange={onChangeIbu} />
-            </DataGridRow>
-            <DataGridRow zebra>
-                <DataGridLabel cols={3}>SRM</DataGridLabel>
-                <DataGridInput col={1} cols={3} value={data.targets.srm} onChange={onChangeSrm} />
-            </DataGridRow>
-        </DataGrid>
+                <DataGridSubheaderRow>Targets</DataGridSubheaderRow>
+                <DataGridRow zebra>
+                    <DataGridLabel cols={3}>OG</DataGridLabel>
+                    <DataGridInput
+                        col={1}
+                        cols={3}
+                        value={data.targets.og.value}
+                        onChange={onChangeOgValue}
+                        onBlur={onBlurOg}
+                    />
+                </DataGridRow>
+                <DataGridRow zebra>
+                    <DataGridLabel cols={3}>FG</DataGridLabel>
+                    <DataGridInput
+                        col={1}
+                        cols={3}
+                        value={data.targets.fg.value}
+                        onChange={onChangeFgValue}
+                        onBlur={onBlurFg}
+                    />
+                </DataGridRow>
+                <DataGridRow zebra>
+                    <DataGridLabel cols={3}>ABV</DataGridLabel>
+                    <DataGridInput
+                        col={1}
+                        cols={3}
+                        value={data.targets.abv.value}
+                        onChange={onChangeAbvValue}
+                        onBlur={onBlurAbv}
+                    />
+                </DataGridRow>
+                <DataGridRow zebra>
+                    <DataGridLabel cols={3}>IBU</DataGridLabel>
+                    <DataGridInput col={1} cols={3} value={data.targets.ibu} onChange={onChangeIbu} />
+                </DataGridRow>
+                <DataGridRow zebra>
+                    <DataGridLabel cols={3}>SRM</DataGridLabel>
+                    <DataGridInput col={1} cols={3} value={data.targets.srm} onChange={onChangeSrm} />
+                </DataGridRow>
+            </DataGrid>
+        </Screen>
     );
 }
