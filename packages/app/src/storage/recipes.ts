@@ -4,7 +4,7 @@ import {LF_INDEXEDDB} from "@/storage/localforage";
 
 export class RecipesStorage extends Forage<Recipe> {
     constructor() {
-        super("recipes-local", LF_INDEXEDDB);
+        super("recipes", LF_INDEXEDDB);
     }
 }
 
