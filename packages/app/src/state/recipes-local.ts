@@ -4,14 +4,14 @@ import queryClient from "@/queryClient";
 import recipesStorage from "@/storage/recipes";
 import {FilterFn} from "@/utils/func";
 
-const localRecipesQueryKey = () => ["recipe-local"];
-const loadLocalRecipes = () => recipesStorage.list();
+const recipesQueryKey = () => ["recipe"];
+const loadRecipes = () => recipesStorage.list();
 
-const localRecipeQueryKey = (id: string): [string, string] => ["recipe-local", id];
-const loadLocalRecipe = ({ queryKey: [, id]}: { queryKey: [string, string]}) => recipesStorage.get(id);
+const recipeQueryKey = (id: string): [string, string] => ["recipe", id];
+const loadRecipe = ({ queryKey: [, id]}: { queryKey: [string, string]}) => recipesStorage.get(id);
 
-export const useLocalRecipes = (filter?: FilterFn<Recipe>): Recipe[] => {
-    const {data} = useSuspenseQuery({ queryKey: localRecipesQueryKey(), queryFn: loadLocalRecipes });
+export const useRecipes = (filter?: FilterFn<Recipe>): Recipe[] => {
+    const {data} = useSuspenseQuery({ queryKey: recipesQueryKey(), queryFn: loadRecipes });
 
     if (!data) {
         throw new Error("Unable to load recipes");
@@ -20,8 +20,8 @@ export const useLocalRecipes = (filter?: FilterFn<Recipe>): Recipe[] => {
     return filter ? data.filter(filter) : data;
 };
 
-export const useLocalRecipe = (id: string): Recipe => {
-    const { data } = useSuspenseQuery({ queryKey: localRecipeQueryKey(id), queryFn: loadLocalRecipe });
+export const useRecipe = (id: string): Recipe => {
+    const { data } = useSuspenseQuery({ queryKey: recipeQueryKey(id), queryFn: loadRecipe });
 
     if (!data) {
         throw new Error("Unable to load recipe");
@@ -32,6 +32,6 @@ export const useLocalRecipe = (id: string): Recipe => {
 
 export const saveRecipe = async (id: string, recipe: Recipe) => {
     await recipesStorage.save(id, recipe);
-    await queryClient.invalidateQueries({queryKey: localRecipeQueryKey(id)});
-    await queryClient.invalidateQueries({queryKey: localRecipesQueryKey()});
+    await queryClient.invalidateQueries({queryKey: recipeQueryKey(id)});
+    await queryClient.invalidateQueries({queryKey: recipesQueryKey()});
 };
