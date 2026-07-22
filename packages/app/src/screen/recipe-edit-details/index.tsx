@@ -10,16 +10,16 @@ import useJsonEdit from "@/hooks/useJsonEdit";
 import Recipe from "@/model/recipe";
 import {saveRecipe, useRecipe} from "@/state/recipes";
 import {saveSession, useSession} from "@/state/session";
+import {PropsWithOnChange} from "@brewdocs.beer/core";
 
 const SESSION_KEY = "recipe-edit.details";
 
-export type RecipeEditDetailsProps = {
+export type RecipeEditDetailsProps = PropsWithOnChange<Recipe> & {
     recipeId: string;
 };
-export default function RecipeEditDetails({ recipeId }: RecipeEditDetailsProps) {
+export default function RecipeEditDetails({ recipeId, onChange }: RecipeEditDetailsProps) {
     const recipe = useRecipe(recipeId);
     const session = useSession();
-    const onChange = useCallback((r: Recipe) => saveRecipe(recipeId, r), [recipeId]);
     const [data, update, updateScalar] = useJsonEdit<Recipe>(recipe, onChange);
 
     const onToggleCollapsed = useCallback((collapsed: boolean) => saveSession(SESSION_KEY, collapsed), []);
