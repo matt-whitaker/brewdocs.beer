@@ -4,11 +4,11 @@ import useJsonEdit from "@/hooks/useJsonEdit";
 import RecipeEditBoil from "@/screen/recipe-edit-schedule/boil";
 import RecipeEditEquipment from "@/screen/recipe-edit-schedule/equipment";
 import RecipeEditMash from "@/screen/recipe-edit-schedule/mash";
-import {useRecipe} from "@/state/recipes";
+import {useKbRecipe} from "@/state/kbRecipes";
 
 export type RecipeEditScheduleProps = { recipeId: string; onChange: (recipe: KbRecipe) => void };
 export default function RecipeEditSchedule({ recipeId, onChange }: RecipeEditScheduleProps) {
-    const recipe = useRecipe(recipeId);
+    const recipe = useKbRecipe(recipeId);
     const [data, update, updateScalar, add, remove] = useJsonEdit<KbRecipe>(recipe, onChange);
 
     return (

@@ -15,7 +15,7 @@ import BatchPlanningHops from "@/screen/batch-planning/hops";
 import BatchPlanningPhases from "@/screen/batch-planning/phases";
 import BatchPlanningYeasts from "@/screen/batch-planning/yeasts";
 import {useBatch} from "@/state/batches";
-import {useRecipe} from "@/state/recipes";
+import {useKbRecipe} from "@/state/kbRecipes";
 
 export type BatchPlanningProps = {
     batchId: string;
@@ -23,7 +23,7 @@ export type BatchPlanningProps = {
 };
 export default function BatchPlanning({ batchId, onChange }: BatchPlanningProps) {
     const batch = useBatch(batchId);
-    const recipe = useRecipe(batch.recipeId);
+    const recipe = useKbRecipe(batch.recipeId);
     const [data, update, updateScalar,, add, remove, move] = useJsonEdit<Batch>(batch, onChange);
 
     const updateDate = useCallback((value: string) => update("brewDate", value), [update]);

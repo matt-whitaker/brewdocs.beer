@@ -4,7 +4,7 @@ import queryClient from "@/queryClient";
 import recipesStorage from "@/storage/recipes";
 import {FilterFn} from "@/utils/func";
 
-const recipesQueryKey = () => ["recipe"];
+const recipesQueryKey = () => ["recipes"];
 const loadRecipes = () => recipesStorage.list();
 
 const recipeQueryKey = (id: string): [string, string] => ["recipe", id];

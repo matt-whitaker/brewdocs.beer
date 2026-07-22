@@ -8,7 +8,7 @@ import DataGridRow from "@/component/data-grid/row";
 import DataGridSubheaderRow from "@/component/data-grid/subheader-row";
 import Screen from "@/component/screen";
 import useJsonEdit from "@/hooks/useJsonEdit";
-import {useRecipe} from "@/state/recipes";
+import {useKbRecipe} from "@/state/kbRecipes";
 import {saveSession, useSession} from "@/state/session";
 
 const SESSION_KEY = "recipe-edit.details";
@@ -18,7 +18,7 @@ export type RecipeEditDetailsProps = {
     onChange: (recipe: KbRecipe) => void
 };
 export default function RecipeEditDetails({ recipeId, onChange }: RecipeEditDetailsProps) {
-    const recipe = useRecipe(recipeId);
+    const recipe = useKbRecipe(recipeId);
     const session = useSession();
     const [data, update, updateScalar] = useJsonEdit<KbRecipe>(recipe, onChange);
 

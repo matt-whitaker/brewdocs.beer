@@ -7,7 +7,7 @@ import {FilterFn} from "@/utils/func";
 
 const kbRecipesQueryKey = () => ["kb", "recipes"];
 const fetchKbRecipes = async (): Promise<KbRecipe[]> => {
-    const cached = await kbStorage.getResource("kbRecipes");
+    const cached = await kbStorage.getResource("recipes");
     if (cached) {
         return cached;
     }
@@ -16,8 +16,8 @@ const fetchKbRecipes = async (): Promise<KbRecipe[]> => {
         throw new Error("Recipe data isn't downloaded yet, and you're offline.");
     }
 
-    const kbRecipes = await importResource("kbRecipes");
-    return kbStorage.saveResource("kbRecipes", kbRecipes);
+    const kbRecipes = await importResource("recipes");
+    return kbStorage.saveResource("recipes", kbRecipes);
 };
 
 export const prefetchKbRecipes = () => queryClient.prefetchQuery({ queryKey: kbRecipesQueryKey(), queryFn: fetchKbRecipes });
