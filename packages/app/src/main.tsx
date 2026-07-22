@@ -5,8 +5,8 @@ import {registerSW} from "virtual:pwa-register";
 import Error from "@/component/error";
 import {prefetchKbGrains} from "@/state/kbGrains";
 import {prefetchKbHops} from "@/state/kbHops";
+import {prefetchKbRecipes} from "@/state/kbRecipes";
 import {prefetchKbYeasts} from "@/state/kbYeasts";
-import {prefetchRecipes} from "@/state/recipes";
 import queryClient from "./queryClient";
 import {routeTree} from "./routeTree.gen";
 
@@ -36,7 +36,7 @@ registerSW({immediate: true});
 prefetchKbGrains();
 prefetchKbHops();
 prefetchKbYeasts();
-prefetchRecipes();
+prefetchKbRecipes();
 
 // no StrictMode: mutation actions are fire-and-forget and must not double-fire
 ReactDOM.createRoot(document.getElementById("root")!).render(

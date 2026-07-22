@@ -12,12 +12,12 @@ import Organics from "@/component/organics";
 import Screen from "@/component/screen";
 import {Plus} from "@/component/svg";
 import {useBatches} from "@/state/batches";
-import {useRecipe} from "@/state/recipes";
+import {useKbRecipe} from "@/state/kbRecipes";
 
 export type RecipeOverviewProps = { recipeId: string };
 export default function RecipeOverview({ recipeId }: RecipeOverviewProps) {
     const batchesCount = useBatches().length;
-    const recipe = useRecipe(recipeId);
+    const recipe = useKbRecipe(recipeId);
 
     const defaultBatchName = `Batch #${batchesCount+1}`;
     const [modalRef, toggle] = useModal();
