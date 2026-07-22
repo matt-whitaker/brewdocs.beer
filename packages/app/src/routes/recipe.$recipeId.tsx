@@ -22,21 +22,27 @@ function RecipePage() {
     [navigate, recipeId]);
 
     return (
-        <PanelSwitcher
-            name="recipe"
-            defaultTab="Overview"
-            actions={
-                <>
-                    <BrewRecipeAction recipeId={recipeId} />
+        <PanelSwitcher name="recipe" defaultTab="Overview">
+            <PanelSwitcherContent
+                title="Overview"
+                actions={
+                    <>
+                        <BrewRecipeAction recipeId={recipeId} />
+                        <button className="btn btn-ghost btn-sm text-primary" onClick={onEdit}>
+                            <Pencil className="w-4 -ml-1" /> Edit
+                        </button>
+                    </>
+                }>
+                <RecipeOverview recipeId={recipeId} />
+            </PanelSwitcherContent>
+            <PanelSwitcherContent
+                title="Batches"
+                actions={
                     <button className="btn btn-ghost btn-sm text-primary" onClick={onEdit}>
                         <Pencil className="w-4 -ml-1" /> Edit
                     </button>
-                </>
-            }>
-            <PanelSwitcherContent title="Overview">
-                <RecipeOverview recipeId={recipeId} />
-            </PanelSwitcherContent>
-            <PanelSwitcherContent title="Batches">
+                }
+            >
                 <BatchList filter={filterBatches} />
             </PanelSwitcherContent>
         </PanelSwitcher>

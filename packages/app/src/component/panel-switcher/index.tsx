@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import {Children, isValidElement, PropsWithChildren, ReactElement, ReactNode, Suspense} from "react";
+import {Children, isValidElement, PropsWithChildren, ReactElement, Suspense} from "react";
 import {PropsWithClass} from "@brewdocs.beer/core";
 import {PanelSwitcherContentProps} from "@/component/panel-switcher/content";
 import usePanelSwitcher from "@/component/panel-switcher/usePanelSwitcher";
@@ -10,8 +10,6 @@ export type PanelSwitcherProps = PropsWithChildren & Partial<PropsWithClass> & {
     defaultTab: string;
     /** tighter tabs, for a sub-nav nested inside another switcher's panel */
     compact?: boolean;
-    /** right-aligned controls (e.g. a "Create" button) rendered inline on the tab row */
-    actions?: ReactNode;
 };
 
 /**
@@ -37,13 +35,18 @@ const STYLES = {
     }
 } as const;
 
-export default function PanelSwitcher({ name, defaultTab, children, className, compact = false, actions }: PanelSwitcherProps) {
+export default function PanelSwitcher({ name, defaultTab, children, className, compact = false }: PanelSwitcherProps) {
     const styles = STYLES[compact ? "compact" : "default"];
     const [active, change, pending] = usePanelSwitcher(name, defaultTab);
 
     const panels = Children.toArray(children)
         .filter((child): child is ReactElement<PanelSwitcherContentProps> => isValidElement(child));
     const activePanel = panels.find(({ props }) => props.title === active);
+
+    // actions are declared per-panel, so only the active panel's show on the tab
+    // row — they swap (or vanish) as tabs change, and appear immediately on switch
+    // since they don't depend on the panel's async content
+    const actions = activePanel?.props.actions;
 
     // the tablist lives outside the Suspense boundary so tabs stay visible while
     // panel content loads

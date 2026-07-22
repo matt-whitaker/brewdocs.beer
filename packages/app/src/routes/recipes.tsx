@@ -18,19 +18,19 @@ function RecipesPage() {
     [navigate]);
 
     return (
-        <PanelSwitcher
-            name="recipes"
-            defaultTab="All"
-            actions={
-                <button className="btn btn-ghost btn-sm text-primary" onClick={onCreate}>
-                    <Plus className="w-4 -ml-1" /> Create
-                </button>
-            }>
+        <PanelSwitcher name="recipes" defaultTab="All">
             <PanelSwitcherContent title="All">
                 <RecipeList />
             </PanelSwitcherContent>
             <PanelSwitcherContent title="Starred"></PanelSwitcherContent>
-            <PanelSwitcherContent title="My Recipes"></PanelSwitcherContent>
+            <PanelSwitcherContent
+                title="My Recipes"
+                actions={
+                    <button className="btn btn-ghost btn-sm text-primary" onClick={onCreate}>
+                        <Plus className="w-4 -ml-1" /> Create
+                    </button>
+                }
+            ></PanelSwitcherContent>
         </PanelSwitcher>
     );
 }
