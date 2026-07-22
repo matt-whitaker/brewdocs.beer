@@ -1,11 +1,11 @@
 import {useCallback} from "react";
+import Screen from "@/component/screen";
 import useJsonEdit from "@/hooks/useJsonEdit";
 import Recipe from "@/model/recipe";
 import RecipeEditBoil from "@/screen/recipe-edit-schedule/boil";
 import RecipeEditEquipment from "@/screen/recipe-edit-schedule/equipment";
 import RecipeEditMash from "@/screen/recipe-edit-schedule/mash";
 import {saveRecipe, useRecipe} from "@/state/recipes";
-import Screen from "@/component/screen";
 
 export type RecipeEditScheduleProps = { recipeId: string };
 export default function RecipeEditSchedule({ recipeId }: RecipeEditScheduleProps) {

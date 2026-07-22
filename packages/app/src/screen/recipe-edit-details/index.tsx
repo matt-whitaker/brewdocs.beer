@@ -5,11 +5,11 @@ import DataGridInput from "@/component/data-grid/input";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridRow from "@/component/data-grid/row";
 import DataGridSubheaderRow from "@/component/data-grid/subheader-row";
+import Screen from "@/component/screen";
 import useJsonEdit from "@/hooks/useJsonEdit";
 import Recipe from "@/model/recipe";
 import {saveRecipe, useRecipe} from "@/state/recipes";
 import {saveSession, useSession} from "@/state/session";
-import Screen from "@/component/screen";
 
 const SESSION_KEY = "recipe-edit.details";
 
