@@ -8,7 +8,7 @@ Guidance for Claude Code (claude.ai/code) working in this repo. **These instruct
 - **Layout.** npm-workspaces monorepo; packages named `@brewdocs.beer/<name>`.
 - **Default branch.** `mainline` — also the target for all PRs and the **sole** deploy branch.
 - **Node.** ≥22. ⚠️ Non-interactive shells on this machine resolve `node` to an ancient v10 — if a command fails with syntax errors inside `node_modules`, prefix it: `PATH="$HOME/.nvm/versions/node/v22.23.1/bin:$PATH"`.
-- **Verify (the gate).** `npm test -w packages/app` (eslint) + `tsc --noEmit` + `vite build`. No unit-test framework, no runtime tests — see _Linting_ and _Definition of done_.
+- **Verify (the gate).** `npm test -ws` (eslint — app + www) + `tsc --noEmit` + `vite build`. No unit-test framework, no runtime tests — see _Linting_ and _Definition of done_.
 
 | Package | Role |
 |---|---|
@@ -61,7 +61,7 @@ core ← design ← app        core ← kb ← app        core ← design ← ww
 ## packages/core
 
 **Purpose.** Shared, environment-agnostic types and helpers used by every other package.
-**Where.** `src/models.ts` (`Entity {id}`, `Units`/`Currencies` enums), `src/props.ts` (`PropsWithClass` etc.), `src/event.ts` (`eventValue`), `src/fetchClient.ts` (`createFetchClient`), `src/migration.ts` (see _Batch versioning & migrations_).
+**Where.** `src/models.ts` (`Entity {id}`, `Units`/`Currencies` enums), `src/props.ts` (`PropsWithClass` etc.), `src/event.ts` (`eventValue`), `src/fetchClient.ts` (`createFetchClient`), `src/migration.ts` (see _Batch versioning & migrations_). Also `eslint.config.base.js` at the package root — the shared eslint flat-config base for app + www (dev tooling, not part of `src`; see _Linting_).
 **Surface.** The above, re-exported from `src/index.ts`. `eventValue` unwraps `e.target.value` into a plain-value callback (the design inputs all use it). `createFetchClient({baseUrl, headers})` — thin fetch wrapper, throws on non-2xx, JSON only; no retries/caching (TanStack Query owns that).
 **Invariants.** ⚠️ Must stay environment-agnostic — no `import.meta.env`, no Node/DOM APIs.
 **Gotchas.** _None._
@@ -210,12 +210,12 @@ useKbX() → IndexedDB hit? return it
 **Gotchas.** A clean/CI build (no `public/kb`) produces `dist` with **no `dist/kb`** — so in prod the SW does *not* precache kb; offline kb comes entirely from the IndexedDB hydration flow (_Offline-first kb data flow_). But once you've run the dev server, the leftover `public/kb` symlink makes a **local** `npm run build` include + precache `dist/kb/*.json` — so a local `build`/`preview` misrepresents prod offline behavior (`rm public/kb` to reproduce CI).
 **Example.** _None._
 
-### Linting (`eslint.config.js`)
-**Purpose.** eslint 9 flat config is the verification gate (`npm test` = `eslint .`). **Ratchet policy: errors block, warnings inform** — `npm test` exits 0 while warnings remain.
-**Where.** `packages/app/eslint.config.js`.
-**How it works.** Beyond the type/hooks recommended sets, it enforces style + import conventions: `@stylistic` (double quotes, semicolons, 4-space indent); `import-x/order` (external → `@brewdocs.beer/*` → `@/` → relative, alphabetized) + `import-x/no-relative-packages`; `no-restricted-imports` banning `lodash` and `../` parent-relative imports (use `@/`). Import rules are **scoped to `src/**`** — build/script files at the package root (`vite.config.ts`, `migrations/*`) legitimately use relative cross-package paths.
+### Linting
+**Purpose.** eslint 9 flat config, the verification gate (`npm test` = `eslint .`). **Ratchet policy: errors block, warnings inform** — `npm test` exits 0 while warnings remain.
+**Where.** Shared base: `packages/core/eslint.config.base.js` (dev tooling, **not** `core/src`). Per-package overlays: `packages/app/eslint.config.js`, `packages/www/eslint.config.js`.
+**How it works.** The **base** (shared by app + www) holds the common rules: `@stylistic` (double quotes, semicolons, 4-space indent); `import-x/order` (external → `@brewdocs.beer/*` → `@/` → relative, alphabetized) + `import-x/no-relative-packages`; `react-hooks`; `no-restricted-imports` banning `lodash` and `../` parent-relative imports (use `@/`, which both packages alias to `src/*`). The import bans are **scoped to `src/**`** — root build/config files (`vite.config.ts`, `astro.config.mjs`, `migrations/*`) legitimately use relative cross-package paths. Overlays add only package-specifics: **app** → `react-refresh`, the `utils/func.ts` `any`-escape, the `routeTree.gen.ts` ignore; **www** → ignore the generated `.astro/` dir, allow triple-slash refs in `.d.ts`. www lints its `.ts`/`.tsx` (React islands + data); `.astro` files aren't linted (would need `eslint-plugin-astro`).
 **Invariants.** ⚠️ Only `react-refresh/only-export-components` warnings are left standing (on purpose). New **errors** must be fixed or explicitly ruled.
-**Gotchas.** ⚠️ The repo root hoists eslint **8.57.1** (eslintrc-era, chokes on flat config); the app resolves its own nested **9.x**. Always run lint from inside `packages/app` (`npm run lint -w packages/app` / `npm test -w packages/app`), never the root binary.
+**Gotchas.** ⚠️ The repo root hoists eslint **8.57.1** (eslintrc-era, chokes on flat config); each package resolves its own nested **9.x**. Run lint via `-w` or from inside the package (`npm run lint -w packages/app`), never the root binary.
 **Example.** _None._
 
 ## packages/www
@@ -224,7 +224,7 @@ useKbX() → IndexedDB hit? return it
 **Where.** `src/pages/` (`/` and `/about`), `src/data/env.ts`.
 **Surface.** _None._
 **Invariants.** ⚠️ Requires Node ≥22.12 (`engines`).
-**Gotchas.** _None._
+**Gotchas.** Linted via the shared eslint base (see _Linting_) — `.ts`/`.tsx` (React islands + data) only; `.astro` files aren't linted yet.
 **Example.** _None._
 **Env.** Astro's `PUBLIC_` prefix — `PUBLIC_APP_URL`, `PUBLIC_GITHUB_URL` (read in `src/data/env.ts`).
 
@@ -238,7 +238,7 @@ GitHub Actions, path-filtered on push to `mainline` (the sole deploy branch), al
 - `build-test-deploy.app-kb-prod.yaml` — **kb dist deploys independently** to a dedicated kb bucket behind the app's CloudFront distribution (invalidates `/kb`). This is why `importResource` fetches the relative `/kb/*` — same origin in prod, symlink in dev, and kb data updates ship without an app rebuild.
 - `build-test-deploy.www-prod.yaml` — www dist → www bucket (brewdocs.beer).
 
-The **Verify** workflow (`.github/workflows/verify.yaml`) runs `npm ci` + lint + app/www builds on every PR (no deploy) — the real pre-merge gate; the `build-test-deploy.*` workflows run only *post*-merge on push.
+The **Verify** workflow (`.github/workflows/verify.yaml`) runs `npm ci`, then `npm test` (lint) and `npm run build` across **all workspaces** (`-ws`), on every PR (no deploy) — the real pre-merge gate; the `build-test-deploy.*` workflows run only *post*-merge on push.
 
 ## Contributing
 

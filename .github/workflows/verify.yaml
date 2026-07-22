@@ -20,7 +20,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}s
+          node-version: ${{ env.NODE_VERSION }}
       - run: npm ci
       - run: npm test -ws
       - run: npm run build -ws
