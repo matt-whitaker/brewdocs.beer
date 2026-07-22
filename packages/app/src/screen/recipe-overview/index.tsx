@@ -45,9 +45,6 @@ export default function RecipeOverview({ recipeId }: RecipeOverviewProps) {
             <button className="btn btn-primary btn-sm" onClick={toggle}>
                 <Plus className="w-4 -ml-1" /> Brew this beer
             </button>
-            <button className="btn btn-primary btn-sm" onClick={onEdit}>
-                <Plus className="w-4 -ml-1" /> Edit Recipe
-            </button>
             <Modal ref={modalRef}>
                 <ModalTitle>{recipe.name}</ModalTitle>
                 <CreateBatchForm defaultName={defaultBatchName} inputs={batchInputs} change={setBatchInputs} />
