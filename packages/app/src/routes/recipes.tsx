@@ -23,7 +23,7 @@ function RecipesPage() {
             defaultTab="All"
             actions={
                 <button className="btn btn-ghost btn-sm text-primary" onClick={onCreate}>
-                    <Plus className="w-4 -ml-1" /> Create Recipe
+                    <Plus className="w-4 -ml-1" /> Create
                 </button>
             }>
             <PanelSwitcherContent title="All">

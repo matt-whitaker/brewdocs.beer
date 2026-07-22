@@ -88,7 +88,7 @@ export default function PanelSwitcher({ name, defaultTab, children, className, c
                 ? (
                     <div className="flex items-center justify-between gap-2">
                         {tablist}
-                        <div className="flex items-center gap-2 shrink-0 pr-2 lg:pr-0">
+                        <div className="flex items-center shrink-0 pr-2 lg:pr-0">
                             {actions}
                         </div>
                     </div>
