@@ -8,18 +8,18 @@ import DataGridSubheaderRow from "@/component/data-grid/subheader-row";
 import Screen from "@/component/screen";
 import useJsonEdit from "@/hooks/useJsonEdit";
 import Recipe from "@/model/recipe";
-import {useRecipe} from "@/state/recipes";
+import {saveRecipe, useRecipe} from "@/state/recipes";
 import {saveSession, useSession} from "@/state/session";
 
 const SESSION_KEY = "recipe-edit.details";
 
 export type RecipeEditDetailsProps = {
     recipeId: string;
-    onChange: (recipe: Recipe) => void;
 };
-export default function RecipeEditDetails({ recipeId, onChange }: RecipeEditDetailsProps) {
+export default function RecipeEditDetails({ recipeId }: RecipeEditDetailsProps) {
     const recipe = useRecipe(recipeId);
     const session = useSession();
+    const onChange = useCallback((r: Recipe) => saveRecipe(recipeId, r), [recipeId]);
     const [data, update, updateScalar] = useJsonEdit<Recipe>(recipe, onChange);
 
     const onToggleCollapsed = useCallback((collapsed: boolean) => saveSession(SESSION_KEY, collapsed), []);

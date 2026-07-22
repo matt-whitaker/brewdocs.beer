@@ -1,14 +1,16 @@
+import {useCallback} from "react";
 import Screen from "@/component/screen";
 import useJsonEdit from "@/hooks/useJsonEdit";
 import Recipe from "@/model/recipe";
 import RecipeEditBoil from "@/screen/recipe-edit-schedule/boil";
 import RecipeEditEquipment from "@/screen/recipe-edit-schedule/equipment";
 import RecipeEditMash from "@/screen/recipe-edit-schedule/mash";
-import {useRecipe} from "@/state/recipes";
+import {saveRecipe, useRecipe} from "@/state/recipes";
 
-export type RecipeEditScheduleProps = { recipeId: string; onChange: (recipe: Recipe) => void };
-export default function RecipeEditSchedule({ recipeId, onChange }: RecipeEditScheduleProps) {
+export type RecipeEditScheduleProps = { recipeId: string };
+export default function RecipeEditSchedule({ recipeId }: RecipeEditScheduleProps) {
     const recipe = useRecipe(recipeId);
+    const onChange = useCallback((r: Recipe) => saveRecipe(recipeId, r), [recipeId]);
     const [data, update, updateScalar, add, remove] = useJsonEdit<Recipe>(recipe, onChange);
 
     return (
