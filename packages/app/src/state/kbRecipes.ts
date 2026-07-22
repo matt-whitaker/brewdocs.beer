@@ -5,7 +5,7 @@ import kbStorage from "@/storage/kb";
 import {isOnline} from "@/utils/connectivity";
 import {FilterFn} from "@/utils/func";
 
-const kbRecipesQueryKey = () => ["kb.recipes"];
+const kbRecipesQueryKey = () => ["kb", "recipes"];
 const fetchKbRecipes = async (): Promise<KbRecipe[]> => {
     const cached = await kbStorage.getResource("kbRecipes");
     if (cached) {
