@@ -28,10 +28,6 @@ export default function RecipeOverview({ recipeId }: RecipeOverviewProps) {
         createBatch(recipe, finalInputs).then((id) => navigate({to: "/batch/$batchId", params: {batchId: id}})),
     [navigate, recipe, finalInputs]);
 
-    // const onEdit = useCallback(() =>
-    //     createRecipe(recipe).then((id) => navigate({to: "/recipe/$recipeId/edit", params: {recipeId: id}})),
-    // [navigate, recipe]);
-
     return (
         <Screen>
             <ScreenH1>Recipe Overview</ScreenH1>
