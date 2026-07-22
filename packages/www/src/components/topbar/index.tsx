@@ -1,7 +1,7 @@
 import classNames from "classnames";
 import {Ellipses} from "@/components/svg";
 
-export type TopbarProps = { nav: [string, string, boolean?][] }
+export type TopbarProps = { nav: [string, string, boolean?][] };
 export default function Topbar({ nav }: TopbarProps) {
     return (
         <div className="navbar bg-primary fixed z-50">
@@ -27,7 +27,7 @@ export default function Topbar({ nav }: TopbarProps) {
                         <ul
                             tabIndex={0}
                             className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
-                            {nav.map(([name, href, primary]) => (
+                            {nav.map(([name, href]) => (
                                 <li key={name}>
                                     <a href={href}>{name}</a>
                                 </li>

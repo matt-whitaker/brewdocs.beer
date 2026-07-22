@@ -1,5 +1,5 @@
-import type {PropsWithChildren} from "react";
 import classNames from "classnames";
+import type {PropsWithChildren} from "react";
 import type {PropsWithClass} from "@brewdocs.beer/core";
 
 export type HeroProps = PropsWithClass & PropsWithChildren & { title: string };
@@ -11,5 +11,5 @@ export default function Hero({ children, title, className }: HeroProps) {
                 {children}
             </div>
         </div>
-    )
+    );
 }
