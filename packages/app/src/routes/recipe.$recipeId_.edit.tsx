@@ -1,9 +1,9 @@
 import {createFileRoute} from "@tanstack/react-router";
-import RecipeEditDetails from "@/screen/recipe-edit-details";
-import PanelSwitcherContent from "@/component/panel-switcher/content";
-import PanelSwitcher from "@/component/panel-switcher";
 import {useCallback} from "react";
-import {KbRecipe} from "../../../kb";
+import {KbRecipe} from "@brewdocs.beer/kb";
+import PanelSwitcher from "@/component/panel-switcher";
+import PanelSwitcherContent from "@/component/panel-switcher/content";
+import RecipeEditDetails from "@/screen/recipe-edit-details";
 import RecipeEditIngredients from "@/screen/recipe-edit-ingredients";
 import RecipeEditSchedule from "@/screen/recipe-edit-schedule";
 

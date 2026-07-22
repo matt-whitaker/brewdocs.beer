@@ -1,5 +1,5 @@
-import {KbYeast} from "@brewdocs.beer/kb";
 import {Units} from "@brewdocs.beer/core";
+import {KbYeast} from "@brewdocs.beer/kb";
 import Yeast from "@/model/yeast";
 
 /**

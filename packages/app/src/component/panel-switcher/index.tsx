@@ -1,9 +1,9 @@
-import {PropsWithClass} from "@brewdocs.beer/core";
 import classNames from "classnames";
 import {Children, isValidElement, PropsWithChildren, ReactElement, Suspense} from "react";
-import Loading from "@/screen/loading";
-import usePanelSwitcher from "@/component/panel-switcher/usePanelSwitcher";
+import {PropsWithClass} from "@brewdocs.beer/core";
 import {PanelSwitcherContentProps} from "@/component/panel-switcher/content";
+import usePanelSwitcher from "@/component/panel-switcher/usePanelSwitcher";
+import Loading from "@/screen/loading";
 
 export type PanelSwitcherProps = PropsWithChildren & Partial<PropsWithClass> & {
     name: string;

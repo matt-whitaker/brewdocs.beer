@@ -1,8 +1,8 @@
 import {useCallback, useState} from "react";
 import {InputText} from "@brewdocs.beer/design";
-import DataGridRow from "@/component/data-grid/row";
-import DataGridLabel from "@/component/data-grid/label";
 import DataGridAddButton from "@/component/data-grid/add-button";
+import DataGridLabel from "@/component/data-grid/label";
+import DataGridRow from "@/component/data-grid/row";
 import {AddFn} from "@/hooks/useJsonEdit";
 
 export type BatchPlanningPhasesAddRowProps = {

@@ -1,15 +1,15 @@
-import {KbRecipe} from "../../../../kb";
-import useJsonEdit from "@/hooks/useJsonEdit";
-import Screen from "@/component/screen";
+import {useCallback} from "react";
+import {KbRecipe} from "@brewdocs.beer/kb";
 import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
-import DataGridSubheaderRow from "@/component/data-grid/subheader-row";
-import DataGridRow from "@/component/data-grid/row";
-import DataGridLabel from "@/component/data-grid/label";
 import DataGridInput from "@/component/data-grid/input";
-import {useCallback} from "react";
-import {saveSession, useSession} from "@/state/session";
+import DataGridLabel from "@/component/data-grid/label";
+import DataGridRow from "@/component/data-grid/row";
+import DataGridSubheaderRow from "@/component/data-grid/subheader-row";
+import Screen from "@/component/screen";
+import useJsonEdit from "@/hooks/useJsonEdit";
 import {useRecipe} from "@/state/recipes";
+import {saveSession, useSession} from "@/state/session";
 
 const SESSION_KEY = "recipe-edit.details";
 

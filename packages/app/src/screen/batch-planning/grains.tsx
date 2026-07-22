@@ -1,13 +1,13 @@
-import {AddFn, RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
-import Grain from "@/model/grain";
+import {useCallback, useMemo} from "react";
 import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
-import {useCallback, useMemo} from "react";
-import {useKbGrains} from "@/state/kbGrains";
 import useIndexBy from "@/hooks/useIndexBy";
-import {saveSession, useSession} from "@/state/session";
-import PlanningGrainsRow from "@/screen/batch-planning/grains-row";
+import {AddFn, RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
+import Grain from "@/model/grain";
 import BatchPlanningGrainsAddRow from "@/screen/batch-planning/grains-add-row";
+import PlanningGrainsRow from "@/screen/batch-planning/grains-row";
+import {useKbGrains} from "@/state/kbGrains";
+import {saveSession, useSession} from "@/state/session";
 
 const SESSION_KEY = "planning.grains";
 

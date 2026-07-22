@@ -1,6 +1,6 @@
 import {useSuspenseQuery} from "@tanstack/react-query";
-import sessionStorage, {SessionValue} from "@/storage/session";
 import queryClient from "@/queryClient";
+import sessionStorage, {SessionValue} from "@/storage/session";
 
 
 export type Session = Record<string, SessionValue>;

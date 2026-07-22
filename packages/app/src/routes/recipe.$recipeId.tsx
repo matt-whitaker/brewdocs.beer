@@ -1,10 +1,10 @@
 import {createFileRoute} from "@tanstack/react-router";
+import {useCallback} from "react";
 import PanelSwitcher from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
-import RecipeOverview from "@/screen/recipe-overview";
-import BatchList from "@/screen/batch-list";
-import {useCallback} from "react";
 import Batch from "@/model/batch";
+import BatchList from "@/screen/batch-list";
+import RecipeOverview from "@/screen/recipe-overview";
 
 export const Route = createFileRoute("/recipe/$recipeId")({
     component: RecipePage

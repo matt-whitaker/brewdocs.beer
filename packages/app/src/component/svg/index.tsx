@@ -1,5 +1,5 @@
-import {PropsWithClass} from "@brewdocs.beer/core";
 import classNames from "classnames";
+import {PropsWithClass} from "@brewdocs.beer/core";
 export const Hamburger = ({ className }: PropsWithClass) => (
     <svg
         xmlns="http://www.w3.org/2000/svg"

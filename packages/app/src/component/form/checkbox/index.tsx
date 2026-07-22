@@ -1,6 +1,6 @@
-import {PropsWithClass} from "@brewdocs.beer/core";
 import classNames from "classnames";
 import {PropsWithChildren} from "react";
+import {PropsWithClass} from "@brewdocs.beer/core";
 import {eventValue} from "@brewdocs.beer/core";
 
 export type CheckboxProps = PropsWithClass & PropsWithChildren & {

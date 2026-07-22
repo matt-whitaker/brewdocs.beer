@@ -1,8 +1,8 @@
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {importResource, KbHop} from "@brewdocs.beer/kb";
+import queryClient from "@/queryClient";
 import kbStorage from "@/storage/kb";
 import {isOnline} from "@/utils/connectivity";
-import queryClient from "@/queryClient";
 
 const kbHopsQueryKey = () => ["kb", "hops"];
 const fetchKbHops = async (): Promise<KbHop[]> => {

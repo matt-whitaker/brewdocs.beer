@@ -1,11 +1,11 @@
-import {Phase} from "@/model/batch";
-import {AddFn, MoveFn, RemoveFn} from "@/hooks/useJsonEdit";
+import {useCallback, useMemo} from "react";
 import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
-import {useCallback, useMemo} from "react";
-import {saveSession, useSession} from "@/state/session";
-import PlanningPhasesRow from "@/screen/batch-planning/phases-row";
+import {AddFn, MoveFn, RemoveFn} from "@/hooks/useJsonEdit";
+import {Phase} from "@/model/batch";
 import BatchPlanningPhasesAddRow from "@/screen/batch-planning/phases-add-row";
+import PlanningPhasesRow from "@/screen/batch-planning/phases-row";
+import {saveSession, useSession} from "@/state/session";
 
 const SESSION_KEY = "planning.phases";
 

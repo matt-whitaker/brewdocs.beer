@@ -1,5 +1,5 @@
-import {Phase, phaseLabel, SchedulePhase} from "@/model/batch";
 import {AddFn, RemoveFn, UpdateFn} from "@/hooks/useJsonEdit";
+import {Phase, phaseLabel, SchedulePhase} from "@/model/batch";
 import BatchPlanningEquipmentPhase from "@/screen/batch-planning/equipment-phase";
 
 export type BatchPlanningEquipmentProps = {

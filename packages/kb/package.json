@@ -5,7 +5,8 @@
   "main": "./src/index.ts",
   "scripts": {
     "build": "./bin/build-json.js",
-    "postinstall": "npm run build"
+    "postinstall": "npm run build",
+    "test": "echo 'No tests'"
   },
   "author": "",
   "license": "ISC",

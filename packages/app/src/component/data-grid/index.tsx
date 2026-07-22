@@ -1,6 +1,6 @@
+import classNames from "classnames";
 import {PropsWithChildren} from "react";
 import {PropsWithClass} from "@brewdocs.beer/core";
-import classNames from "classnames";
 
 /**
  * Column spans a row child can claim, indexed by `cols - 1`. Written out in

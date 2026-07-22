@@ -1,12 +1,12 @@
-import {AddFn, RemoveFn, ToggleFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
+import {useCallback, useMemo} from "react";
 import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
-import {useCallback, useMemo} from "react";
-import {useKbYeasts} from "@/state/kbYeasts";
 import useIndexBy from "@/hooks/useIndexBy";
-import {saveSession, useSession} from "@/state/session";
-import RecipeEditYeastsRow, {RecipeYeast} from "@/screen/recipe-edit-ingredients/yeasts-row";
+import {AddFn, RemoveFn, ToggleFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
 import RecipeEditYeastsAddRow from "@/screen/recipe-edit-ingredients/yeasts-add-row";
+import RecipeEditYeastsRow, {RecipeYeast} from "@/screen/recipe-edit-ingredients/yeasts-row";
+import {useKbYeasts} from "@/state/kbYeasts";
+import {saveSession, useSession} from "@/state/session";
 
 const SESSION_KEY = "recipe-edit.yeasts";
 

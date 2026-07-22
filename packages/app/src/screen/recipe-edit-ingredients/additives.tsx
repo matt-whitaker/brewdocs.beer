@@ -1,10 +1,10 @@
-import {AddFn, RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
+import {useCallback, useMemo} from "react";
 import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
-import {useCallback, useMemo} from "react";
-import {saveSession, useSession} from "@/state/session";
-import RecipeEditAdditivesRow, {RecipeAdditive} from "@/screen/recipe-edit-ingredients/additives-row";
+import {AddFn, RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
 import RecipeEditAdditivesAddRow from "@/screen/recipe-edit-ingredients/additives-add-row";
+import RecipeEditAdditivesRow, {RecipeAdditive} from "@/screen/recipe-edit-ingredients/additives-row";
+import {saveSession, useSession} from "@/state/session";
 
 const SESSION_KEY = "recipe-edit.additives";
 

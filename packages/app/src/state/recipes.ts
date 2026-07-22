@@ -1,9 +1,9 @@
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {importResource, KbRecipe} from "@brewdocs.beer/kb";
-import {FilterFn} from "@/utils/func";
+import queryClient from "@/queryClient";
 import kbStorage from "@/storage/kb";
 import {isOnline} from "@/utils/connectivity";
-import queryClient from "@/queryClient";
+import {FilterFn} from "@/utils/func";
 
 const recipesQueryKey = () => ["recipes"];
 const fetchRecipes = async (): Promise<KbRecipe[]> => {

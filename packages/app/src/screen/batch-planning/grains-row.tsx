@@ -1,13 +1,13 @@
+import {Fragment, memo, useCallback, useMemo} from "react";
 import {KbGrain} from "@brewdocs.beer/kb";
-import DataGridRow from "@/component/data-grid/row";
+import DataGridInput from "@/component/data-grid/input";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridRemoveButton from "@/component/data-grid/remove-button";
+import DataGridRow from "@/component/data-grid/row";
 import DataGridSelect from "@/component/data-grid/select";
-import {kbGrainToGrain} from "@/transform/kbGrainToGrain";
-import DataGridInput from "@/component/data-grid/input";
-import {Fragment, memo, useCallback, useMemo} from "react";
 import {RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
 import Grain from "@/model/grain";
+import {kbGrainToGrain} from "@/transform/kbGrainToGrain";
 
 export type BatchPlanningGrainsRowProps = {
     row: number;

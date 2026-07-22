@@ -1,13 +1,13 @@
 import {createFileRoute} from "@tanstack/react-router";
 import {useCallback} from "react";
-import Batch from "@/model/batch";
+import updateBatch from "@/actions/updateBatch";
 import PanelSwitcher from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
-import BatchSchedule from "../screen/batch-schedule";
+import Batch from "@/model/batch";
 import BatchSummary from "@/screen/batch-summary";
-import BatchShopping from "../screen/batch-shopping";
 import BatchPlanning from "../screen/batch-planning";
-import updateBatch from "@/actions/updateBatch";
+import BatchSchedule from "../screen/batch-schedule";
+import BatchShopping from "../screen/batch-shopping";
 
 export const Route = createFileRoute("/batch/$batchId")({
     component: BatchPage

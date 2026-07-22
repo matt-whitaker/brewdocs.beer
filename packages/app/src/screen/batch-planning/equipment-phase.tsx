@@ -1,13 +1,13 @@
-import {ScheduleItem, SchedulePhase} from "@/model/batch";
-import {AddFn, RemoveFn, UpdateFn} from "@/hooks/useJsonEdit";
+import {useCallback, useMemo} from "react";
 import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
-import {useCallback, useMemo} from "react";
 import equipmentCatalog from "@/data/equipment";
 import useIndexBy from "@/hooks/useIndexBy";
-import {saveSession, useSession} from "@/state/session";
-import PlanningEquipmentRow from "@/screen/batch-planning/equipment-row";
+import {AddFn, RemoveFn, UpdateFn} from "@/hooks/useJsonEdit";
+import {ScheduleItem, SchedulePhase} from "@/model/batch";
 import BatchPlanningEquipmentAddRow from "@/screen/batch-planning/equipment-add-row";
+import PlanningEquipmentRow from "@/screen/batch-planning/equipment-row";
+import {saveSession, useSession} from "@/state/session";
 
 export type BatchPlanningEquipmentPhaseProps = {
     /** index into batch.phases */

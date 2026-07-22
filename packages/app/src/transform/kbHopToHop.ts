@@ -1,5 +1,5 @@
-import {KbHop} from "@brewdocs.beer/kb";
 import {Units} from "@brewdocs.beer/core";
+import {KbHop} from "@brewdocs.beer/kb";
 import Hop from "@/model/hop";
 
 /**

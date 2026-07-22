@@ -1,8 +1,8 @@
+import classNames from "classnames";
 import {PropsWithChildren, useCallback, useState} from "react";
 import {PropsWithClass} from "@brewdocs.beer/core";
-import classNames from "classnames";
-import {Chevron} from "@/component/svg";
 import {CHEVRON, CHEVRON_ICON} from "@/component/data-grid";
+import {Chevron} from "@/component/svg";
 
 /** paired with the group class by the sibling rule in styles.css */
 const COLLAPSED = "dg-collapsed";

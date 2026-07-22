@@ -1,6 +1,6 @@
+import classNames from "classnames";
 import {PropsWithChildren} from "react";
 import {PropsWithClass} from "@brewdocs.beer/core";
-import classNames from "classnames";
 
 /**
  * A second-level heading inside a DataGrid section — labels a run of rows

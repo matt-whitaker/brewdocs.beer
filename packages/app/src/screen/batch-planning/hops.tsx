@@ -1,13 +1,13 @@
+import {useCallback, useMemo} from "react";
 import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
-import Hop from "@/model/hop";
-import {useCallback, useMemo} from "react";
-import {useKbHops} from "@/state/kbHops";
 import useIndexBy from "@/hooks/useIndexBy";
 import {AddFn, RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
-import {saveSession, useSession} from "@/state/session";
-import PlanningHopsRow from "@/screen/batch-planning/hops-row";
+import Hop from "@/model/hop";
 import BatchPlanningHopsAddRow from "@/screen/batch-planning/hops-add-row";
+import PlanningHopsRow from "@/screen/batch-planning/hops-row";
+import {useKbHops} from "@/state/kbHops";
+import {saveSession, useSession} from "@/state/session";
 
 const SESSION_KEY = "planning.hops";
 

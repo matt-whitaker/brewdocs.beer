@@ -1,23 +1,11 @@
 name: Verify
 run-name: "Verify"
 
-# PR gate: typecheck + build every package on the way into mainline, without
-# deploying. Set the `Verify` job as a required status check on mainline — the
-# build-test-deploy workflows only run post-merge (on push), so this is the one
-# place a red build is caught *before* it ships.
-#
-# TODO (maintainer decision): claude.yaml opens PRs with the default
-# GITHUB_TOKEN. GitHub holds `pull_request` runs created that way pending an
-# "Approve and run" click, so this gate does not go green on a bot-opened PR
-# until you approve it (later pushes to the branch run normally). Swapping
-# claude.yaml's GH_TOKEN for a PAT or GitHub App token removes the click, at the
-# cost of running bot-authored code in CI unattended. Left as-is deliberately.
 on:
   pull_request:
     branches:
       - mainline
 
-# a fresh push to the PR supersedes any in-flight run
 concurrency:
   group: verify-${{ github.ref }}
   cancel-in-progress: true
@@ -32,12 +20,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
-      # npm ci also builds packages/kb via its postinstall (a broken kb build
-      # fails here); core/design ship raw TS and are typechecked by the consumers
-      # that compile them below.
+          node-version: ${{ env.NODE_VERSION }}s
       - run: npm ci
-      # static gate first — lint is fast, so fail before the heavier builds
-      - run: npm run test:app    # eslint
-      - run: npm run build:app   # tsc --noEmit && vite build
-      - run: npm run build:www   # astro check && astro build
+      - run: npm test -ws
+      - run: npm run build -ws

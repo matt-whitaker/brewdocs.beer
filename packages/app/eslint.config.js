@@ -3,6 +3,7 @@ import globals from "globals";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
 import stylistic from "@stylistic/eslint-plugin";
+import importX from "eslint-plugin-import-x";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
@@ -24,7 +25,8 @@ export default tseslint.config(
         plugins: {
             "react-hooks": reactHooks,
             "react-refresh": reactRefresh,
-            "@stylistic": stylistic
+            "@stylistic": stylistic,
+            "import-x": importX
         },
         rules: {
             ...reactHooks.configs.recommended.rules,
@@ -36,6 +38,23 @@ export default tseslint.config(
             "@stylistic/semi": ["error", "always"],
             // the codebase is already uniformly 4-space; this just locks it in
             "@stylistic/indent": ["error", 4],
+
+            // reach into a sibling workspace package by its name, not a relative
+            // path that climbs out of packages/app (../../../../kb → @brewdocs.beer/kb)
+            "import-x/no-relative-packages": "error",
+
+            // group + alphabetize imports: external libs, then @brewdocs.beer/*
+            // workspace packages, then @/ internal, then relative (parent→sibling)
+            "import-x/order": ["error", {
+                groups: ["builtin", "external", "internal", "parent", "sibling", "index"],
+                pathGroups: [
+                    { pattern: "@brewdocs.beer/**", group: "external", position: "after" },
+                    { pattern: "@/**", group: "internal" }
+                ],
+                pathGroupsExcludedImportTypes: ["builtin"],
+                "newlines-between": "never",
+                alphabetize: { order: "asc", caseInsensitive: true }
+            }],
 
             // enforce the "no lodash" rule that until now lived only in CLAUDE.md —
             // the repo uses the hand-rolled utils/func.ts instead

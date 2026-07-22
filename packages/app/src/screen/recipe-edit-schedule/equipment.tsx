@@ -1,13 +1,13 @@
+import {useCallback, useMemo} from "react";
 import {KbRecipe} from "@brewdocs.beer/kb";
 import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
-import {AddFn, RemoveFn, UpdateFn} from "@/hooks/useJsonEdit";
-import {useCallback, useMemo} from "react";
 import equipmentCatalog from "@/data/equipment";
 import useIndexBy from "@/hooks/useIndexBy";
-import {saveSession, useSession} from "@/state/session";
-import RecipeEditEquipmentRow from "@/screen/recipe-edit-schedule/equipment-row";
+import {AddFn, RemoveFn, UpdateFn} from "@/hooks/useJsonEdit";
 import RecipeEditEquipmentAddRow from "@/screen/recipe-edit-schedule/equipment-add-row";
+import RecipeEditEquipmentRow from "@/screen/recipe-edit-schedule/equipment-row";
+import {saveSession, useSession} from "@/state/session";
 
 const SESSION_KEY = "recipeEdit.equipment";
 

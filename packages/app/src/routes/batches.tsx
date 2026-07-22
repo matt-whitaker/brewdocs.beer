@@ -1,10 +1,10 @@
 import {createFileRoute} from "@tanstack/react-router";
-import BrewList from "@/screen/batch-list";
+import {useCallback} from "react";
 import PanelSwitcher from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
-import Statuses from "@/model/statuses";
-import {useCallback} from "react";
 import Batch from "@/model/batch";
+import Statuses from "@/model/statuses";
+import BrewList from "@/screen/batch-list";
 
 export const Route = createFileRoute("/batches")({
     component: BatchesPage

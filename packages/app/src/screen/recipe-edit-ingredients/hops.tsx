@@ -1,12 +1,12 @@
+import {useCallback, useMemo} from "react";
 import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
-import {useCallback, useMemo} from "react";
-import {useKbHops} from "@/state/kbHops";
 import useIndexBy from "@/hooks/useIndexBy";
 import {AddFn, RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
-import {saveSession, useSession} from "@/state/session";
-import RecipeEditHopsRow, {RecipeHop} from "@/screen/recipe-edit-ingredients/hops-row";
 import RecipeEditHopsAddRow from "@/screen/recipe-edit-ingredients/hops-add-row";
+import RecipeEditHopsRow, {RecipeHop} from "@/screen/recipe-edit-ingredients/hops-row";
+import {useKbHops} from "@/state/kbHops";
+import {saveSession, useSession} from "@/state/session";
 
 const SESSION_KEY = "recipe-edit.hops";
 

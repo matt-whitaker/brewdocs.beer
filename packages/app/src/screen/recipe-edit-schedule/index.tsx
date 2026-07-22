@@ -1,10 +1,10 @@
 import {KbRecipe} from "@brewdocs.beer/kb";
 import Screen from "@/component/screen";
 import useJsonEdit from "@/hooks/useJsonEdit";
-import {useRecipe} from "@/state/recipes";
-import RecipeEditMash from "@/screen/recipe-edit-schedule/mash";
 import RecipeEditBoil from "@/screen/recipe-edit-schedule/boil";
 import RecipeEditEquipment from "@/screen/recipe-edit-schedule/equipment";
+import RecipeEditMash from "@/screen/recipe-edit-schedule/mash";
+import {useRecipe} from "@/state/recipes";
 
 export type RecipeEditScheduleProps = { recipeId: string; onChange: (recipe: KbRecipe) => void };
 export default function RecipeEditSchedule({ recipeId, onChange }: RecipeEditScheduleProps) {

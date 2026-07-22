@@ -1,12 +1,12 @@
-import {ScheduleItem, SchedulePhase} from "@/model/batch";
-import Equipment from "@/model/equipment";
-import DataGridRow from "@/component/data-grid/row";
+import {Fragment, memo, useCallback, useMemo} from "react";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridRemoveButton from "@/component/data-grid/remove-button";
+import DataGridRow from "@/component/data-grid/row";
 import DataGridSelect from "@/component/data-grid/select";
-import {equipmentToScheduleItem} from "@/transform/equipmentToScheduleItem";
-import {Fragment, memo, useCallback, useMemo} from "react";
 import {RemoveFn, UpdateFn} from "@/hooks/useJsonEdit";
+import {ScheduleItem, SchedulePhase} from "@/model/batch";
+import Equipment from "@/model/equipment";
+import {equipmentToScheduleItem} from "@/transform/equipmentToScheduleItem";
 
 export type BatchPlanningEquipmentRowProps = {
     /** index into batch.phases */

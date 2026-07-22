@@ -1,7 +1,7 @@
 import {createFileRoute} from "@tanstack/react-router";
-import RecipeList from "@/screen/recipe-list";
 import PanelSwitcher from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
+import RecipeList from "@/screen/recipe-list";
 
 export const Route = createFileRoute("/recipes")({
     component: RecipesPage

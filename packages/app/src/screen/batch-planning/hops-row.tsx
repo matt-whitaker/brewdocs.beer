@@ -1,14 +1,14 @@
+import {memo, useCallback, useMemo} from "react";
 import {KbHop} from "@brewdocs.beer/kb";
-import {RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
-import Hop from "@/model/hop";
 import DataGrid from "@/component/data-grid";
-import DataGridRow from "@/component/data-grid/row";
+import DataGridInput from "@/component/data-grid/input";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridRemoveButton from "@/component/data-grid/remove-button";
+import DataGridRow from "@/component/data-grid/row";
 import DataGridSelect from "@/component/data-grid/select";
+import {RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
+import Hop from "@/model/hop";
 import {kbHopToHop} from "@/transform/kbHopToHop";
-import DataGridInput from "@/component/data-grid/input";
-import {memo, useCallback, useMemo} from "react";
 
 
 export type BatchPlanningHopsRowProps = {

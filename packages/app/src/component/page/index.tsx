@@ -1,6 +1,6 @@
 import {PropsWithChildren} from "react";
-import Shell from "../shell";
 import {PropsWithClass} from "@brewdocs.beer/core";
+import Shell from "../shell";
 
 export type PageProps = PropsWithChildren & Partial<PropsWithClass>;
 

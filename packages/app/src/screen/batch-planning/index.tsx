@@ -1,22 +1,21 @@
+import {useCallback} from "react";
 import {ScreenH1, ScreenH2, ScreenH3, ScreenP} from "@brewdocs.beer/design";
-import Batch from "@/model/batch";
-
-import useJsonEdit from "@/hooks/useJsonEdit";
-import Screen from "@/component/screen";
+import DataGrid from "@/component/data-grid";
+import DataGridInput from "@/component/data-grid/input";
+import DataGridLabel from "@/component/data-grid/label";
+import DataGridRow from "@/component/data-grid/row";
 import PanelSwitcher from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
-import BatchPlanningHops from "@/screen/batch-planning/hops";
-import BatchPlanningYeasts from "@/screen/batch-planning/yeasts";
-import BatchPlanningGrains from "@/screen/batch-planning/grains";
+import Screen from "@/component/screen";
+import useJsonEdit from "@/hooks/useJsonEdit";
+import Batch from "@/model/batch";
 import BatchPlanningEquipment from "@/screen/batch-planning/equipment";
+import BatchPlanningGrains from "@/screen/batch-planning/grains";
+import BatchPlanningHops from "@/screen/batch-planning/hops";
 import BatchPlanningPhases from "@/screen/batch-planning/phases";
-import DataGrid from "@/component/data-grid";
-import DataGridRow from "@/component/data-grid/row";
-import DataGridLabel from "@/component/data-grid/label";
-import DataGridInput from "@/component/data-grid/input";
+import BatchPlanningYeasts from "@/screen/batch-planning/yeasts";
 import {useBatch} from "@/state/batches";
 import {useRecipe} from "@/state/recipes";
-import {useCallback} from "react";
 
 export type BatchPlanningProps = {
     batchId: string;

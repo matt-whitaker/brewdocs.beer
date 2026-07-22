@@ -1,12 +1,12 @@
-import {Phase, phaseLabel} from "@/model/batch";
-import DataGridRow from "@/component/data-grid/row";
+import classNames from "classnames";
+import {Fragment, memo, useCallback} from "react";
+import {CHEVRON, CHEVRON_ICON} from "@/component/data-grid";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridRemoveButton from "@/component/data-grid/remove-button";
-import {Fragment, memo, useCallback} from "react";
-import {MoveFn, RemoveFn} from "@/hooks/useJsonEdit";
+import DataGridRow from "@/component/data-grid/row";
 import {Chevron} from "@/component/svg";
-import {CHEVRON, CHEVRON_ICON} from "@/component/data-grid";
-import classNames from "classnames";
+import {MoveFn, RemoveFn} from "@/hooks/useJsonEdit";
+import {Phase, phaseLabel} from "@/model/batch";
 
 export type BatchPlanningPhasesRowProps = {
     row: number;

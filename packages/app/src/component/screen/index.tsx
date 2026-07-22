@@ -1,5 +1,5 @@
-import {PropsWithChildren} from "react";
 import classNames from "classnames";
+import {PropsWithChildren} from "react";
 import {PropsWithClass} from "@brewdocs.beer/core";
 
 export type ScreenProps = PropsWithChildren & PropsWithClass;

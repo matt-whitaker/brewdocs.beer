@@ -2,8 +2,8 @@ import classNames from "classnames";
 import {PropsWithClass} from "@brewdocs.beer/core";
 import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
-import DataGridRow from "@/component/data-grid/row";
 import DataGridLabel from "@/component/data-grid/label";
+import DataGridRow from "@/component/data-grid/row";
 
 // accepts either a real Batch's Measurements or a KbRecipe's raw targets
 // shape (Scalar vs KbScalar) — only .value/.ibu/.srm are ever read

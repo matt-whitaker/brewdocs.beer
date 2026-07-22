@@ -1,7 +1,7 @@
-import Equipment from "@/model/equipment";
 import {useCallback, useState} from "react";
 import AddRow from "@/component/data-grid/add-row";
 import {AddFn} from "@/hooks/useJsonEdit";
+import Equipment from "@/model/equipment";
 
 export type RecipeEditEquipmentAddRowProps = {
     add: AddFn;

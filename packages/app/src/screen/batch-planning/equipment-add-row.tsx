@@ -1,8 +1,8 @@
-import Equipment from "@/model/equipment";
-import {SchedulePhase} from "@/model/batch";
 import {useCallback, useState} from "react";
 import AddRow from "@/component/data-grid/add-row";
 import {AddFn} from "@/hooks/useJsonEdit";
+import {SchedulePhase} from "@/model/batch";
+import Equipment from "@/model/equipment";
 import {equipmentToScheduleItem} from "@/transform/equipmentToScheduleItem";
 
 export type BatchPlanningEquipmentAddRowProps = {

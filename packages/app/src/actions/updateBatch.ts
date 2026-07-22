@@ -1,9 +1,9 @@
-import Batch from "@/model/batch";
+import _updateSchedule from "@/actions/_updateSchedule";
 import _updateShopping from "@/actions/_updateShopping";
+import Batch from "@/model/batch";
+import {saveBatch} from "@/state/batches";
 import batchesStorage from "@/storage/batches";
 import {isEqual} from "@/utils/func";
-import {saveBatch} from "@/state/batches";
-import _updateSchedule from "@/actions/_updateSchedule";
 
 const shoppingTriggers: (keyof Batch)[] = ["hops", "grains", "yeasts"];
 const scheduleTriggers: (keyof Batch)[] = ["hops", "grains", "yeasts", "additives", "mash", "boil", "hydrometer"];

@@ -1,12 +1,12 @@
 import {memo, useCallback} from "react";
-import {ScheduleDetail, ScheduleItem} from "@/model/batch";
-import {ToggleFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
 import DataGrid from "@/component/data-grid";
-import DataGridRow from "@/component/data-grid/row";
+import DataGridCheckbox from "@/component/data-grid/checkbox";
+import DataGridInput from "@/component/data-grid/input";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridLabelNote from "@/component/data-grid/label-note";
-import DataGridInput from "@/component/data-grid/input";
-import DataGridCheckbox from "@/component/data-grid/checkbox";
+import DataGridRow from "@/component/data-grid/row";
+import {ToggleFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
+import {ScheduleDetail, ScheduleItem} from "@/model/batch";
 
 type BatchScheduleItemDetailProps = {
     detail: ScheduleDetail;

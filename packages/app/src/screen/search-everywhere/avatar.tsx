@@ -1,5 +1,5 @@
-import {Named} from "@/model/type";
 import classNames from "classnames";
+import {Named} from "@/model/type";
 
 const fallbackSrc = "";
 export type SearchEverywhereResultProps = Named & { type: "placeholder"|"icon"|"text"|"image", src?: string; };

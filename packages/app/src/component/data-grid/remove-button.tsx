@@ -1,7 +1,7 @@
-import {Minus} from "@/component/svg";
 import classNames from "classnames";
-import {PropsWithClass, PropsWithOnClick} from "@brewdocs.beer/core";
 import {MouseEventHandler} from "react";
+import {PropsWithClass, PropsWithOnClick} from "@brewdocs.beer/core";
+import {Minus} from "@/component/svg";
 
 export default function RemoveButton({ className, onClick }: PropsWithClass & PropsWithOnClick) {
     return (

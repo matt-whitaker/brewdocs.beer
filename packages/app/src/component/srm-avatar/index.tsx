@@ -1,7 +1,7 @@
-import {SRM_TO_HEX} from "@/component/srm-avatar/constants";
-import {useMemo} from "react";
 import classNames from "classnames";
+import {useMemo} from "react";
 import {PropsWithClass} from "@brewdocs.beer/core";
+import {SRM_TO_HEX} from "@/component/srm-avatar/constants";
 
 export type SrmAvatarProps = Partial<PropsWithClass> & {
     srm: number;

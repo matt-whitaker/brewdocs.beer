@@ -1,6 +1,6 @@
 import classNames from "classnames";
-import {InputText} from "@brewdocs.beer/design";
 import {Currencies, PropsWithClass, PropsWithOnBlur, PropsWithOnChange, Units} from "@brewdocs.beer/core";
+import {InputText} from "@brewdocs.beer/design";
 import {InputDate} from "@brewdocs.beer/design";
 import {COL_SPANS} from "@/component/data-grid";
 

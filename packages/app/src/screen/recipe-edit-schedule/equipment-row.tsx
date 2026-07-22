@@ -1,12 +1,12 @@
+import {memo, useCallback, useEffect, useMemo, useState} from "react";
 import {KbRecipe} from "@brewdocs.beer/kb";
-import Equipment from "@/model/equipment";
-import DataGridRow from "@/component/data-grid/row";
+import DataGridInput from "@/component/data-grid/input";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridRemoveButton from "@/component/data-grid/remove-button";
+import DataGridRow from "@/component/data-grid/row";
 import DataGridSelect from "@/component/data-grid/select";
-import DataGridInput from "@/component/data-grid/input";
-import {memo, useCallback, useEffect, useMemo, useState} from "react";
 import {RemoveFn, UpdateFn} from "@/hooks/useJsonEdit";
+import Equipment from "@/model/equipment";
 
 export type RecipeEditEquipmentRowProps = {
     row: number;

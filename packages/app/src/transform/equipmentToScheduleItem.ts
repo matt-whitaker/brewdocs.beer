@@ -1,5 +1,5 @@
-import Equipment from "@/model/equipment";
 import {ScheduleItem, SchedulePhase} from "@/model/batch";
+import Equipment from "@/model/equipment";
 
 /**
  * Map a catalog equipment entry to a phase's equipment-item shape, setting defaults.

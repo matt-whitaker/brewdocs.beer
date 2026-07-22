@@ -1,14 +1,14 @@
-import {KbHop} from "@brewdocs.beer/kb";
-import {Units} from "@brewdocs.beer/core";
 import {useCallback, useState} from "react";
+import {Units} from "@brewdocs.beer/core";
+import {KbHop} from "@brewdocs.beer/kb";
 import DataGrid from "@/component/data-grid";
-import DataGridRow from "@/component/data-grid/row";
-import DataGridLabel from "@/component/data-grid/label";
-import DataGridInput from "@/component/data-grid/input";
 import AddRow from "@/component/data-grid/add-row";
+import DataGridInput from "@/component/data-grid/input";
+import DataGridLabel from "@/component/data-grid/label";
+import DataGridRow from "@/component/data-grid/row";
 import {AddFn} from "@/hooks/useJsonEdit";
-import {scalarFromNumberWithUnit} from "@/utils/formatting";
 import {kbHopToHop} from "@/transform/kbHopToHop";
+import {scalarFromNumberWithUnit} from "@/utils/formatting";
 
 export type BatchPlanningHopsAddRowProps = {
     add: AddFn;

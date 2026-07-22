@@ -1,12 +1,12 @@
-import {KbYeast, KbRecipe} from "../../../../kb";
-import {Units} from "../../../../core";
-import DataGridRow from "@/component/data-grid/row";
+import {memo, useCallback, useMemo} from "react";
+import {Units} from "@brewdocs.beer/core";
+import {KbYeast, KbRecipe} from "@brewdocs.beer/kb";
+import DataGridCheckbox from "@/component/data-grid/checkbox";
+import DataGridInput from "@/component/data-grid/input";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridRemoveButton from "@/component/data-grid/remove-button";
+import DataGridRow from "@/component/data-grid/row";
 import DataGridSelect from "@/component/data-grid/select";
-import DataGridInput from "@/component/data-grid/input";
-import DataGridCheckbox from "@/component/data-grid/checkbox";
-import {memo, useCallback, useMemo} from "react";
 import {RemoveFn, ToggleFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
 
 export type RecipeYeast = KbRecipe["yeasts"][number];

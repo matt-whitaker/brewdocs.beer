@@ -1,22 +1,22 @@
-import Batch, {phaseLabel, ScheduleKind} from "@/model/batch";
+import {useCallback, useMemo} from "react";
 import {ScreenH1} from "@brewdocs.beer/design";
-import Screen from "@/component/screen";
-import PanelSwitcher from "@/component/panel-switcher";
-import PanelSwitcherContent from "@/component/panel-switcher/content";
 import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
-import DataGridRow from "@/component/data-grid/row";
 import DataGridLabel from "@/component/data-grid/label";
+import DataGridRow from "@/component/data-grid/row";
 import DataGridSelect from "@/component/data-grid/select";
-import ScheduleItemRow from "@/screen/batch-schedule/item-row";
-import BatchScheduleEquipment from "@/screen/batch-schedule/equipment";
+import PanelSwitcher from "@/component/panel-switcher";
+import PanelSwitcherContent from "@/component/panel-switcher/content";
+import Screen from "@/component/screen";
 import useJsonEdit from "@/hooks/useJsonEdit";
-import {saveSession, useSession} from "@/state/session";
-import {useBatch} from "@/state/batches";
-import {get} from "@/utils/func";
-import {useCallback, useMemo} from "react";
+import Batch, {phaseLabel, ScheduleKind} from "@/model/batch";
 import Scalar from "@/model/scalar";
 import {statuses} from "@/model/statuses";
+import BatchScheduleEquipment from "@/screen/batch-schedule/equipment";
+import ScheduleItemRow from "@/screen/batch-schedule/item-row";
+import {useBatch} from "@/state/batches";
+import {saveSession, useSession} from "@/state/session";
+import {get} from "@/utils/func";
 
 const STATUS_OPTIONS = Object.entries(statuses).map(([value, name]) => ({name, value}));
 

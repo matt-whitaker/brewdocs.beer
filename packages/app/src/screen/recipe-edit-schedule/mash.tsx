@@ -1,11 +1,11 @@
+import {useCallback, useMemo} from "react";
 import {KbRecipe} from "@brewdocs.beer/kb";
 import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
 import {AddFn, RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
-import {useCallback, useMemo} from "react";
-import {saveSession, useSession} from "@/state/session";
-import RecipeEditMashRow from "@/screen/recipe-edit-schedule/mash-row";
 import RecipeEditMashAddRow from "@/screen/recipe-edit-schedule/mash-add-row";
+import RecipeEditMashRow from "@/screen/recipe-edit-schedule/mash-row";
+import {saveSession, useSession} from "@/state/session";
 
 const SESSION_KEY = "recipeEdit.mash";
 

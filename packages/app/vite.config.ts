@@ -1,8 +1,8 @@
 import {fileURLToPath, URL} from "node:url";
-import {defineConfig, Plugin} from "vite";
+import tailwindcss from "@tailwindcss/vite";
 import {tanstackRouter} from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
-import tailwindcss from "@tailwindcss/vite";
+import {defineConfig, Plugin} from "vite";
 import {VitePWA} from "vite-plugin-pwa";
 // Relative, not the "@brewdocs.beer/core" bare specifier: this file is loaded
 // by Vite's own Node config bundler, which treats bare imports as external

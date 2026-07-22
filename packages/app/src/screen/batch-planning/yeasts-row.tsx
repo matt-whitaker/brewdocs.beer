@@ -1,13 +1,13 @@
+import {Fragment, memo, useCallback, useMemo} from "react";
 import {KbYeast} from "@brewdocs.beer/kb";
-import { RemoveFn, UpdateFn, UpdateScalarFn } from "@/hooks/useJsonEdit";
-import Yeast from "@/model/yeast";
-import DataGridRow from "@/component/data-grid/row";
+import DataGridInput from "@/component/data-grid/input";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridRemoveButton from "@/component/data-grid/remove-button";
+import DataGridRow from "@/component/data-grid/row";
 import DataGridSelect from "@/component/data-grid/select";
+import { RemoveFn, UpdateFn, UpdateScalarFn } from "@/hooks/useJsonEdit";
+import Yeast from "@/model/yeast";
 import {kbYeastToYeast} from "@/transform/kbYeastToYeast";
-import DataGridInput from "@/component/data-grid/input";
-import {Fragment, memo, useCallback, useMemo} from "react";
 
 
 export type BatchPlanningYeastsRowProps = {

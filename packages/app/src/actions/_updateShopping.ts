@@ -1,8 +1,8 @@
-import Batch, {ShoppingItem, ShoppingTag} from "@/model/batch";
 import {Currencies, Units} from "@brewdocs.beer/core";
+import Batch, {ShoppingItem, ShoppingTag} from "@/model/batch";
+import Scalar from "@/model/scalar";
 import {groupBy, isEqual} from "@/utils/func";
 import {parseNumberString} from "@/utils/math";
-import Scalar from "@/model/scalar";
 
 /** the fields this action owns; everything else on an item belongs to the user */
 type Derived = Pick<ShoppingItem, "name"|"tags"|"scalar">;

@@ -1,7 +1,7 @@
 import {Fragment, useMemo} from "react";
 import DataGrid from "@/component/data-grid";
-import DataGridRow from "@/component/data-grid/row";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
+import DataGridRow from "@/component/data-grid/row";
 
 // accepts either real batch-instance ingredients or raw kb-recipe-embedded
 // ones (Hop[]/Grain[]/Yeast[] vs a KbRecipe's own hops/grains/yeasts shape) —

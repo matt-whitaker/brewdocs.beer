@@ -1,8 +1,8 @@
+import classNames from "classnames";
 import {PropsWithChildren, ReactNode, useState} from "react";
 import {PropsWithClass} from "@brewdocs.beer/core";
-import classNames from "classnames";
-import {Chevron} from "@/component/svg";
 import {CHEVRON, CHEVRON_ICON} from "@/component/data-grid";
+import {Chevron} from "@/component/svg";
 
 const ZEBRA = "odd:bg-base-200";
 const ROW_CONTAINER = "relative py-1 px-1 [.data-grid_.data-grid_&]:p-0";

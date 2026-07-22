@@ -1,8 +1,8 @@
-import {debounce, get, isEqual, setIn} from "@/utils/func";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {Entity} from "@brewdocs.beer/core";
 import Scalar from "@/model/scalar";
 import {scalarFromNumberWithCurrency, scalarFromNumberWithUnit} from "@/utils/formatting";
-import {Entity} from "@brewdocs.beer/core";
+import {debounce, get, isEqual, setIn} from "@/utils/func";
 
 export type UpdateFn = (dot: string, value?: unknown) => void;
 export type UpdateScalarFn = (dot: string, value: string, lock?: boolean) => void;

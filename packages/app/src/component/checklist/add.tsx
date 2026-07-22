@@ -1,6 +1,6 @@
-import {Plus} from "@/component/svg";
 import { useState} from "react";
 import {InputText} from "@brewdocs.beer/design";
+import {Plus} from "@/component/svg";
 
 export type ChecklistAddProps = { add: (value: string) => void; disallow: string[] };
 export default function ChecklistAdd({ add, disallow }: ChecklistAddProps) {

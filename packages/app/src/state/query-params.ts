@@ -1,6 +1,6 @@
-import queryStorage, {QueryValue} from "@/storage/query";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import queryClient from "@/queryClient";
+import queryStorage, {QueryValue} from "@/storage/query";
 
 export type QueryParams = Record<string, QueryValue>;
 

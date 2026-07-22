@@ -1,8 +1,8 @@
+import {ReactNode, useCallback, useMemo} from "react";
 import DataGridAddButton from "@/component/data-grid/add-button";
 import DataGridLabel from "@/component/data-grid/label";
-import DataGridSelect from "@/component/data-grid/select";
 import DataGridRow from "@/component/data-grid/row";
-import {ReactNode, useCallback, useMemo} from "react";
+import DataGridSelect from "@/component/data-grid/select";
 
 export type AddRowProps<T extends { name: string }> = {
     data: T[];

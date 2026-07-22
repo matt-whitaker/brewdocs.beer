@@ -1,7 +1,7 @@
 import {useSuspenseQuery} from "@tanstack/react-query";
 import Batch from "@/model/batch";
-import batchesStorage from "@/storage/batches";
 import queryClient from "@/queryClient";
+import batchesStorage from "@/storage/batches";
 import {FilterFn} from "@/utils/func";
 
 const batchesQueryKey = () => ["batches"];

@@ -1,10 +1,10 @@
-import {KbRecipe} from "@brewdocs.beer/kb";
+import {memo, useCallback} from "react";
 import {InputText} from "@brewdocs.beer/design";
-import DataGridRow from "@/component/data-grid/row";
+import {KbRecipe} from "@brewdocs.beer/kb";
+import DataGridInput from "@/component/data-grid/input";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridRemoveButton from "@/component/data-grid/remove-button";
-import DataGridInput from "@/component/data-grid/input";
-import {memo, useCallback} from "react";
+import DataGridRow from "@/component/data-grid/row";
 import {RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
 
 export type RecipeEditBoilRowProps = {

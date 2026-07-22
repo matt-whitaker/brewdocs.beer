@@ -6,9 +6,14 @@
   "main": "index.ts",
   "scripts": {
     "build:www": "npm run build -w packages/www",
+    "dev:www": "npm run dev -w packages/www",
+    "test:www": "npm run test -w packages/www",
     "build:app": "npm run build -w packages/app",
     "dev:app": "npm run dev -w packages/app",
-    "test:app": "npm run test -w packages/app"
+    "test:app": "npm run test -w packages/app",
+    "build:kb": "npm run build -w packages/kb",
+    "dev:kb": "npm run dev -w packages/kb",
+    "test:kb": "npm run test -w packages/kb"
   },
   "author": "",
   "license": "ISC",

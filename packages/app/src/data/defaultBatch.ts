@@ -1,10 +1,10 @@
-import Batch, {BATCH_MODEL_VERSION, Phase, SchedulePhase} from "@/model/batch";
 import {Units} from "@brewdocs.beer/core";
-import Statuses from "@/model/statuses";
 import equipment from "@/data/equipment";
+import Batch, {BATCH_MODEL_VERSION, Phase, SchedulePhase} from "@/model/batch";
 import {EquipmentUses} from "@/model/equipment";
-import {intersection} from "@/utils/func";
+import Statuses from "@/model/statuses";
 import {equipmentToScheduleItem} from "@/transform/equipmentToScheduleItem";
+import {intersection} from "@/utils/func";
 
 /** pulls the kit for a phase out of the catalog by matching EquipmentUses tags */
 const forUse = (phase: SchedulePhase, ...uses: EquipmentUses[]) => equipment

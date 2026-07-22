@@ -1,12 +1,12 @@
-import {KbHop, KbRecipe} from "../../../../kb";
-import {Units} from "../../../../core";
+import {memo, useCallback, useMemo} from "react";
+import {Units} from "@brewdocs.beer/core";
+import {KbHop, KbRecipe} from "@brewdocs.beer/kb";
 import DataGrid from "@/component/data-grid";
-import DataGridRow from "@/component/data-grid/row";
+import DataGridInput from "@/component/data-grid/input";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridRemoveButton from "@/component/data-grid/remove-button";
+import DataGridRow from "@/component/data-grid/row";
 import DataGridSelect from "@/component/data-grid/select";
-import DataGridInput from "@/component/data-grid/input";
-import {memo, useCallback, useMemo} from "react";
 import {RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
 
 export type RecipeHop = KbRecipe["hops"][number];

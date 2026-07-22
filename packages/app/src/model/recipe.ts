@@ -1,14 +1,14 @@
-import Grain from "@/model/grain";
-import {Mash} from "@/model/mash";
-import Hop from "@/model/hop";
-import Yeast from "@/model/yeast";
-import Measurements from "@/model/measurements";
-import Equipment from "@/model/equipment";
+import {Entity} from "@brewdocs.beer/core";
+import Additive from "@/model/additive";
 import Boil from "@/model/boil";
 import ChecklistDefinition from "@/model/checklist-definition";
-import Additive from "@/model/additive";
-import {Entity} from "@brewdocs.beer/core";
+import Equipment from "@/model/equipment";
+import Grain from "@/model/grain";
+import Hop from "@/model/hop";
+import {Mash} from "@/model/mash";
+import Measurements from "@/model/measurements";
 import Scalar from "@/model/scalar";
+import Yeast from "@/model/yeast";
 
 export default interface Recipe extends Entity {
     name: string;

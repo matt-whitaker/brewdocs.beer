@@ -1,10 +1,10 @@
 import {memo, useCallback} from "react";
-import {ShoppingItem} from "@/model/batch";
-import {ToggleFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
-import DataGridRow from "@/component/data-grid/row";
-import DataGridLabel from "@/component/data-grid/label";
-import DataGridInput from "@/component/data-grid/input";
 import DataGridCheckbox from "@/component/data-grid/checkbox";
+import DataGridInput from "@/component/data-grid/input";
+import DataGridLabel from "@/component/data-grid/label";
+import DataGridRow from "@/component/data-grid/row";
+import {ToggleFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
+import {ShoppingItem} from "@/model/batch";
 
 export type BatchShoppingItemRowProps = {
     /** index into batch.shopping — display order is sorted, so this is the real position */
