@@ -23,13 +23,15 @@ function RecipesPage() {
     return (
         <PanelSwitcher name="recipes" defaultTab="All">
             <PanelSwitcherContent title="All">
-                <RecipeList />
+                <RecipeList source="all" />
             </PanelSwitcherContent>
             <PanelSwitcherContent title="Starred"></PanelSwitcherContent>
             <PanelSwitcherContent
                 title="My Recipes"
                 actions={createAction}
-            ></PanelSwitcherContent>
+            >
+                <RecipeList source="user" />
+            </PanelSwitcherContent>
         </PanelSwitcher>
     );
 }

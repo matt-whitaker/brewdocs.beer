@@ -3,6 +3,7 @@ import {useEffect} from "react";
 import batchesStorage from "@/storage/batches";
 import kbStorage from "@/storage/kb";
 import sessionStorage from "@/storage/session";
+import recipesStorage from "@/storage/recipes";
 
 export default function DbCleanup() {
     const navigate = useNavigate();
@@ -11,6 +12,7 @@ export default function DbCleanup() {
             batchesStorage.purge();
             sessionStorage.purge();
             kbStorage.purge();
+            recipesStorage.purge();
             navigate({to: "/", replace: true});
         }
         // navigate is stable, and the ?purge= guard makes any re-run a no-op
