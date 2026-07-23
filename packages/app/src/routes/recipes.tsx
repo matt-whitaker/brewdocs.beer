@@ -1,10 +1,9 @@
-import {createFileRoute, useNavigate} from "@tanstack/react-router";
-import {useCallback} from "react";
-import createRecipe from "@/actions/createRecipe";
+import {createFileRoute} from "@tanstack/react-router";
 import Action from "@/component/action";
 import PanelSwitcher from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
 import {Plus} from "@/component/svg";
+import RecipeCreateModal from "@/screen/recipe-create-modal";
 import RecipeList from "@/screen/recipe-list";
 
 export const Route = createFileRoute("/recipes")({
@@ -12,13 +11,7 @@ export const Route = createFileRoute("/recipes")({
 });
 
 function RecipesPage() {
-    const navigate = useNavigate();
-
-    const onCreate = useCallback(() =>
-        createRecipe().then((id) => navigate({to: "/recipe/$recipeId/edit", params: {recipeId: id}})),
-    [navigate]);
-
-    const createAction = <Action label="Create" icon={Plus} onClick={onCreate} />;
+    const createAction = <Action label="Create" icon={Plus} modalContent={<RecipeCreateModal />} />;
 
     return (
         <PanelSwitcher name="recipes" defaultTab="All">
