@@ -10,7 +10,6 @@ on:
 
 env:
   NODE_VERSION: 22
-  NEXT_PUBLIC_APP_URL: "https://app.brewdocs.beer"
 
 jobs:
   Build:
