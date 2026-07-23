@@ -2,8 +2,8 @@ import {useNavigate} from "@tanstack/react-router";
 import {useEffect} from "react";
 import batchesStorage from "@/storage/batches";
 import kbStorage from "@/storage/kb";
-import sessionStorage from "@/storage/session";
 import recipesStorage from "@/storage/recipes";
+import sessionStorage from "@/storage/session";
 
 export default function DbCleanup() {
     const navigate = useNavigate();

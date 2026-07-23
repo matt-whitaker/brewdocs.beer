@@ -15,7 +15,8 @@
     "dev:kb": "npm run dev -w packages/kb",
     "test:kb": "npm run test -w packages/kb",
     "build": "npm run build -ws",
-    "test": "npm test -ws"
+    "test": "npm test -ws",
+    "lint:fix": "npm run lint -ws -- --fix"
   },
   "author": "",
   "license": "ISC",
