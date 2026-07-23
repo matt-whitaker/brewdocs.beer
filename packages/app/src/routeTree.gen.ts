@@ -17,6 +17,7 @@ import { Route as RecipesRouteImport } from './routes/recipes'
 import { Route as BatchBatchIdRouteImport } from './routes/batch.$batchId'
 import { Route as RecipeRecipeIdRouteImport } from './routes/recipe.$recipeId'
 import { Route as KbGrainGrainIdRouteImport } from './routes/kb.grain.$grainId'
+import { Route as KbHopHopIdRouteImport } from './routes/kb.hop.$hopId'
 import { Route as KbRecipeRecipeIdRouteImport } from './routes/kb.recipe.$recipeId'
 import { Route as KbYeastYeastIdRouteImport } from './routes/kb.yeast.$yeastId'
 import { Route as RecipeRecipeIdEditRouteImport } from './routes/recipe.$recipeId_.edit'
@@ -61,6 +62,11 @@ const KbGrainGrainIdRoute = KbGrainGrainIdRouteImport.update({
   path: '/kb/grain/$grainId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const KbHopHopIdRoute = KbHopHopIdRouteImport.update({
+  id: '/kb/hop/$hopId',
+  path: '/kb/hop/$hopId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const KbRecipeRecipeIdRoute = KbRecipeRecipeIdRouteImport.update({
   id: '/kb/recipe/$recipeId',
   path: '/kb/recipe/$recipeId',
@@ -86,6 +92,7 @@ export interface FileRoutesByFullPath {
   '/batch/$batchId': typeof BatchBatchIdRoute
   '/recipe/$recipeId': typeof RecipeRecipeIdRoute
   '/kb/grain/$grainId': typeof KbGrainGrainIdRoute
+  '/kb/hop/$hopId': typeof KbHopHopIdRoute
   '/kb/recipe/$recipeId': typeof KbRecipeRecipeIdRoute
   '/kb/yeast/$yeastId': typeof KbYeastYeastIdRoute
   '/recipe/$recipeId/edit': typeof RecipeRecipeIdEditRoute
@@ -99,6 +106,7 @@ export interface FileRoutesByTo {
   '/batch/$batchId': typeof BatchBatchIdRoute
   '/recipe/$recipeId': typeof RecipeRecipeIdRoute
   '/kb/grain/$grainId': typeof KbGrainGrainIdRoute
+  '/kb/hop/$hopId': typeof KbHopHopIdRoute
   '/kb/recipe/$recipeId': typeof KbRecipeRecipeIdRoute
   '/kb/yeast/$yeastId': typeof KbYeastYeastIdRoute
   '/recipe/$recipeId/edit': typeof RecipeRecipeIdEditRoute
@@ -113,6 +121,7 @@ export interface FileRoutesById {
   '/batch/$batchId': typeof BatchBatchIdRoute
   '/recipe/$recipeId': typeof RecipeRecipeIdRoute
   '/kb/grain/$grainId': typeof KbGrainGrainIdRoute
+  '/kb/hop/$hopId': typeof KbHopHopIdRoute
   '/kb/recipe/$recipeId': typeof KbRecipeRecipeIdRoute
   '/kb/yeast/$yeastId': typeof KbYeastYeastIdRoute
   '/recipe/$recipeId_/edit': typeof RecipeRecipeIdEditRoute
@@ -128,6 +137,7 @@ export interface FileRouteTypes {
     | '/batch/$batchId'
     | '/recipe/$recipeId'
     | '/kb/grain/$grainId'
+    | '/kb/hop/$hopId'
     | '/kb/recipe/$recipeId'
     | '/kb/yeast/$yeastId'
     | '/recipe/$recipeId/edit'
@@ -141,6 +151,7 @@ export interface FileRouteTypes {
     | '/batch/$batchId'
     | '/recipe/$recipeId'
     | '/kb/grain/$grainId'
+    | '/kb/hop/$hopId'
     | '/kb/recipe/$recipeId'
     | '/kb/yeast/$yeastId'
     | '/recipe/$recipeId/edit'
@@ -154,6 +165,7 @@ export interface FileRouteTypes {
     | '/batch/$batchId'
     | '/recipe/$recipeId'
     | '/kb/grain/$grainId'
+    | '/kb/hop/$hopId'
     | '/kb/recipe/$recipeId'
     | '/kb/yeast/$yeastId'
     | '/recipe/$recipeId_/edit'
@@ -168,6 +180,7 @@ export interface RootRouteChildren {
   BatchBatchIdRoute: typeof BatchBatchIdRoute
   RecipeRecipeIdRoute: typeof RecipeRecipeIdRoute
   KbGrainGrainIdRoute: typeof KbGrainGrainIdRoute
+  KbHopHopIdRoute: typeof KbHopHopIdRoute
   KbRecipeRecipeIdRoute: typeof KbRecipeRecipeIdRoute
   KbYeastYeastIdRoute: typeof KbYeastYeastIdRoute
   RecipeRecipeIdEditRoute: typeof RecipeRecipeIdEditRoute
@@ -231,6 +244,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KbGrainGrainIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/kb/hop/$hopId': {
+      id: '/kb/hop/$hopId'
+      path: '/kb/hop/$hopId'
+      fullPath: '/kb/hop/$hopId'
+      preLoaderRoute: typeof KbHopHopIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/kb/recipe/$recipeId': {
       id: '/kb/recipe/$recipeId'
       path: '/kb/recipe/$recipeId'
@@ -264,6 +284,7 @@ const rootRouteChildren: RootRouteChildren = {
   BatchBatchIdRoute: BatchBatchIdRoute,
   RecipeRecipeIdRoute: RecipeRecipeIdRoute,
   KbGrainGrainIdRoute: KbGrainGrainIdRoute,
+  KbHopHopIdRoute: KbHopHopIdRoute,
   KbRecipeRecipeIdRoute: KbRecipeRecipeIdRoute,
   KbYeastYeastIdRoute: KbYeastYeastIdRoute,
   RecipeRecipeIdEditRoute: RecipeRecipeIdEditRoute,

@@ -30,3 +30,14 @@ export const useKbHops = (): KbHop[] => {
 
     return data;
 };
+
+export const useKbHop = (id: string): KbHop => {
+    const { data } = useSuspenseQuery({ queryKey: kbHopsQueryKey(), queryFn: fetchKbHops });
+    const hop = data?.find(hop => hop.id === id);
+
+    if (!hop) {
+        throw new Error("Unable to load hop from Knowledge Base");
+    }
+
+    return hop;
+};
