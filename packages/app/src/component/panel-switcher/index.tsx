@@ -38,8 +38,8 @@ export default function PanelSwitcher({ name, defaultTab, children, className, c
         <div
             role="tablist"
             className={compact
-                ? "tabs tabs-box tabs-sm w-fit"
-                : classNames("tabs tabs-box px-0", actions ? "w-auto" : "lg:w-auto w-screen")}>
+                ? "tabs tabs-box tabs-sm w-auto"
+                : classNames("tabs tabs-box", actions ? "w-full" : "mx-2 w-auto")}>
             {panels.map(({ props: { title, label, titleAlt, children: content } }) => (
                 <button
                     key={title}
@@ -50,7 +50,7 @@ export default function PanelSwitcher({ name, defaultTab, children, className, c
                     title={titleAlt || (!content ? "Not implemented" : "")}
                     onClick={() => change(title)}
                     className={classNames(
-                        compact ? "tab whitespace-nowrap" : "first-of-type:ml-2 tab whitespace-nowrap lg:px-3 px-2.5",
+                        compact ? "tab whitespace-nowrap" : "tab whitespace-nowrap lg:px-3 px-2.5",
                         // daisyui v5 styles the active tab neutral and fades inactive tab
                         // text; restore the v4 primary look and full-strength text
                         // (disabled tabs stay dim)
@@ -70,9 +70,14 @@ export default function PanelSwitcher({ name, defaultTab, children, className, c
         <div className={classNames(compact ? "w-full" : "mt-2 lg:w-full w-screen h-full lg:px-4", [className])}>
             {actions
                 ? (
-                    <div className="flex items-center justify-between gap-2">
+                    // buttons overlay the right end of the full-width tab bar (kept in
+                    // a separate div from the role="tablist" per the structural rule) so
+                    // the bar background spans the row instead of shrinking for them.
+                    // mx-2 lives here so the bar keeps the same side inset as the
+                    // no-actions case (where it's on the tablist itself)
+                    <div className="relative mx-2">
                         {tablist}
-                        <div className="flex items-center shrink-0 pr-2 lg:pr-0">
+                        <div className="absolute inset-y-0 right-0 z-10 flex items-center shrink-0 pr-2">
                             {/* toArray keys an array of actions, so callers can pass
                                 a bare array instead of wrapping them in a fragment */}
                             {Children.toArray(actions)}
