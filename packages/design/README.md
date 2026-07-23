@@ -12,4 +12,4 @@ React UI primitives that emit Tailwind/DaisyUI class strings.
 - [React](https://react.dev/)
 - [Tailwind CSS](https://tailwindcss.com/) / [Daisy UI](https://daisyui.com/) (emitted as class strings)
 
-See the [`design` section of CLAUDE.md](/CLAUDE.md#packagesdesign) for detail.
+See the [`design` section of CLAUDE.md](/CLAUDE.md#packagesdesign) for detail, and [`DESIGN.md`](DESIGN.md) for the full design system — colors, typography, spacing, radii, and component conventions.

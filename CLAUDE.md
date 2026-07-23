@@ -83,7 +83,7 @@ core ← design ← app        core ← kb ← app        core ← design ← ww
 ## packages/design
 
 **Purpose.** React UI primitives that emit Tailwind/DaisyUI class strings. Declares no tailwind/daisyui of its own — app and www compile the class strings.
-**Where.** `src/index.ts` (re-exports), `src/components/*`, `src/stories/` (orphaned — see Gotchas).
+**Where.** `src/index.ts` (re-exports), `src/components/*`, `src/stories/` (orphaned — see Gotchas). See [`DESIGN.md`](packages/design/DESIGN.md) for the long-form design system doc (color, typography, spacing, radii, components).
 **Surface.** `ScreenH1–H5`/`ScreenP` (typography), `InputText`, `InputDate`, `InputSelect`. (`input-checkbox`, `input-unit` exist but aren't exported.) `InputText` blurs on Enter when an `onBlur` handler is present — that's how "press Enter to commit" works app-wide.
 **Invariants.** ⚠️ Class strings must be valid **DaisyUI v5 / Tailwind v4** — app and www are what compile them (via `@source "../../design/src"` + `@plugin "daisyui"`).
 **Gotchas.** Storybook has been removed (no deps, no `storybook` script); `src/stories/` remains only as orphaned scaffolding, excluded from consumer builds.
