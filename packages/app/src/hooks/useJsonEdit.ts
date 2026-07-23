@@ -1,6 +1,5 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import {Entity} from "@brewdocs.beer/core";
-import Scalar from "@/model/scalar";
+import {Entity, Scalar} from "@brewdocs.beer/core";
 import {scalarFromNumberWithCurrency, scalarFromNumberWithUnit} from "@/utils/formatting";
 import {debounce, get, isEqual, setIn} from "@/utils/func";
 
