@@ -1,7 +1,8 @@
 import {Link} from "@tanstack/react-router";
-import {useMemo} from "react";
+import {useMemo, useState} from "react";
 import {ScreenH1, ScreenH2, ScreenP} from "@brewdocs.beer/design";
 import Screen from "@/component/screen";
+import SearchBar from "@/component/search-bar";
 import useIndexBy from "@/hooks/useIndexBy";
 import Batch from "@/model/batch";
 import {statuses} from "@/model/statuses";
@@ -13,8 +14,17 @@ export default function BatchList({ filter }: BatchListProps) {
     const batches = useBatches(filter);
     const recipes = useRecipes();
     const recipesIndex = useIndexBy(recipes)!;
+    const [query, setQuery] = useState("");
 
-    const batchList = useMemo(() => batches.map((batch) => (
+    const shownBatches = useMemo(() => {
+        const q = query.trim().toLowerCase();
+        if (!q) return batches;
+        return batches.filter((batch) =>
+            batch.name.toLowerCase().includes(q)
+            || recipesIndex.get(batch.recipeId)?.name.toLowerCase().includes(q));
+    }, [batches, recipesIndex, query]);
+
+    const batchList = useMemo(() => shownBatches.map((batch) => (
         <li key={batch.id} className="odd:bg-base-200">
             <Link to="/batch/$batchId" params={{batchId: batch.id}} className="text-left block">
                 <ScreenH2 className="text-lg">{recipesIndex.get(batch.recipeId)?.name || ""}</ScreenH2>
@@ -23,10 +33,11 @@ export default function BatchList({ filter }: BatchListProps) {
                 <ScreenP>Status: {statuses[batch.status]}</ScreenP>
             </Link>
         </li>
-    )), [batches, recipesIndex]);
+    )), [shownBatches, recipesIndex]);
     return (
         <Screen>
             <ScreenH1>Your brews</ScreenH1>
+            <SearchBar value={query} onChange={setQuery} />
             <ul className="w-full menu px-0">
                 {batchList}
             </ul>
