@@ -115,7 +115,7 @@ core ← design ← app        core ← kb ← app        core ← design ← ww
 **Invariants.**
 - ⚠️ Pass a **stable** `crumbs` array — a module `const` for a static trail, `useMemo` keyed on the route params for a dynamic one. It drives an effect; a fresh array each render thrashes.
 - ⚠️ The container's `shrink-0` and `overflow-y-hidden` classes are **both load-bearing** (see Gotchas) — don't drop them.
-**Gotchas.** ⚠️ `DrawerContent` is a fixed-height (`h-full`) flex column whose children overflow it, so **without `shrink-0`** flexbox squeezes the breadcrumb box *below its content height*, and the squeeze varies with the active panel's height → the tab bar wobbles ~1px on tab switches. **`overflow-y-hidden`** cancels the stray vertical scrollbar daisyui's `.breadcrumbs { overflow-x:auto }` otherwise induces on mobile. `/disclaimer` is **intentionally exempt** — it keeps its own `<h1>` and registers no crumbs.
+**Gotchas.** ⚠️ `DrawerContent` is a fixed-height (`h-full`) flex column whose children overflow it, so **without `shrink-0`** flexbox squeezes the breadcrumb box *below its content height*, and the squeeze varies with the active panel's height → the tab bar wobbles ~1px on tab switches. **`overflow-y-hidden`** cancels the stray vertical scrollbar daisyui's `.breadcrumbs { overflow-x:auto }` otherwise induces on mobile. `/` (home) and `/disclaimer` are **intentionally exempt** — they register no crumbs (home is the hero landing; disclaimer keeps its own `<h1>`).
 **Example.** `recipe.$recipeId_.edit.tsx`: `useMemo<Crumb[]>(() => [{label:"Recipes", to:"/recipes"}, dynamicCrumb(useRecipeResource, ["user", recipeId], r => r.name, {to:"/recipe/$recipeId", params:{recipeId}}), {label:"Edit"}], [recipeId])`.
 
 ### State (TanStack Query, suspense-first)
