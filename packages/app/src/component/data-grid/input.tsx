@@ -9,18 +9,16 @@ export type DataGridInputProps = PropsWithClass
     & PropsWithOnChange<string>
     & PropsWithOnBlur<string>
     & {
-    /** which value column to start at (1-3) */
-        col: number;
-        /** columns to span from `col` */
         cols?: number;
+        colStart?: number;
         readonly?: boolean;
         value: string;
         type?: "text"|"date";
         unit?: Unit | Currency
     };
-export default function DataGridInput({ col, cols = 1, readonly = false, value, onChange, onBlur, className, type = "text" }: DataGridInputProps) {
+export default function DataGridInput({ colStart = 1, cols = 1, readonly = false, value, onChange, onBlur, className, type = "text" }: DataGridInputProps) {
     const classes = classNames(
-        VALUE_COL_STARTS[col - 1],
+        VALUE_COL_STARTS[colStart - 1],
         COL_SPANS[cols - 1],
         "self-center",
         [className]

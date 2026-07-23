@@ -26,10 +26,10 @@ function BatchScheduleItemDetail({ detail, value, update, updateScalar }: BatchS
         <DataGridRow zebra={false}>
             <DataGridLabel tiny cols={3}>{detail.name}</DataGridLabel>
             {detail.input === "date" ? (
-                <DataGridInput col={1} cols={3} type="date" value={value} onChange={onChangeDate} />
+                <DataGridInput cols={3} type="date" value={value} onChange={onChangeDate} />
             ) : (
                 <DataGridInput
-                    col={3}
+                    colStart={3}
                     readonly={detail.readonly}
                     value={value}
                     onChange={detail.readonly ? undefined : onChangeValue}
@@ -110,14 +110,14 @@ function BatchScheduleItemRow({ row, item, value, extraValues, toggle, update, u
             </DataGridLabel>
             {item.amount ? (
                 <DataGridInput
-                    col={2}
+                    colStart={2}
                     value={used}
                     onChange={onChangeAmount}
                     onBlur={onBlurAmount}
                 />
             ) : null}
             <DataGridInput
-                col={3}
+                colStart={3}
                 readonly={item.readonly}
                 value={value}
                 onChange={item.readonly ? undefined : onChangeValue}

@@ -40,7 +40,7 @@ function BatchPlanningYeastsRow({ row, yeast, remove, update, updateScalar, kbYe
                     />
                 </DataGridLabel>
                 <DataGridInput
-                    col={3}
+                    colStart={3}
                     value={yeast.temp.value}
                     onChange={onChangeTempValue}
                     onBlur={onBlurTemp}

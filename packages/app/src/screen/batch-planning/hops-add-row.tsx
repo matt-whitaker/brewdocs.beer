@@ -57,7 +57,7 @@ export default function BatchPlanningHopsAddRow({ add, kbHops, kbHopsIndex }: Ba
                     <DataGridRow>
                         <DataGridLabel tiny className="ml-6">Actual Alpha</DataGridLabel>
                         <DataGridInput
-                            col={3}
+                            colStart={3}
                             value={alphaValue}
                             onChange={setActualAlpha}
                             onBlur={onBlurActualAlpha}

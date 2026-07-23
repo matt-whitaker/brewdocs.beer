@@ -58,7 +58,7 @@ export default function RecipeEditHopsAddRow({ add, kbHops, kbHopsIndex }: Recip
                     <DataGridRow>
                         <DataGridLabel tiny className="ml-6">Actual Alpha</DataGridLabel>
                         <DataGridInput
-                            col={3}
+                            colStart={3}
                             value={alphaValue}
                             onChange={setActualAlpha}
                             onBlur={onBlurActualAlpha}

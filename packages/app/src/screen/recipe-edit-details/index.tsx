@@ -57,26 +57,26 @@ export default function RecipeEditDetails({ recipeId }: RecipeEditDetailsProps) 
 
                 <DataGridRow zebra>
                     <DataGridLabel cols={3}>Name</DataGridLabel>
-                    <DataGridInput col={1} cols={3} value={data.name} onChange={onChangeName} />
+                    <DataGridInput colStart={1} cols={3} value={data.name} onChange={onChangeName} />
                 </DataGridRow>
                 <DataGridRow zebra>
                     <DataGridLabel cols={3}>Brewer</DataGridLabel>
-                    <DataGridInput col={1} cols={3} value={data.brewer} onChange={onChangeBrewer} />
+                    <DataGridInput colStart={1} cols={3} value={data.brewer} onChange={onChangeBrewer} />
                 </DataGridRow>
                 <DataGridRow zebra>
                     <DataGridLabel cols={3}>Type</DataGridLabel>
-                    <DataGridInput col={1} cols={3} value={data.type} onChange={onChangeType} />
+                    <DataGridInput colStart={1} cols={3} value={data.type} onChange={onChangeType} />
                 </DataGridRow>
                 <DataGridRow zebra>
                     <DataGridLabel cols={3}>Description</DataGridLabel>
-                    <DataGridInput col={1} cols={3} value={data.description} onChange={onChangeDescription} />
+                    <DataGridInput colStart={1} cols={3} value={data.description} onChange={onChangeDescription} />
                 </DataGridRow>
 
                 <DataGridSubheaderRow>Measurements</DataGridSubheaderRow>
                 <DataGridRow zebra>
                     <DataGridLabel cols={3}>Batch Size</DataGridLabel>
                     <DataGridInput
-                        col={1}
+                        colStart={1}
                         cols={3}
                         value={data.batchSize.value}
                         onChange={onChangeBatchSizeValue}
@@ -86,7 +86,7 @@ export default function RecipeEditDetails({ recipeId }: RecipeEditDetailsProps) 
                 <DataGridRow zebra>
                     <DataGridLabel cols={3}>Boil Time</DataGridLabel>
                     <DataGridInput
-                        col={1}
+                        colStart={1}
                         cols={3}
                         value={data.boilTime.value}
                         onChange={onChangeBoilTimeValue}
@@ -96,7 +96,7 @@ export default function RecipeEditDetails({ recipeId }: RecipeEditDetailsProps) 
                 <DataGridRow zebra>
                     <DataGridLabel cols={3}>Efficiency</DataGridLabel>
                     <DataGridInput
-                        col={1}
+                        colStart={1}
                         cols={3}
                         value={data.efficiency.value}
                         onChange={onChangeEfficiencyValue}
@@ -108,7 +108,7 @@ export default function RecipeEditDetails({ recipeId }: RecipeEditDetailsProps) 
                 <DataGridRow zebra>
                     <DataGridLabel cols={3}>OG</DataGridLabel>
                     <DataGridInput
-                        col={1}
+                        colStart={1}
                         cols={3}
                         value={data.targets.og.value}
                         onChange={onChangeOgValue}
@@ -118,7 +118,7 @@ export default function RecipeEditDetails({ recipeId }: RecipeEditDetailsProps) 
                 <DataGridRow zebra>
                     <DataGridLabel cols={3}>FG</DataGridLabel>
                     <DataGridInput
-                        col={1}
+                        colStart={1}
                         cols={3}
                         value={data.targets.fg.value}
                         onChange={onChangeFgValue}
@@ -128,7 +128,7 @@ export default function RecipeEditDetails({ recipeId }: RecipeEditDetailsProps) 
                 <DataGridRow zebra>
                     <DataGridLabel cols={3}>ABV</DataGridLabel>
                     <DataGridInput
-                        col={1}
+                        colStart={1}
                         cols={3}
                         value={data.targets.abv.value}
                         onChange={onChangeAbvValue}
@@ -137,11 +137,11 @@ export default function RecipeEditDetails({ recipeId }: RecipeEditDetailsProps) 
                 </DataGridRow>
                 <DataGridRow zebra>
                     <DataGridLabel cols={3}>IBU</DataGridLabel>
-                    <DataGridInput col={1} cols={3} value={data.targets.ibu} onChange={onChangeIbu} />
+                    <DataGridInput colStart={1} cols={3} value={data.targets.ibu} onChange={onChangeIbu} />
                 </DataGridRow>
                 <DataGridRow zebra>
                     <DataGridLabel cols={3}>SRM</DataGridLabel>
-                    <DataGridInput col={1} cols={3} value={data.targets.srm} onChange={onChangeSrm} />
+                    <DataGridInput colStart={1} cols={3} value={data.targets.srm} onChange={onChangeSrm} />
                 </DataGridRow>
             </DataGrid>
         </Screen>

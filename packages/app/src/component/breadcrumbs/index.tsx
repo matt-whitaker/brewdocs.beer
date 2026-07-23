@@ -59,7 +59,11 @@ export default function Breadcrumbs() {
         <div className="breadcrumbs text-sm shrink-0 overflow-y-hidden self-start px-2 ml-2 lg:ml-4 lg:px-4">
             <ul>
                 {crumbs.map((crumb, i) => (
-                    <li key={i}>
+                    // key by identity, not bare index: a dynamic crumb hosts a data
+                    // hook, so reusing a fiber across crumbs whose hooks differ in
+                    // count throws "rendered more hooks…" (index prefix keeps sibling
+                    // keys unique when two crumbs share a label)
+                    <li key={`${i}:${isDynamic(crumb) ? crumb.key : crumb.label}`}>
                         {crumb.to
                             // dynamic runtime path — cast past the router's typed `to`
                             ? <Link to={crumb.to as never} params={crumb.params as never}><CrumbLabel crumb={crumb} /></Link>

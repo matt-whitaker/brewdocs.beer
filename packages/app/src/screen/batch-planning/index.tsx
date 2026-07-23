@@ -1,5 +1,5 @@
 import {useCallback} from "react";
-import {ScreenH2, ScreenH3, ScreenP} from "@brewdocs.beer/design";
+import {ScreenH3, ScreenP} from "@brewdocs.beer/design";
 import DataGrid from "@/component/data-grid";
 import DataGridInput from "@/component/data-grid/input";
 import DataGridLabel from "@/component/data-grid/label";
@@ -31,13 +31,12 @@ export default function BatchPlanning({ batchId, onChange }: BatchPlanningProps)
     return (
         <Screen>
             <div className="pb-4 relative">
-                <ScreenH2 className="first-of-type:mt-0">{recipe.name}</ScreenH2>
                 <ScreenH3>{batch.name || ""}</ScreenH3>
                 <ScreenP>By {`${recipe.brewer}`}</ScreenP>
                 <DataGrid className="mt-2">
                     <DataGridRow>
                         <DataGridLabel cols={3}>Brewed on</DataGridLabel>
-                        <DataGridInput col={1} cols={3} type="date" value={data.brewDate} onChange={updateDate} />
+                        <DataGridInput cols={3} type="date" value={data.brewDate} onChange={updateDate} />
                     </DataGridRow>
                 </DataGrid>
             </div>

@@ -32,7 +32,7 @@ function BatchShoppingItemRow({ row, item, toggle, update, updateScalar }: Batch
                 {item.name}{item.scalar ? ` - ${item.scalar.value}` : ""}
             </DataGridLabel>
             <DataGridInput
-                col={3}
+                colStart={3}
                 value={item.cost.value}
                 onChange={onChangeCostValue}
                 onBlur={onBlurCost}

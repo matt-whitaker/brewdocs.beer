@@ -39,7 +39,7 @@ function BatchPlanningGrainsRow({ row, grain, remove, update, updateScalar, kbGr
                     />
                 </DataGridLabel>
                 <DataGridInput
-                    col={3}
+                    colStart={3}
                     value={grain.weight.value}
                     onChange={onChangeWeightValue}
                     onBlur={onBlurWeight}

@@ -40,7 +40,7 @@ function RecipeEditGrainsRow({ row, grain, remove, update, updateScalar, kbGrain
                 />
             </DataGridLabel>
             <DataGridInput
-                col={3}
+                colStart={3}
                 value={grain.weight.value}
                 onChange={onChangeWeightValue}
                 onBlur={onBlurWeight}

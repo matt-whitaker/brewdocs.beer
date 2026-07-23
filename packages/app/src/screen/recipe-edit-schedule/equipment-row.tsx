@@ -48,13 +48,13 @@ function RecipeEditEquipmentRow({ row, item, remove, update, equipment, equipmen
                 />
             </DataGridLabel>
             <DataGridInput
-                col={2}
+                colStart={2}
                 value={useText}
                 onChange={setUseText}
                 onBlur={onBlurUse}
             />
             <DataGridInput
-                col={3}
+                colStart={3}
                 value={item.count?.toString() ?? ""}
                 onChange={onChangeCount}
             />

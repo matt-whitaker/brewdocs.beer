@@ -42,7 +42,7 @@ function BatchPlanningHopsRow({ row, hop, remove, update, updateScalar, kbHops, 
                     <DataGridRow zebra={false}>
                         <DataGridLabel tiny className="ml-6">Alpha %</DataGridLabel>
                         <DataGridInput
-                            col={3}
+                            colStart={3}
                             value={hop.alpha.value}
                             onChange={onChangeAlphaValue}
                             onBlur={onBlurAlpha}
@@ -60,13 +60,13 @@ function BatchPlanningHopsRow({ row, hop, remove, update, updateScalar, kbHops, 
                 />
             </DataGridLabel>
             <DataGridInput
-                col={2}
+                colStart={2}
                 value={hop.weight.value}
                 onChange={onChangeWeightValue}
                 onBlur={onBlurWeight}
             />
             <DataGridInput
-                col={3}
+                colStart={3}
                 value={hop.boil.value}
                 onChange={onChangeBoilValue}
                 onBlur={onBlurBoil}

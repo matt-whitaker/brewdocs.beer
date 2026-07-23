@@ -33,7 +33,7 @@ function RecipeEditAdditivesRow({ row, additive, remove, update, updateScalar }:
                 />
             </DataGridLabel>
             <DataGridInput
-                col={3}
+                colStart={3}
                 value={additive.boil.value}
                 onChange={onChangeBoilValue}
                 onBlur={onBlurBoil}

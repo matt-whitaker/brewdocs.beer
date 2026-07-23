@@ -15,6 +15,14 @@ export type StaticCrumb = {
 export type DynamicCrumb = {
     load: () => unknown;
     transform: (data: unknown) => string;
+    /**
+     * Stable identity (hook name + args). A dynamic crumb hosts a data hook, so
+     * Breadcrumbs keys each `<li>` by this: reusing one fiber across two crumbs
+     * whose hooks differ in count throws "rendered more hooks than during the
+     * previous render" (e.g. navigating a 1-hook recipe crumb → a 2-hook batch
+     * crumb at the same list index).
+     */
+    key: string;
     to?: string;
     params?: Record<string, string>;
 };
@@ -31,7 +39,12 @@ export function dynamicCrumb<A extends unknown[], T>(
     transform: (data: T) => string,
     rest?: { to?: string; params?: Record<string, string> }
 ): DynamicCrumb {
-    return { load: () => hook(...args), transform: transform as (data: unknown) => string, ...rest };
+    return {
+        load: () => hook(...args),
+        transform: transform as (data: unknown) => string,
+        key: `${hook.name}:${JSON.stringify(args)}`,
+        ...rest,
+    };
 }
 
 export type Crumb = StaticCrumb | DynamicCrumb;

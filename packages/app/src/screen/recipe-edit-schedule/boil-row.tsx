@@ -29,12 +29,12 @@ function RecipeEditBoilRow({ row, step, remove, update, updateScalar }: RecipeEd
                 <InputText value={step.name} onChange={onChangeName} />
             </DataGridLabel>
             <DataGridInput
-                col={2}
+                colStart={2}
                 value={step.hops}
                 onChange={onChangeHops}
             />
             <DataGridInput
-                col={3}
+                colStart={3}
                 value={step.time.value}
                 onChange={onChangeTimeValue}
                 onBlur={onBlurTime}
