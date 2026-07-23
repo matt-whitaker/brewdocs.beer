@@ -1,16 +1,22 @@
 import {createFileRoute} from "@tanstack/react-router";
 import Action from "@/component/action";
+import {Crumb, useBreadcrumbs} from "@/component/breadcrumbs/context";
 import PanelSwitcher from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
 import {Plus} from "@/component/svg";
 import RecipeCreateModal from "@/screen/recipe-create-modal";
 import RecipeList from "@/screen/recipe-list";
 
+// module const so the array is stable across renders (see useBreadcrumbs)
+const BREADCRUMBS: Crumb[] = [{ label: "Recipes" }];
+
 export const Route = createFileRoute("/recipes")({
     component: RecipesPage
 });
 
 function RecipesPage() {
+    useBreadcrumbs(BREADCRUMBS);
+
     const createAction = <Action label="Create" icon={Plus} modalContent={<RecipeCreateModal />} />;
 
     return (

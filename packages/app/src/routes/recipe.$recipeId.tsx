@@ -1,6 +1,7 @@
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
-import {useCallback} from "react";
+import {useCallback, useMemo} from "react";
 import Action from "@/component/action";
+import {Crumb, dynamicCrumb, useBreadcrumbs} from "@/component/breadcrumbs/context";
 import PanelSwitcher from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
 import {Pencil, Plus} from "@/component/svg";
@@ -8,6 +9,7 @@ import Batch from "@/model/batch";
 import BatchCreateModal from "@/screen/batch-create-modal";
 import BatchList from "@/screen/batch-list";
 import RecipeOverview from "@/screen/recipe-overview";
+import {useRecipeResource} from "@/state/recipeResource";
 
 export const Route = createFileRoute("/recipe/$recipeId")({
     component: RecipePage
@@ -17,6 +19,12 @@ function RecipePage() {
     const {recipeId} = Route.useParams();
     const navigate = useNavigate();
     const filterBatches = useCallback((batch: Batch) => batch.recipeId === recipeId, [recipeId]);
+
+    const breadcrumbs = useMemo<Crumb[]>(() => [
+        { label: "Recipes", to: "/recipes" },
+        dynamicCrumb(useRecipeResource, ["user", recipeId], (recipe) => recipe.name),
+    ], [recipeId]);
+    useBreadcrumbs(breadcrumbs);
 
     // a user recipe is already editable — Edit goes straight to its editor (unlike
     // the catalog route, where Edit clones the recipe first)
