@@ -1,10 +1,11 @@
 import {Link} from "@tanstack/react-router";
 import {ScreenH2, ScreenP} from "@brewdocs.beer/design";
 import {KbRecipe} from "@brewdocs.beer/kb";
+import Recipe from "@/model/recipe";
 
 
 export type RecipeListItemProps = {
-    recipe: KbRecipe;
+    recipe: KbRecipe | Recipe;
 };
 
 export default function RecipeListItem({ recipe }: RecipeListItemProps) {
