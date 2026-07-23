@@ -65,9 +65,17 @@ Present everything as a **single markdown block**, ready to paste as one GitHub 
 ### The "Your task" block (include in the issue, addressed to the GitHub agent)
 
 > **This is a research-and-decompose task — not an implementation task.** Follow the Research
-> path above to get your bearings, then break this feature into independently-implementable
-> sub-issues. **Your deliverable is a comment on this issue containing that breakdown. Do not
-> change any code, and do not open a pull request** — the breakdown *is* the work.
+> path above to get your bearings, break this feature into independently-implementable
+> sub-issues, and **create each as its own GitHub issue** (`gh issue create`). **Do not change
+> any code and do not open a pull request** — the created issues are the deliverable.
+>
+> ⚠️ **Do NOT apply the `claude` label — or any label — to the issues you create. Leave them
+> unlabeled.** Labeling is the maintainer's alone: it's their review gate and the trigger that
+> starts an implementation run, so auto-labeling would kick off work they never approved.
+>
+> After creating them, post ONE comment on *this* issue listing the new issues (with links),
+> in prerequisite order, marking which are parallel vs blocked — a single index to review. In
+> each new issue's body add a `Part of #<this issue number>` line so they cross-link back.
 >
 > Size each sub-issue by *exploration cost*, not just human-reviewability: a small, cohesive
 > set of files (a handful, not a directory tree); if one would span a directory of
@@ -79,15 +87,15 @@ Present everything as a **single markdown block**, ready to paste as one GitHub 
 > Patterns to follow / Out of scope / Acceptance criteria / CLAUDE.md Updates). Put verified,
 > exact paths in *Where the code lives*. Carry these standing Out-of-scope items into each:
 > don't hand-edit generated files (`routeTree.gen.ts`); don't add lodash (use
-> `packages/app/src/utils/func.ts`); don't rename under `packages/kb/data/**`. Order them by
-> prerequisite and say which are parallel vs blocked.
+> `packages/app/src/utils/func.ts`); don't rename under `packages/kb/data/**`.
 
 ## 5. Close with a one-liner for the maintainer
 
 After the issue block, remind the maintainer: paste it as one issue and apply the **`claude`
 label** to trigger the research + decomposition — the label tier gets the full turn budget,
 while an `@claude` comment runs on the smaller poke budget and can time out on real research.
-The agent will reply with the sub-issue breakdown to review and create.
+The agent will then **create the sub-issues (unlabeled)** and post a summary comment linking
+them; the maintainer reviews and applies the `claude` label to whichever ones to start.
 
 ## Boundaries
 

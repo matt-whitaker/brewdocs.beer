@@ -154,6 +154,10 @@ jobs:
             most of the budget before any code is written.
 
             Never merge the PR. The maintainer merges.
+
+            Never apply the `claude` label to any issue or PR — including issues you
+            create yourself. Labeling is the maintainer's review gate and the trigger
+            that starts an implementation run; leave everything you create unlabeled.
           # Allowlist by *family*, not per-subcommand — enumerating individual git/gh/npm
           # commands meant every new task discovered a fresh denial. git/gh/npm can't run
           # arbitrary shell, so this stays well short of a blank cheque.
