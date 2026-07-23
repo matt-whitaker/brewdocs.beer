@@ -14,6 +14,9 @@
     "build:kb": "npm run build -w packages/kb",
     "dev:kb": "npm run dev -w packages/kb",
     "test:kb": "npm run test -w packages/kb",
+    "build:design": "npm run build -w packages/design",
+    "dev:design": "npm run dev -w packages/design",
+    "test:design": "npm run test -w packages/design",
     "build": "npm run build -ws",
     "test": "npm test -ws",
     "lint:fix": "npm run lint -ws -- --fix"

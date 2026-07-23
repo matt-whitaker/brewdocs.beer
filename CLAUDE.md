@@ -8,7 +8,7 @@ Guidance for Claude Code (claude.ai/code) working in this repo. **These instruct
 - **Layout.** npm-workspaces monorepo; packages named `@brewdocs.beer/<name>`.
 - **Default branch.** `mainline` — also the target for all PRs and the **sole** deploy branch.
 - **Node.** ≥22. ⚠️ Non-interactive shells on this machine resolve `node` to an ancient v10 — if a command fails with syntax errors inside `node_modules`, prefix it: `PATH="$HOME/.nvm/versions/node/v22.23.1/bin:$PATH"`.
-- **Verify (the gate).** `npm test -ws` (eslint — app + www) + `tsc --noEmit` + `vite build`. No unit-test framework, no runtime tests — see _Linting_ and _Definition of done_.
+- **Verify (the gate).** `npm test -ws` (eslint — app + www + design) + `tsc --noEmit` + `vite build`. No unit-test framework, no runtime tests — see _Linting_ and _Definition of done_.
 
 | Package | Role |
 |---|---|
@@ -37,7 +37,10 @@ npm run preview -w packages/app   # serve the production build (needed to test P
 npm test -w packages/app          # eslint — the verification gate (see Linting)
 npm run build -w packages/kb      # rebuild kb dist JSON from data/ (also runs on postinstall)
 npm run dev -w packages/www       # astro dev
+npm test -w packages/design       # eslint — the verification gate (see Linting)
 ```
+
+Root `build:design`/`dev:design`/`test:design` delegate to `-w packages/design`, matching the `*:app`/`*:www` pattern (used by `.github/workflows/build-test-deploy.design-prod.yaml`).
 
 - Typecheck app only: `cd packages/app && ../../node_modules/.bin/tsc --noEmit`.
 - Lint app only: `npm run lint -w packages/app` (⚠️ see _Linting_ — must resolve the app's nested eslint 9, not the root's).
@@ -83,10 +86,10 @@ core ← design ← app        core ← kb ← app        core ← design ← ww
 ## packages/design
 
 **Purpose.** React UI primitives that emit Tailwind/DaisyUI class strings. Declares no tailwind/daisyui of its own — app and www compile the class strings.
-**Where.** `src/index.ts` (re-exports), `src/components/*`, `src/stories/` (orphaned — see Gotchas). See [`DESIGN.md`](packages/design/DESIGN.md) for the long-form design system doc (color, typography, spacing, radii, components).
-**Surface.** `ScreenH1–H5`/`ScreenP` (typography), `InputText`, `InputDate`, `InputSelect`. (`input-checkbox`, `input-unit` exist but aren't exported.) `InputText` blurs on Enter when an `onBlur` handler is present — that's how "press Enter to commit" works app-wide.
+**Where.** `src/index.ts` (re-exports), `src/components/*`, `src/stories/` (orphaned — see Gotchas), `tsconfig.json`, `eslint.config.js`. See [`DESIGN.md`](packages/design/DESIGN.md) for the long-form design system doc (color, typography, spacing, radii, components).
+**Surface.** `ScreenH1–H5`/`ScreenP` (typography), `InputText`, `InputDate`, `InputSelect`. `InputText` blurs on Enter when an `onBlur` handler is present — that's how "press Enter to commit" works app-wide.
 **Invariants.** ⚠️ Class strings must be valid **DaisyUI v5 / Tailwind v4** — app and www are what compile them (via `@source "../../design/src"` + `@plugin "daisyui"`).
-**Gotchas.** Storybook has been removed (no deps, no `storybook` script); `src/stories/` remains only as orphaned scaffolding, excluded from consumer builds.
+**Gotchas.** Storybook has been removed (no deps, no `storybook` script); `src/stories/` remains only as orphaned scaffolding, excluded from consumer builds and eslint (see `tsconfig.json`/`eslint.config.js`). `input-checkbox` and `input-unit` (dead, non-compiling stubs, never exported) were deleted — reintroducing either needs a real implementation, not the old stub.
 **Example.** _None._
 
 ## packages/app
@@ -223,8 +226,8 @@ useKbX() → IndexedDB hit? return it
 
 ### Linting
 **Purpose.** eslint 9 flat config, the verification gate (`npm test` = `eslint .`). **Ratchet policy: errors block, warnings inform** — `npm test` exits 0 while warnings remain.
-**Where.** Shared base: `packages/core/eslint.config.base.js` (dev tooling, **not** `core/src`). Per-package overlays: `packages/app/eslint.config.js`, `packages/www/eslint.config.js`.
-**How it works.** The **base** (shared by app + www) holds the common rules: `@stylistic` (double quotes, semicolons, 4-space indent); `import-x/order` (external → `@brewdocs.beer/*` → `@/` → relative, alphabetized) + `import-x/no-relative-packages`; `react-hooks`; `no-restricted-imports` banning `lodash` and `../` parent-relative imports (use `@/`, which both packages alias to `src/*`). The import bans are **scoped to `src/**`** — root build/config files (`vite.config.ts`, `astro.config.mjs`, `migrations/*`) legitimately use relative cross-package paths. Overlays add only package-specifics: **app** → `react-refresh`, the `utils/func.ts` `any`-escape, the `routeTree.gen.ts` ignore; **www** → ignore the generated `.astro/` dir, allow triple-slash refs in `.d.ts`. www lints its `.ts`/`.tsx` (React islands + data); `.astro` files aren't linted (would need `eslint-plugin-astro`).
+**Where.** Shared base: `packages/core/eslint.config.base.js` (dev tooling, **not** `core/src`). Per-package overlays: `packages/app/eslint.config.js`, `packages/www/eslint.config.js`, `packages/design/eslint.config.js`.
+**How it works.** The **base** (shared by app + www + design) holds the common rules: `@stylistic` (double quotes, semicolons, 4-space indent); `import-x/order` (external → `@brewdocs.beer/*` → `@/` → relative, alphabetized) + `import-x/no-relative-packages`; `react-hooks`; `no-restricted-imports` banning `lodash` and `../` parent-relative imports (use `@/`, which app and www alias to `src/*`; design has no `@/` alias — relative imports only). The import bans are **scoped to `src/**`** — root build/config files (`vite.config.ts`, `astro.config.mjs`, `migrations/*`) legitimately use relative cross-package paths. Overlays add only package-specifics: **app** → `react-refresh`, the `utils/func.ts` `any`-escape, the `routeTree.gen.ts` ignore; **www** → ignore the generated `.astro/` dir, allow triple-slash refs in `.d.ts`; **design** → ignore `src/stories/` (orphaned Storybook scaffolding), no overlay rules beyond that. www lints its `.ts`/`.tsx` (React islands + data); `.astro` files aren't linted (would need `eslint-plugin-astro`).
 **Invariants.** ⚠️ Only `react-refresh/only-export-components` warnings are left standing (on purpose). New **errors** must be fixed or explicitly ruled.
 **Gotchas.** ⚠️ The repo root hoists eslint **8.57.1** (eslintrc-era, chokes on flat config); each package resolves its own nested **9.x**. Run lint via `-w` or from inside the package (`npm run lint -w packages/app`), never the root binary.
 **Example.** _None._

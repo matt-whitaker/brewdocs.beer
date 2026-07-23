@@ -1,7 +1,6 @@
-import {useCallback} from "react";
-import {PropsWithClass, PropsWithOnChange} from "@brewdocs.beer/core"
-import {eventValue} from "@brewdocs.beer/core";
 import classNames from "classnames";
+import {useCallback} from "react";
+import {PropsWithClass, PropsWithOnChange, eventValue} from "@brewdocs.beer/core";
 
 export type InputDateProps = PropsWithClass & PropsWithOnChange<string> & {
     value: string;
@@ -10,9 +9,10 @@ export type InputDateProps = PropsWithClass & PropsWithOnChange<string> & {
     name?: string
     primary?: boolean;
     align?: "left"|"center"|"right";
-}
+};
 export function InputDate({ className, onChange, value, readonly, placeholder, name, primary, align }: InputDateProps) {
-    const optionalProps = onChange ? { onChange: useCallback(eventValue(onChange), [onChange]) } : {};
+    const handleChange = useCallback(eventValue((v: string) => onChange?.(v)), [onChange]);
+    const optionalProps = onChange ? { onChange: handleChange } : {};
 
     return <input
         name={name ?? void 0}

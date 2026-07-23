@@ -1,23 +1,25 @@
 import classNames from "classnames";
-import {PropsWithClass, PropsWithOnChange, eventValue, PropsWithOnBlur} from "@brewdocs.beer/core"
 import {useCallback} from "react";
+import {PropsWithClass, PropsWithOnBlur, PropsWithOnChange, eventValue} from "@brewdocs.beer/core";
 
 export type InputTextProps = PropsWithClass
     & PropsWithOnChange<string>
     & PropsWithOnBlur<string>
     & {
-    value: string;
-    readonly?: boolean;
-    placeholder?: string;
-    name?: string
-    primary?: boolean;
-    align?: "left"|"center"|"right";
-    size?: "small"|"medium"|"large";
-}
+        value: string;
+        readonly?: boolean;
+        placeholder?: string;
+        name?: string
+        primary?: boolean;
+        align?: "left"|"center"|"right";
+        size?: "small"|"medium"|"large";
+    };
 export function InputText({ className, onChange, onBlur, value, readonly, placeholder, name, primary, align, size }: InputTextProps) {
+    const handleChange = useCallback(eventValue((v: string) => onChange?.(v)), [onChange]);
+    const handleBlur = useCallback(eventValue((v: string) => onBlur?.(v)), [onBlur]);
     const optionalProps  = {
-        onChange: onChange ? useCallback(eventValue(onChange), [onChange]) : void 0,
-        onBlur: onBlur ? useCallback(eventValue(onBlur), [onBlur]) : void 0
+        onChange: onChange ? handleChange : void 0,
+        onBlur: onBlur ? handleBlur : void 0
     };
     return <input
         name={name ?? void 0}
@@ -25,7 +27,7 @@ export function InputText({ className, onChange, onBlur, value, readonly, placeh
         readOnly={!!readonly}
         value={value}
         type="text"
-        onKeyDown={onBlur ? ({ key, currentTarget }) => { key === "Enter" && currentTarget.blur(); } : void 0}
+        onKeyDown={onBlur ? ({ key, currentTarget }) => { if (key === "Enter") currentTarget.blur(); } : void 0}
         className={classNames(
             "input  px-1 lg:px-2.5",
             {
