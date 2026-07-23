@@ -180,7 +180,7 @@ jobs:
           claude_args: |
             --model sonnet
             --allowedTools "Edit,Write,Bash(git:*),Bash(gh:*),Bash(npm:*)"
-            --max-turns 40
+            --max-turns 80
 
       # DEBUGGING AID — remove once tool-permission tuning is settled.
       #
