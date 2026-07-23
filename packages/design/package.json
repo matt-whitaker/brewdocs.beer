@@ -7,7 +7,8 @@
     "node": ">=22"
   },
   "scripts": {
-    "build": "echo 'No build'",
+    "dev": "storybook dev -p 6006",
+    "build": "storybook build -o dist",
     "lint": "eslint .",
     "test": "npm run lint"
   },
@@ -16,9 +17,17 @@
     "classnames": "^2.5.1"
   },
   "devDependencies": {
+    "@storybook/react-vite": "^10.5.3",
+    "@tailwindcss/vite": "^4.3.2",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
+    "daisyui": "^5.6.16",
     "eslint": "^9.39.0",
-    "typescript": "~5.6.2"
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "storybook": "^10.5.3",
+    "tailwindcss": "^4.3.2",
+    "typescript": "~5.6.2",
+    "vite": "^8.1.4"
   }
 }
