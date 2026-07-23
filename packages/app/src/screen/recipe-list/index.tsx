@@ -1,5 +1,4 @@
 import {useMemo, useState} from "react";
-import {ScreenH1} from "@brewdocs.beer/design";
 import {KbRecipe} from "@brewdocs.beer/kb/src";
 import Screen from "@/component/screen";
 import SearchBar from "@/component/search-bar";

@@ -1,5 +1,4 @@
 import {useCallback, useMemo} from "react";
-import {ScreenH1} from "@brewdocs.beer/design";
 import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
 import DataGridLabel from "@/component/data-grid/label";

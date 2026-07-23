@@ -1,4 +1,4 @@
-import {ScreenH1, ScreenH2, ScreenP} from "@brewdocs.beer/design";
+import {ScreenH2, ScreenP} from "@brewdocs.beer/design";
 import Organics from "@/component/organics";
 import Screen from "@/component/screen";
 import {RecipeSource, useRecipeResource} from "@/state/recipeResource";

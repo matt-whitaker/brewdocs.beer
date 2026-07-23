@@ -1,5 +1,5 @@
 import {useCallback} from "react";
-import {ScreenH1, ScreenH2, ScreenH3, ScreenP} from "@brewdocs.beer/design";
+import {ScreenH2, ScreenH3, ScreenP} from "@brewdocs.beer/design";
 import DataGrid from "@/component/data-grid";
 import DataGridInput from "@/component/data-grid/input";
 import DataGridLabel from "@/component/data-grid/label";

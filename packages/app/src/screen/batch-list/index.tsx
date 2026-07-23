@@ -1,6 +1,6 @@
 import {Link} from "@tanstack/react-router";
 import {useCallback, useMemo, useState} from "react";
-import {ScreenH1, ScreenH2, ScreenP} from "@brewdocs.beer/design";
+import {ScreenH2, ScreenP} from "@brewdocs.beer/design";
 import Screen from "@/component/screen";
 import SearchBar from "@/component/search-bar";
 import useIndexBy from "@/hooks/useIndexBy";
