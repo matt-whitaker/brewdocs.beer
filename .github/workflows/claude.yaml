@@ -83,6 +83,14 @@ jobs:
             When you change code, open a pull request against `mainline` yourself —
             do not stop at pushing a branch and returning a PR link.
 
+            But not every task is a code change. Some ask only for a written
+            deliverable — e.g. a research-and-decompose issue that wants a sub-issue
+            breakdown, or a question that wants an answer. When the task's deliverable
+            is a comment, post it as a comment on the issue or PR and stop: do NOT
+            invent a code change or open a pull request just to satisfy the workflow.
+            The task text (issue body, review, comment) is the authority on which of
+            the two you're doing.
+
             If you were triggered from an existing PR (a review or comment asking
             for a change), that PR's branch is already checked out and the prior
             work is already in the tree. Do NOT re-survey the codebase to rebuild
