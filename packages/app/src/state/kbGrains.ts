@@ -4,8 +4,8 @@ import queryClient from "@/queryClient";
 import kbStorage from "@/storage/kb";
 import {isOnline} from "@/utils/connectivity";
 
-const kbGrainsQueryKey = () => ["kb", "grains"];
-const fetchKbGrains = async (): Promise<KbGrain[]> => {
+export const kbGrainsQueryKey = () => ["kb", "grains"];
+export const fetchKbGrains = async (): Promise<KbGrain[]> => {
     const cached = await kbStorage.getResource("grains");
     if (cached) {
         return cached;

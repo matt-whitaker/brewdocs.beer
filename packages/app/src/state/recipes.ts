@@ -4,11 +4,11 @@ import queryClient from "@/queryClient";
 import recipesStorage from "@/storage/recipes";
 import {FilterFn} from "@/utils/func";
 
-const recipesQueryKey = () => ["recipes"];
-const loadRecipes = () => recipesStorage.list();
+export const recipesQueryKey = () => ["recipes"];
+export const loadRecipes = () => recipesStorage.list();
 
-const recipeQueryKey = (id: string): [string, string] => ["recipe", id];
-const loadRecipe = ({ queryKey: [, id]}: { queryKey: [string, string]}) => recipesStorage.get(id);
+export const recipeQueryKey = (id: string): [string, string] => ["recipe", id];
+export const loadRecipe = ({ queryKey: [, id]}: { queryKey: [string, string]}) => recipesStorage.get(id);
 
 export const useRecipes = (filter?: FilterFn<Recipe>): Recipe[] => {
     const {data} = useSuspenseQuery({ queryKey: recipesQueryKey(), queryFn: loadRecipes });

@@ -4,11 +4,11 @@ import queryClient from "@/queryClient";
 import batchesStorage from "@/storage/batches";
 import {FilterFn} from "@/utils/func";
 
-const batchesQueryKey = () => ["batches"];
-const loadBatches = () => batchesStorage.list();
+export const batchesQueryKey = () => ["batches"];
+export const loadBatches = () => batchesStorage.list();
 
-const batchQueryKey = (id: string): [string, string] => ["batch", id];
-const loadBatch = ({ queryKey: [, id]}: { queryKey: [string, string]}) => batchesStorage.get(id);
+export const batchQueryKey = (id: string): [string, string] => ["batch", id];
+export const loadBatch = ({ queryKey: [, id]}: { queryKey: [string, string]}) => batchesStorage.get(id);
 
 export const useBatches = (filter?: FilterFn<Batch>): Batch[] => {
     const {data} = useSuspenseQuery({ queryKey: batchesQueryKey(), queryFn: loadBatches });

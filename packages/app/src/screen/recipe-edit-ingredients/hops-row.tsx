@@ -1,5 +1,5 @@
 import {memo, useCallback, useMemo} from "react";
-import {Units} from "@brewdocs.beer/core";
+import {UNITS} from "@brewdocs.beer/core";
 import {KbHop} from "@brewdocs.beer/kb";
 import DataGrid from "@/component/data-grid";
 import DataGridInput from "@/component/data-grid/input";
@@ -25,15 +25,15 @@ export function kbHopToRecipeHop(kbHop: KbHop): RecipeHop {
         name: kbHop.name,
         weight: {
             value: "0.0oz",
-            unit: Units.OUNCES
+            unit: UNITS.OUNCES
         },
         alpha: {
             value: `${kbHop.alpha}%`,
-            unit: Units.PERCENT
+            unit: UNITS.PERCENT
         },
         boil: {
             value: "60min",
-            unit: Units.MINUTES
+            unit: UNITS.MINUTES
         },
         phase: "boil"
     };

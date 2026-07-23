@@ -5,7 +5,7 @@ import kbStorage from "@/storage/kb";
 import {isOnline} from "@/utils/connectivity";
 
 const kbYeastsQueryKey = () => ["kb", "yeasts"];
-const fetchKbYeasts = async (): Promise<KbYeast[]> => {
+export const fetchKbYeasts = async (): Promise<KbYeast[]> => {
     const cached = await kbStorage.getResource("yeasts");
     if (cached) {
         return cached;

@@ -1,4 +1,4 @@
-import {Units} from "@brewdocs.beer/core";
+import {UNITS} from "@brewdocs.beer/core";
 import Recipe, {RECIPE_MODEL_VERSION} from "@/model/recipe";
 
 const defaultRecipe: Omit<Recipe, "id"> = {
@@ -9,28 +9,28 @@ const defaultRecipe: Omit<Recipe, "id"> = {
     description: "",
     batchSize: {
         value: "5gal",
-        unit: Units.GALLONS
+        unit: UNITS.GALLONS
     },
     efficiency: {
         value: "75%",
-        unit: Units.PERCENT
+        unit: UNITS.PERCENT
     },
     boilTime: {
         value: "60min",
-        unit: Units.MINUTES
+        unit: UNITS.MINUTES
     },
     targets: {
         og: {
             value: "0.00°P",
-            unit: Units.PLATO
+            unit: UNITS.PLATO
         },
         fg: {
             value: "0.00°P",
-            unit: Units.PLATO
+            unit: UNITS.PLATO
         },
         abv: {
             value: "0.0%",
-            unit: Units.PERCENT
+            unit: UNITS.PERCENT
         },
         ibu: "0",
         srm: "0"

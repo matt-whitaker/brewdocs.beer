@@ -6,7 +6,7 @@ import {isOnline} from "@/utils/connectivity";
 import {FilterFn} from "@/utils/func";
 
 const kbRecipesQueryKey = () => ["kb", "recipes"];
-const fetchKbRecipes = async (): Promise<KbRecipe[]> => {
+export const fetchKbRecipes = async (): Promise<KbRecipe[]> => {
     const cached = await kbStorage.getResource("recipes");
     if (cached) {
         return cached;
@@ -18,6 +18,17 @@ const fetchKbRecipes = async (): Promise<KbRecipe[]> => {
 
     const kbRecipes = await importResource("recipes");
     return kbStorage.saveResource("recipes", kbRecipes);
+};
+
+export const fetchKbRecipe = async (id: string): Promise<KbRecipe> => {
+    const recipes = await fetchKbRecipes();
+    const recipe = recipes.find((recipe) => recipe.id === id);
+
+    if (!recipe) {
+        throw new Error(`Unable to load recipe from Knowledge Base: ${id}`);
+    }
+
+    return recipe;
 };
 
 export const prefetchKbRecipes = () => queryClient.prefetchQuery({ queryKey: kbRecipesQueryKey(), queryFn: fetchKbRecipes });

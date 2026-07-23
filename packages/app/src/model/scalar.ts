@@ -1,7 +1,3 @@
-import {Currencies, Units} from "@brewdocs.beer/core";
-
-export default interface Scalar {
-    value: string;
-    unit?: Units;
-    currency?: Currencies;
-}
+// Scalar now lives in core (shared with the kb catalog). This shim keeps the
+// `@/model/scalar` default import working; call sites get repointed in a follow-up.
+export type { Scalar as default } from "@brewdocs.beer/core";

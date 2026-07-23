@@ -1,4 +1,4 @@
-import {Currencies, Units} from "@brewdocs.beer/core";
+import {CURRENCIES, Unit} from "@brewdocs.beer/core";
 import Batch, {ShoppingItem, ShoppingTag} from "@/model/batch";
 import Scalar from "@/model/scalar";
 import {groupBy, isEqual} from "@/utils/func";
@@ -17,7 +17,7 @@ function weighed(tag: ShoppingTag, items: Weighed[]): Derived[] {
     return Object.keys(groups).map(name => {
         const [, unit] = parseNumberString(groups[name][0].weight.value);
         const total = groups[name].reduce((sum, item) => sum + parseNumberString(item.weight.value)[0], 0.0);
-        return { name, tags: [tag], scalar: { value: `${total}${unit}`, unit: unit as Units } };
+        return { name, tags: [tag], scalar: { value: `${total}${unit}`, unit: unit as Unit } };
     });
 }
 
@@ -52,7 +52,7 @@ export default function _updateShopping(batch: Partial<Batch>): Partial<Batch> {
             if (!prior) {
                 return {
                     ...item,
-                    cost: { value: "$0.00", currency: Currencies.DOLLAR },
+                    cost: { value: "$0.00", currency: CURRENCIES.DOLLAR },
                     purchased: false
                 };
             }

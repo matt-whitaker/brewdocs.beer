@@ -1,5 +1,5 @@
 import {useCallback, useState} from "react";
-import {Units} from "@brewdocs.beer/core";
+import {UNITS} from "@brewdocs.beer/core";
 import {KbHop} from "@brewdocs.beer/kb";
 import DataGrid from "@/component/data-grid";
 import AddRow from "@/component/data-grid/add-row";
@@ -31,14 +31,14 @@ export default function BatchPlanningHopsAddRow({ add, kbHops, kbHopsIndex }: Ba
     }, []);
 
     const onBlurActualAlpha = useCallback((value: string) => {
-        setActualAlpha(value.trim() ? scalarFromNumberWithUnit(value, Units.PERCENT).value : null);
+        setActualAlpha(value.trim() ? scalarFromNumberWithUnit(value, UNITS.PERCENT).value : null);
     }, []);
 
     const addHop = useCallback(() => {
         if (!selection) return;
         const hop = kbHopToHop(kbHopsIndex!.get(selection)!);
         if (actualAlpha) {
-            hop.alpha = scalarFromNumberWithUnit(actualAlpha, Units.PERCENT);
+            hop.alpha = scalarFromNumberWithUnit(actualAlpha, UNITS.PERCENT);
         }
         add("hops", hop);
         setSelection(null);

@@ -1,4 +1,4 @@
-import {Units} from "@brewdocs.beer/core";
+import {isUnit} from "@brewdocs.beer/core";
 
 export const CURRENCY_REGEX = /^[$€£¥₹₽₩₫₪₱₭฿₦₲₵₮₡₸]/; // todo web safe to do this?
 export const UNIT_REGEX = /[^\d.,]+/;
@@ -44,7 +44,7 @@ export function formatNumberWithUnit(input: string, unit: string) {
 
     const [_, numericPart, actualUnit] = match;
 
-    if (actualUnit && Object.values(Units).includes(actualUnit as Units)) {
+    if (actualUnit && isUnit(actualUnit)) {
         return input;
     }
 

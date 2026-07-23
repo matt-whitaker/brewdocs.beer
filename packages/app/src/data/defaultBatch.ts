@@ -1,4 +1,4 @@
-import {Units} from "@brewdocs.beer/core";
+import {UNITS} from "@brewdocs.beer/core";
 import equipment from "@/data/equipment";
 import Batch, {BATCH_MODEL_VERSION, Phase, SchedulePhase} from "@/model/batch";
 import {EquipmentUses} from "@/model/equipment";
@@ -26,29 +26,29 @@ const defaultBatch  = {
     pitchedDate: "0000-00-00",
     batchSize: {
         value: "5gal",
-        unit: Units.GALLONS
+        unit: UNITS.GALLONS
     },
     efficiency: {
         value: "75%",
-        unit: Units.PERCENT
+        unit: UNITS.PERCENT
     },
     boilTime: {
         value: "60min",
-        unit: Units.MINUTES
+        unit: UNITS.MINUTES
     },
     status: Statuses.PREP,
     actuals: {
         og: {
             value: "0.00°P",
-            unit: Units.PLATO
+            unit: UNITS.PLATO
         },
         fg: {
             value: "0.00°P",
-            unit: Units.PLATO
+            unit: UNITS.PLATO
         },
         abv: {
             value: "0.0%",
-            unit: Units.PERCENT
+            unit: UNITS.PERCENT
         },
         ibu: "0",
         srm: "0"
@@ -58,7 +58,7 @@ const defaultBatch  = {
             date: "0000-00-00",
             gravity: {
                 value: "0.00°P",
-                unit: Units.PLATO
+                unit: UNITS.PLATO
             },
             name: "Before boil",
         },
@@ -66,7 +66,7 @@ const defaultBatch  = {
             date: "0000-00-00",
             gravity: {
                 value: "0.00°P",
-                unit: Units.PLATO
+                unit: UNITS.PLATO
             },
             name: "After boil",
         },
@@ -74,7 +74,7 @@ const defaultBatch  = {
             date: "0000-00-00",
             gravity: {
                 value: "0.00°P",
-                unit: Units.PLATO
+                unit: UNITS.PLATO
             },
             name: "After Ferment",
         },
@@ -82,7 +82,7 @@ const defaultBatch  = {
             date: "0000-00-00",
             gravity: {
                 value: "0.00°P",
-                unit: Units.PLATO
+                unit: UNITS.PLATO
             },
             name: "After secondary",
         }

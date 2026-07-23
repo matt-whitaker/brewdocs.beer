@@ -1,4 +1,4 @@
-import {Units} from "@brewdocs.beer/core";
+import {UNITS} from "@brewdocs.beer/core";
 import {KbHop} from "@brewdocs.beer/kb";
 import Hop from "@/model/hop";
 
@@ -11,15 +11,15 @@ export function kbHopToHop(kbHop: KbHop): Hop {
         name: kbHop.name,
         weight: {
             value: "0.0oz",
-            unit: Units.OUNCES
+            unit: UNITS.OUNCES
         },
         alpha: {
             value: `${kbHop.alpha}%`,
-            unit: Units.PERCENT
+            unit: UNITS.PERCENT
         },
         boil: {
             value: "60min",
-            unit: Units.MINUTES
+            unit: UNITS.MINUTES
         },
         phase: "boil"
     } as Hop;

@@ -1,4 +1,4 @@
-import {Units} from "@brewdocs.beer/core";
+import {UNITS} from "@brewdocs.beer/core";
 import {KbGrain} from "@brewdocs.beer/kb";
 import Grain from "@/model/grain";
 
@@ -11,7 +11,7 @@ export function kbGrainToGrain(kbGrain: KbGrain): Grain {
         name: kbGrain.name,
         weight: {
             value: "0.0oz",
-            unit: Units.OUNCES
+            unit: UNITS.OUNCES
         },
     } as Grain;
 }

@@ -5,7 +5,7 @@ import kbStorage from "@/storage/kb";
 import {isOnline} from "@/utils/connectivity";
 
 const kbHopsQueryKey = () => ["kb", "hops"];
-const fetchKbHops = async (): Promise<KbHop[]> => {
+export const fetchKbHops = async (): Promise<KbHop[]> => {
     const cached = await kbStorage.getResource("hops");
     if (cached) {
         return cached;

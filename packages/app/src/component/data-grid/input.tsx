@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import {Currencies, PropsWithClass, PropsWithOnBlur, PropsWithOnChange, Units} from "@brewdocs.beer/core";
+import {Currency, PropsWithClass, PropsWithOnBlur, PropsWithOnChange, Unit} from "@brewdocs.beer/core";
 import {InputText} from "@brewdocs.beer/design";
 import {InputDate} from "@brewdocs.beer/design";
 import {COL_SPANS} from "@/component/data-grid";
@@ -17,7 +17,7 @@ export type DataGridInputProps = PropsWithClass
         readonly?: boolean;
         value: string;
         type?: "text"|"date";
-        unit?: Units | Currencies
+        unit?: Unit | Currency
     };
 export default function DataGridInput({ col, cols = 1, readonly = false, value, onChange, onBlur, className, type = "text" }: DataGridInputProps) {
     const classes = classNames(
