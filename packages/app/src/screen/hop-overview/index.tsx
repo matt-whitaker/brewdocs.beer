@@ -1,4 +1,4 @@
-import {ScreenH2, ScreenP} from "@brewdocs.beer/design";
+import {ScreenP} from "@brewdocs.beer/design";
 import Screen from "@/component/screen";
 import {useKbHop} from "@/state/kbHops";
 
@@ -9,7 +9,6 @@ export default function HopOverview({ hopId }: HopOverviewProps) {
     return (
         <Screen>
             <div className="lg:max-w-[80%] lg:pb-4 pb-2 pt-2">
-                <ScreenH2>{hop.name}</ScreenH2>
                 <ScreenP>Origin: {hop.origin}</ScreenP>
                 <ScreenP className="pt-2">Alpha {hop.alpha}%</ScreenP>
                 <ScreenP className="pt-2">Usage: {hop.usage}</ScreenP>

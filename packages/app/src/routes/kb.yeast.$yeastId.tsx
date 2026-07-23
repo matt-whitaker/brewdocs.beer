@@ -1,7 +1,9 @@
 import {createFileRoute} from "@tanstack/react-router";
-import {Suspense} from "react";
+import {Suspense, useMemo} from "react";
+import {Crumb, dynamicCrumb, useBreadcrumbs} from "@/component/breadcrumbs/context";
 import Loading from "@/screen/loading";
 import YeastOverview from "@/screen/yeast-overview";
+import {useKbYeast} from "@/state/kbYeasts";
 
 export const Route = createFileRoute("/kb/yeast/$yeastId")({
     component: KbYeastPage
@@ -11,6 +13,13 @@ export const Route = createFileRoute("/kb/yeast/$yeastId")({
 // needs its own Suspense boundary for a cold deep-link before boot prefetch resolves.
 function KbYeastPage() {
     const {yeastId} = Route.useParams();
+
+    const breadcrumbs = useMemo<Crumb[]>(() => [
+        { label: "Knowledge", to: "/knowledge" },
+        { label: "Yeasts" },
+        dynamicCrumb(useKbYeast, [yeastId], (yeast) => yeast.name),
+    ], [yeastId]);
+    useBreadcrumbs(breadcrumbs);
 
     return (
         <Suspense fallback={<Loading />}>
