@@ -45,11 +45,18 @@ export default function Breadcrumbs() {
     if (crumbs.length === 0) {
         return null;
     }
+    // shrink-0: DrawerContent is a fixed-height (h-full) flex column whose children
+    // (breadcrumbs + the h-full panel switcher) overflow it, so flex-shrink squeezes
+    // this box below its content height — and the squeeze varies with the active
+    // panel's height, which nudged the tab bar by ~1px on tab switches. Pinning
+    // flex-shrink to 0 keeps the breadcrumb at its natural height so nothing moves.
     // overflow-y-hidden: daisyui's `.breadcrumbs` sets overflow-x:auto, which makes
     // overflow-y compute to auto too — on mobile that surfaces a stray vertical
-    // scrollbar when the trail overflows horizontally
+    // scrollbar when the trail overflows horizontally.
+    // self-start: DrawerContent centers its column (items-center); without this the
+    // shrink-width breadcrumb box would sit centered instead of left-aligned.
     return (
-        <div className="breadcrumbs text-sm overflow-y-hidden">
+        <div className="breadcrumbs text-sm shrink-0 overflow-y-hidden self-start px-2 lg:px-4">
             <ul>
                 {crumbs.map((crumb, i) => (
                     <li key={i}>
