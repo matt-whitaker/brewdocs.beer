@@ -5,11 +5,12 @@ import _updateShopping from "@/actions/_updateShopping";
 import {CreateBatchState} from "@/component/create-batch-form/useCreateBatchForm";
 import defaultBatch from "@/data/defaultBatch";
 import Batch from "@/model/batch";
+import {RecipeSource} from "@/model/recipe";
 import Statuses from "@/model/statuses";
 import {saveBatch} from "@/state/batches";
 import batchesStorage from "@/storage/batches";
 
-export default async function createBatch(recipe: KbRecipe, inputs: CreateBatchState) {
+export default async function createBatch(recipe: KbRecipe, source: RecipeSource, inputs: CreateBatchState) {
     const id = await batchesStorage.generateId();
 
     const batch: Partial<Batch> = {
@@ -17,6 +18,7 @@ export default async function createBatch(recipe: KbRecipe, inputs: CreateBatchS
         id,
         status: Statuses.PREP,
         recipeId: recipe.id,
+        recipeSource: source,
         ...inputs
     };
 

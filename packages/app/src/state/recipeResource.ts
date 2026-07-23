@@ -1,10 +1,10 @@
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {KbRecipe} from "@brewdocs.beer/kb";
-import Recipe from "@/model/recipe";
+import Recipe, {RecipeSource} from "@/model/recipe";
 import {fetchKbRecipe} from "@/state/kbRecipes";
-import recipesStorage from "@/storage/recipes";
+import {fetchRecipe} from "@/state/recipes";
 
-export type RecipeSource = "kb" | "user";
+export type {RecipeSource};
 
 /**
  * One hook for either a catalog (KbRecipe) or a user Recipe, chosen by `source`.
@@ -20,7 +20,7 @@ export const useRecipeResource = (source: RecipeSource, id: string): Recipe | Kb
             if (source === "kb") {
                 return await fetchKbRecipe(id);
             }
-            return recipesStorage.get(id);
+            return await fetchRecipe(id);
         },
     });
 

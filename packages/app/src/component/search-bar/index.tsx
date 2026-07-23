@@ -12,6 +12,7 @@ export type SearchBarProps = PropsWithClass
 export default function SearchBar({ value, onChange, placeholder = "Search…", className }: SearchBarProps) {
     return <InputText
         value={value}
+        size="medium"
         onChange={onChange}
         placeholder={placeholder}
         className={classNames("w-full", className)} />;
