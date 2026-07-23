@@ -30,3 +30,14 @@ export const useKbGrains = (): KbGrain[] => {
 
     return data;
 };
+
+export const useKbGrain = (id: string): KbGrain => {
+    const { data } = useSuspenseQuery({ queryKey: kbGrainsQueryKey(), queryFn: fetchKbGrains });
+    const grain = data?.find(grain => grain.id === id);
+
+    if (!grain) {
+        throw new Error("Unable to load grain from Knowledge Base");
+    }
+
+    return grain;
+};

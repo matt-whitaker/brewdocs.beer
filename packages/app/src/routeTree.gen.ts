@@ -16,6 +16,7 @@ import { Route as KnowledgeRouteImport } from './routes/knowledge'
 import { Route as RecipesRouteImport } from './routes/recipes'
 import { Route as BatchBatchIdRouteImport } from './routes/batch.$batchId'
 import { Route as RecipeRecipeIdRouteImport } from './routes/recipe.$recipeId'
+import { Route as KbGrainGrainIdRouteImport } from './routes/kb.grain.$grainId'
 import { Route as KbRecipeRecipeIdRouteImport } from './routes/kb.recipe.$recipeId'
 import { Route as RecipeRecipeIdEditRouteImport } from './routes/recipe.$recipeId_.edit'
 
@@ -54,6 +55,11 @@ const RecipeRecipeIdRoute = RecipeRecipeIdRouteImport.update({
   path: '/recipe/$recipeId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const KbGrainGrainIdRoute = KbGrainGrainIdRouteImport.update({
+  id: '/kb/grain/$grainId',
+  path: '/kb/grain/$grainId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const KbRecipeRecipeIdRoute = KbRecipeRecipeIdRouteImport.update({
   id: '/kb/recipe/$recipeId',
   path: '/kb/recipe/$recipeId',
@@ -73,6 +79,7 @@ export interface FileRoutesByFullPath {
   '/recipes': typeof RecipesRoute
   '/batch/$batchId': typeof BatchBatchIdRoute
   '/recipe/$recipeId': typeof RecipeRecipeIdRoute
+  '/kb/grain/$grainId': typeof KbGrainGrainIdRoute
   '/kb/recipe/$recipeId': typeof KbRecipeRecipeIdRoute
   '/recipe/$recipeId/edit': typeof RecipeRecipeIdEditRoute
 }
@@ -84,6 +91,7 @@ export interface FileRoutesByTo {
   '/recipes': typeof RecipesRoute
   '/batch/$batchId': typeof BatchBatchIdRoute
   '/recipe/$recipeId': typeof RecipeRecipeIdRoute
+  '/kb/grain/$grainId': typeof KbGrainGrainIdRoute
   '/kb/recipe/$recipeId': typeof KbRecipeRecipeIdRoute
   '/recipe/$recipeId/edit': typeof RecipeRecipeIdEditRoute
 }
@@ -96,6 +104,7 @@ export interface FileRoutesById {
   '/recipes': typeof RecipesRoute
   '/batch/$batchId': typeof BatchBatchIdRoute
   '/recipe/$recipeId': typeof RecipeRecipeIdRoute
+  '/kb/grain/$grainId': typeof KbGrainGrainIdRoute
   '/kb/recipe/$recipeId': typeof KbRecipeRecipeIdRoute
   '/recipe/$recipeId_/edit': typeof RecipeRecipeIdEditRoute
 }
@@ -109,6 +118,7 @@ export interface FileRouteTypes {
     | '/recipes'
     | '/batch/$batchId'
     | '/recipe/$recipeId'
+    | '/kb/grain/$grainId'
     | '/kb/recipe/$recipeId'
     | '/recipe/$recipeId/edit'
   fileRoutesByTo: FileRoutesByTo
@@ -120,6 +130,7 @@ export interface FileRouteTypes {
     | '/recipes'
     | '/batch/$batchId'
     | '/recipe/$recipeId'
+    | '/kb/grain/$grainId'
     | '/kb/recipe/$recipeId'
     | '/recipe/$recipeId/edit'
   id:
@@ -131,6 +142,7 @@ export interface FileRouteTypes {
     | '/recipes'
     | '/batch/$batchId'
     | '/recipe/$recipeId'
+    | '/kb/grain/$grainId'
     | '/kb/recipe/$recipeId'
     | '/recipe/$recipeId_/edit'
   fileRoutesById: FileRoutesById
@@ -143,6 +155,7 @@ export interface RootRouteChildren {
   RecipesRoute: typeof RecipesRoute
   BatchBatchIdRoute: typeof BatchBatchIdRoute
   RecipeRecipeIdRoute: typeof RecipeRecipeIdRoute
+  KbGrainGrainIdRoute: typeof KbGrainGrainIdRoute
   KbRecipeRecipeIdRoute: typeof KbRecipeRecipeIdRoute
   RecipeRecipeIdEditRoute: typeof RecipeRecipeIdEditRoute
 }
@@ -198,6 +211,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RecipeRecipeIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/kb/grain/$grainId': {
+      id: '/kb/grain/$grainId'
+      path: '/kb/grain/$grainId'
+      fullPath: '/kb/grain/$grainId'
+      preLoaderRoute: typeof KbGrainGrainIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/kb/recipe/$recipeId': {
       id: '/kb/recipe/$recipeId'
       path: '/kb/recipe/$recipeId'
@@ -223,6 +243,7 @@ const rootRouteChildren: RootRouteChildren = {
   RecipesRoute: RecipesRoute,
   BatchBatchIdRoute: BatchBatchIdRoute,
   RecipeRecipeIdRoute: RecipeRecipeIdRoute,
+  KbGrainGrainIdRoute: KbGrainGrainIdRoute,
   KbRecipeRecipeIdRoute: KbRecipeRecipeIdRoute,
   RecipeRecipeIdEditRoute: RecipeRecipeIdEditRoute,
 }
