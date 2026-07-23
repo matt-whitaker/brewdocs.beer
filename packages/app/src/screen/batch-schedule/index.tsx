@@ -78,7 +78,6 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
 
     return (
         <Screen>
-            <ScreenH1 className="mb-2">Brew Schedule</ScreenH1>
             <DataGrid className="mt-2 mb-2">
                 <DataGridRow>
                     <DataGridLabel cols={3}>Status</DataGridLabel>

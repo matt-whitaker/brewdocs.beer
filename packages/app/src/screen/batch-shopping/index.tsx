@@ -104,7 +104,6 @@ export default function BatchShopping({ batchId, onChange }: BatchShoppingProps)
 
     return (
         <Screen>
-            <ScreenH1>Shopping List</ScreenH1>
             <DataGrid className="mt-2">
                 <DataGridRow className="border-b-1 pb-2 border-base-200">
                     <DataGridLabel cols={3}>Sort by</DataGridLabel>

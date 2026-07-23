@@ -43,8 +43,7 @@ export default function BatchList({ filter }: BatchListProps) {
     )), [shownBatches, recipeFor]);
     return (
         <Screen>
-            <ScreenH1>Your brews</ScreenH1>
-            <SearchBar value={query} onChange={setQuery} className="mt-2" />
+            <SearchBar value={query} onChange={setQuery} />
             <ul className="w-full menu px-0">
                 {batchList}
             </ul>

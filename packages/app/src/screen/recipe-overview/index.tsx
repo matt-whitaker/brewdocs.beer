@@ -9,7 +9,6 @@ export default function RecipeOverview({ recipeId, source }: RecipeOverviewProps
 
     return (
         <Screen>
-            <ScreenH1>Recipe Overview</ScreenH1>
             <div className="lg:max-w-[80%] lg:pb-4 pb-2 pt-2">
                 <ScreenH2>{recipe.name}</ScreenH2>
                 <ScreenP>By {`${recipe.brewer}`}</ScreenP>

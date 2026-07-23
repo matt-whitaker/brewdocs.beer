@@ -30,7 +30,6 @@ export default function BatchPlanning({ batchId, onChange }: BatchPlanningProps)
 
     return (
         <Screen>
-            <ScreenH1 className="mb-2">Batch Planning</ScreenH1>
             <div className="pb-4 relative">
                 <ScreenH2 className="first-of-type:mt-0">{recipe.name}</ScreenH2>
                 <ScreenH3>{batch.name || ""}</ScreenH3>

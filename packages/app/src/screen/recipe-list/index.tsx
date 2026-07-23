@@ -40,8 +40,7 @@ export default function RecipeList({ source = "all",  filterFn }: RecipeListProp
 
     return (
         <Screen>
-            <ScreenH1>All Recipes</ScreenH1>
-            <SearchBar value={query} onChange={setQuery} className="mt-2" />
+            <SearchBar value={query} onChange={setQuery} />
             <ul className="w-full menu px-0">
                 {recipeListItems}
             </ul>
