@@ -73,9 +73,17 @@ Present everything as a **single markdown block**, ready to paste as one GitHub 
 > unlabeled.** Labeling is the maintainer's alone: it's their review gate and the trigger that
 > starts an implementation run, so auto-labeling would kick off work they never approved.
 >
-> After creating them, post ONE comment on *this* issue listing the new issues (with links),
-> in prerequisite order, marking which are parallel vs blocked — a single index to review. In
-> each new issue's body add a `Part of #<this issue number>` line so they cross-link back.
+> **Link each new issue as a native GitHub sub-issue of *this* issue** (this issue is the
+> parent) so they show in its Sub-issues list — a `Part of #N` text line is not sufficient. Use
+> the REST sub-issues API: get the child's numeric id with
+> `gh api repos/<owner>/<repo>/issues/<child-number> --jq .id`, then
+> `gh api --method POST repos/<owner>/<repo>/issues/<this-issue-number>/sub_issues -F sub_issue_id=<that-id>`.
+> Note the API wants the integer REST `id`, **not** the issue number (`<owner>/<repo>` is this
+> repo, i.e. `$GITHUB_REPOSITORY`). If that API is unavailable, fall back to a
+> `Part of #<this-issue-number>` line in each body.
+>
+> Then post ONE comment on *this* issue listing the sub-issues (with links) in prerequisite
+> order, marking which are parallel vs blocked — a single index to review.
 >
 > Size each sub-issue by *exploration cost*, not just human-reviewability: a small, cohesive
 > set of files (a handful, not a directory tree); if one would span a directory of
@@ -94,8 +102,9 @@ Present everything as a **single markdown block**, ready to paste as one GitHub 
 After the issue block, remind the maintainer: paste it as one issue and apply the **`claude`
 label** to trigger the research + decomposition — the label tier gets the full turn budget,
 while an `@claude` comment runs on the smaller poke budget and can time out on real research.
-The agent will then **create the sub-issues (unlabeled)** and post a summary comment linking
-them; the maintainer reviews and applies the `claude` label to whichever ones to start.
+The agent will then **create the sub-issues (unlabeled), link them as native sub-issues of the
+parent**, and post a summary comment; the maintainer reviews and applies the `claude` label to
+whichever ones to start.
 
 ## Boundaries
 
