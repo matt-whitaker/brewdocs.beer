@@ -75,6 +75,28 @@ Carry these standing constraints into every sub-issue's Out of scope:
 Don't ask a worker to run builds. The **Verify** workflow runs the gate on the PR, and
 `npm ci` plus the package builds would eat most of a run's turn budget.
 
+### Handoff for cheap follow-ups
+
+Every run on a PR starts cold — a follow-up (a review comment, a requested fix) re-reads
+the code from scratch unless the prior run left it a note. Have each worker leave a
+**handoff** so the next run orients in one read instead of re-exploring the tree. It lives
+as a block at the bottom of the PR's Claude comment (not a committed file — that would ride
+the diff into mainline and mislead the next feature's branch). Carry this into every
+sub-issue's **Acceptance criteria**:
+
+- Before opening the PR — and again before finishing any later run on this PR — end the PR
+  comment with a collapsible **Handoff** block covering: what's implemented and what's still
+  open, the decisions and gotchas discovered (so the next run doesn't re-derive them), a
+  one-line-per-file map of what changed and why, and how to verify.
+- ⚠️ Keep it a **scannable status doc, not a narrative** — a bloated handoff costs the
+  turns it was meant to save, the same trap as an over-granular checklist.
+
+The reciprocal *read the prior Handoff block first, and refresh it before finishing* half
+already lives in the `.github/workflows/claude.yaml` standing prompt (it can't live in the
+issue body — a follow-up is triggered by a PR comment and never re-reads the issue). So a
+sub-issue only needs to state the handoff as an acceptance criterion; the read/refresh
+cadence is already wired for every run.
+
 ## 5. Close with a plan of attack
 
 After the blocks, summarize: each sub-issue's title, which are independent vs. blocked

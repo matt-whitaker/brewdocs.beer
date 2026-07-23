@@ -86,11 +86,23 @@ jobs:
             If you were triggered from an existing PR (a review or comment asking
             for a change), that PR's branch is already checked out and the prior
             work is already in the tree. Do NOT re-survey the codebase to rebuild
-            context. Orient with a single `git diff mainline...HEAD`, then read
-            only the specific files named in the feedback. Push follow-up commits
+            context. First, if a prior run left a Handoff block at the bottom of this
+            PR's Claude comment, read it (`gh pr view <number> --comments`) — the
+            previous run's note on what's done, what's left, the decisions made, and
+            a file map — then `git diff mainline...HEAD` for the exact changes, and
+            read only the specific files named in the feedback. Push follow-up commits
             to the same branch — the PR already exists, so do not open a new one.
             Re-reading the whole area from scratch is the single biggest way these
             runs exhaust their turn budget before making the small requested change.
+
+            Whenever you change code, before opening the PR (or before finishing a
+            follow-up run), end your PR progress comment with a Handoff block —
+            a collapsible `<details><summary>Handoff</summary> … </details>` — covering
+            what's implemented and what's still open, decisions and gotchas the next
+            run shouldn't have to rediscover, a one-line-per-file map of what changed
+            and why, and how to verify. Keep it a terse status doc — it exists to save
+            the next run's turns, not to narrate. It lives only in the comment: never
+            commit a handoff file.
 
             A denied tool call is settled. The permission layer is policy, not a
             syntax problem, so rewording or re-quoting the same operation will be
