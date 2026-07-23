@@ -44,7 +44,7 @@ export default function BatchList({ filter }: BatchListProps) {
     return (
         <Screen>
             <ScreenH1>Your brews</ScreenH1>
-            <SearchBar value={query} onChange={setQuery} />
+            <SearchBar value={query} onChange={setQuery} className="mt-2" />
             <ul className="w-full menu px-0">
                 {batchList}
             </ul>
