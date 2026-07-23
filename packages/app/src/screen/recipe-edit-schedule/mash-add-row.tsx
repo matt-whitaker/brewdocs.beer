@@ -1,5 +1,5 @@
 import {useCallback, useState} from "react";
-import {Units} from "@brewdocs.beer/core";
+import {UNITS} from "@brewdocs.beer/core";
 import {InputText} from "@brewdocs.beer/design";
 import DataGridAddButton from "@/component/data-grid/add-button";
 import DataGridLabel from "@/component/data-grid/label";
@@ -20,8 +20,8 @@ export default function RecipeEditMashAddRow({ add }: RecipeEditMashAddRowProps)
         if (!trimmed) return;
         add("mash", {
             name: trimmed,
-            temp: { value: `0${Units.FAHRENHEIT}`, unit: Units.FAHRENHEIT },
-            time: { value: `0${Units.MINUTES}`, unit: Units.MINUTES },
+            temp: { value: `0${UNITS.FAHRENHEIT}`, unit: UNITS.FAHRENHEIT },
+            time: { value: `0${UNITS.MINUTES}`, unit: UNITS.MINUTES },
             grains: "all",
         });
         setName("");

@@ -15,6 +15,8 @@ export const RECIPE_MODEL_VERSION = 1;
 export default interface Recipe extends Entity {
     /** schema version the recipe was created under; see RECIPE_MODEL_VERSION */
     version: number;
+    /** id of the KbRecipe this was cloned from, if any — kept for reference and to load the original (useKbRecipe(sourceId)) for review/reset; absent on recipes created from scratch */
+    sourceId?: string;
     name: string;
     brewer: string;
     type: string;

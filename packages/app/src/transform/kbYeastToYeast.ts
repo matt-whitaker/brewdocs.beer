@@ -1,4 +1,4 @@
-import {Units} from "@brewdocs.beer/core";
+import {UNITS} from "@brewdocs.beer/core";
 import {KbYeast} from "@brewdocs.beer/kb";
 import Yeast from "@/model/yeast";
 
@@ -11,11 +11,11 @@ export function kbYeastToYeast(kbYeast: KbYeast): Yeast {
         name: kbYeast.name,
         avg_attn: {
             value: "70%",
-            unit: Units.PERCENT
+            unit: UNITS.PERCENT
         },
         temp: {
             value: "0°F",
-            unit: Units.FAHRENHEIT
+            unit: UNITS.FAHRENHEIT
         },
         starter: false
     };

@@ -1,5 +1,5 @@
 import {memo, useCallback, useMemo} from "react";
-import {Units} from "@brewdocs.beer/core";
+import {UNITS} from "@brewdocs.beer/core";
 import {KbGrain} from "@brewdocs.beer/kb";
 import DataGridInput from "@/component/data-grid/input";
 import DataGridLabel from "@/component/data-grid/label";
@@ -17,7 +17,7 @@ export function kbGrainToRecipeGrain(kbGrain: KbGrain): RecipeGrain {
         name: kbGrain.name,
         weight: {
             value: "0.0lb",
-            unit: Units.POUNDS
+            unit: UNITS.POUNDS
         },
     };
 }

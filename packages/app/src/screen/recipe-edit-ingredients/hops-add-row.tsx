@@ -1,5 +1,5 @@
 import {useCallback, useState} from "react";
-import {Units} from "@brewdocs.beer/core";
+import {UNITS} from "@brewdocs.beer/core";
 import {KbHop} from "@brewdocs.beer/kb";
 import DataGrid from "@/component/data-grid";
 import AddRow from "@/component/data-grid/add-row";
@@ -31,14 +31,14 @@ export default function RecipeEditHopsAddRow({ add, kbHops, kbHopsIndex }: Recip
     }, []);
 
     const onBlurActualAlpha = useCallback((value: string) => {
-        setActualAlpha(value.trim() ? scalarFromNumberWithUnit(value, Units.PERCENT).value : null);
+        setActualAlpha(value.trim() ? scalarFromNumberWithUnit(value, UNITS.PERCENT).value : null);
     }, []);
 
     const addHop = useCallback(() => {
         if (!selection) return;
         const hop = kbHopToRecipeHop(kbHopsIndex!.get(selection)!);
         if (actualAlpha) {
-            const alpha = scalarFromNumberWithUnit(actualAlpha, Units.PERCENT);
+            const alpha = scalarFromNumberWithUnit(actualAlpha, UNITS.PERCENT);
             hop.alpha = { value: alpha.value, unit: alpha.unit! };
         }
         add("hops", hop);

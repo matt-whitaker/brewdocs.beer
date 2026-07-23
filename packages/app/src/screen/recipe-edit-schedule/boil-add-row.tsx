@@ -1,5 +1,5 @@
 import {useCallback, useState} from "react";
-import {Units} from "@brewdocs.beer/core";
+import {UNITS} from "@brewdocs.beer/core";
 import {InputText} from "@brewdocs.beer/design";
 import DataGridAddButton from "@/component/data-grid/add-button";
 import DataGridLabel from "@/component/data-grid/label";
@@ -20,7 +20,7 @@ export default function RecipeEditBoilAddRow({ add }: RecipeEditBoilAddRowProps)
         if (!trimmed) return;
         add("boil", {
             name: trimmed,
-            time: { value: `0${Units.MINUTES}`, unit: Units.MINUTES },
+            time: { value: `0${UNITS.MINUTES}`, unit: UNITS.MINUTES },
             hops: "all",
         });
         setName("");

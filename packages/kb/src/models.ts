@@ -1,9 +1,7 @@
-import {Entity} from "@brewdocs.beer/core";
+import {Entity, Scalar} from "@brewdocs.beer/core";
 
-export interface KbScalar {
-    value: string;
-    unit: string;
-}
+/** @deprecated alias of the shared core Scalar; kept while kb call sites are repointed */
+export type KbScalar = Scalar;
 
 export interface KbRecipe extends Entity {
     /** item schema version; hard-coded as KB_MODEL_VERSION in build-json.js, stamped at build time */

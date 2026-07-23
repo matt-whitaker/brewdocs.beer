@@ -17,6 +17,7 @@ import {kbScalarToScalar} from "@/utils/formatting";
 export function kbRecipeToRecipe(kbRecipe: KbRecipe): Omit<Recipe, "id"> {
     return {
         version: RECIPE_MODEL_VERSION,
+        sourceId: kbRecipe.id,
         name: kbRecipe.name,
         brewer: kbRecipe.brewer,
         type: kbRecipe.type,

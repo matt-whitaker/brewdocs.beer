@@ -1,5 +1,5 @@
 import {memo, useCallback, useMemo} from "react";
-import {Units} from "@brewdocs.beer/core";
+import {UNITS} from "@brewdocs.beer/core";
 import {KbYeast} from "@brewdocs.beer/kb";
 import DataGridCheckbox from "@/component/data-grid/checkbox";
 import DataGridInput from "@/component/data-grid/input";
@@ -18,11 +18,11 @@ export function kbYeastToRecipeYeast(kbYeast: KbYeast): RecipeYeast {
         name: kbYeast.name,
         avg_attn: {
             value: "70%",
-            unit: Units.PERCENT
+            unit: UNITS.PERCENT
         },
         temp: {
             value: "0°F",
-            unit: Units.FAHRENHEIT
+            unit: UNITS.FAHRENHEIT
         },
         starter: false
     };
