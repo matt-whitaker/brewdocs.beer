@@ -3,12 +3,12 @@ import Organics from "@/component/organics";
 import Screen from "@/component/screen";
 import Vitals from "@/component/vitals";
 import {useBatch} from "@/state/batches";
-import {useKbRecipe} from "@/state/kbRecipes";
+import {useRecipeResource} from "@/state/recipeResource";
 
 export type BatchSummaryProps = { batchId: string; };
 export default function BatchSummary({ batchId }: BatchSummaryProps) {
     const batch = useBatch(batchId);
-    const recipe = useKbRecipe(batch.recipeId);
+    const recipe = useRecipeResource(batch.recipeSource ?? "kb", batch.recipeId);
 
     return (
         <Screen>

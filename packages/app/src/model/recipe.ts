@@ -8,6 +8,9 @@ import {Mash} from "@/model/mash";
 import Measurements from "@/model/measurements";
 import Yeast from "@/model/yeast";
 
+/** which store a recipe lives in — the discriminator for a polymorphic recipe reference (paired with an id) */
+export type RecipeSource = "kb" | "user";
+
 /** current shape of the Recipe model; bump when a stored recipe would no longer parse correctly */
 export const RECIPE_MODEL_VERSION = 1;
 
