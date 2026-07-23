@@ -1,4 +1,4 @@
-import Scalar from "@/model/scalar";
+import {Scalar} from "@brewdocs.beer/core";
 
 export default interface Hydrometer {
     name: string;

@@ -1,4 +1,5 @@
 import {useCallback, useMemo} from "react";
+import {Scalar} from "@brewdocs.beer/core";
 import {ScreenH1} from "@brewdocs.beer/design";
 import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
@@ -10,7 +11,6 @@ import PanelSwitcherContent from "@/component/panel-switcher/content";
 import Screen from "@/component/screen";
 import useJsonEdit from "@/hooks/useJsonEdit";
 import Batch, {phaseLabel, ScheduleKind} from "@/model/batch";
-import Scalar from "@/model/scalar";
 import {statuses} from "@/model/statuses";
 import BatchScheduleEquipment from "@/screen/batch-schedule/equipment";
 import ScheduleItemRow from "@/screen/batch-schedule/item-row";

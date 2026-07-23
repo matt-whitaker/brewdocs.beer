@@ -1,11 +1,8 @@
 import {KbRecipe} from "@brewdocs.beer/kb";
 import Boil from "@/model/boil";
-import {kbScalarToScalar} from "@/utils/formatting";
 
+// kb and app share the Scalar type; boil steps differ only in `hops` (loose
+// string vs the app's "all" literal), so this is just a narrowing cast.
 export function kbRecipeBoilToBoil(boil: KbRecipe["boil"]): Boil[] {
-    return boil.map(({name, time, hops}) => ({
-        name,
-        time: kbScalarToScalar(time),
-        hops: hops as Boil["hops"]
-    }));
+    return boil as Boil[];
 }

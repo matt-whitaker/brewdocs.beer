@@ -1,4 +1,4 @@
-import {Entity} from "@brewdocs.beer/core";
+import {Entity, Scalar} from "@brewdocs.beer/core";
 import Additive from "@/model/additive";
 import Boil from "@/model/boil";
 import Grain from "@/model/grain";
@@ -6,7 +6,6 @@ import Hop from "@/model/hop";
 import Hydrometer from "@/model/hydrometer";
 import {Mash} from "@/model/mash";
 import Measurements from "@/model/measurements";
-import Scalar from "@/model/scalar";
 import Statuses from "@/model/statuses";
 import Yeast from "@/model/yeast";
 

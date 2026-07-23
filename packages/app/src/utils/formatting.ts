@@ -1,17 +1,5 @@
 import {Currency, isCurrency, isUnit, Scalar, Unit} from "@brewdocs.beer/core";
 
-/**
- * Coerces a raw kb scalar into the app's Scalar shape. Now that kb and app share
- * one Scalar type this is effectively a copy; kept as a boundary point pending
- * the transform-collapse follow-up.
- */
-export function kbScalarToScalar(kbScalar: Scalar): Scalar {
-    return {
-        value: kbScalar.value,
-        unit: kbScalar.unit
-    };
-}
-
 export const UNIT_REGEX = /^(-?\d+(?:\.\d+)?)(\D*)$/;
 export const CURRENCY_REGEX = /^(\D*)(-?\d+(?:\.\d+)?)$/;
 

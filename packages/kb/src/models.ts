@@ -1,8 +1,5 @@
 import {Entity, Scalar} from "@brewdocs.beer/core";
 
-/** @deprecated alias of the shared core Scalar; kept while kb call sites are repointed */
-export type KbScalar = Scalar;
-
 export interface KbRecipe extends Entity {
     /** item schema version; hard-coded as KB_MODEL_VERSION in build-json.js, stamped at build time */
     version: number;
@@ -10,46 +7,46 @@ export interface KbRecipe extends Entity {
     brewer: string;
     description: string;
     type: string;
-    batchSize: KbScalar;
-    boilTime: KbScalar;
-    efficiency: KbScalar;
+    batchSize: Scalar;
+    boilTime: Scalar;
+    efficiency: Scalar;
 
     grains: {
         name: string;
-        weight: KbScalar;
+        weight: Scalar;
     }[];
 
     mash: {
         name: string;
-        temp: KbScalar;
-        time: KbScalar;
+        temp: Scalar;
+        time: Scalar;
         grains: string;
     }[];
 
     boil: {
         name: string;
-        time: KbScalar;
+        time: Scalar;
         hops: string;
     }[];
 
     hops: {
         name: string;
-        weight: KbScalar;
-        alpha: KbScalar;
-        boil: KbScalar;
+        weight: Scalar;
+        alpha: Scalar;
+        boil: Scalar;
         phase: string;
     }[];
 
     yeasts: {
         name: string;
-        avg_attn: KbScalar;
-        temp: KbScalar;
+        avg_attn: Scalar;
+        temp: Scalar;
         starter: boolean;
     }[];
 
     additives: {
         name: string;
-        boil: KbScalar;
+        boil: Scalar;
     }[];
 
     equipment: {
@@ -59,9 +56,9 @@ export interface KbRecipe extends Entity {
     }[];
 
     targets: {
-        og: KbScalar;
-        fg: KbScalar;
-        abv: KbScalar;
+        og: Scalar;
+        fg: Scalar;
+        abv: Scalar;
         ibu: string;
         srm: string;
     };

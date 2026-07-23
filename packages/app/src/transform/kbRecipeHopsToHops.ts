@@ -1,18 +1,11 @@
 import {KbRecipe} from "@brewdocs.beer/kb";
 import Hop from "@/model/hop";
-import {kbScalarToScalar} from "@/utils/formatting";
 
 /**
- * A KbRecipe's embedded ingredients already carry real per-recipe values
- * (unlike the catalog transforms in state/kb*.ts, which invent defaults) —
- * this just coerces KbScalar/loose strings into the app's Batch shape.
+ * kb and app now share the Scalar type; a recipe's embedded hops differ from the
+ * app Hop only in `phase` (loose string vs the app's literal union), so this is
+ * just a narrowing cast rather than a per-field conversion.
  */
 export function kbRecipeHopsToHops(hops: KbRecipe["hops"]): Hop[] {
-    return hops.map(({name, weight, alpha, boil, phase}) => ({
-        name,
-        weight: kbScalarToScalar(weight),
-        alpha: kbScalarToScalar(alpha),
-        boil: kbScalarToScalar(boil),
-        phase: phase as Hop["phase"]
-    }));
+    return hops as Hop[];
 }

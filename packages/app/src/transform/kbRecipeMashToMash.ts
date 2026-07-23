@@ -1,12 +1,8 @@
 import {KbRecipe} from "@brewdocs.beer/kb";
 import {Mash} from "@/model/mash";
-import {kbScalarToScalar} from "@/utils/formatting";
 
+// kb and app share the Scalar type; mash steps differ only in `grains` (loose
+// string vs the app's "all" literal), so this is just a narrowing cast.
 export function kbRecipeMashToMash(mash: KbRecipe["mash"]): Mash[] {
-    return mash.map(({name, temp, time, grains}) => ({
-        name,
-        temp: kbScalarToScalar(temp),
-        time: kbScalarToScalar(time),
-        grains: grains as Mash["grains"]
-    }));
+    return mash as Mash[];
 }
