@@ -2,7 +2,7 @@ import {useCallback, useState} from "react";
 import {KbYeast} from "@brewdocs.beer/kb";
 import AddRow from "@/component/data-grid/add-row";
 import {AddFn} from "@/hooks/useJsonEdit";
-import {kbYeastToRecipeYeast} from "@/screen/recipe-edit-ingredients/yeasts-row";
+import {kbYeastToRecipeYeast} from "@/screen/recipe-edit-ingredients/catalog-defaults";
 
 export type RecipeEditYeastsAddRowProps = {
     add: AddFn;

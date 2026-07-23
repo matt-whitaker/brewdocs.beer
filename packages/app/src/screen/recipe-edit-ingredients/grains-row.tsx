@@ -1,5 +1,4 @@
 import {memo, useCallback, useMemo} from "react";
-import {UNITS} from "@brewdocs.beer/core";
 import {KbGrain} from "@brewdocs.beer/kb";
 import DataGridInput from "@/component/data-grid/input";
 import DataGridLabel from "@/component/data-grid/label";
@@ -8,19 +7,9 @@ import DataGridRow from "@/component/data-grid/row";
 import DataGridSelect from "@/component/data-grid/select";
 import {RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
 import Grain from "@/model/grain";
+import {kbGrainToRecipeGrain} from "@/screen/recipe-edit-ingredients/catalog-defaults";
 
 export type RecipeGrain = Grain;
-
-/** Default weight for a grain newly picked from the catalog. */
-export function kbGrainToRecipeGrain(kbGrain: KbGrain): RecipeGrain {
-    return {
-        name: kbGrain.name,
-        weight: {
-            value: "0.0lb",
-            unit: UNITS.POUNDS
-        },
-    };
-}
 
 export type RecipeEditGrainsRowProps = {
     row: number;

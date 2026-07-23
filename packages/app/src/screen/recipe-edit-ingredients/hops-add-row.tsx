@@ -7,7 +7,7 @@ import DataGridInput from "@/component/data-grid/input";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridRow from "@/component/data-grid/row";
 import {AddFn} from "@/hooks/useJsonEdit";
-import {kbHopToRecipeHop} from "@/screen/recipe-edit-ingredients/hops-row";
+import {kbHopToRecipeHop} from "@/screen/recipe-edit-ingredients/catalog-defaults";
 import {scalarFromNumberWithUnit} from "@/utils/formatting";
 
 export type RecipeEditHopsAddRowProps = {

@@ -1,7 +1,7 @@
 import classNames from "classnames";
 import {PropsWithChildren, useCallback, useState} from "react";
 import {PropsWithClass} from "@brewdocs.beer/core";
-import {CHEVRON, CHEVRON_ICON} from "@/component/data-grid";
+import {CHEVRON, CHEVRON_ICON} from "@/component/data-grid/styles";
 import {Chevron} from "@/component/svg";
 
 /** paired with the group class by the sibling rule in styles.css */

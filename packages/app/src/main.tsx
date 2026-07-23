@@ -1,8 +1,8 @@
 import {QueryClientProvider} from "@tanstack/react-query";
-import {createRouter, ErrorComponentProps, RouterProvider} from "@tanstack/react-router";
+import {createRouter, RouterProvider} from "@tanstack/react-router";
 import ReactDOM from "react-dom/client";
 import {registerSW} from "virtual:pwa-register";
-import Error from "@/component/error";
+import RootError from "@/component/root-error";
 import {prefetchKbGrains} from "@/state/kbGrains";
 import {prefetchKbHops} from "@/state/kbHops";
 import {prefetchKbRecipes} from "@/state/kbRecipes";
@@ -12,10 +12,6 @@ import {routeTree} from "./routeTree.gen";
 
 import "@fontsource-variable/urbanist";
 import "./styles.css";
-
-function RootError({error}: ErrorComponentProps) {
-    return <Error>{error instanceof Error ? error.message : String(error)}</Error>;
-}
 
 const router = createRouter({
     routeTree,

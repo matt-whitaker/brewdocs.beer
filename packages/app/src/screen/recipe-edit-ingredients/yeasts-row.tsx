@@ -1,5 +1,4 @@
 import {memo, useCallback, useMemo} from "react";
-import {UNITS} from "@brewdocs.beer/core";
 import {KbYeast} from "@brewdocs.beer/kb";
 import DataGridCheckbox from "@/component/data-grid/checkbox";
 import DataGridInput from "@/component/data-grid/input";
@@ -9,24 +8,9 @@ import DataGridRow from "@/component/data-grid/row";
 import DataGridSelect from "@/component/data-grid/select";
 import {RemoveFn, ToggleFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
 import Yeast from "@/model/yeast";
+import {kbYeastToRecipeYeast} from "@/screen/recipe-edit-ingredients/catalog-defaults";
 
 export type RecipeYeast = Yeast;
-
-/** Default attenuation/temp for a yeast newly picked from the catalog. */
-export function kbYeastToRecipeYeast(kbYeast: KbYeast): RecipeYeast {
-    return {
-        name: kbYeast.name,
-        avg_attn: {
-            value: "70%",
-            unit: UNITS.PERCENT
-        },
-        temp: {
-            value: "0°F",
-            unit: UNITS.FAHRENHEIT
-        },
-        starter: false
-    };
-}
 
 export type RecipeEditYeastsRowProps = {
     row: number;

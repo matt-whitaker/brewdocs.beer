@@ -1,5 +1,4 @@
 import {memo, useCallback, useMemo} from "react";
-import {UNITS} from "@brewdocs.beer/core";
 import {KbHop} from "@brewdocs.beer/kb";
 import DataGrid from "@/component/data-grid";
 import DataGridInput from "@/component/data-grid/input";
@@ -9,35 +8,9 @@ import DataGridRow from "@/component/data-grid/row";
 import DataGridSelect from "@/component/data-grid/select";
 import {RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
 import Hop from "@/model/hop";
+import {HOP_PHASE_OPTIONS, kbHopToRecipeHop} from "@/screen/recipe-edit-ingredients/catalog-defaults";
 
 export type RecipeHop = Hop;
-
-/** the only phases a hop addition can land in — mirrors the app Hop model's phase union */
-export const HOP_PHASE_OPTIONS = [
-    { value: "boil", name: "Boil" },
-    { value: "secondary", name: "Secondary" },
-    { value: "dry", name: "Dry Hop" },
-];
-
-/** Default weight/boil/phase for a hop newly picked from the catalog; alpha carries the catalog's value. */
-export function kbHopToRecipeHop(kbHop: KbHop): RecipeHop {
-    return {
-        name: kbHop.name,
-        weight: {
-            value: "0.0oz",
-            unit: UNITS.OUNCES
-        },
-        alpha: {
-            value: `${kbHop.alpha}%`,
-            unit: UNITS.PERCENT
-        },
-        boil: {
-            value: "60min",
-            unit: UNITS.MINUTES
-        },
-        phase: "boil"
-    };
-}
 
 export type RecipeEditHopsRowProps = {
     row: number;

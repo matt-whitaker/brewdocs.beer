@@ -1,7 +1,7 @@
 import classNames from "classnames";
 import {PropsWithChildren, ReactNode, useState} from "react";
 import {PropsWithClass} from "@brewdocs.beer/core";
-import {CHEVRON, CHEVRON_ICON} from "@/component/data-grid";
+import {CHEVRON, CHEVRON_ICON} from "@/component/data-grid/styles";
 import {Chevron} from "@/component/svg";
 
 const ZEBRA = "odd:bg-base-200";

@@ -1,7 +1,7 @@
 import classNames from "classnames";
 import {PropsWithChildren} from "react";
 import {PropsWithClass} from "@brewdocs.beer/core";
-import {COL_SPANS} from "@/component/data-grid";
+import {COL_SPANS} from "@/component/data-grid/styles";
 
 // The trailing variants shrink the label when it sits in a data-grid nested
 // inside another data-grid (an expanded body); text-2xs (theme token) matches
