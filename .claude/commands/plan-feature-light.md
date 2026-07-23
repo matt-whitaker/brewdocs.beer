@@ -1,13 +1,14 @@
 Sketch a feature's big-picture proposal and — the part that matters most — a **research
-path**, as a single markdown issue body for a GitHub agent to pick up, research in-repo,
-and decompose into implementable sub-issues. The agent posts that breakdown back as a
-comment; it writes no code.
+path**, and **create it as a single GitHub issue** (unlabeled) for a GitHub agent to pick
+up, research in-repo, and decompose into implementable sub-issues. The agent creates those
+sub-issues and posts an index comment; it writes no code.
 
 The feature to plan: $ARGUMENTS
 
-Do NOT implement anything. Do NOT create, label, or edit issues. Do NOT produce the final
-sub-issue breakdown yourself — that's the assignee agent's job. Produce the proposal +
-research path as markdown in your response and stop.
+Do NOT implement anything. Do NOT produce the final sub-issue breakdown yourself — that's
+the assignee agent's job. **Create the one research/decompose issue** with `gh issue create`
+(unlabeled) — don't apply the `claude` label; that's the maintainer's trigger. The created
+issue is a draft to iterate on.
 
 ## When to reach for this vs `plan-feature`
 
@@ -52,9 +53,9 @@ The goal and why; the rough, conceptual shape of the solution (not per-file); th
 constraints; and the seams and decisions you can already see. Enough for a competent agent to
 turn into a sized breakdown — no more.
 
-## 4. Output: one markdown issue body
+## 4. Create the issue
 
-Present everything as a **single markdown block**, ready to paste as one GitHub issue:
+**Create one GitHub issue** with `gh issue create` (no labels), body built from:
 
 - **Goal** — what and why.
 - **Proposal** — the high-level shape (§3).
@@ -99,16 +100,17 @@ Present everything as a **single markdown block**, ready to paste as one GitHub 
 
 ## 5. Close with a one-liner for the maintainer
 
-After the issue block, remind the maintainer: paste it as one issue and apply the **`claude`
-label** to trigger the research + decomposition — the label tier gets the full turn budget,
-while an `@claude` comment runs on the smaller poke budget and can time out on real research.
-The agent will then **create the sub-issues (unlabeled), link them as native sub-issues of the
-parent**, and post a summary comment; the maintainer reviews and applies the `claude` label to
-whichever ones to start.
+After creating it, post the issue link in your response and remind the maintainer: review /
+iterate, then apply the **`claude` label** to trigger the research + decomposition — the
+label tier gets the full turn budget, while an `@claude` comment runs on the smaller poke
+budget and can time out on real research. The agent will then **create the sub-issues
+(unlabeled), link them as native sub-issues of the parent**, and post an index comment; the
+maintainer reviews and applies the `claude` label to whichever ones to start.
 
 ## Boundaries
 
 - Light grounding only — never produce the final per-file decomposition yourself; that's the
   assignee agent's job.
-- Never implement, never apply a label, never create or edit issues.
-- Stop once the proposal + research-path issue is presented.
+- Never implement and never apply a label. Create **only** the single research issue
+  (unlabeled) — never the sub-issues; those are the agent's job.
+- Stop once the research-path issue is created and its link posted.

@@ -1,10 +1,14 @@
 Decompose a feature into a parent (epic) issue and independently-implementable
-sub-issues, and hand them back as markdown for the maintainer to paste into GitHub.
+sub-issues, and **create them on GitHub yourself** with `gh` — each sub-issue linked as a
+native GitHub sub-issue of the epic — left **unlabeled** for the maintainer to review and
+iterate on.
 
 The feature to plan: $ARGUMENTS
 
-Do NOT implement anything. Do NOT create, label, or edit issues. Produce the issue
-tree as markdown in your response and stop.
+Do NOT implement anything and do NOT write code. **Create the issues yourself** with `gh`
+(you have access) — but leave them **unlabeled**: applying the `claude` label is the
+maintainer's alone (see Boundaries). The created issues are drafts to iterate on, not a
+final hand-off.
 
 ## 1. Ground yourself in the codebase first
 
@@ -52,19 +56,29 @@ implemented without that context.
 Order them so prerequisites come first, and say plainly which are independent (safe to
 start in parallel) and which are blocked on an earlier child.
 
-## 4. Output format
+## 4. Create the issues
 
-Present the parent as one markdown block, then each sub-issue as its own block, each
-ready to paste as a GitHub issue body. Use the section headings from
-`.github/ISSUE_TEMPLATE/claude-task.yml`:
+Create the **epic first**, then each sub-issue, then link them:
 
-- **Summary** — what needs to happen and why
-- **Where the code lives** — specific, verified paths
-- **What to change** — concrete requirements, bulleted
-- **Patterns to follow** — an existing file to mirror
-- **Out of scope** — what not to touch; prevents over-engineering
-- **Acceptance criteria** — a short checklist
-- **CLAUDE.md Updates (Optional)** — note anything that will need to be updated in the CLAUDE.md
+1. **Epic** — `gh issue create --title "<epic title>" --body "<parent body from §2>"` (no
+   labels). Capture its number from the returned URL.
+2. **Sub-issues** — one `gh issue create` per child (no labels), body built from the
+   `.github/ISSUE_TEMPLATE/claude-task.yml` headings:
+   - **Summary** — what needs to happen and why
+   - **Where the code lives** — specific, verified paths
+   - **What to change** — concrete requirements, bulleted
+   - **Patterns to follow** — an existing file to mirror
+   - **Out of scope** — what not to touch; prevents over-engineering
+   - **Acceptance criteria** — a short checklist
+   - **CLAUDE.md Updates (Optional)** — anything that will need updating in CLAUDE.md
+3. **Link each sub-issue as a native GitHub sub-issue of the epic** so they show in its
+   Sub-issues list — a `Part of #N` text line is *not* sufficient. The REST API wants the
+   child's integer database `id`, **not** its issue number:
+   - `gh api repos/{owner}/{repo}/issues/<child-number> --jq .id` → the child's id
+   - `gh api --method POST repos/{owner}/{repo}/issues/<epic-number>/sub_issues -F sub_issue_id=<that-id>`
+
+   `gh api` fills `{owner}/{repo}` from the current repo. If the sub-issues API is
+   unavailable, fall back to a `Part of #<epic-number>` line in each child body.
 
 Carry these standing constraints into every sub-issue's Out of scope:
 
@@ -99,14 +113,16 @@ cadence is already wired for every run.
 
 ## 5. Close with a plan of attack
 
-After the blocks, summarize: each sub-issue's title, which are independent vs. blocked
-and on what, and the order to apply the `claude` label. Remind the maintainer to **start a
-sub-issue by applying the `claude` label** (the full feature-work turn budget) — an `@claude`
-comment runs on the smaller poke budget and can time out on real implementation work.
+After creating them, post the summary in your response: the epic link, then each
+sub-issue's title + link, which are independent vs. blocked and on what, and the order to
+apply the `claude` label. The issues are **unlabeled drafts** — the maintainer reviews and
+iterates, then **starts a sub-issue by applying the `claude` label** (the full feature-work
+turn budget; an `@claude` comment runs on the smaller poke budget and can time out on real
+implementation work).
 
 ## Boundaries
 
-- Never apply the `claude` label — the maintainer's label-apply is both the review gate
-  and the trigger.
-- Never implement any of it.
-- Stop once the tree is presented and summarized.
+- Create the issues **unlabeled**. Never apply the `claude` label — the maintainer's
+  label-apply is both the review gate and the trigger.
+- Never implement any of it — issues only, no code, no PR.
+- Stop once the issues are created, linked, and summarized.
