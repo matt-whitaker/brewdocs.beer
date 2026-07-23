@@ -1,11 +1,17 @@
 import {createFileRoute} from "@tanstack/react-router";
+import {Crumb, useBreadcrumbs} from "@/component/breadcrumbs/context";
 import Hero from "@/component/hero";
+
+// module const so the array is stable across renders (see useBreadcrumbs)
+const BREADCRUMBS: Crumb[] = [{ label: "Home" }];
 
 export const Route = createFileRoute("/")({
     component: HomePage
 });
 
 function HomePage() {
+    useBreadcrumbs(BREADCRUMBS);
+
     return (
         <Hero>
             <div className="max-w-md">

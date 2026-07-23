@@ -67,7 +67,7 @@ export default function PanelSwitcher({ name, defaultTab, children, className, c
     );
 
     return (
-        <div className={classNames(compact ? "w-full" : "mt-2 lg:w-full w-screen h-full lg:px-4", [className])}>
+        <div className={classNames(compact ? "w-full" : "lg:w-full w-screen h-full lg:px-4", [className])}>
             {actions
                 ? (
                     // buttons overlay the right end of the full-width tab bar (kept in

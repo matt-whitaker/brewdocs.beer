@@ -1,7 +1,9 @@
 import {createFileRoute} from "@tanstack/react-router";
-import {Suspense} from "react";
+import {Suspense, useMemo} from "react";
+import {Crumb, dynamicCrumb, useBreadcrumbs} from "@/component/breadcrumbs/context";
 import HopOverview from "@/screen/hop-overview";
 import Loading from "@/screen/loading";
+import {useKbHop} from "@/state/kbHops";
 
 export const Route = createFileRoute("/kb/hop/$hopId")({
     component: KbHopPage
@@ -11,6 +13,13 @@ export const Route = createFileRoute("/kb/hop/$hopId")({
 // needs its own Suspense boundary for a cold deep-link before boot prefetch resolves.
 function KbHopPage() {
     const {hopId} = Route.useParams();
+
+    const breadcrumbs = useMemo<Crumb[]>(() => [
+        { label: "Knowledge", to: "/knowledge" },
+        { label: "Hops" },
+        dynamicCrumb(useKbHop, [hopId], (hop) => hop.name),
+    ], [hopId]);
+    useBreadcrumbs(breadcrumbs);
 
     return (
         <Suspense fallback={<Loading />}>
