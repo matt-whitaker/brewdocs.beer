@@ -45,8 +45,11 @@ export default function Breadcrumbs() {
     if (crumbs.length === 0) {
         return null;
     }
+    // overflow-y-hidden: daisyui's `.breadcrumbs` sets overflow-x:auto, which makes
+    // overflow-y compute to auto too — on mobile that surfaces a stray vertical
+    // scrollbar when the trail overflows horizontally
     return (
-        <div className="breadcrumbs text-sm">
+        <div className="breadcrumbs text-sm overflow-y-hidden">
             <ul>
                 {crumbs.map((crumb, i) => (
                     <li key={i}>
