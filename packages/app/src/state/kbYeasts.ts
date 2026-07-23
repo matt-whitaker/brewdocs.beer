@@ -30,3 +30,14 @@ export const useKbYeasts = (): KbYeast[] => {
 
     return data;
 };
+
+export const useKbYeast = (id: string): KbYeast => {
+    const { data } = useSuspenseQuery({ queryKey: kbYeastsQueryKey(), queryFn: fetchKbYeasts });
+    const yeast = data?.find(yeast => yeast.id === id);
+
+    if (!yeast) {
+        throw new Error("Unable to load yeast from Knowledge Base");
+    }
+
+    return yeast;
+};
