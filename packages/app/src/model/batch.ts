@@ -6,6 +6,7 @@ import Hop from "@/model/hop";
 import Hydrometer from "@/model/hydrometer";
 import {Mash} from "@/model/mash";
 import Measurements from "@/model/measurements";
+import {RecipeSource} from "@/model/recipe";
 import Statuses from "@/model/statuses";
 import Yeast from "@/model/yeast";
 
@@ -121,6 +122,8 @@ export default interface Batch extends Entity {
     /** when the yeast went in — fermentation's start, edited from the Ferment phase */
     pitchedDate: string;
     recipeId: string;
+    /** which store recipeId points at — absent on batches created before this field, which were all catalog recipes (treat as "kb") */
+    recipeSource?: RecipeSource;
     status: Statuses;
 
     brewer?: string;

@@ -12,8 +12,9 @@ export type InputTextProps = PropsWithClass
     name?: string
     primary?: boolean;
     align?: "left"|"center"|"right";
+    size?: "small"|"medium"|"large";
 }
-export function InputText({ className, onChange, onBlur, value, readonly, placeholder, name, primary, align }: InputTextProps) {
+export function InputText({ className, onChange, onBlur, value, readonly, placeholder, name, primary, align, size }: InputTextProps) {
     const optionalProps  = {
         onChange: onChange ? useCallback(eventValue(onChange), [onChange]) : void 0,
         onBlur: onBlur ? useCallback(eventValue(onBlur), [onBlur]) : void 0
@@ -26,7 +27,12 @@ export function InputText({ className, onChange, onBlur, value, readonly, placeh
         type="text"
         onKeyDown={onBlur ? ({ key, currentTarget }) => { key === "Enter" && currentTarget.blur(); } : void 0}
         className={classNames(
-            "input lg:input-sm input-xs px-1 lg:px-2.5",
+            "input  px-1 lg:px-2.5",
+            {
+                "lg:input-sm input-xs": !size || size === "small",
+                "lg:input-md input-sm": !size || size === "medium",
+                "lg:input-lg input-md": !size || size === "large",
+            },
             [className],
             {
                 "input-primary": primary,

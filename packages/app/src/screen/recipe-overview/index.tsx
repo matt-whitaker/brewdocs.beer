@@ -1,11 +1,11 @@
 import {ScreenH1, ScreenH2, ScreenP} from "@brewdocs.beer/design";
 import Organics from "@/component/organics";
 import Screen from "@/component/screen";
-import {useKbRecipe} from "@/state/kbRecipes";
+import {RecipeSource, useRecipeResource} from "@/state/recipeResource";
 
-export type RecipeOverviewProps = { recipeId: string };
-export default function RecipeOverview({ recipeId }: RecipeOverviewProps) {
-    const recipe = useKbRecipe(recipeId);
+export type RecipeOverviewProps = { recipeId: string; source: RecipeSource };
+export default function RecipeOverview({ recipeId, source }: RecipeOverviewProps) {
+    const recipe = useRecipeResource(source, recipeId);
 
     return (
         <Screen>

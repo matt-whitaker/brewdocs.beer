@@ -3,17 +3,18 @@ import {useCallback, useState} from "react";
 import {InputText} from "@brewdocs.beer/design";
 import createRecipe from "@/actions/createRecipe";
 import ModalScreen from "@/component/modal/screen";
-import {useKbRecipe} from "@/state/kbRecipes";
+import {RecipeSource, useRecipeResource} from "@/state/recipeResource";
 
-export type RecipeEditModalProps = { recipeId: string };
+export type RecipeEditModalProps = { recipeId: string; source: RecipeSource };
 
 /**
  * Modal screen for the "Edit" action. A catalog (KbRecipe) can't be edited in
  * place, so this clones it into a local recipe under a user-chosen name, then
- * navigates to that recipe's editor — the modal is the bail-out point.
+ * navigates to that recipe's editor — the modal is the bail-out point. Takes the
+ * recipe's source (the route knows it) so it loads via useRecipeResource.
  */
-export default function RecipeEditModal({ recipeId }: RecipeEditModalProps) {
-    const recipe = useKbRecipe(recipeId);
+export default function RecipeEditModal({ recipeId, source }: RecipeEditModalProps) {
+    const recipe = useRecipeResource(source, recipeId);
     const navigate = useNavigate();
 
     const [name, setName] = useState(recipe.name);

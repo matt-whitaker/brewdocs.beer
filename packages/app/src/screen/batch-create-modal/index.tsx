@@ -5,26 +5,27 @@ import CreateBatchForm from "@/component/create-batch-form";
 import useCreatBatchForm from "@/component/create-batch-form/useCreateBatchForm";
 import ModalScreen from "@/component/modal/screen";
 import {useBatches} from "@/state/batches";
-import {useKbRecipe} from "@/state/kbRecipes";
+import {RecipeSource, useRecipeResource} from "@/state/recipeResource";
 
-export type BatchCreateModalProps = { recipeId: string };
+export type BatchCreateModalProps = { recipeId: string; source: RecipeSource };
 
 /**
  * Modal screen for the "Brew" action: names a new batch, then creates it from the
- * catalog recipe and navigates to it. Reads suspenseful recipe/batch data, so it
- * renders inside Action's own Suspense boundary and never suspends the route.
+ * recipe and navigates to it. Takes the recipe's source (the route knows it) so it
+ * loads via useRecipeResource. Reads suspenseful recipe/batch data, so it renders
+ * inside Action's own Suspense boundary and never suspends the route.
  */
-export default function BatchCreateModal({ recipeId }: BatchCreateModalProps) {
+export default function BatchCreateModal({ recipeId, source }: BatchCreateModalProps) {
     const batchesCount = useBatches().length;
-    const recipe = useKbRecipe(recipeId);
+    const recipe = useRecipeResource(source, recipeId);
     const navigate = useNavigate();
 
     const defaultBatchName = `Batch #${batchesCount + 1}`;
     const [batchInputs, setBatchInputs, finalInputs] = useCreatBatchForm(defaultBatchName);
 
     const onConfirm = useCallback(() =>
-        createBatch(recipe, finalInputs).then((id) => navigate({to: "/batch/$batchId", params: {batchId: id}})),
-    [navigate, recipe, finalInputs]);
+        createBatch(recipe, source, finalInputs).then((id) => navigate({to: "/batch/$batchId", params: {batchId: id}})),
+    [navigate, recipe, source, finalInputs]);
 
     return (
         <ModalScreen title={recipe.name} onConfirm={onConfirm}>

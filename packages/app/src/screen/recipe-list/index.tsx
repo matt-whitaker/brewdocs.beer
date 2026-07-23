@@ -21,25 +21,27 @@ export default function RecipeList({ source = "all",  filterFn }: RecipeListProp
     const [query, setQuery] = useState("");
 
     const shownRecipes = useMemo(() => {
+        const kb = kbRecipes.map((recipe) => ({ recipe, source: "kb" as const }));
+        const user = recipes.map((recipe) => ({ recipe, source: "user" as const }));
         const all = {
-            "all": [kbRecipes, recipes],
-            "user": [recipes],
-            "kb": [kbRecipes]
-        }[source].flat().filter(r => !!r);
-        const bySource = filterFn ? all.filter(filterFn) : all;
+            "all": [...kb, ...user],
+            "user": user,
+            "kb": kb
+        }[source].filter(({ recipe }) => !!recipe);
+        const bySource = filterFn ? all.filter(({ recipe }) => filterFn(recipe)) : all;
 
         const q = query.trim().toLowerCase();
-        return q ? bySource.filter(r => r.name.toLowerCase().includes(q)) : bySource;
+        return q ? bySource.filter(({ recipe }) => recipe.name.toLowerCase().includes(q)) : bySource;
     }, [recipes, kbRecipes, source, filterFn, query]);
 
-    const recipeListItems = useMemo(() => shownRecipes.map((recipe, i) => (
-        <RecipeListItem key={i} recipe={recipe} />
+    const recipeListItems = useMemo(() => shownRecipes.map(({ recipe, source: recipeSource }, i) => (
+        <RecipeListItem key={i} recipe={recipe} source={recipeSource} />
     )), [shownRecipes]);
 
     return (
         <Screen>
             <ScreenH1>All Recipes</ScreenH1>
-            <SearchBar value={query} onChange={setQuery} />
+            <SearchBar value={query} onChange={setQuery} className="mt-2" />
             <ul className="w-full menu px-0">
                 {recipeListItems}
             </ul>

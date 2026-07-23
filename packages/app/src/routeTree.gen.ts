@@ -9,28 +9,19 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as RecipesRouteImport } from './routes/recipes'
-import { Route as KnowledgeRouteImport } from './routes/knowledge'
-import { Route as DisclaimerRouteImport } from './routes/disclaimer'
-import { Route as BatchesRouteImport } from './routes/batches'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as RecipeRecipeIdRouteImport } from './routes/recipe.$recipeId'
+import { Route as BatchesRouteImport } from './routes/batches'
+import { Route as DisclaimerRouteImport } from './routes/disclaimer'
+import { Route as KnowledgeRouteImport } from './routes/knowledge'
+import { Route as RecipesRouteImport } from './routes/recipes'
 import { Route as BatchBatchIdRouteImport } from './routes/batch.$batchId'
+import { Route as RecipeRecipeIdRouteImport } from './routes/recipe.$recipeId'
+import { Route as KbRecipeRecipeIdRouteImport } from './routes/kb.recipe.$recipeId'
 import { Route as RecipeRecipeIdEditRouteImport } from './routes/recipe.$recipeId_.edit'
 
-const RecipesRoute = RecipesRouteImport.update({
-  id: '/recipes',
-  path: '/recipes',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const KnowledgeRoute = KnowledgeRouteImport.update({
-  id: '/knowledge',
-  path: '/knowledge',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DisclaimerRoute = DisclaimerRouteImport.update({
-  id: '/disclaimer',
-  path: '/disclaimer',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BatchesRoute = BatchesRouteImport.update({
@@ -38,9 +29,24 @@ const BatchesRoute = BatchesRouteImport.update({
   path: '/batches',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const DisclaimerRoute = DisclaimerRouteImport.update({
+  id: '/disclaimer',
+  path: '/disclaimer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KnowledgeRoute = KnowledgeRouteImport.update({
+  id: '/knowledge',
+  path: '/knowledge',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RecipesRoute = RecipesRouteImport.update({
+  id: '/recipes',
+  path: '/recipes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BatchBatchIdRoute = BatchBatchIdRouteImport.update({
+  id: '/batch/$batchId',
+  path: '/batch/$batchId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RecipeRecipeIdRoute = RecipeRecipeIdRouteImport.update({
@@ -48,9 +54,9 @@ const RecipeRecipeIdRoute = RecipeRecipeIdRouteImport.update({
   path: '/recipe/$recipeId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BatchBatchIdRoute = BatchBatchIdRouteImport.update({
-  id: '/batch/$batchId',
-  path: '/batch/$batchId',
+const KbRecipeRecipeIdRoute = KbRecipeRecipeIdRouteImport.update({
+  id: '/kb/recipe/$recipeId',
+  path: '/kb/recipe/$recipeId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RecipeRecipeIdEditRoute = RecipeRecipeIdEditRouteImport.update({
@@ -67,6 +73,7 @@ export interface FileRoutesByFullPath {
   '/recipes': typeof RecipesRoute
   '/batch/$batchId': typeof BatchBatchIdRoute
   '/recipe/$recipeId': typeof RecipeRecipeIdRoute
+  '/kb/recipe/$recipeId': typeof KbRecipeRecipeIdRoute
   '/recipe/$recipeId/edit': typeof RecipeRecipeIdEditRoute
 }
 export interface FileRoutesByTo {
@@ -77,6 +84,7 @@ export interface FileRoutesByTo {
   '/recipes': typeof RecipesRoute
   '/batch/$batchId': typeof BatchBatchIdRoute
   '/recipe/$recipeId': typeof RecipeRecipeIdRoute
+  '/kb/recipe/$recipeId': typeof KbRecipeRecipeIdRoute
   '/recipe/$recipeId/edit': typeof RecipeRecipeIdEditRoute
 }
 export interface FileRoutesById {
@@ -88,6 +96,7 @@ export interface FileRoutesById {
   '/recipes': typeof RecipesRoute
   '/batch/$batchId': typeof BatchBatchIdRoute
   '/recipe/$recipeId': typeof RecipeRecipeIdRoute
+  '/kb/recipe/$recipeId': typeof KbRecipeRecipeIdRoute
   '/recipe/$recipeId_/edit': typeof RecipeRecipeIdEditRoute
 }
 export interface FileRouteTypes {
@@ -100,6 +109,7 @@ export interface FileRouteTypes {
     | '/recipes'
     | '/batch/$batchId'
     | '/recipe/$recipeId'
+    | '/kb/recipe/$recipeId'
     | '/recipe/$recipeId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -110,6 +120,7 @@ export interface FileRouteTypes {
     | '/recipes'
     | '/batch/$batchId'
     | '/recipe/$recipeId'
+    | '/kb/recipe/$recipeId'
     | '/recipe/$recipeId/edit'
   id:
     | '__root__'
@@ -120,6 +131,7 @@ export interface FileRouteTypes {
     | '/recipes'
     | '/batch/$batchId'
     | '/recipe/$recipeId'
+    | '/kb/recipe/$recipeId'
     | '/recipe/$recipeId_/edit'
   fileRoutesById: FileRoutesById
 }
@@ -131,30 +143,17 @@ export interface RootRouteChildren {
   RecipesRoute: typeof RecipesRoute
   BatchBatchIdRoute: typeof BatchBatchIdRoute
   RecipeRecipeIdRoute: typeof RecipeRecipeIdRoute
+  KbRecipeRecipeIdRoute: typeof KbRecipeRecipeIdRoute
   RecipeRecipeIdEditRoute: typeof RecipeRecipeIdEditRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/recipes': {
-      id: '/recipes'
-      path: '/recipes'
-      fullPath: '/recipes'
-      preLoaderRoute: typeof RecipesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/knowledge': {
-      id: '/knowledge'
-      path: '/knowledge'
-      fullPath: '/knowledge'
-      preLoaderRoute: typeof KnowledgeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/disclaimer': {
-      id: '/disclaimer'
-      path: '/disclaimer'
-      fullPath: '/disclaimer'
-      preLoaderRoute: typeof DisclaimerRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/batches': {
@@ -164,11 +163,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BatchesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/disclaimer': {
+      id: '/disclaimer'
+      path: '/disclaimer'
+      fullPath: '/disclaimer'
+      preLoaderRoute: typeof DisclaimerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/knowledge': {
+      id: '/knowledge'
+      path: '/knowledge'
+      fullPath: '/knowledge'
+      preLoaderRoute: typeof KnowledgeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/recipes': {
+      id: '/recipes'
+      path: '/recipes'
+      fullPath: '/recipes'
+      preLoaderRoute: typeof RecipesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/batch/$batchId': {
+      id: '/batch/$batchId'
+      path: '/batch/$batchId'
+      fullPath: '/batch/$batchId'
+      preLoaderRoute: typeof BatchBatchIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/recipe/$recipeId': {
@@ -178,11 +198,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RecipeRecipeIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/batch/$batchId': {
-      id: '/batch/$batchId'
-      path: '/batch/$batchId'
-      fullPath: '/batch/$batchId'
-      preLoaderRoute: typeof BatchBatchIdRouteImport
+    '/kb/recipe/$recipeId': {
+      id: '/kb/recipe/$recipeId'
+      path: '/kb/recipe/$recipeId'
+      fullPath: '/kb/recipe/$recipeId'
+      preLoaderRoute: typeof KbRecipeRecipeIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/recipe/$recipeId_/edit': {
@@ -203,6 +223,7 @@ const rootRouteChildren: RootRouteChildren = {
   RecipesRoute: RecipesRoute,
   BatchBatchIdRoute: BatchBatchIdRoute,
   RecipeRecipeIdRoute: RecipeRecipeIdRoute,
+  KbRecipeRecipeIdRoute: KbRecipeRecipeIdRoute,
   RecipeRecipeIdEditRoute: RecipeRecipeIdEditRoute,
 }
 export const routeTree = rootRouteImport
