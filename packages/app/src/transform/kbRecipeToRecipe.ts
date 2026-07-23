@@ -7,7 +7,6 @@ import {kbRecipeGrainsToGrains} from "@/transform/kbRecipeGrainsToGrains";
 import {kbRecipeHopsToHops} from "@/transform/kbRecipeHopsToHops";
 import {kbRecipeMashToMash} from "@/transform/kbRecipeMashToMash";
 import {kbRecipeYeastsToYeasts} from "@/transform/kbRecipeYeastsToYeasts";
-import {kbScalarToScalar} from "@/utils/formatting";
 
 /**
  * Full KbRecipe -> Recipe mapping, reusing the same per-field transforms
@@ -22,13 +21,13 @@ export function kbRecipeToRecipe(kbRecipe: KbRecipe): Omit<Recipe, "id"> {
         brewer: kbRecipe.brewer,
         type: kbRecipe.type,
         description: kbRecipe.description,
-        batchSize: kbScalarToScalar(kbRecipe.batchSize),
-        efficiency: kbScalarToScalar(kbRecipe.efficiency),
-        boilTime: kbScalarToScalar(kbRecipe.boilTime),
+        batchSize: kbRecipe.batchSize,
+        efficiency: kbRecipe.efficiency,
+        boilTime: kbRecipe.boilTime,
         targets: {
-            og: kbScalarToScalar(kbRecipe.targets.og),
-            fg: kbScalarToScalar(kbRecipe.targets.fg),
-            abv: kbScalarToScalar(kbRecipe.targets.abv),
+            og: kbRecipe.targets.og,
+            fg: kbRecipe.targets.fg,
+            abv: kbRecipe.targets.abv,
             ibu: kbRecipe.targets.ibu,
             srm: kbRecipe.targets.srm,
         },
