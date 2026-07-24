@@ -1,5 +1,7 @@
 import {UNITS} from "@brewdocs.beer/core";
 import {KbGrain, KbHop, KbYeast} from "@brewdocs.beer/kb";
+import Additive from "@/model/additive";
+import {PhaseType, ResourceType} from "@/model/brewable";
 import Grain from "@/model/grain";
 import Hop from "@/model/hop";
 import Yeast from "@/model/yeast";
@@ -10,6 +12,36 @@ export const HOP_PHASE_OPTIONS = [
     { value: "secondary", name: "Secondary" },
     { value: "dry", name: "Dry Hop" },
 ];
+
+/** the fixed set of brewable phases an assignment can target — same order as `defaultBrewable`'s PHASE_TYPES */
+export const PHASE_TYPE_OPTIONS = [
+    { value: "mash", name: "Mash" },
+    { value: "boil", name: "Boil" },
+    { value: "ferment", name: "Ferment" },
+];
+
+export const PHASE_TYPE_LABELS: Record<PhaseType, string> = {
+    mash: "Mash",
+    boil: "Boil",
+    ferment: "Ferment",
+};
+
+/** subsection order within a phase group, and the options offered by the assignment add-row */
+export const RESOURCE_TYPES: ResourceType[] = ["grain", "hop", "yeast", "additive"];
+
+export const RESOURCE_TYPE_OPTIONS = [
+    { value: "grain", name: "Grain" },
+    { value: "hop", name: "Hop" },
+    { value: "yeast", name: "Yeast" },
+    { value: "additive", name: "Additive" },
+];
+
+export const RESOURCE_TYPE_LABELS: Record<ResourceType, string> = {
+    grain: "Grains",
+    hop: "Hops",
+    yeast: "Yeasts",
+    additive: "Additives",
+};
 
 /** Default weight for a grain newly picked from the catalog. */
 export function kbGrainToRecipeGrain(kbGrain: KbGrain): Grain {
@@ -55,5 +87,16 @@ export function kbYeastToRecipeYeast(kbYeast: KbYeast): Yeast {
             unit: UNITS.FAHRENHEIT
         },
         starter: false
+    };
+}
+
+/** Default boil time for a freeform additive — there's no kb catalog for additives, so the name is typed rather than picked. */
+export function defaultAdditive(name: string): Additive {
+    return {
+        name,
+        boil: {
+            value: "15min",
+            unit: UNITS.MINUTES
+        },
     };
 }
