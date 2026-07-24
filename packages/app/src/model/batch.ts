@@ -1,6 +1,7 @@
 import {Entity, Scalar} from "@brewdocs.beer/core";
 import Additive from "@/model/additive";
 import Boil from "@/model/boil";
+import Brewable from "@/model/brewable";
 import Grain from "@/model/grain";
 import Hop from "@/model/hop";
 import Hydrometer from "@/model/hydrometer";
@@ -112,7 +113,7 @@ export interface ScheduleItem {
 export const phaseLabel = (phase: Phase, index: number): string => `${index + 1}. ${phase.name}`;
 
 /** current shape of the Batch model — bump when a stored batch would no longer parse/derive correctly */
-export const BATCH_MODEL_VERSION = 1;
+export const BATCH_MODEL_VERSION = 2;
 
 export default interface Batch extends Entity {
     /** schema version the batch was created under; see BATCH_MODEL_VERSION */
@@ -125,6 +126,14 @@ export default interface Batch extends Entity {
     /** which store recipeId points at — absent on batches created before this field, which were all catalog recipes (treat as "kb") */
     recipeSource?: RecipeSource;
     status: Statuses;
+
+    /**
+     * The batch's source-of-truth brewable — cloned from the recipe (user source)
+     * or derived via buildBrewable (kb source) at creation time. Projected onto
+     * the legacy fields below by createBatch/_updateRecipe; not yet read by any
+     * batch screen (see _Derived batch data_ in CLAUDE.md).
+     */
+    brewable: Brewable;
 
     brewer?: string;
     batchSize: Scalar;

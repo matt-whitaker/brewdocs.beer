@@ -5,13 +5,18 @@ import _updateShopping from "@/actions/_updateShopping";
 import {CreateBatchState} from "@/component/create-batch-form/useCreateBatchForm";
 import defaultBatch from "@/data/defaultBatch";
 import Batch from "@/model/batch";
-import {RecipeSource} from "@/model/recipe";
+import Recipe, {RecipeSource} from "@/model/recipe";
 import Statuses from "@/model/statuses";
 import {saveBatch} from "@/state/batches";
 import batchesStorage from "@/storage/batches";
+import {buildBrewable} from "@/transform/buildBrewable";
+import {cloneDeep} from "@/utils/func";
 
-export default async function createBatch(recipe: KbRecipe, source: RecipeSource, inputs: CreateBatchState) {
+export default async function createBatch(recipe: Recipe | KbRecipe, source: RecipeSource, inputs: CreateBatchState) {
     const id = await batchesStorage.generateId();
+
+    // a user recipe already has a brewable of its own; a kb recipe doesn't, so derive one
+    const brewable = source === "user" ? cloneDeep((recipe as Recipe).brewable) : buildBrewable(recipe);
 
     const batch: Partial<Batch> = {
         ...defaultBatch,
@@ -19,10 +24,11 @@ export default async function createBatch(recipe: KbRecipe, source: RecipeSource
         status: Statuses.PREP,
         recipeId: recipe.id,
         recipeSource: source,
+        brewable,
         ...inputs
     };
 
-    _updateRecipe(recipe, batch);
+    _updateRecipe(recipe, brewable, batch);
     _updateShopping(batch);
     _updateSchedule(batch);
 
