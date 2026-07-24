@@ -1,6 +1,7 @@
 import {KbRecipe} from "@brewdocs.beer/kb";
 import Additive from "@/model/additive";
 import Boil from "@/model/boil";
+import Brewable from "@/model/brewable";
 import Equipment from "@/model/equipment";
 import Grain from "@/model/grain";
 import Hop from "@/model/hop";
@@ -12,7 +13,7 @@ import Yeast from "@/model/yeast";
 export type RecipeSource = "kb" | "user";
 
 /** current shape of the Recipe model; bump when a stored recipe would no longer parse correctly */
-export const RECIPE_MODEL_VERSION = 1;
+export const RECIPE_MODEL_VERSION = 2;
 
 /**
  * The editable user recipe. It *is* a KbRecipe (same shared Scalar type), with
@@ -33,4 +34,5 @@ export default interface Recipe extends KbRecipe {
     boil: Boil[];
     equipment: Equipment[];
     targets: Measurements;
+    brewable: Brewable;
 }

@@ -1,4 +1,5 @@
 import {KbRecipe} from "@brewdocs.beer/kb";
+import {defaultBrewable} from "@/model/brewable";
 import Recipe, {RECIPE_MODEL_VERSION} from "@/model/recipe";
 import {kbRecipeBoilToBoil} from "@/transform/kbRecipeBoilToBoil";
 import {kbRecipeEquipmentToEquipment} from "@/transform/kbRecipeEquipmentToEquipment";
@@ -20,5 +21,6 @@ export function kbRecipeToRecipe({id, ...kbRecipe}: KbRecipe): Omit<Recipe, "id"
         boil: kbRecipeBoilToBoil(kbRecipe.boil),
         mash: kbRecipeMashToMash(kbRecipe.mash),
         equipment: kbRecipeEquipmentToEquipment(kbRecipe.equipment),
+        brewable: defaultBrewable(),
     };
 }
