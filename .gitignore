@@ -6,3 +6,8 @@ notes.md
 *storybook.log
 dist
 .DS_Store
+
+
+.nx/cache
+.nx/workspace-data
+.nx/migrate-runs
