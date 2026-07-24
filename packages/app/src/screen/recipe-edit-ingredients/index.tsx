@@ -1,5 +1,4 @@
 import {useCallback} from "react";
-import Screen from "@/component/screen";
 import useJsonEdit from "@/hooks/useJsonEdit";
 import Recipe from "@/model/recipe";
 import RecipeEditAdditives from "@/screen/recipe-edit-ingredients/additives";
@@ -17,7 +16,7 @@ export default function RecipeEditIngredients({ recipeId }: RecipeEditIngredient
     const [data, update, updateScalar, toggle, add, remove] = useJsonEdit<Recipe>(recipe, onChange);
 
     return (
-        <Screen>
+        <>
             <RecipeEditGrains
                 grains={data.grains}
                 add={add}
@@ -47,6 +46,6 @@ export default function RecipeEditIngredients({ recipeId }: RecipeEditIngredient
                 update={update}
                 updateScalar={updateScalar}
             />
-        </Screen>
+        </>
     );
 }
