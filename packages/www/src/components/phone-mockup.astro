@@ -1,0 +1,55 @@
+---
+// An iPhone 12 SVG frame (flat edges, top notch, no home button) with the app
+// screenshot filling the screen edge-to-edge. The screen rect matches the
+// screenshot's 720x1442 ratio (~0.499) so the image isn't distorted; the notch
+// and home indicator are drawn on top of it. Sizes via the passed `class` (set a
+// width; height follows the viewBox). Colors are nord polar-night tones.
+interface Props {
+    class?: string;
+}
+const { class: className } = Astro.props;
+---
+<svg
+    class={className}
+    viewBox="0 0 330 625"
+    role="img"
+    aria-label="BrewDocs running on an iPhone"
+    xmlns="http://www.w3.org/2000/svg">
+    <title>BrewDocs on an iPhone</title>
+    <defs>
+        <clipPath id="brewdocs-phone-screen">
+            <rect x="15" y="12" width="300" height="601" rx="36" />
+        </clipPath>
+    </defs>
+
+    <!-- side buttons (mute, volume up/down on the left; power on the right) -->
+    <rect x="0" y="130" width="3" height="16" rx="1.5" fill="#4C566A" />
+    <rect x="0" y="165" width="3" height="34" rx="1.5" fill="#4C566A" />
+    <rect x="0" y="210" width="3" height="34" rx="1.5" fill="#4C566A" />
+    <rect x="327" y="175" width="3" height="54" rx="1.5" fill="#4C566A" />
+
+    <!-- body (flat-edge; corner radius = screen radius + bezel, so corners stay concentric) -->
+    <rect x="3" y="0" width="324" height="625" rx="48" fill="#2E3440" />
+
+    <!-- screen well (rx=36 ≈ iPhone 12's true ~12% corner radius; rounder than this clips corner UI) -->
+    <rect x="15" y="12" width="300" height="601" rx="36" fill="#0b0e14" />
+
+    <!-- the screenshot, filling the screen, clipped to the rounded corners -->
+    <image
+        href="/images/screenshot.png"
+        x="15"
+        y="12"
+        width="300"
+        height="601"
+        preserveAspectRatio="xMidYMid slice"
+        clip-path="url(#brewdocs-phone-screen)" />
+
+    <!-- notch, drawn over the screenshot: square top, rounded bottom -->
+    <path d="M113 12 H217 V25 A13 13 0 0 1 204 38 H126 A13 13 0 0 1 113 25 Z" fill="#0b0e14" />
+    <!-- earpiece speaker + front camera inside the notch -->
+    <rect x="147" y="20" width="36" height="5" rx="2.5" fill="#3B4252" />
+    <circle cx="196" cy="22" r="4" fill="#434C5E" />
+
+    <!-- home indicator -->
+    <rect x="130" y="597" width="70" height="4" rx="2" fill="#ffffff" opacity="0.6" />
+</svg>
