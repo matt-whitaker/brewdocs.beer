@@ -1,0 +1,11 @@
+/* The consumer-importable token fragment — shared declarations only.
+ * Must not @import "tailwindcss": consumers already do, and a double import
+ * would break their build. @plugin/@theme resolve against the consumer's own
+ * Tailwind pipeline, so this file ships CSS text, not a Tailwind entrypoint. */
+@plugin "daisyui" {
+    themes: nord --default;
+}
+
+@theme {
+    --font-sans: "Urbanist Variable", ui-sans-serif, system-ui, sans-serif;
+}

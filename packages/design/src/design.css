@@ -1,14 +1,4 @@
-/* Storybook's CSS entry — a minimal stand-in for the token set that lives in
- * packages/app/src/styles.css. Moving the full token set (SRM colors, custom
- * breakpoint, --radius-selector override, etc.) here is a separate research
- * issue; this just gets DaisyUI's nord theme + the base font family applied
- * so stories don't render unstyled HTML. */
+/* Storybook's CSS entry — composes the shared tokens.css so stories don't
+ * render unstyled HTML. */
 @import "tailwindcss";
-
-@plugin "daisyui" {
-    themes: nord --default;
-}
-
-@theme {
-    --font-sans: "Urbanist Variable", ui-sans-serif, system-ui, sans-serif;
-}
+@import "./tokens.css";
