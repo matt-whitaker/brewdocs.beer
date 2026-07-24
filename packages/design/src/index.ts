@@ -1,5 +1,6 @@
 
 export * from "./components/typography";
+export * from "./components/data-grid";
 export * from "./components/error-message";
 export * from "./components/hero";
 export * from "./components/input-text";
