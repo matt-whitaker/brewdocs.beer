@@ -20,7 +20,8 @@
     "incremental": true,
     "paths": {
       "@/*": [
-        "./src/*"
+        "./src/*",
+        "../design/src/*"
       ]
     },
     "target": "ES2022"
