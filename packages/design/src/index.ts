@@ -10,4 +10,5 @@ export * from "./components/modal";
 export * from "./components/screen";
 export * from "./components/screen/two-col";
 export * from "./components/search-bar";
+export * from "./components/srm-avatar";
 export * from "./components/svg";
