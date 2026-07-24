@@ -29,15 +29,21 @@ function DynamicLabel({ crumb }: { crumb: DynamicCrumb }) {
     return <>{crumb.transform(crumb.load())}</>;
 }
 
+// the label is wrapped in a real element so it can ellipsize: daisyui makes both
+// `li` and `li > *` display:flex, and text-overflow never applies to a flex box's
+// anonymous text — a static crumb's bare string had nothing to truncate. min-w-0
+// lets this span shrink below its text, which is what actually reveals the "…".
 function CrumbLabel({ crumb }: { crumb: Crumb }): ReactNode {
     if (isDynamic(crumb)) {
         return (
-            <Suspense fallback={<span className="opacity-50">…</span>}>
-                <DynamicLabel crumb={crumb} />
-            </Suspense>
+            <span className="min-w-0 truncate">
+                <Suspense fallback={<span className="opacity-50">…</span>}>
+                    <DynamicLabel crumb={crumb} />
+                </Suspense>
+            </span>
         );
     }
-    return crumb.label;
+    return <span className="min-w-0 truncate">{crumb.label}</span>;
 }
 
 export default function Breadcrumbs() {
@@ -50,13 +56,20 @@ export default function Breadcrumbs() {
     // this box below its content height — and the squeeze varies with the active
     // panel's height, which nudged the tab bar by ~1px on tab switches. Pinning
     // flex-shrink to 0 keeps the breadcrumb at its natural height so nothing moves.
-    // overflow-y-hidden: daisyui's `.breadcrumbs` sets overflow-x:auto, which makes
-    // overflow-y compute to auto too — on mobile that surfaces a stray vertical
-    // scrollbar when the trail overflows horizontally.
-    // self-start: DrawerContent centers its column (items-center); without this the
-    // shrink-width breadcrumb box would sit centered instead of left-aligned.
+    // self-stretch: pins the box to the available width instead of shrink-wrapping
+    // its content, so the trail has a max width to truncate against. It also handles
+    // the left-alignment that `self-start` used to (DrawerContent centers its column
+    // via items-center) — a full-width box has nothing left to center. Note this is
+    // the *cross* axis of that column, so it doesn't disturb the shrink-0 above.
+    // overflow-hidden: replaces daisyui's `.breadcrumbs { overflow-x: auto }`, which
+    // would scroll the row sideways instead of letting the crumbs ellipsize. Setting
+    // both axes also keeps the old fix — with only one axis non-visible, the other
+    // computes to auto and resurrects the stray vertical scrollbar on mobile.
+    // The `[&_li]` rules make truncation reachable: flex items default to
+    // min-width:auto (can't shrink below content), and the `>` separator is a
+    // fixed-size ::before flex item that must not be squeezed away.
     return (
-        <div className="breadcrumbs text-xs shrink-0 overflow-y-hidden self-start px-2 ml-2 lg:ml-4 lg:px-4 uppercase tracking-wide font-semibold text-base-content/60">
+        <div className="breadcrumbs text-xs shrink-0 overflow-hidden self-stretch px-2 ml-2 lg:ml-4 lg:px-4 uppercase tracking-wide font-semibold text-base-content/60 [&_li]:min-w-0 [&_li>*]:min-w-0 [&_li]:before:shrink-0">
             <ul>
                 {crumbs.map((crumb, i) => (
                     // key by identity, not bare index: a dynamic crumb hosts a data

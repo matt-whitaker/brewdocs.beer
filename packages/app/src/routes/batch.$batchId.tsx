@@ -30,7 +30,7 @@ function BatchPage() {
 
     const breadcrumbs = useMemo<Crumb[]>(() => [
         { label: "Batches", to: "/batches" },
-        dynamicCrumb(useBatchCrumbLabel, [batchId], ({recipe}) => `${recipe}`),
+        dynamicCrumb(useBatchCrumbLabel, [batchId], ({recipe, batch}) => `${recipe} • ${batch}`),
     ], [batchId]);
     useBreadcrumbs(breadcrumbs);
 
