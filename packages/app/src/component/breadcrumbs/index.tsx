@@ -56,7 +56,7 @@ export default function Breadcrumbs() {
     // self-start: DrawerContent centers its column (items-center); without this the
     // shrink-width breadcrumb box would sit centered instead of left-aligned.
     return (
-        <div className="breadcrumbs text-sm shrink-0 overflow-y-hidden self-start px-2 ml-2 lg:ml-4 lg:px-4">
+        <div className="breadcrumbs text-xs shrink-0 overflow-y-hidden self-start px-2 ml-2 lg:ml-4 lg:px-4 uppercase tracking-wide font-semibold text-base-content/60">
             <ul>
                 {crumbs.map((crumb, i) => (
                     // key by identity, not bare index: a dynamic crumb hosts a data
