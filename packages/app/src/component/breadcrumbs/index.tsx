@@ -1,4 +1,5 @@
 import {Link} from "@tanstack/react-router";
+import classNames from "classnames";
 import {ReactNode, Suspense, useCallback, useMemo, useState} from "react";
 import {BreadcrumbContext, Crumb, CrumbLink, DynamicCrumb, isDynamic, StaticCrumb, useBreadcrumbTrail} from "@/component/breadcrumbs/context";
 
@@ -81,7 +82,21 @@ export default function Breadcrumbs() {
     // min-width:auto (can't shrink below content), and the `>` separator is a
     // fixed-size ::before flex item that must not be squeezed away.
     return (
-        <div className="breadcrumbs text-xs shrink-0 overflow-hidden self-stretch px-2 ml-2 lg:ml-4 lg:px-4 uppercase tracking-wide font-semibold text-base-content/60 [&_li]:min-w-0 [&_li>*]:min-w-0 [&_li]:before:shrink-0">
+        <div className={classNames(
+            "breadcrumbs text-xs shrink-0 overflow-hidden self-stretch px-2 ml-2 lg:ml-4 lg:px-4",
+            "uppercase tracking-wide font-semibold text-base-content/60",
+            // truncation: flex items can't shrink below their content without min-w-0
+            "[&_li]:min-w-0 [&_li>*]:min-w-0",
+            // separator: daisyui draws a chevron — a .375rem box with only its top and
+            // right borders, rotated 45deg. Undo the rotation and borders and fill it
+            // instead to get a bullet, which reads as a peer list rather than a strict
+            // hierarchy. shrink-0 keeps it from being squeezed away when crumbs truncate.
+            // ⚠️ Scope to `li+li`, never a bare `li`: any before: utility injects
+            // content:"" and so *creates* a ::before box, which would put a leading
+            // separator on the first crumb. daisyui scopes its own chevron the same way.
+            "[&_li+li]:before:shrink-0 [&_li+li]:before:rotate-0 [&_li+li]:before:border-0",
+            "[&_li+li]:before:size-1 [&_li+li]:before:rounded-full [&_li+li]:before:bg-current [&_li+li]:before:mx-2"
+        )}>
             <ul>
                 {crumbs.map((crumb, i) => (
                     // key by identity, not bare index: a dynamic crumb hosts a data
