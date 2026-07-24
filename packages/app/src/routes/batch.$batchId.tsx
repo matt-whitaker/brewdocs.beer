@@ -16,12 +16,18 @@ export const Route = createFileRoute("/batch/$batchId")({
     component: BatchPage
 });
 
-// The batch crumb reads "{recipe} • {batch}". recipeSource is absent on batches
+// Resolves the batch's recipe: its name for the label, plus the source and id the
+// link needs — a kb recipe and a user recipe live on different routes, and which
+// one applies is only readable off the batch. recipeSource is absent on batches
 // created before that field — those were all catalog recipes, so treat as "kb".
-function useBatchCrumbLabel(batchId: string) {
+function useBatchRecipe(batchId: string) {
     const batch = useBatch(batchId);
-    const recipe = useRecipeResource(batch.recipeSource ?? "kb", batch.recipeId);
-    return { recipe: recipe.name, batch: batch.name };
+    const source = batch.recipeSource ?? "kb";
+    return { name: useRecipeResource(source, batch.recipeId).name, source, recipeId: batch.recipeId };
+}
+
+function useBatchName(batchId: string) {
+    return useBatch(batchId).name;
 }
 
 function BatchPage() {
@@ -30,7 +36,13 @@ function BatchPage() {
 
     const breadcrumbs = useMemo<Crumb[]>(() => [
         { label: "Batches", to: "/batches" },
-        dynamicCrumb(useBatchCrumbLabel, [batchId], ({recipe, batch}) => `${recipe} • ${batch}`),
+        dynamicCrumb(useBatchRecipe, [batchId], (r) => r.name, {
+            link: ({source, recipeId}) => ({
+                to: source === "kb" ? "/kb/recipe/$recipeId" : "/recipe/$recipeId",
+                params: {recipeId},
+            }),
+        }),
+        dynamicCrumb(useBatchName, [batchId], (name) => name),
     ], [batchId]);
     useBreadcrumbs(breadcrumbs);
 

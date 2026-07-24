@@ -1,6 +1,7 @@
 import {Link} from "@tanstack/react-router";
+import classNames from "classnames";
 import {ReactNode, Suspense, useCallback, useMemo, useState} from "react";
-import {BreadcrumbContext, Crumb, DynamicCrumb, isDynamic, useBreadcrumbTrail} from "@/component/breadcrumbs/context";
+import {BreadcrumbContext, Crumb, CrumbLink, DynamicCrumb, isDynamic, StaticCrumb, useBreadcrumbTrail} from "@/component/breadcrumbs/context";
 
 export function BreadcrumbProvider({ children }: { children: ReactNode }) {
     // a Map preserves insertion order, which is what the reverse in
@@ -24,26 +25,38 @@ export function BreadcrumbProvider({ children }: { children: ReactNode }) {
     return <BreadcrumbContext.Provider value={value}>{children}</BreadcrumbContext.Provider>;
 }
 
-// runs the crumb's data hook (may suspend — wrapped in Suspense by CrumbLabel)
-function DynamicLabel({ crumb }: { crumb: DynamicCrumb }) {
-    return <>{crumb.transform(crumb.load())}</>;
-}
-
 // the label is wrapped in a real element so it can ellipsize: daisyui makes both
 // `li` and `li > *` display:flex, and text-overflow never applies to a flex box's
-// anonymous text — a static crumb's bare string had nothing to truncate. min-w-0
-// lets this span shrink below its text, which is what actually reveals the "…".
-function CrumbLabel({ crumb }: { crumb: Crumb }): ReactNode {
-    if (isDynamic(crumb)) {
-        return (
-            <span className="min-w-0 truncate">
-                <Suspense fallback={<span className="opacity-50">…</span>}>
-                    <DynamicLabel crumb={crumb} />
-                </Suspense>
-            </span>
-        );
+// anonymous text — a bare string had nothing to truncate. min-w-0 lets this span
+// shrink below its text, which is what actually reveals the "…".
+const CrumbText = ({ children }: { children: ReactNode }) =>
+    <span className="min-w-0 truncate">{children}</span>;
+
+function CrumbAnchor({ link, children }: { link?: CrumbLink; children: ReactNode }) {
+    if (!link) {
+        return <CrumbText>{children}</CrumbText>;
     }
-    return <span className="min-w-0 truncate">{crumb.label}</span>;
+    // dynamic runtime path — cast past the router's typed `to`
+    return <Link to={link.to as never} params={link.params as never}><CrumbText>{children}</CrumbText></Link>;
+}
+
+const staticLink = (crumb: StaticCrumb | DynamicCrumb): CrumbLink | undefined =>
+    crumb.to ? { to: crumb.to, params: crumb.params } : void 0;
+
+/**
+ * Runs the crumb's data hook **once** (may suspend) and renders both its label and
+ * its link. A data-derived `link` needs the same `load()` result the label came
+ * from, so the anchor decision has to happen inside the Suspense boundary rather
+ * than outside it — that's what lets a crumb point at a route it can't know until
+ * the data arrives (e.g. a batch's recipe, kb vs user).
+ */
+function DynamicCrumbContent({ crumb }: { crumb: DynamicCrumb }) {
+    const data = crumb.load();
+    return (
+        <CrumbAnchor link={crumb.link ? crumb.link(data) : staticLink(crumb)}>
+            {crumb.transform(data)}
+        </CrumbAnchor>
+    );
 }
 
 export default function Breadcrumbs() {
@@ -69,7 +82,21 @@ export default function Breadcrumbs() {
     // min-width:auto (can't shrink below content), and the `>` separator is a
     // fixed-size ::before flex item that must not be squeezed away.
     return (
-        <div className="breadcrumbs text-xs shrink-0 overflow-hidden self-stretch px-2 ml-2 lg:ml-4 lg:px-4 uppercase tracking-wide font-semibold text-base-content/60 [&_li]:min-w-0 [&_li>*]:min-w-0 [&_li]:before:shrink-0">
+        <div className={classNames(
+            "breadcrumbs text-xs shrink-0 overflow-hidden self-stretch px-2 ml-2 lg:ml-4 lg:px-4",
+            "uppercase tracking-wide font-semibold text-base-content/60",
+            // truncation: flex items can't shrink below their content without min-w-0
+            "[&_li]:min-w-0 [&_li>*]:min-w-0",
+            // separator: daisyui draws a chevron — a .375rem box with only its top and
+            // right borders, rotated 45deg. Undo the rotation and borders and fill it
+            // instead to get a bullet, which reads as a peer list rather than a strict
+            // hierarchy. shrink-0 keeps it from being squeezed away when crumbs truncate.
+            // ⚠️ Scope to `li+li`, never a bare `li`: any before: utility injects
+            // content:"" and so *creates* a ::before box, which would put a leading
+            // separator on the first crumb. daisyui scopes its own chevron the same way.
+            "[&_li+li]:before:shrink-0 [&_li+li]:before:rotate-0 [&_li+li]:before:border-0",
+            "[&_li+li]:before:size-1 [&_li+li]:before:rounded-full [&_li+li]:before:bg-current [&_li+li]:before:mx-2"
+        )}>
             <ul>
                 {crumbs.map((crumb, i) => (
                     // key by identity, not bare index: a dynamic crumb hosts a data
@@ -77,10 +104,13 @@ export default function Breadcrumbs() {
                     // count throws "rendered more hooks…" (index prefix keeps sibling
                     // keys unique when two crumbs share a label)
                     <li key={`${i}:${isDynamic(crumb) ? crumb.key : crumb.label}`}>
-                        {crumb.to
-                            // dynamic runtime path — cast past the router's typed `to`
-                            ? <Link to={crumb.to as never} params={crumb.params as never}><CrumbLabel crumb={crumb} /></Link>
-                            : <CrumbLabel crumb={crumb} />}
+                        {isDynamic(crumb)
+                            ? (
+                                <Suspense fallback={<CrumbText><span className="opacity-50">…</span></CrumbText>}>
+                                    <DynamicCrumbContent crumb={crumb} />
+                                </Suspense>
+                            )
+                            : <CrumbAnchor link={staticLink(crumb)}>{crumb.label}</CrumbAnchor>}
                     </li>
                 ))}
             </ul>
