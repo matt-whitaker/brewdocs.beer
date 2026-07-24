@@ -1,0 +1,8 @@
+import classNames from "classnames";
+import {PropsWithChildren} from "react";
+import {PropsWithClass} from "@brewdocs.beer/core";
+
+export type ModalTitleProps = PropsWithChildren & PropsWithClass;
+export function ModalTitle({ children, className }: ModalTitleProps) {
+    return <h3 className={classNames("font-bold text-lg", [className])}>{children}</h3>;
+}
