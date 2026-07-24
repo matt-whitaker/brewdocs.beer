@@ -38,6 +38,8 @@ npm test -w packages/app          # eslint — the verification gate (see Lintin
 npm run build -w packages/kb      # rebuild kb dist JSON from data/ (also runs on postinstall)
 npm run dev -w packages/www       # astro dev
 npm test -w packages/design       # eslint — the verification gate (see Linting)
+npm run dev -w packages/design    # storybook dev -p 6006
+npm run build -w packages/design  # storybook build -o dist → the static site the deploy workflow publishes
 ```
 
 Root `build:design`/`dev:design`/`test:design` delegate to `-w packages/design`, matching the `*:app`/`*:www` pattern (used by `.github/workflows/build-test-deploy.design-prod.yaml`).
@@ -85,12 +87,13 @@ core ← design ← app        core ← kb ← app        core ← design ← ww
 
 ## packages/design
 
-**Purpose.** React UI primitives that emit Tailwind/DaisyUI class strings. Declares no tailwind/daisyui of its own — app and www compile the class strings.
-**Where.** `src/index.ts` (re-exports), `src/components/*`, `src/stories/` (orphaned — see Gotchas), `tsconfig.json`, `eslint.config.js`. See [`DESIGN.md`](packages/design/DESIGN.md) for the long-form design system doc (color, typography, spacing, radii, components).
+**Purpose.** React UI primitives that emit Tailwind/DaisyUI class strings, previewed and published as a static Storybook site. App and www still compile the class strings for their own bundles — design's own tailwind/daisyui deps exist only to render Storybook.
+**Where.** `src/index.ts` (re-exports), `src/components/*` (co-located `*.stories.tsx`), `src/design.css` (the minimal Tailwind v4 + DaisyUI v5 `nord` entry Storybook loads — **not** the token source of truth, see `DESIGN.md`), `.storybook/main.ts` + `.storybook/preview.tsx`, `tsconfig.json`, `eslint.config.js`. See [`DESIGN.md`](packages/design/DESIGN.md) for the long-form design system doc (color, typography, spacing, radii, components).
 **Surface.** `ScreenH1–H5`/`ScreenP` (typography), `InputText`, `InputDate`, `InputSelect`. `InputText` blurs on Enter when an `onBlur` handler is present — that's how "press Enter to commit" works app-wide.
-**Invariants.** ⚠️ Class strings must be valid **DaisyUI v5 / Tailwind v4** — app and www are what compile them (via `@source "../../design/src"` + `@plugin "daisyui"`).
-**Gotchas.** Storybook has been removed (no deps, no `storybook` script); `src/stories/` remains only as orphaned scaffolding, excluded from consumer builds and eslint (see `tsconfig.json`/`eslint.config.js`). `input-checkbox` and `input-unit` (dead, non-compiling stubs, never exported) were deleted — reintroducing either needs a real implementation, not the old stub.
+**Invariants.** ⚠️ Class strings must be valid **DaisyUI v5 / Tailwind v4** — app and www are what compile them for the real app (via `@source "../../design/src"` + `@plugin "daisyui"`); Storybook compiles them too now, but only for its own preview.
+**Gotchas.** `.storybook/main.ts` wires the Tailwind v4 Vite plugin in explicitly via `viteFinal` — Storybook's bundled Vite instance doesn't auto-discover a project `vite.config.ts` (design has none), so without it `design.css`'s `@import`/`@plugin`/`@theme` directives would ship uncompiled. `input-checkbox` and `input-unit` (dead, non-compiling stubs, never exported) were deleted — reintroducing either needs a real implementation, not the old stub.
 **Example.** _None._
+**Commands.** `npm run dev -w packages/design` (`dev:design` from root) — Storybook on `:6006`. `npm run build -w packages/design` (`build:design`) — static Storybook to `dist/`, what `build-test-deploy.design-prod.yaml` uploads.
 
 ## packages/app
 
@@ -227,7 +230,7 @@ useKbX() → IndexedDB hit? return it
 ### Linting
 **Purpose.** eslint 9 flat config, the verification gate (`npm test` = `eslint .`). **Ratchet policy: errors block, warnings inform** — `npm test` exits 0 while warnings remain.
 **Where.** Shared base: `packages/core/eslint.config.base.js` (dev tooling, **not** `core/src`). Per-package overlays: `packages/app/eslint.config.js`, `packages/www/eslint.config.js`, `packages/design/eslint.config.js`.
-**How it works.** The **base** (shared by app + www + design) holds the common rules: `@stylistic` (double quotes, semicolons, 4-space indent); `import-x/order` (external → `@brewdocs.beer/*` → `@/` → relative, alphabetized) + `import-x/no-relative-packages`; `react-hooks`; `no-restricted-imports` banning `lodash` and `../` parent-relative imports (use `@/`, which app and www alias to `src/*`; design has no `@/` alias — relative imports only). The import bans are **scoped to `src/**`** — root build/config files (`vite.config.ts`, `astro.config.mjs`, `migrations/*`) legitimately use relative cross-package paths. Overlays add only package-specifics: **app** → `react-refresh`, the `utils/func.ts` `any`-escape, the `routeTree.gen.ts` ignore; **www** → ignore the generated `.astro/` dir, allow triple-slash refs in `.d.ts`; **design** → ignore `src/stories/` (orphaned Storybook scaffolding), no overlay rules beyond that. www lints its `.ts`/`.tsx` (React islands + data); `.astro` files aren't linted (would need `eslint-plugin-astro`).
+**How it works.** The **base** (shared by app + www + design) holds the common rules: `@stylistic` (double quotes, semicolons, 4-space indent); `import-x/order` (external → `@brewdocs.beer/*` → `@/` → relative, alphabetized) + `import-x/no-relative-packages`; `react-hooks`; `no-restricted-imports` banning `lodash` and `../` parent-relative imports (use `@/`, which app and www alias to `src/*`; design has no `@/` alias — relative imports only). The import bans are **scoped to `src/**`** — root build/config files (`vite.config.ts`, `astro.config.mjs`, `migrations/*`) legitimately use relative cross-package paths. Overlays add only package-specifics: **app** → `react-refresh`, the `utils/func.ts` `any`-escape, the `routeTree.gen.ts` ignore; **www** → ignore the generated `.astro/` dir, allow triple-slash refs in `.d.ts`; **design** → no overlay rules (`.storybook/*` sits outside `src/`, so the `../`-ban doesn't reach its relative `design.css` import). www lints its `.ts`/`.tsx` (React islands + data); `.astro` files aren't linted (would need `eslint-plugin-astro`).
 **Invariants.** ⚠️ Only `react-refresh/only-export-components` warnings are left standing (on purpose). New **errors** must be fixed or explicitly ruled.
 **Gotchas.** ⚠️ The repo root hoists eslint **8.57.1** (eslintrc-era, chokes on flat config); each package resolves its own nested **9.x**. Run lint via `-w` or from inside the package (`npm run lint -w packages/app`), never the root binary.
 **Example.** _None._

@@ -25,7 +25,6 @@
     "**/*.tsx"
   ],
   "exclude": [
-    "node_modules",
-    "src/stories"
+    "node_modules"
   ]
 }
