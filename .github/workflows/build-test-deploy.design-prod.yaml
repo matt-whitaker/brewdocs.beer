@@ -37,17 +37,17 @@ jobs:
       - run: npm ci
       - run: npm run test:design
 
-#  Deploy:
-#    needs: ["Build", "Test"]
-#    uses: matt-whitaker/aws-static-site/.github/workflows/deploy-static-site.yaml@v2.0.0
-#    with:
-#      environment: "design-prod"
-#      aws_default_region: "us-west-2"
-#      artifact_name: "design-prod"
-#      artifact_path: "packages/design/dist"
-#    secrets:
-#      aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#      aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#      aws_role_to_assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-#      aws_s3_bucket: ${{ secrets.AWS_S3_BUCKET }}
-#      aws_cloudfront_distribution_id: ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }}
+  Deploy:
+    needs: ["Build", "Test"]
+    uses: matt-whitaker/aws-static-site/.github/workflows/deploy-static-site.yaml@v2.0.0
+    with:
+      environment: "design-prod"
+      aws_default_region: "us-west-2"
+      artifact_name: "design-prod"
+      artifact_path: "packages/design/dist"
+    secrets:
+      aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      aws_role_to_assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+      aws_s3_bucket: ${{ secrets.AWS_S3_BUCKET }}
+      aws_cloudfront_distribution_id: ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }}
