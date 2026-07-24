@@ -13,8 +13,8 @@ import {intersection} from "@/utils/func";
  */
 export type BuildBrewableSource = Pick<KbRecipe, "grains" | "hops" | "yeasts" | "additives" | "mash" | "boil" | "equipment">;
 
-/** hop.phase -> the Brewable phase it's assigned to */
-const HOP_PHASE_TO_PHASE_TYPE: Record<Hop["phase"], PhaseType> = {
+/** hop.phase -> the Brewable phase it's assigned to; reused in reverse by _projectRecipeBrewable */
+export const HOP_PHASE_TO_PHASE_TYPE: Record<Hop["phase"], PhaseType> = {
     boil: "boil",
     secondary: "ferment",
     dry: "ferment",
