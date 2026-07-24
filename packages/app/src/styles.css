@@ -5,13 +5,11 @@
    auto-detection skips — the design package must be an explicit source */
 @source "../../design/src";
 
-@plugin "daisyui" {
-    themes: nord --default;
-}
+/* design owns the shared tokens (daisyui nord theme + --font-sans); this
+   @import ships the token text, distinct from the @source scan line above */
+@import "@brewdocs.beer/design/src/tokens.css";
 
 @theme {
-    --font-sans: "Urbanist Variable", ui-sans-serif, system-ui, sans-serif;
-
     /* SRM beer colors */
     --color-beer-1: #F3F993;  /* Pale Straw */
     --color-beer-3: #F5F75C;  /* Straw */
