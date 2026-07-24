@@ -1,5 +1,4 @@
 import {useCallback} from "react";
-import Screen from "@/component/screen";
 import useJsonEdit from "@/hooks/useJsonEdit";
 import Recipe from "@/model/recipe";
 import RecipeEditBoil from "@/screen/recipe-edit-schedule/boil";
@@ -14,7 +13,7 @@ export default function RecipeEditSchedule({ recipeId }: RecipeEditScheduleProps
     const [data, update, updateScalar, add, remove] = useJsonEdit<Recipe>(recipe, onChange);
 
     return (
-        <Screen>
+        <>
             <RecipeEditMash
                 mash={data.mash}
                 add={add}
@@ -35,6 +34,6 @@ export default function RecipeEditSchedule({ recipeId }: RecipeEditScheduleProps
                 remove={remove}
                 update={update}
             />
-        </Screen>
+        </>
     );
 }

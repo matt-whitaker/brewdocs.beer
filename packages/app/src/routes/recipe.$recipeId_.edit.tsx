@@ -3,9 +3,7 @@ import {useMemo} from "react";
 import {Crumb, dynamicCrumb, useBreadcrumbs} from "@/component/breadcrumbs/context";
 import PanelSwitcher from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
-import RecipeEditDetails from "@/screen/recipe-edit-details";
-import RecipeEditIngredients from "@/screen/recipe-edit-ingredients";
-import RecipeEditSchedule from "@/screen/recipe-edit-schedule";
+import RecipeEdit from "@/screen/recipe-edit";
 import {useRecipeResource} from "@/state/recipeResource";
 
 export const Route = createFileRoute("/recipe/$recipeId_/edit")({
@@ -22,16 +20,13 @@ function RecipeEditPage() {
     ], [recipeId]);
     useBreadcrumbs(breadcrumbs);
 
+    // Single-tab outer switcher (not compact) so the edit page carries a real page
+    // tab bar like the batch page; the batch-planning-style header + compact sub-tabs
+    // live inside RecipeEdit.
     return (
-        <PanelSwitcher compact name="recipe.edit" defaultTab="Details">
-            <PanelSwitcherContent title="Details">
-                <RecipeEditDetails recipeId={recipeId} />
-            </PanelSwitcherContent>
-            <PanelSwitcherContent title="Ingredients">
-                <RecipeEditIngredients recipeId={recipeId} />
-            </PanelSwitcherContent>
-            <PanelSwitcherContent title="Schedule">
-                <RecipeEditSchedule recipeId={recipeId} />
+        <PanelSwitcher name="recipe.edit.page" defaultTab="Planning">
+            <PanelSwitcherContent title="Planning">
+                <RecipeEdit recipeId={recipeId} />
             </PanelSwitcherContent>
         </PanelSwitcher>
     );
