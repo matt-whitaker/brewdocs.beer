@@ -1,3 +1,4 @@
+import {resolve} from "node:path";
 import {fileURLToPath, URL} from "node:url";
 import tailwindcss from "@tailwindcss/vite";
 import {tanstackRouter} from "@tanstack/router-plugin/vite";
@@ -34,8 +35,28 @@ function migrationPlanPlugin(): Plugin {
     };
 }
 
+// Workspace packages ship raw, unbuilt TypeScript, so a package like design
+// that imports its own files via "@/..." gets compiled as part of app's own
+// bundle — and app's own "@" alias (below) would otherwise capture that
+// specifier and resolve it against app/src instead. Resolve "@/..." against
+// the nearest ancestor package's src/ dir (by importer path) so each
+// workspace package's alias stays self-contained.
+function workspaceAtAliasPlugin(): Plugin {
+    return {
+        name: "brewdocs-workspace-at-alias",
+        enforce: "pre",
+        resolveId(source, importer, options) {
+            if (!source.startsWith("@/")) return null;
+            const packageRoot = importer?.match(/^(.*[/\\]packages[/\\][^/\\]+)[/\\]src[/\\]/)?.[1];
+            const srcDir = packageRoot ? resolve(packageRoot, "src") : fileURLToPath(new URL("./src", import.meta.url));
+            return this.resolve(resolve(srcDir, source.slice(2)), importer, {skipSelf: true, ...options});
+        }
+    };
+}
+
 export default defineConfig({
     plugins: [
+        workspaceAtAliasPlugin(),
         // must come before react()
         tanstackRouter({target: "react", autoCodeSplitting: true}),
         react(),
@@ -62,10 +83,5 @@ export default defineConfig({
                 globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2,json}"]
             }
         })
-    ],
-    resolve: {
-        alias: {
-            "@": fileURLToPath(new URL("./src", import.meta.url))
-        }
-    }
+    ]
 });
