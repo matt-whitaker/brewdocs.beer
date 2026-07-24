@@ -41,7 +41,7 @@ export default interface Brewable {
     assignments: Assignment[];
 }
 
-const PHASE_TYPES: PhaseType[] = ["mash", "boil", "ferment"];
+export const PHASE_TYPES: PhaseType[] = ["mash", "boil", "ferment"];
 
 /** one empty phase of each type and no assignments — satisfies the "≥1 of each" rule by construction */
 export const defaultBrewable = (): Brewable => ({
@@ -63,6 +63,13 @@ export const canRemovePhase = (schedule: Schedule, index: number): boolean => {
     }
     const sameType = schedule.phases.filter(phase => phase.type === target.type);
     return sameType.length > 1;
+};
+
+/** capitalized type + a 1-based count among phases of the same type, e.g. "Mash 1", "Boil 2" — repeats of a type are allowed (mash → boil → mash) */
+export const phaseLabel = (phases: BrewablePhase[], index: number): string => {
+    const target = phases[index];
+    const ordinal = phases.slice(0, index + 1).filter(phase => phase.type === target.type).length;
+    return `${target.type[0].toUpperCase()}${target.type.slice(1)} ${ordinal}`;
 };
 
 /** resource's display name — also proves Assignment narrows `resource` correctly per `resourceType` when switched on */
