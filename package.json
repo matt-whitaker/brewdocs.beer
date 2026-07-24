@@ -29,5 +29,8 @@
     "packages/www",
     "packages/design",
     "packages/kb"
-  ]
+  ],
+  "devDependencies": {
+    "nx": "23.1.0"
+  }
 }
