@@ -3,21 +3,23 @@ import AddRow from "@/component/data-grid/add-row";
 import {AddFn} from "@/hooks/useJsonEdit";
 import Equipment from "@/model/equipment";
 
-export type RecipeEditEquipmentAddRowProps = {
+export type RecipeEditPhaseEquipmentAddRowProps = {
+    /** index into brewable.schedule.phases */
+    phase: number;
     add: AddFn;
     equipment: Equipment[];
     equipmentIndex: Map<string, Equipment>;
 };
 
-export default function RecipeEditEquipmentAddRow({ add, equipment, equipmentIndex }: RecipeEditEquipmentAddRowProps) {
+export default function RecipeEditPhaseEquipmentAddRow({ phase, add, equipment, equipmentIndex }: RecipeEditPhaseEquipmentAddRowProps) {
     const [selection, setSelection] = useState<string|null>(null);
 
     const addItem = useCallback(() => {
         if (!selection) return;
         const item = equipmentIndex.get(selection)!;
-        add("equipment", { name: item.name, use: item.use, count: item.count });
+        add(`brewable.schedule.phases[${phase}].equipment`, { name: item.name, use: item.use, count: item.count });
         setSelection(null);
-    }, [add, equipmentIndex, selection]);
+    }, [add, phase, equipmentIndex, selection]);
 
     return (
         <AddRow<Equipment>
