@@ -10,21 +10,6 @@
 @import "@brewdocs.beer/design/src/tokens.css";
 
 @theme {
-    /* SRM beer colors */
-    --color-beer-1: #F3F993;  /* Pale Straw */
-    --color-beer-3: #F5F75C;  /* Straw */
-    --color-beer-6: #F6F513;  /* Pale Gold */
-    --color-beer-9: #EAE615;  /* Deep Gold */
-    --color-beer-12: #E0D01B; /* Light Amber */
-    --color-beer-15: #D5BC26; /* Amber */
-    --color-beer-18: #CDAA37; /* Deep Amber */
-    --color-beer-20: #C1963C; /* Copper */
-    --color-beer-24: #BE823A; /* Deep Copper */
-    --color-beer-30: #C17A37; /* Brown */
-    --color-beer-35: #BC6733; /* Ruby Brown */
-    --color-beer-40: #8D4A43; /* Deep Brown */
-    --color-beer-50: #5D3B2E; /* Black (fallback value) */
-
     --breakpoint-xs: 350px;
 
     --leading-11: 2.75rem;
