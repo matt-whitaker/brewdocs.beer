@@ -1,6 +1,7 @@
 import type {Meta, StoryObj} from "@storybook/react-vite";
 import {useState} from "react";
 import {fn} from "storybook/test";
+import {ScreenP} from "@/components/typography";
 import {InputText} from "./index";
 
 const meta: Meta<typeof InputText> = {
@@ -94,6 +95,26 @@ export const WithoutPlaceholder: Story = {
         value: ""
     },
     render: (args) => <StatefulInputText {...args}/>
+};
+
+export const WithLabel: Story = {
+    name: "With a typography label (cross-component composition)",
+    parameters: {
+        docs: {
+            description: {
+                story: "Demonstrates composing `InputText` with the `typography` component via the `@/` alias — the pattern upcoming components like `search-bar` and `data-grid` will use."
+            }
+        }
+    },
+    args: {
+        placeholder: "Recipe name"
+    },
+    render: (args) => (
+        <div className="flex flex-col items-start gap-1">
+            <ScreenP className="text-sm font-semibold">Recipe name</ScreenP>
+            <StatefulInputText {...args}/>
+        </div>
+    )
 };
 
 export const EnterToBlur: Story = {
