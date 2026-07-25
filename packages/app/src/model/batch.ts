@@ -1,11 +1,9 @@
 import {Entity, Scalar} from "@brewdocs.beer/core";
 import Additive from "@/model/additive";
-import Boil from "@/model/boil";
 import Brewable from "@/model/brewable";
 import Grain from "@/model/grain";
 import Hop from "@/model/hop";
 import Hydrometer from "@/model/hydrometer";
-import {Mash} from "@/model/mash";
 import Measurements from "@/model/measurements";
 import {RecipeSource} from "@/model/recipe";
 import Statuses from "@/model/statuses";
@@ -101,7 +99,7 @@ export interface ScheduleItem {
      * be clobbered on the next recalculation.
      */
     path: string;
-    /** derived — the value at `path` is owned by a shared step (a mash temp), so it's read-only here */
+    /** derived — when set, the `path` value is shown read-only. No producer sets it currently (it backed the removed mash-step temp); kept as a general capability. */
     readonly?: boolean;
     /** derived — secondary fields, revealed only when the row is expanded */
     extra?: ScheduleDetail[];
@@ -140,8 +138,6 @@ export default interface Batch extends Entity {
     efficiency: Scalar;
     boilTime: Scalar;
 
-    mash: Mash[];
-    boil: Boil[];
     grains: Grain[];
     hops: Hop[];
     yeasts: Yeast[];

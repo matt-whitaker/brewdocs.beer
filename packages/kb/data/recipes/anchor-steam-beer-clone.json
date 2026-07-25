@@ -39,30 +39,6 @@
       }
     }
   ],
-  "mash": [
-    {
-      "name": "Single Infusion",
-      "temp": {
-        "value": "185°F",
-        "unit": "°F"
-      },
-      "time": {
-        "value": "60min",
-        "unit": "min"
-      },
-      "grains": "all"
-    }
-  ],
-  "boil": [
-    {
-      "name": "Single Boil",
-      "time": {
-        "value": "60min",
-        "unit": "min"
-      },
-      "hops": "all"
-    }
-  ],
   "hops": [
     {
       "name": "Northern Brewer",

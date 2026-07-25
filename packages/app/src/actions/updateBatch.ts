@@ -7,7 +7,7 @@ import batchesStorage from "@/storage/batches";
 import {isEqual} from "@/utils/func";
 
 const shoppingTriggers: (keyof Batch)[] = ["hops", "grains", "yeasts"];
-const scheduleTriggers: (keyof Batch)[] = ["hops", "grains", "yeasts", "additives", "mash", "boil", "hydrometer"];
+const scheduleTriggers: (keyof Batch)[] = ["hops", "grains", "yeasts", "additives", "hydrometer"];
 
 export default async function updateBatch(id: string, batch: Batch) {
     const current = await batchesStorage.get(id);

@@ -1,9 +1,6 @@
-import {KbRecipe} from "@brewdocs.beer/kb";
 import Batch, {Phase, SchedulePhase} from "@/model/batch";
 import Brewable, {Assignment, ResourceType} from "@/model/brewable";
 import {equipmentToScheduleItem} from "@/transform/equipmentToScheduleItem";
-import {kbRecipeBoilToBoil} from "@/transform/kbRecipeBoilToBoil";
-import {kbRecipeMashToMash} from "@/transform/kbRecipeMashToMash";
 
 const SCHEDULE_PHASES: SchedulePhase[] = ["mash", "boil", "ferment"];
 
@@ -59,17 +56,14 @@ export function phasesFromBrewable(phases: Phase[], brewable: Brewable): Phase[]
 /**
  * Projects `brewable` (already built by createBatch — a clone for a user
  * recipe, kbBrewableToBrewable's output for a kb one) onto the legacy fields
- * the existing batch screens read. mash/boil are step lists with no Brewable
- * equivalent and still come straight from the recipe.
+ * the existing batch derivations read.
  */
-export default function _updateRecipe(recipe: KbRecipe, brewable: Brewable, batch: Partial<Batch>) {
+export default function _updateRecipe(brewable: Brewable, batch: Partial<Batch>) {
     return Object.assign(batch, {
         grains: resourcesOf(brewable.assignments, "grain"),
         hops: resourcesOf(brewable.assignments, "hop"),
         yeasts: resourcesOf(brewable.assignments, "yeast"),
         additives: resourcesOf(brewable.assignments, "additive"),
-        mash: kbRecipeMashToMash(recipe.mash),
-        boil: kbRecipeBoilToBoil(recipe.boil),
         phases: phasesFromBrewable(batch.phases ?? [], brewable),
     });
 }

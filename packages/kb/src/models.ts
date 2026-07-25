@@ -17,19 +17,6 @@ export interface KbRecipe extends Entity {
         weight: Scalar;
     }[];
 
-    mash: {
-        name: string;
-        temp: Scalar;
-        time: Scalar;
-        grains: string;
-    }[];
-
-    boil: {
-        name: string;
-        time: Scalar;
-        hops: string;
-    }[];
-
     hops: {
         name: string;
         weight: Scalar;
