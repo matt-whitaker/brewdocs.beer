@@ -59,9 +59,10 @@ export default function RecipeEditIngredients({ recipeId }: RecipeEditIngredient
 
     return (
         <>
-            {phaseTypes.map(phaseType => (
+            {phaseTypes.map((phaseType, i) => (
                 <RecipeEditPhaseSection
                     key={phaseType}
+                    position={i + 1}
                     phaseType={phaseType}
                     assignments={assignmentsByPhase.get(phaseType) ?? []}
                     add={add}

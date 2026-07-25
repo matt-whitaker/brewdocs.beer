@@ -14,6 +14,8 @@ import {saveSession, useSession} from "@/state/session";
 export type AssignmentWithIndex = { assignment: Assignment; index: number };
 
 export type RecipeEditPhaseSectionProps = {
+    /** 1-based position of this phase group, prefixed on the header to match the Phases panel's "1. Mash" labels */
+    position: number;
     phaseType: PhaseType;
     assignments: AssignmentWithIndex[];
     add: AddFn;
@@ -27,7 +29,7 @@ export type RecipeEditPhaseSectionProps = {
 };
 
 export default function RecipeEditPhaseSection({
-    phaseType, assignments, add, remove, update, updateScalar, resourceOptions, kbGrainsIndex, kbHopsIndex, kbYeastsIndex,
+    position, phaseType, assignments, add, remove, update, updateScalar, resourceOptions, kbGrainsIndex, kbHopsIndex, kbYeastsIndex,
 }: RecipeEditPhaseSectionProps) {
     const sessionKey = `recipe-edit.brewable.phase.${phaseType}`;
     const session = useSession();
@@ -49,7 +51,7 @@ export default function RecipeEditPhaseSection({
                 collapsible
                 defaultCollapsed={session?.[sessionKey] as boolean ?? false}
                 onToggle={onToggleCollapsed}>
-                {PHASE_TYPE_LABELS[phaseType]}
+                {position}. {PHASE_TYPE_LABELS[phaseType]}
             </DataGridHeaderRow>
             {subsections.map(({ resourceType, items }) => (
                 <div key={resourceType}>
