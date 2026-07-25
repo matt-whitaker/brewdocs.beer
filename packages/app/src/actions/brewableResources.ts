@@ -1,8 +1,4 @@
-import Batch, {Phase, SchedulePhase} from "@/model/batch";
-import Brewable, {Assignment, ResourceType} from "@/model/brewable";
-import {equipmentToScheduleItem} from "@/transform/equipmentToScheduleItem";
-
-const SCHEDULE_PHASES: SchedulePhase[] = ["mash", "boil", "ferment"];
+import {Assignment, ResourceType} from "@/model/brewable";
 
 /**
  * The concrete resource model an Assignment narrows to for a given `resourceType`
@@ -31,36 +27,4 @@ export function indexedResourcesOf<T extends ResourceType>(assignments: Assignme
         .map((assignment, index) => [assignment, index] as const)
         .filter((pair): pair is [Extract<Assignment, { resourceType: T }>, number] => pair[0].resourceType === resourceType)
         .map(([assignment, index]) => [assignment.resource as ResourceFor<T>, index]);
-}
-
-/** the SchedulePhase a legacy Phase maps to, read off its own tags rather than its (renamable) name */
-const phaseTypeOf = (phase: Phase): SchedulePhase | undefined =>
-    phase.tags.find((tag): tag is SchedulePhase => (SCHEDULE_PHASES as string[]).includes(tag));
-
-/** replaces each legacy phase's equipment with the matching brewable phase(s)' kit */
-export function phasesFromBrewable(phases: Phase[], brewable: Brewable): Phase[] {
-    return phases.map(phase => {
-        const type = phaseTypeOf(phase);
-        if (!type) return phase;
-
-        return {
-            ...phase,
-            equipment: brewable.schedule.phases
-                .filter(brewablePhase => brewablePhase.type === type)
-                .flatMap(brewablePhase => brewablePhase.equipment)
-                .map(item => equipmentToScheduleItem(item, type))
-        };
-    });
-}
-
-/**
- * Derives the batch's `phases` (per-phase equipment) from `brewable` at
- * creation. Shopping/schedule/summary read the brewable directly now, so this
- * only owns `phases` — the one legacy-shaped field with no reader-side
- * replacement yet.
- */
-export default function _updateRecipe(brewable: Brewable, batch: Partial<Batch>) {
-    return Object.assign(batch, {
-        phases: phasesFromBrewable(batch.phases ?? [], brewable),
-    });
 }

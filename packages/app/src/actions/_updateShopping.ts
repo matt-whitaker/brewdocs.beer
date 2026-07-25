@@ -1,5 +1,5 @@
 import {CURRENCIES, Scalar, Unit} from "@brewdocs.beer/core";
-import {resourcesOf} from "@/actions/_updateRecipe";
+import {resourcesOf} from "@/actions/brewableResources";
 import Batch, {ShoppingItem, ShoppingTag} from "@/model/batch";
 import {groupBy, isEqual} from "@/utils/func";
 import {parseNumberString} from "@/utils/math";
