@@ -1,4 +1,5 @@
 import {Entity, Scalar} from "@brewdocs.beer/core";
+import {KbBrewable} from "./brewable";
 
 export interface KbRecipe extends Entity {
     /** item schema version; hard-coded as KB_MODEL_VERSION in build-json.js, stamped at build time */
@@ -62,6 +63,8 @@ export interface KbRecipe extends Entity {
         ibu: string;
         srm: string;
     };
+
+    brewable: KbBrewable;
 }
 
 export interface KbGrain extends Entity {
