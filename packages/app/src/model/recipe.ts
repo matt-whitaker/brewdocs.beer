@@ -1,11 +1,6 @@
 import {KbRecipe} from "@brewdocs.beer/kb";
-import Additive from "@/model/additive";
 import Brewable from "@/model/brewable";
-import Equipment from "@/model/equipment";
-import Grain from "@/model/grain";
-import Hop from "@/model/hop";
 import Measurements from "@/model/measurements";
-import Yeast from "@/model/yeast";
 
 /** which store a recipe lives in — the discriminator for a polymorphic recipe reference (paired with an id) */
 export type RecipeSource = "kb" | "user";
@@ -24,11 +19,6 @@ export default interface Recipe extends KbRecipe {
     version: number;
     /** id of the KbRecipe this was cloned from, if any — kept for reference and to load the original (useKbRecipe(sourceId)) for review/reset; absent on recipes created from scratch */
     sourceId?: string;
-    grains: Grain[];
-    hops: Hop[];
-    yeasts: Yeast[];
-    additives: Additive[];
-    equipment: Equipment[];
     targets: Measurements;
     brewable: Brewable;
 }

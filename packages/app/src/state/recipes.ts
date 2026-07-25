@@ -1,5 +1,4 @@
 import {useSuspenseQuery} from "@tanstack/react-query";
-import _projectRecipeBrewable from "@/actions/_projectRecipeBrewable";
 import {defaultBrewable} from "@/model/brewable";
 import Recipe from "@/model/recipe";
 import queryClient from "@/queryClient";
@@ -42,7 +41,8 @@ export const useRecipe = (id: string): Recipe => {
 };
 
 export const saveRecipe = async (id: string, recipe: Recipe) => {
-    await recipesStorage.save(id, _projectRecipeBrewable(recipe));
+    // the brewable is the source of truth; no legacy arrays to project anymore
+    await recipesStorage.save(id, recipe);
     await queryClient.invalidateQueries({queryKey: recipeQueryKey(id)});
     await queryClient.invalidateQueries({queryKey: recipesQueryKey()});
 };

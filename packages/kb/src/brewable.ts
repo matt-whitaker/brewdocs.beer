@@ -1,4 +1,4 @@
-import {KbRecipe} from "./models";
+import {Scalar} from "@brewdocs.beer/core";
 
 /** primitives-only supertype of app `BrewablePhase` — `type` stays a loose string here, narrowed to `PhaseType` in the app */
 export interface KbBrewablePhase {
@@ -24,11 +24,17 @@ export interface KbAssignment {
     /** identifies the resource within its catalog/collection */
     slug: string;
     resourceType: string;
+    /**
+     * loose kb-side resource an assignment carries — mirrors the app's
+     * Grain/Hop/Yeast/Additive (primitives only), a plain union narrowed per
+     * `resourceType` in the app. Standalone shapes since #196 dropped the
+     * `KbRecipe.{grains,hops,…}` arrays this used to index into.
+     */
     resource:
-        | KbRecipe["grains"][number]
-        | KbRecipe["hops"][number]
-        | KbRecipe["yeasts"][number]
-        | KbRecipe["additives"][number];
+        | { name: string; weight: Scalar }                                              // grain
+        | { name: string; weight: Scalar; alpha: Scalar; boil: Scalar; phase?: string } // hop
+        | { name: string; avg_attn: Scalar; temp: Scalar; starter: boolean }            // yeast
+        | { name: string; boil: Scalar };                                               // additive
 }
 
 /** primitives-only supertype of app `Brewable` — see model/brewable.ts there */

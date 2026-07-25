@@ -12,37 +12,8 @@ export interface KbRecipe extends Entity {
     boilTime: Scalar;
     efficiency: Scalar;
 
-    grains: {
-        name: string;
-        weight: Scalar;
-    }[];
-
-    hops: {
-        name: string;
-        weight: Scalar;
-        alpha: Scalar;
-        boil: Scalar;
-        /** kb source data only — the app `Hop` no longer carries `phase` (it lives on `assignment.phaseType`); optional so a phase-less app `Hop` still satisfies `Recipe extends KbRecipe` */
-        phase?: string;
-    }[];
-
-    yeasts: {
-        name: string;
-        avg_attn: Scalar;
-        temp: Scalar;
-        starter: boolean;
-    }[];
-
-    additives: {
-        name: string;
-        boil: Scalar;
-    }[];
-
-    equipment: {
-        name: string;
-        use: string[];
-        count?: number;
-    }[];
+    // A recipe's ingredients/equipment live on `brewable` (assignments +
+    // per-phase equipment); the old flat top-level arrays were removed in #196.
 
     targets: {
         og: Scalar;
