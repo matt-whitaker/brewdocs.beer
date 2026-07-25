@@ -1,5 +1,6 @@
 import {ScreenH2, ScreenH3, ScreenP} from "@brewdocs.beer/design";
 import Organics from "@/component/organics";
+import {organicNames} from "@/component/organics/from-brewable";
 import Screen from "@/component/screen";
 import Vitals from "@/component/vitals";
 import {useBatch} from "@/state/batches";
@@ -24,11 +25,7 @@ export default function BatchSummary({ batchId }: BatchSummaryProps) {
                 {/* Need to refactor this type */}
                 <Vitals className="-mt-2" vitals={[["Target", recipe.targets], ["Actuals", batch.actuals]]} />
                 <div className="divider">Organics</div>
-                <Organics
-                    className="-mt-2"
-                    hops={batch.hops ?? recipe.hops}
-                    grains={batch.grains ?? recipe.grains}
-                    yeasts={batch.yeasts ?? recipe.yeasts} />
+                <Organics className="-mt-2" {...organicNames(batch.brewable.assignments)} />
             </div>
         </Screen>
     );
