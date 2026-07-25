@@ -1,4 +1,4 @@
-import {phasesFromBrewable, resourcesOf} from "@/actions/_updateRecipe";
+import {phasesFromBrewable} from "@/actions/_updateRecipe";
 import Batch, {Phase} from "@/model/batch";
 
 /**
@@ -20,21 +20,13 @@ function preserveCompleted(phase: Phase, previous: Phase | undefined): Phase {
 }
 
 /**
- * Rebuilds a batch's legacy grains/hops/yeasts/additives arrays and each
- * phase's equipment from `batch.brewable`, so shopping/schedule/summary —
- * which still read the legacy fields — stay in sync once brewable-driven
- * editing lands. Mirrors _projectRecipeBrewable, reusing _updateRecipe's
- * assignment/equipment mapping instead of rewriting it. mash/boil have no
- * Brewable equivalent and are left untouched, same as the recipe projection.
+ * Re-derives a batch's `phases` (per-phase equipment) from `batch.brewable` on
+ * every edit save. Shopping/schedule/summary read the brewable directly now, so
+ * `phases` is the only legacy-shaped field left to keep in sync — its equipment
+ * is rebuilt fresh, then brew-day `completed` checkoff is carried over by name.
  */
 export default function _projectBatchBrewable(batch: Batch): Batch {
-    const {assignments} = batch.brewable;
-
     return Object.assign(batch, {
-        grains: resourcesOf(assignments, "grain"),
-        hops: resourcesOf(assignments, "hop"),
-        yeasts: resourcesOf(assignments, "yeast"),
-        additives: resourcesOf(assignments, "additive"),
         phases: phasesFromBrewable(batch.phases, batch.brewable)
             .map((phase, i) => preserveCompleted(phase, batch.phases[i]))
     });
