@@ -8,7 +8,7 @@ export default function Topbar({ nav }: TopbarProps) {
             <div className="flex-1">
                 <a href="/" className="btn btn-ghost text-2xl font-semibold text-primary-content"><span>Brew<span className="font-light">Docs</span></span></a>
             </div>
-            <div className="flex-none">
+            <div className="flex gap-2">
                 {nav.map(([name, href, cta]) => (
                     <a
                         key={name}

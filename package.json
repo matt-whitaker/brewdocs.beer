@@ -19,7 +19,8 @@
     "test:design": "npm run test -w packages/design",
     "build": "npm run build -ws",
     "test": "npm test -ws",
-    "lint:fix": "npm run lint -ws -- --fix"
+    "lint:fix": "npm run lint -ws -- --fix",
+    "dev": "nx run-many --target=dev"
   },
   "author": "",
   "license": "ISC",
