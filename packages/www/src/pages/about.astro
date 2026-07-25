@@ -1,7 +1,7 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import Stack from "@/components/stack.astro";
-import {APP_URL, GITHUB_URL} from "@/data/env";
+import {APP_URL, DESIGN_URL, GITHUB_URL} from "@/data/env";
 ---
 <Layout title="About BrewDocs">
     <main
@@ -40,9 +40,14 @@ import {APP_URL, GITHUB_URL} from "@/data/env";
                     If you brew, I'd like to hear from you, whether it's something you wish it did,
                     a rough edge on brew day, or just an idea worth kicking around.
                 </p>
+                <p class="mt-3">
+                    If the build side is your thing, the code is open and the design system is
+                    published as its own live Storybook.
+                </p>
                 <div class="mt-5 flex flex-wrap gap-3">
-                    <a href={APP_URL} class="btn btn-primary">Try the app</a>
-                    <a href={GITHUB_URL} class="btn btn-outline">View on GitHub</a>
+                    <a href={APP_URL} class="btn btn-primary">Try the demo</a>
+                    <a href={DESIGN_URL} class="btn btn-outline">Design system</a>
+                    <a href={GITHUB_URL} class="btn btn-ghost">View on GitHub</a>
                 </div>
             </div>
         </div>
