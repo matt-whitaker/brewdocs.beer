@@ -4,8 +4,8 @@ import useIndexBy from "@/hooks/useIndexBy";
 import useJsonEdit from "@/hooks/useJsonEdit";
 import {PhaseType} from "@/model/brewable";
 import Recipe from "@/model/recipe";
-import RecipeEditAssignmentAddRow from "@/screen/recipe-edit-ingredients/assignment-add-row";
 import RecipeEditPhaseSection, {AssignmentWithIndex} from "@/screen/recipe-edit-ingredients/phase-section";
+import RecipeEditPhasesAddRow from "@/screen/recipe-edit-schedule/phases-add-row";
 import {useKbGrains} from "@/state/kbGrains";
 import {useKbHops} from "@/state/kbHops";
 import {useKbYeasts} from "@/state/kbYeasts";
@@ -25,6 +25,16 @@ export default function RecipeEditIngredients({ recipeId }: RecipeEditIngredient
     const kbHopsIndex = useIndexBy(kbHops, "name");
     const kbYeasts = useKbYeasts();
     const kbYeastsIndex = useIndexBy(kbYeasts, "name");
+
+    // a phase's add-row offers every catalog resource in one dropdown; the value
+    // carries the resource type (`"<type>:<name>"`) so the row can build the
+    // right assignment without a second dropdown. Additives have no catalog and
+    // aren't offered here.
+    const resourceOptions = useMemo(() => [
+        ...kbGrains.map(({ name }) => ({ value: `grain:${name}`, name })),
+        ...kbHops.map(({ name }) => ({ value: `hop:${name}`, name })),
+        ...kbYeasts.map(({ name }) => ({ value: `yeast:${name}`, name })),
+    ], [kbGrains, kbHops, kbYeasts]);
 
     // the grouping order — distinct phase types, in the order they first
     // appear in the schedule (an assignment only carries a `phaseType`, not a
@@ -56,21 +66,21 @@ export default function RecipeEditIngredients({ recipeId }: RecipeEditIngredient
                     key={phaseType}
                     phaseType={phaseType}
                     assignments={assignmentsByPhase.get(phaseType) ?? []}
+                    add={add}
                     remove={remove}
                     update={update}
                     updateScalar={updateScalar}
-                />
-            ))}
-            <DataGrid>
-                <RecipeEditAssignmentAddRow
-                    add={add}
-                    kbGrains={kbGrains}
+                    resourceOptions={resourceOptions}
                     kbGrainsIndex={kbGrainsIndex}
-                    kbHops={kbHops}
                     kbHopsIndex={kbHopsIndex}
-                    kbYeasts={kbYeasts}
                     kbYeastsIndex={kbYeastsIndex}
                 />
+            ))}
+            {/* Each phase section owns its own ingredient add-row (above). This
+                outer row adds a new phase to the schedule, mirroring the
+                Schedule panel's phase add-row. */}
+            <DataGrid>
+                <RecipeEditPhasesAddRow add={add} />
             </DataGrid>
         </>
     );

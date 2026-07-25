@@ -13,28 +13,14 @@ export const HOP_PHASE_OPTIONS = [
     { value: "dry", name: "Dry Hop" },
 ];
 
-/** the fixed set of brewable phases an assignment can target — same order as `defaultBrewable`'s PHASE_TYPES */
-export const PHASE_TYPE_OPTIONS = [
-    { value: "mash", name: "Mash" },
-    { value: "boil", name: "Boil" },
-    { value: "ferment", name: "Ferment" },
-];
-
 export const PHASE_TYPE_LABELS: Record<PhaseType, string> = {
     mash: "Mash",
     boil: "Boil",
     ferment: "Ferment",
 };
 
-/** subsection order within a phase group, and the options offered by the assignment add-row */
+/** subsection order within a phase group */
 export const RESOURCE_TYPES: ResourceType[] = ["grain", "hop", "yeast", "additive"];
-
-export const RESOURCE_TYPE_OPTIONS = [
-    { value: "grain", name: "Grain" },
-    { value: "hop", name: "Hop" },
-    { value: "yeast", name: "Yeast" },
-    { value: "additive", name: "Additive" },
-];
 
 export const RESOURCE_TYPE_LABELS: Record<ResourceType, string> = {
     grain: "Grains",
