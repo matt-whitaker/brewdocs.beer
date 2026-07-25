@@ -1,19 +1,14 @@
-import {useCallback} from "react";
+import {useCallback, useRef} from "react";
 import {ScreenH3, ScreenP} from "@brewdocs.beer/design";
 import DataGrid from "@/component/data-grid";
 import DataGridInput from "@/component/data-grid/input";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridRow from "@/component/data-grid/row";
-import PanelSwitcher from "@/component/panel-switcher";
-import PanelSwitcherContent from "@/component/panel-switcher/content";
 import Screen from "@/component/screen";
 import useJsonEdit from "@/hooks/useJsonEdit";
 import Batch from "@/model/batch";
-import BatchPlanningEquipment from "@/screen/batch-planning/equipment";
-import BatchPlanningGrains from "@/screen/batch-planning/grains";
-import BatchPlanningHops from "@/screen/batch-planning/hops";
-import BatchPlanningPhases from "@/screen/batch-planning/phases";
-import BatchPlanningYeasts from "@/screen/batch-planning/yeasts";
+import Brewable from "@/model/brewable";
+import BrewableEdit from "@/screen/brewable-edit";
 import {useBatch} from "@/state/batches";
 import {useRecipeResource} from "@/state/recipeResource";
 
@@ -21,12 +16,24 @@ export type BatchPlanningProps = {
     batchId: string;
     onChange: (batch: Batch) => void
 };
+
+// A name/brewDate header, then BrewableEdit for the Ingredients/Equipment/Phases
+// tabs, mirroring recipe-edit. brewDate stays header chrome (a single field
+// doesn't warrant its own panelsBefore panel) via its own useJsonEdit<Batch>;
+// both it and BrewableEdit's onChangeBrewable merge onto the freshest batch at
+// save time via batchRef, so neither clobbers the other's in-flight edit.
 export default function BatchPlanning({ batchId, onChange }: BatchPlanningProps) {
     const batch = useBatch(batchId);
     const recipe = useRecipeResource(batch.recipeSource ?? "kb", batch.recipeId);
-    const [data, update, updateScalar,, add, remove, move] = useJsonEdit<Batch>(batch, onChange);
 
+    const batchRef = useRef(batch);
+    batchRef.current = batch;
+
+    const onChangeHeader = useCallback((b: Batch) => onChange({...b, brewable: batchRef.current.brewable}), [onChange]);
+    const [data, update] = useJsonEdit<Batch>(batch, onChangeHeader);
     const updateDate = useCallback((value: string) => update("brewDate", value), [update]);
+
+    const onChangeBrewable = useCallback((brewable: Brewable) => onChange({...batchRef.current, brewable}), [onChange]);
 
     return (
         <Screen>
@@ -40,47 +47,12 @@ export default function BatchPlanning({ batchId, onChange }: BatchPlanningProps)
                     </DataGridRow>
                 </DataGrid>
             </div>
-            <PanelSwitcher compact name="planning" defaultTab="Ingredients">
-                <PanelSwitcherContent title="Ingredients">
-                    <BatchPlanningGrains
-                        grains={data.grains}
-                        add={add}
-                        remove={remove}
-                        update={update}
-                        updateScalar={updateScalar}
-                    />
-                    <BatchPlanningHops
-                        hops={data.hops}
-                        add={add}
-                        remove={remove}
-                        update={update}
-                        updateScalar={updateScalar}
-                    />
-                    <BatchPlanningYeasts
-                        yeasts={data.yeasts}
-                        add={add}
-                        remove={remove}
-                        update={update}
-                        updateScalar={updateScalar}
-                    />
-                </PanelSwitcherContent>
-                <PanelSwitcherContent title="Equipment">
-                    <BatchPlanningEquipment
-                        phases={data.phases}
-                        add={add}
-                        remove={remove}
-                        update={update}
-                    />
-                </PanelSwitcherContent>
-                <PanelSwitcherContent title="Phases">
-                    <BatchPlanningPhases
-                        phases={data.phases}
-                        add={add}
-                        remove={remove}
-                        move={move}
-                    />
-                </PanelSwitcherContent>
-            </PanelSwitcher>
+            <BrewableEdit
+                brewable={batch.brewable}
+                onChangeBrewable={onChangeBrewable}
+                name="batch.planning"
+                defaultTab="Ingredients"
+            />
         </Screen>
     );
 }
