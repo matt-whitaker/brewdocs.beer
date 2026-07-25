@@ -17,7 +17,6 @@ const sameDerived = (a: Derived|ScheduleItem, b: Derived|ScheduleItem) =>
     a.name === b.name
     && a.path === b.path
     && a.note === b.note
-    && a.readonly === b.readonly
     && isEqual(a.tags, b.tags)
     && isEqual(a.amount, b.amount)
     && isEqual(a.extra, b.extra);

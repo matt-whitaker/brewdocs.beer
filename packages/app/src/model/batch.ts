@@ -64,7 +64,6 @@ export interface ScheduleDetail {
     path: string;
     /** a date is a plain string at the path and skips unit formatting */
     input?: "date";
-    readonly?: boolean;
 }
 
 export interface ScheduleItem {
@@ -95,8 +94,6 @@ export interface ScheduleItem {
      * be clobbered on the next recalculation.
      */
     path: string;
-    /** derived — when set, the `path` value is shown read-only. No producer sets it currently (it backed the removed mash-step temp); kept as a general capability. */
-    readonly?: boolean;
     /** derived — secondary fields, revealed only when the row is expanded */
     extra?: ScheduleDetail[];
     /** user-owned — preserved across recalculation */
