@@ -48,8 +48,7 @@ export function kbHopToRecipeHop(kbHop: KbHop): Hop {
         boil: {
             value: "60min",
             unit: UNITS.MINUTES
-        },
-        phase: "boil"
+        }
     };
 }
 

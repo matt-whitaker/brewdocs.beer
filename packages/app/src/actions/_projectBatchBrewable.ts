@@ -1,4 +1,3 @@
-import {byResourceType, projectHopPhase} from "@/actions/_projectRecipeBrewable";
 import {phasesFromBrewable, resourcesOf} from "@/actions/_updateRecipe";
 import Batch, {Phase} from "@/model/batch";
 
@@ -33,10 +32,7 @@ export default function _projectBatchBrewable(batch: Batch): Batch {
 
     return Object.assign(batch, {
         grains: resourcesOf(assignments, "grain"),
-        hops: byResourceType(assignments, "hop").map(assignment => ({
-            ...assignment.resource,
-            phase: projectHopPhase(assignment.resource, assignment.phaseType)
-        })),
+        hops: resourcesOf(assignments, "hop"),
         yeasts: resourcesOf(assignments, "yeast"),
         additives: resourcesOf(assignments, "additive"),
         phases: phasesFromBrewable(batch.phases, batch.brewable)

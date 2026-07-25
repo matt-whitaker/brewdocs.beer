@@ -4,9 +4,9 @@ import {kbRecipeEquipmentToEquipment} from "@/transform/kbRecipeEquipmentToEquip
 
 /**
  * kb and app brewable shapes differ only in the loose-string unions
- * (`phase.type`, `assignment.phaseType`/`resourceType`, and the resource's
- * own narrowed fields like `hop.phase`), so this narrows via casts rather
- * than rebuilding every field — mirrors kbRecipeHopsToHops.
+ * (`phase.type`, `assignment.phaseType`/`resourceType`), plus surplus kb-only
+ * resource fields (e.g. a hop's `phase`) the cast simply drops, so this narrows
+ * via casts rather than rebuilding every field — mirrors kbRecipeHopsToHops.
  */
 export function kbBrewableToBrewable(kbBrewable: KbBrewable): Brewable {
     return {

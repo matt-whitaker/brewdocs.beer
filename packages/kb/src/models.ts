@@ -22,7 +22,8 @@ export interface KbRecipe extends Entity {
         weight: Scalar;
         alpha: Scalar;
         boil: Scalar;
-        phase: string;
+        /** kb source data only — the app `Hop` no longer carries `phase` (it lives on `assignment.phaseType`); optional so a phase-less app `Hop` still satisfies `Recipe extends KbRecipe` */
+        phase?: string;
     }[];
 
     yeasts: {
