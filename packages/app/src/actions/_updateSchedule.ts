@@ -39,19 +39,17 @@ function keyer() {
 }
 
 /**
- * every grain goes in at each mash step's temperature, which the step owns —
- * so its write-through `path` targets the mash step (`mash[s].temp`), not the
- * grain; only the *list* of grains is read off the brewable now.
+ * The grains to add during the mash, listed once with their weight. There's no
+ * mash-step content in the brewable anymore, so there's no temperature to write
+ * through — the row is a plain checklist entry (empty `path`).
  */
 function mash(batch: Partial<Batch>): Derived[] {
-    const grains = resourcesOf(batch.brewable?.assignments ?? [], "grain");
-    return (batch.mash ?? []).flatMap((step, s) => grains.map(grain => ({
+    return resourcesOf(batch.brewable?.assignments ?? [], "grain").map(grain => ({
         name: grain.name,
         tags: tags("mash", "grains"),
         amount: grain.weight,
-        path: `mash[${s}].temp`,
-        readonly: true
-    })));
+        path: ""
+    }));
 }
 
 /**

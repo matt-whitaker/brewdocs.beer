@@ -9,7 +9,7 @@ const outDir = path.join(process.cwd(), "dist");
 
 // current shape of a kb item — bump when a data file would no longer parse/derive correctly.
 // independent of pkg.version (the envelope version below), which tracks npm releases, not item shape.
-const KB_MODEL_VERSION = 2;
+const KB_MODEL_VERSION = 3;
 
 // Execute the build process
 (() => {

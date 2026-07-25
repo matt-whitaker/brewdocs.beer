@@ -116,13 +116,16 @@ function BatchScheduleItemRow({ row, item, value, extraValues, toggle, update, u
                     onBlur={onBlurAmount}
                 />
             ) : null}
-            <DataGridInput
-                colStart={3}
-                readonly={item.readonly}
-                value={value}
-                onChange={item.readonly ? undefined : onChangeValue}
-                onBlur={item.readonly ? undefined : onBlurValue}
-            />
+            {/* mash grains carry no write-through value (empty path) — checklist only, no third column */}
+            {item.path ? (
+                <DataGridInput
+                    colStart={3}
+                    readonly={item.readonly}
+                    value={value}
+                    onChange={item.readonly ? undefined : onChangeValue}
+                    onBlur={item.readonly ? undefined : onBlurValue}
+                />
+            ) : null}
         </DataGridRow>
     );
 }

@@ -1,11 +1,9 @@
 import {KbRecipe} from "@brewdocs.beer/kb";
 import Additive from "@/model/additive";
-import Boil from "@/model/boil";
 import Brewable from "@/model/brewable";
 import Equipment from "@/model/equipment";
 import Grain from "@/model/grain";
 import Hop from "@/model/hop";
-import {Mash} from "@/model/mash";
 import Measurements from "@/model/measurements";
 import Yeast from "@/model/yeast";
 
@@ -30,8 +28,6 @@ export default interface Recipe extends KbRecipe {
     hops: Hop[];
     yeasts: Yeast[];
     additives: Additive[];
-    mash: Mash[];
-    boil: Boil[];
     equipment: Equipment[];
     targets: Measurements;
     brewable: Brewable;

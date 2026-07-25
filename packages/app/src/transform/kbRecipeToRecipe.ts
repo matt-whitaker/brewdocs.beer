@@ -1,10 +1,8 @@
 import {KbRecipe} from "@brewdocs.beer/kb";
 import Recipe, {RECIPE_MODEL_VERSION} from "@/model/recipe";
 import {kbBrewableToBrewable} from "@/transform/kbBrewableToBrewable";
-import {kbRecipeBoilToBoil} from "@/transform/kbRecipeBoilToBoil";
 import {kbRecipeEquipmentToEquipment} from "@/transform/kbRecipeEquipmentToEquipment";
 import {kbRecipeHopsToHops} from "@/transform/kbRecipeHopsToHops";
-import {kbRecipeMashToMash} from "@/transform/kbRecipeMashToMash";
 
 /**
  * Full KbRecipe -> Recipe mapping. Since Recipe extends KbRecipe (shared Scalar),
@@ -18,8 +16,6 @@ export function kbRecipeToRecipe({id, ...kbRecipe}: KbRecipe): Omit<Recipe, "id"
         version: RECIPE_MODEL_VERSION,
         sourceId: id,
         hops: kbRecipeHopsToHops(kbRecipe.hops),
-        boil: kbRecipeBoilToBoil(kbRecipe.boil),
-        mash: kbRecipeMashToMash(kbRecipe.mash),
         equipment: kbRecipeEquipmentToEquipment(kbRecipe.equipment),
         // the kb recipe already carries its own brewable; narrow it rather
         // than re-deriving one from the legacy arrays

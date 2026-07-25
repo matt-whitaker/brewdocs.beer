@@ -28,7 +28,7 @@ export default async function createBatch(recipe: Recipe | KbRecipe, source: Rec
         ...inputs
     };
 
-    _updateRecipe(recipe, brewable, batch);
+    _updateRecipe(brewable, batch);
     _updateShopping(batch);
     _updateSchedule(batch);
 
