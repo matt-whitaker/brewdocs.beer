@@ -1,19 +1,6 @@
-import {Assignment, BrewablePhase, HOP_PHASE_TO_PHASE_TYPE, PhaseType} from "@/model/brewable";
+import {Assignment, BrewablePhase} from "@/model/brewable";
 import Equipment from "@/model/equipment";
-import Hop from "@/model/hop";
 import Recipe from "@/model/recipe";
-
-/** phaseType to fall back to for a hop whose `phase` no longer maps to its assignment's phaseType */
-const PHASE_TYPE_TO_DEFAULT_HOP_PHASE: Partial<Record<PhaseType, Hop["phase"]>> = {
-    boil: "boil",
-    ferment: "secondary",
-};
-
-/** reverse of HOP_PHASE_TO_PHASE_TYPE: keeps the existing value when it already agrees (dry vs secondary survives), only overrides when the assignment moved the hop to a phaseType `phase` no longer implies */
-export function projectHopPhase(hop: Hop, phaseType: PhaseType): Hop["phase"] {
-    if (HOP_PHASE_TO_PHASE_TYPE[hop.phase] === phaseType) return hop.phase;
-    return PHASE_TYPE_TO_DEFAULT_HOP_PHASE[phaseType] ?? hop.phase;
-}
 
 /** equipment is per-phase on the brewable but a single flat list on the legacy model; a name can appear in more than one phase (its `use` tags span them), so flattening dedupes by name */
 function projectEquipment(phases: BrewablePhase[]): Equipment[] {
@@ -43,10 +30,7 @@ export default function _projectRecipeBrewable(recipe: Recipe): Recipe {
 
     return Object.assign(recipe, {
         grains: byResourceType(assignments, "grain").map(assignment => assignment.resource),
-        hops: byResourceType(assignments, "hop").map(assignment => ({
-            ...assignment.resource,
-            phase: projectHopPhase(assignment.resource, assignment.phaseType)
-        })),
+        hops: byResourceType(assignments, "hop").map(assignment => assignment.resource),
         yeasts: byResourceType(assignments, "yeast").map(assignment => assignment.resource),
         additives: byResourceType(assignments, "additive").map(assignment => assignment.resource),
         equipment: projectEquipment(phases)

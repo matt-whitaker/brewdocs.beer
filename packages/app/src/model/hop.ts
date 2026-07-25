@@ -5,5 +5,4 @@ export default interface Hop {
     weight: Scalar;
     alpha: Scalar;
     boil: Scalar;
-    phase: "boil"|"secondary"|"dry";
 }
