@@ -8,7 +8,7 @@ import {kbRecipeMashToMash} from "@/transform/kbRecipeMashToMash";
 const SCHEDULE_PHASES: SchedulePhase[] = ["mash", "boil", "ferment"];
 
 /** narrows an Assignment's `resource` by `resourceType`, matching the discriminated union */
-function resourcesOf<T extends ResourceType>(assignments: Assignment[], resourceType: T) {
+export function resourcesOf<T extends ResourceType>(assignments: Assignment[], resourceType: T) {
     return assignments
         .filter((assignment): assignment is Extract<Assignment, { resourceType: T }> => assignment.resourceType === resourceType)
         .map(assignment => assignment.resource);
@@ -19,7 +19,7 @@ const phaseTypeOf = (phase: Phase): SchedulePhase | undefined =>
     phase.tags.find((tag): tag is SchedulePhase => (SCHEDULE_PHASES as string[]).includes(tag));
 
 /** replaces each legacy phase's equipment with the matching brewable phase(s)' kit */
-function phasesFromBrewable(phases: Phase[], brewable: Brewable): Phase[] {
+export function phasesFromBrewable(phases: Phase[], brewable: Brewable): Phase[] {
     return phases.map(phase => {
         const type = phaseTypeOf(phase);
         if (!type) return phase;
