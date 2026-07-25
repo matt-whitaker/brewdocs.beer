@@ -9,13 +9,12 @@ export default function Topbar({ nav }: TopbarProps) {
                 <a href="/" className="btn btn-ghost text-2xl font-semibold text-primary-content"><span>Brew<span className="font-light">Docs</span></span></a>
             </div>
             <div className="flex-none">
-                {nav.map(([name, href, primary]) => (
+                {nav.map(([name, href, cta]) => (
                     <a
                         key={name}
-                        className={classNames("btn btn-ghost max-lg:hidden", {
-                            "decoration-none": !primary,
-                            "btn-md": !primary,
-                            "text-lg": primary
+                        className={classNames("btn text-lg capitalize max-lg:hidden", {
+                            "btn-ghost": !cta,
+                            "bg-base-200 text-base-content border-base-200 hover:opacity-90": cta
                         })}
                         href={href}>
                         {name}
@@ -29,7 +28,7 @@ export default function Topbar({ nav }: TopbarProps) {
                             className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
                             {nav.map(([name, href]) => (
                                 <li key={name}>
-                                    <a href={href}>{name}</a>
+                                    <a href={href} className="capitalize">{name}</a>
                                 </li>
                             ))}
                         </ul>

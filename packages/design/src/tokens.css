@@ -24,3 +24,14 @@
     --color-beer-40: #8D4A43; /* Deep Brown */
     --color-beer-50: #5D3B2E; /* Black (fallback value) */
 }
+
+/* daisyui defines its theme tokens (including --radius-selector) inside Tailwind's
+   "base" layer, which always outranks the "theme" layer @theme{} compiles into — so
+   only a plain, unlayered rule like this can override a daisyui theme token. nord's
+   default (1rem) exceeds half the height of short/square elements (badges, checkboxes,
+   toggles) that key off this token, so CSS corner-clamping turns them into full
+   pills/circles; align with --radius-field. Shared here so every consumer AND the
+   design Storybook render these corners identically. */
+:root {
+    --radius-selector: 0.2rem;
+}
