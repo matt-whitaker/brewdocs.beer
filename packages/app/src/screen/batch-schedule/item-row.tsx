@@ -30,10 +30,9 @@ function BatchScheduleItemDetail({ detail, value, update, updateScalar }: BatchS
             ) : (
                 <DataGridInput
                     colStart={3}
-                    readonly={detail.readonly}
                     value={value}
-                    onChange={detail.readonly ? undefined : onChangeValue}
-                    onBlur={detail.readonly ? undefined : onBlurValue}
+                    onChange={onChangeValue}
+                    onBlur={onBlurValue}
                 />
             )}
         </DataGridRow>
@@ -120,10 +119,9 @@ function BatchScheduleItemRow({ row, item, value, extraValues, toggle, update, u
             {item.path ? (
                 <DataGridInput
                     colStart={3}
-                    readonly={item.readonly}
                     value={value}
-                    onChange={item.readonly ? undefined : onChangeValue}
-                    onBlur={item.readonly ? undefined : onBlurValue}
+                    onChange={onChangeValue}
+                    onBlur={onBlurValue}
                 />
             ) : null}
         </DataGridRow>
