@@ -1,19 +1,13 @@
 import {ScreenH3, ScreenP} from "@brewdocs.beer/design";
-import PanelSwitcher from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
 import Screen from "@/component/screen";
+import BrewableEdit from "@/screen/brewable-edit";
 import RecipeEditDetails from "@/screen/recipe-edit-details";
-import RecipeEditEquipment from "@/screen/recipe-edit-equipment";
-import RecipeEditIngredients from "@/screen/recipe-edit-ingredients";
-import RecipeEditPhases from "@/screen/recipe-edit-phases";
 import {useRecipe} from "@/state/recipes";
 
-// Mirrors BatchPlanning: one Screen holds a name/brewer header, then a compact
-// PanelSwitcher of sub-tabs. The route wraps this in a single-tab (non-compact)
-// PanelSwitcher so the edit page reads like the batch page — a real page tab bar,
-// content below — instead of a floating sub-nav. The sub-screens each own their
-// useRecipe/useJsonEdit editing cycle and render bare (no Screen), so this Screen
-// provides the only padding — matching how BatchPlanning's sub-panels render.
+// A name/brewer header, then BrewableEdit for the Ingredients/Equipment/Phases
+// tabs. The recipe-specific "Details" panel is injected as panelsBefore, so this
+// screen owns only the recipe chrome — BrewableEdit owns the brewable editing.
 export type RecipeEditProps = { recipeId: string };
 export default function RecipeEdit({ recipeId }: RecipeEditProps) {
     const recipe = useRecipe(recipeId);
@@ -24,20 +18,16 @@ export default function RecipeEdit({ recipeId }: RecipeEditProps) {
                 <ScreenH3>{recipe.name || ""}</ScreenH3>
                 <ScreenP>By {`${recipe.brewer}`}</ScreenP>
             </div>
-            <PanelSwitcher compact name="recipe.edit" defaultTab="Details">
-                <PanelSwitcherContent title="Details">
-                    <RecipeEditDetails recipeId={recipeId} />
-                </PanelSwitcherContent>
-                <PanelSwitcherContent title="Ingredients">
-                    <RecipeEditIngredients recipeId={recipeId} />
-                </PanelSwitcherContent>
-                <PanelSwitcherContent title="Equipment">
-                    <RecipeEditEquipment recipeId={recipeId} />
-                </PanelSwitcherContent>
-                <PanelSwitcherContent title="Phases">
-                    <RecipeEditPhases recipeId={recipeId} />
-                </PanelSwitcherContent>
-            </PanelSwitcher>
+            <BrewableEdit
+                resourceId={recipeId}
+                name="recipe.edit"
+                defaultTab="Details"
+                panelsBefore={
+                    <PanelSwitcherContent title="Details">
+                        <RecipeEditDetails recipeId={recipeId} />
+                    </PanelSwitcherContent>
+                }
+            />
         </Screen>
     );
 }

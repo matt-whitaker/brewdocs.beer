@@ -18,7 +18,7 @@ export default function RecipeEditPhasesAddRow({ add }: RecipeEditPhasesAddRowPr
 
     const addPhase = useCallback(() => {
         if (!type) return;
-        add("brewable.schedule.phases", { type, equipment: [] });
+        add("schedule.phases", { type, equipment: [] });
         setType(null);
     }, [add, type]);
 

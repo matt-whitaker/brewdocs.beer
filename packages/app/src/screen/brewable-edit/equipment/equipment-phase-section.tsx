@@ -3,8 +3,8 @@ import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
 import {AddFn, RemoveFn, UpdateFn} from "@/hooks/useJsonEdit";
 import Equipment from "@/model/equipment";
-import RecipeEditPhaseEquipmentAddRow from "@/screen/recipe-edit-equipment/phase-equipment-add-row";
-import RecipeEditPhaseEquipmentRow from "@/screen/recipe-edit-equipment/phase-equipment-row";
+import RecipeEditPhaseEquipmentAddRow from "@/screen/brewable-edit/equipment/phase-equipment-add-row";
+import RecipeEditPhaseEquipmentRow from "@/screen/brewable-edit/equipment/phase-equipment-row";
 import {saveSession, useSession} from "@/state/session";
 
 export type RecipeEditEquipmentPhaseSectionProps = {

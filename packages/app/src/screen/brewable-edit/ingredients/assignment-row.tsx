@@ -21,13 +21,13 @@ export type RecipeEditAssignmentRowProps = {
  * resource has one (grain/hop `weight`), and an expansion narrowed by
  * `resourceType` for everything else (switching on it to reach
  * `assignment.resource`'s type-specific fields with no cast). `row` indexes
- * `brewable.assignments` directly, so every dot-path below is
- * `brewable.assignments[${row}].resource.<field>`.
+ * `assignments` directly (dot-paths are relative to the brewable), so every
+ * dot-path below is `assignments[${row}].resource.<field>`.
  */
 function RecipeEditAssignmentRow({ row, assignment, remove, update, updateScalar }: RecipeEditAssignmentRowProps) {
-    const base = `brewable.assignments[${row}].resource`;
+    const base = `assignments[${row}].resource`;
 
-    const onRemove = useCallback(() => remove("brewable.assignments", row), [remove, row]);
+    const onRemove = useCallback(() => remove("assignments", row), [remove, row]);
 
     const onChangeWeightValue = useCallback((value: string) => update(`${base}.weight.value`, value), [update, base]);
     const onBlurWeight = useCallback((value: string) => updateScalar(`${base}.weight`, value), [updateScalar, base]);

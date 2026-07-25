@@ -6,7 +6,7 @@ import DataGridRow from "@/component/data-grid/row";
 import DataGridSelect from "@/component/data-grid/select";
 import {AddFn} from "@/hooks/useJsonEdit";
 import {Assignment, PhaseType} from "@/model/brewable";
-import {kbGrainToRecipeGrain, kbHopToRecipeHop, kbYeastToRecipeYeast} from "@/screen/recipe-edit-ingredients/catalog-defaults";
+import {kbGrainToRecipeGrain, kbHopToRecipeHop, kbYeastToRecipeYeast} from "@/screen/brewable-edit/ingredients/catalog-defaults";
 
 /**
  * The per-phase ingredient add-row: a single "resource" dropdown, since the
@@ -60,7 +60,7 @@ export default function RecipeEditPhaseAddRow({ phaseType, add, resourceOptions,
         if (!value) return;
         const assignment = buildAssignment(phaseType, value, kbGrainsIndex, kbHopsIndex, kbYeastsIndex);
         if (!assignment) return;
-        add("brewable.assignments", assignment);
+        add("assignments", assignment);
         setValue(null);
     }, [add, phaseType, value, kbGrainsIndex, kbHopsIndex, kbYeastsIndex]);
 

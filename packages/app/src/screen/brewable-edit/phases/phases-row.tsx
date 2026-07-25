@@ -5,7 +5,7 @@ import DataGridRemoveButton from "@/component/data-grid/remove-button";
 import DataGridRow from "@/component/data-grid/row";
 import {MoveFn, RemoveFn} from "@/hooks/useJsonEdit";
 
-const PHASES_PATH = "brewable.schedule.phases";
+const PHASES_PATH = "schedule.phases";
 const MOVE_BUTTON = "btn btn-xs btn-ghost p-0 disabled:opacity-30";
 
 export type RecipeEditPhasesRowProps = {

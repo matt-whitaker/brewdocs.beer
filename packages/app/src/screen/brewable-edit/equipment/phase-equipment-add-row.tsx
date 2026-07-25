@@ -17,7 +17,7 @@ export default function RecipeEditPhaseEquipmentAddRow({ phase, add, equipment, 
     const addItem = useCallback(() => {
         if (!selection) return;
         const item = equipmentIndex.get(selection)!;
-        add(`brewable.schedule.phases[${phase}].equipment`, { name: item.name, use: item.use, count: item.count });
+        add(`schedule.phases[${phase}].equipment`, { name: item.name, use: item.use, count: item.count });
         setSelection(null);
     }, [add, phase, equipmentIndex, selection]);
 

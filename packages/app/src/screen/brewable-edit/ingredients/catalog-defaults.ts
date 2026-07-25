@@ -1,17 +1,9 @@
 import {UNITS} from "@brewdocs.beer/core";
 import {KbGrain, KbHop, KbYeast} from "@brewdocs.beer/kb";
-import Additive from "@/model/additive";
 import {PhaseType, ResourceType} from "@/model/brewable";
 import Grain from "@/model/grain";
 import Hop from "@/model/hop";
 import Yeast from "@/model/yeast";
-
-/** the only phases a hop addition can land in — mirrors the app Hop model's phase union */
-export const HOP_PHASE_OPTIONS = [
-    { value: "boil", name: "Boil" },
-    { value: "secondary", name: "Secondary" },
-    { value: "dry", name: "Dry Hop" },
-];
 
 export const PHASE_TYPE_LABELS: Record<PhaseType, string> = {
     mash: "Mash",
@@ -73,16 +65,5 @@ export function kbYeastToRecipeYeast(kbYeast: KbYeast): Yeast {
             unit: UNITS.FAHRENHEIT
         },
         starter: false
-    };
-}
-
-/** Default boil time for a freeform additive — there's no kb catalog for additives, so the name is typed rather than picked. */
-export function defaultAdditive(name: string): Additive {
-    return {
-        name,
-        boil: {
-            value: "15min",
-            unit: UNITS.MINUTES
-        },
     };
 }

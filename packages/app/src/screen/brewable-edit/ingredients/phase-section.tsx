@@ -5,9 +5,9 @@ import DataGridHeaderRow from "@/component/data-grid/header-row";
 import DataGridSubheaderRow from "@/component/data-grid/subheader-row";
 import {AddFn, RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
 import {Assignment, PhaseType} from "@/model/brewable";
-import RecipeEditAssignmentRow from "@/screen/recipe-edit-ingredients/assignment-row";
-import {PHASE_TYPE_LABELS, RESOURCE_TYPES, RESOURCE_TYPE_LABELS} from "@/screen/recipe-edit-ingredients/catalog-defaults";
-import RecipeEditPhaseAddRow from "@/screen/recipe-edit-ingredients/phase-add-row";
+import RecipeEditAssignmentRow from "@/screen/brewable-edit/ingredients/assignment-row";
+import {PHASE_TYPE_LABELS, RESOURCE_TYPES, RESOURCE_TYPE_LABELS} from "@/screen/brewable-edit/ingredients/catalog-defaults";
+import RecipeEditPhaseAddRow from "@/screen/brewable-edit/ingredients/phase-add-row";
 import {saveSession, useSession} from "@/state/session";
 
 /** an assignment paired with its index in the flat `brewable.assignments` array — the index a row's remove/update calls must target, since this component only ever sees its phase's filtered slice */

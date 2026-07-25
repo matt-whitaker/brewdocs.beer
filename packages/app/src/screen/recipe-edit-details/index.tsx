@@ -1,4 +1,4 @@
-import {useCallback} from "react";
+import {useCallback, useRef} from "react";
 import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
 import DataGridInput from "@/component/data-grid/input";
@@ -18,7 +18,12 @@ export type RecipeEditDetailsProps = {
 export default function RecipeEditDetails({ recipeId }: RecipeEditDetailsProps) {
     const recipe = useRecipe(recipeId);
     const session = useSession();
-    const onChange = useCallback((r: Recipe) => saveRecipe(recipeId, r), [recipeId]);
+    // Details owns every field except the brewable — which the sibling
+    // BrewableEdit edits — so defer to the store's current brewable on save
+    // rather than writing this screen's (possibly stale) snapshot back.
+    const recipeRef = useRef(recipe);
+    recipeRef.current = recipe;
+    const onChange = useCallback((r: Recipe) => saveRecipe(recipeId, {...r, brewable: recipeRef.current.brewable}), [recipeId]);
     const [data, update, updateScalar] = useJsonEdit<Recipe>(recipe, onChange);
 
     const onToggleCollapsed = useCallback((collapsed: boolean) => saveSession(SESSION_KEY, collapsed), []);

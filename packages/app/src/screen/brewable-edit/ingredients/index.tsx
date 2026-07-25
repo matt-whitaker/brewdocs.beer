@@ -1,22 +1,23 @@
-import {useCallback, useMemo} from "react";
+import {useMemo} from "react";
 import useIndexBy from "@/hooks/useIndexBy";
-import useJsonEdit from "@/hooks/useJsonEdit";
-import {PhaseType} from "@/model/brewable";
-import Recipe from "@/model/recipe";
-import RecipeEditPhaseSection, {AssignmentWithIndex} from "@/screen/recipe-edit-ingredients/phase-section";
+import {AddFn, RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
+import Brewable, {PhaseType} from "@/model/brewable";
+import RecipeEditPhaseSection, {AssignmentWithIndex} from "@/screen/brewable-edit/ingredients/phase-section";
 import {useKbGrains} from "@/state/kbGrains";
 import {useKbHops} from "@/state/kbHops";
 import {useKbYeasts} from "@/state/kbYeasts";
-import {saveRecipe, useRecipe} from "@/state/recipes";
 
-export type RecipeEditIngredientsProps = {
-    recipeId: string;
+export type BrewableEditIngredientsProps = {
+    brewable: Brewable;
+    update: UpdateFn;
+    updateScalar: UpdateScalarFn;
+    add: AddFn;
+    remove: RemoveFn;
 };
-export default function RecipeEditIngredients({ recipeId }: RecipeEditIngredientsProps) {
-    const recipe = useRecipe(recipeId);
-    const onChange = useCallback((r: Recipe) => saveRecipe(recipeId, r), [recipeId]);
-    const [data, update, updateScalar, , add, remove] = useJsonEdit<Recipe>(recipe, onChange);
 
+// A brewable panel: reads the assignments/phases off the brewable and edits
+// them through the shared edit fns (dot-paths are relative to the brewable).
+export default function BrewableEditIngredients({ brewable, update, updateScalar, add, remove }: BrewableEditIngredientsProps) {
     const kbGrains = useKbGrains();
     const kbGrainsIndex = useIndexBy(kbGrains, "name");
     const kbHops = useKbHops();
@@ -40,22 +41,22 @@ export default function RecipeEditIngredients({ recipeId }: RecipeEditIngredient
     const phaseTypes = useMemo(() => {
         const seen = new Set<PhaseType>();
         const ordered: PhaseType[] = [];
-        for (const phase of data.brewable.schedule.phases) {
+        for (const phase of brewable.schedule.phases) {
             if (!seen.has(phase.type)) {
                 seen.add(phase.type);
                 ordered.push(phase.type);
             }
         }
         return ordered;
-    }, [data.brewable.schedule.phases]);
+    }, [brewable.schedule.phases]);
 
     const assignmentsByPhase = useMemo(() => {
-        const withIndex: AssignmentWithIndex[] = data.brewable.assignments.map((assignment, index) => ({ assignment, index }));
+        const withIndex: AssignmentWithIndex[] = brewable.assignments.map((assignment, index) => ({ assignment, index }));
         return new Map(phaseTypes.map(phaseType => [
             phaseType,
             withIndex.filter(({ assignment }) => assignment.phaseType === phaseType),
         ]));
-    }, [data.brewable.assignments, phaseTypes]);
+    }, [brewable.assignments, phaseTypes]);
 
     return (
         <>

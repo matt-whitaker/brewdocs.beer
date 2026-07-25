@@ -1,27 +1,27 @@
 import {useCallback, useMemo} from "react";
 import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
-import useJsonEdit from "@/hooks/useJsonEdit";
-import {canRemovePhase, phaseLabel, Schedule} from "@/model/brewable";
-import Recipe from "@/model/recipe";
-import RecipeEditPhasesAddRow from "@/screen/recipe-edit-phases/phases-add-row";
-import RecipeEditPhasesRow from "@/screen/recipe-edit-phases/phases-row";
-import {saveRecipe, useRecipe} from "@/state/recipes";
+import {AddFn, MoveFn, RemoveFn} from "@/hooks/useJsonEdit";
+import Brewable, {canRemovePhase, phaseLabel, Schedule} from "@/model/brewable";
+import RecipeEditPhasesAddRow from "@/screen/brewable-edit/phases/phases-add-row";
+import RecipeEditPhasesRow from "@/screen/brewable-edit/phases/phases-row";
 import {saveSession, useSession} from "@/state/session";
 
 const SESSION_KEY = "recipeEdit.phases";
 
-export type RecipeEditPhasesProps = { recipeId: string };
+export type BrewableEditPhasesProps = {
+    brewable: Brewable;
+    add: AddFn;
+    remove: RemoveFn;
+    move: MoveFn;
+};
 
-// The Phases panel lists the schedule's phases as entries — nothing more than
+// A brewable panel: lists the schedule's phases as entries — nothing more than
 // add a phase, remove one, and reorder them. Equipment lives on its own panel.
-export default function RecipeEditPhases({ recipeId }: RecipeEditPhasesProps) {
-    const recipe = useRecipe(recipeId);
-    const onChange = useCallback((r: Recipe) => saveRecipe(recipeId, r), [recipeId]);
-    const [data, , , , add, remove, move] = useJsonEdit<Recipe>(recipe, onChange);
-
+// Dot-paths are relative to the brewable.
+export default function BrewableEditPhases({ brewable, add, remove, move }: BrewableEditPhasesProps) {
     const session = useSession();
-    const phases = data.brewable.schedule.phases;
+    const phases = brewable.schedule.phases;
     const schedule: Schedule = useMemo(() => ({ phases }), [phases]);
 
     const onToggleCollapsed = useCallback((collapsed: boolean) => saveSession(SESSION_KEY, collapsed), []);
