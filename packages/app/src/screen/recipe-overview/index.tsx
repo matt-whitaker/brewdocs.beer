@@ -1,5 +1,6 @@
 import {ScreenP, ScreenH2} from "@brewdocs.beer/design";
 import Organics from "@/component/organics";
+import {organicNames} from "@/component/organics/from-brewable";
 import Screen from "@/component/screen";
 import {RecipeSource, useRecipeResource} from "@/state/recipeResource";
 
@@ -16,11 +17,7 @@ export default function RecipeOverview({ recipeId, source }: RecipeOverviewProps
                 <ScreenP className="pt-4">{`${recipe.description}`}</ScreenP>
             </div>
             <div className="divider">Ingredients</div>
-            <Organics
-                className="-mt-2"
-                hops={recipe.hops}
-                grains={recipe.grains}
-                yeasts={recipe.yeasts} />
+            <Organics className="-mt-2" {...organicNames(recipe.brewable.assignments)} />
         </Screen>
     );
 }
