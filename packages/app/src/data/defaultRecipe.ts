@@ -36,11 +36,6 @@ const defaultRecipe: Omit<Recipe, "id"> = {
         ibu: "0",
         srm: "0"
     },
-    grains: [],
-    hops: [],
-    yeasts: [],
-    additives: [],
-    equipment: [],
     brewable: defaultBrewable(),
 };
 
