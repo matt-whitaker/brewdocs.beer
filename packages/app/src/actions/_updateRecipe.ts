@@ -7,11 +7,33 @@ import {kbRecipeMashToMash} from "@/transform/kbRecipeMashToMash";
 
 const SCHEDULE_PHASES: SchedulePhase[] = ["mash", "boil", "ferment"];
 
+/**
+ * The concrete resource model an Assignment narrows to for a given `resourceType`
+ * — `ResourceFor<"hop">` is `Hop`, etc. Needed because TypeScript won't resolve
+ * `Extract<Assignment, {resourceType: T}>["resource"]` to a single type while `T`
+ * is an unbound generic, so the helpers below widen back to the union without an
+ * explicit return annotation (this bit `weighed`, which needs `weight`).
+ */
+type ResourceFor<T extends ResourceType> = Extract<Assignment, { resourceType: T }>["resource"];
+
 /** narrows an Assignment's `resource` by `resourceType`, matching the discriminated union */
-export function resourcesOf<T extends ResourceType>(assignments: Assignment[], resourceType: T) {
+export function resourcesOf<T extends ResourceType>(assignments: Assignment[], resourceType: T): ResourceFor<T>[] {
     return assignments
         .filter((assignment): assignment is Extract<Assignment, { resourceType: T }> => assignment.resourceType === resourceType)
-        .map(assignment => assignment.resource);
+        .map(assignment => assignment.resource as ResourceFor<T>);
+}
+
+/**
+ * Like `resourcesOf`, but pairs each narrowed resource with its index in the
+ * *flat* `assignments` array — so `_updateSchedule` can emit write-through paths
+ * (`brewable.assignments[i].resource.boil`) that edit the real assignment in
+ * place. The index is the position in the whole list, not within the type.
+ */
+export function indexedResourcesOf<T extends ResourceType>(assignments: Assignment[], resourceType: T): [ResourceFor<T>, number][] {
+    return assignments
+        .map((assignment, index) => [assignment, index] as const)
+        .filter((pair): pair is [Extract<Assignment, { resourceType: T }>, number] => pair[0].resourceType === resourceType)
+        .map(([assignment, index]) => [assignment.resource as ResourceFor<T>, index]);
 }
 
 /** the SchedulePhase a legacy Phase maps to, read off its own tags rather than its (renamable) name */

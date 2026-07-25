@@ -1,4 +1,5 @@
 import {CURRENCIES, Scalar, Unit} from "@brewdocs.beer/core";
+import {resourcesOf} from "@/actions/_updateRecipe";
 import Batch, {ShoppingItem, ShoppingTag} from "@/model/batch";
 import {groupBy, isEqual} from "@/utils/func";
 import {parseNumberString} from "@/utils/math";
@@ -36,12 +37,13 @@ function named(tag: ShoppingTag, items: { name: string }[]): Derived[] {
  */
 export default function _updateShopping(batch: Partial<Batch>): Partial<Batch> {
     const previous = new Map((batch.shopping ?? []).map(item => [itemKey(item), item]));
+    const assignments = batch.brewable?.assignments ?? [];
 
     const derived: Derived[] = [
-        ...weighed("hops", batch.hops ?? []),
-        ...weighed("grains", batch.grains ?? []),
-        ...named("yeasts", batch.yeasts ?? []),
-        ...named("additives", batch.additives ?? [])
+        ...weighed("hops", resourcesOf(assignments, "hop")),
+        ...weighed("grains", resourcesOf(assignments, "grain")),
+        ...named("yeasts", resourcesOf(assignments, "yeast")),
+        ...named("additives", resourcesOf(assignments, "additive"))
     ];
 
     return Object.assign(batch, {
