@@ -1,22 +1,28 @@
 import {useCallback, useMemo} from "react";
 import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
-import {AddFn, RemoveFn, UpdateFn} from "@/hooks/useJsonEdit";
-import {BrewablePhase, canRemovePhase, phaseLabel, Schedule} from "@/model/brewable";
-import RecipeEditPhasesAddRow from "@/screen/recipe-edit-schedule/phases-add-row";
-import RecipeEditPhasesRow from "@/screen/recipe-edit-schedule/phases-row";
+import useJsonEdit from "@/hooks/useJsonEdit";
+import {canRemovePhase, phaseLabel, Schedule} from "@/model/brewable";
+import Recipe from "@/model/recipe";
+import RecipeEditPhasesAddRow from "@/screen/recipe-edit-phases/phases-add-row";
+import RecipeEditPhasesRow from "@/screen/recipe-edit-phases/phases-row";
+import {saveRecipe, useRecipe} from "@/state/recipes";
 import {saveSession, useSession} from "@/state/session";
 
 const SESSION_KEY = "recipeEdit.phases";
 
-export type RecipeEditPhasesProps = {
-    phases: BrewablePhase[];
-    add: AddFn;
-    remove: RemoveFn;
-    update: UpdateFn;
-};
-export default function RecipeEditPhases({ phases, add, remove, update }: RecipeEditPhasesProps) {
+export type RecipeEditPhasesProps = { recipeId: string };
+
+// The Phases panel does only three things: add a phase, remove one, and
+// reorder them. Equipment used to live here (per phase) but was removed — the
+// batch-planning screen owns equipment now.
+export default function RecipeEditPhases({ recipeId }: RecipeEditPhasesProps) {
+    const recipe = useRecipe(recipeId);
+    const onChange = useCallback((r: Recipe) => saveRecipe(recipeId, r), [recipeId]);
+    const [data, , , , add, remove, move] = useJsonEdit<Recipe>(recipe, onChange);
+
     const session = useSession();
+    const phases = data.brewable.schedule.phases;
     const schedule: Schedule = useMemo(() => ({ phases }), [phases]);
 
     const onToggleCollapsed = useCallback((collapsed: boolean) => saveSession(SESSION_KEY, collapsed), []);
@@ -25,13 +31,12 @@ export default function RecipeEditPhases({ phases, add, remove, update }: Recipe
         <RecipeEditPhasesRow
             key={`phase-${i}-${phase.type}`}
             row={i}
-            phase={phase}
             label={phaseLabel(phases, i)}
             removable={canRemovePhase(schedule, i)}
-            add={add}
+            count={phases.length}
             remove={remove}
-            update={update} />
-    )), [phases, schedule, add, remove, update]);
+            move={move} />
+    )), [phases, schedule, remove, move]);
 
     return (
         <DataGrid>

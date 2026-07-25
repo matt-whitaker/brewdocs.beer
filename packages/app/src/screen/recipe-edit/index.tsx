@@ -4,7 +4,7 @@ import PanelSwitcherContent from "@/component/panel-switcher/content";
 import Screen from "@/component/screen";
 import RecipeEditDetails from "@/screen/recipe-edit-details";
 import RecipeEditIngredients from "@/screen/recipe-edit-ingredients";
-import RecipeEditSchedule from "@/screen/recipe-edit-schedule";
+import RecipeEditPhases from "@/screen/recipe-edit-phases";
 import {useRecipe} from "@/state/recipes";
 
 // Mirrors BatchPlanning: one Screen holds a name/brewer header, then a compact
@@ -30,8 +30,8 @@ export default function RecipeEdit({ recipeId }: RecipeEditProps) {
                 <PanelSwitcherContent title="Ingredients">
                     <RecipeEditIngredients recipeId={recipeId} />
                 </PanelSwitcherContent>
-                <PanelSwitcherContent title="Schedule">
-                    <RecipeEditSchedule recipeId={recipeId} />
+                <PanelSwitcherContent title="Phases">
+                    <RecipeEditPhases recipeId={recipeId} />
                 </PanelSwitcherContent>
             </PanelSwitcher>
         </Screen>

@@ -1,11 +1,9 @@
 import {useCallback, useMemo} from "react";
-import DataGrid from "@/component/data-grid";
 import useIndexBy from "@/hooks/useIndexBy";
 import useJsonEdit from "@/hooks/useJsonEdit";
 import {PhaseType} from "@/model/brewable";
 import Recipe from "@/model/recipe";
 import RecipeEditPhaseSection, {AssignmentWithIndex} from "@/screen/recipe-edit-ingredients/phase-section";
-import RecipeEditPhasesAddRow from "@/screen/recipe-edit-schedule/phases-add-row";
 import {useKbGrains} from "@/state/kbGrains";
 import {useKbHops} from "@/state/kbHops";
 import {useKbYeasts} from "@/state/kbYeasts";
@@ -76,12 +74,6 @@ export default function RecipeEditIngredients({ recipeId }: RecipeEditIngredient
                     kbYeastsIndex={kbYeastsIndex}
                 />
             ))}
-            {/* Each phase section owns its own ingredient add-row (above). This
-                outer row adds a new phase to the schedule, mirroring the
-                Schedule panel's phase add-row. */}
-            <DataGrid>
-                <RecipeEditPhasesAddRow add={add} />
-            </DataGrid>
         </>
     );
 }
