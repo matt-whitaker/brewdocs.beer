@@ -1,4 +1,4 @@
-import {indexedResourcesOf, resourcesOf} from "@/actions/_updateRecipe";
+import {indexedResourcesOf, resourcesOf} from "@/actions/brewableResources";
 import Batch, {ScheduleItem, SchedulePhase, ScheduleKind} from "@/model/batch";
 import {isEqual} from "@/utils/func";
 

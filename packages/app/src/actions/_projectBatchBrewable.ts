@@ -1,4 +1,4 @@
-import {phasesFromBrewable} from "@/actions/_updateRecipe";
+import {phasesFromBrewable} from "@/actions/deriveBatchPhases";
 import Batch, {Phase} from "@/model/batch";
 
 /**
