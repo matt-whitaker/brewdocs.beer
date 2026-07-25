@@ -5,20 +5,24 @@ import DataGridRemoveButton from "@/component/data-grid/remove-button";
 import DataGridRow from "@/component/data-grid/row";
 import DataGridSelect from "@/component/data-grid/select";
 import {RemoveFn, UpdateFn} from "@/hooks/useJsonEdit";
+import {BrewablePhase} from "@/model/brewable";
 import Equipment from "@/model/equipment";
-import Recipe from "@/model/recipe";
 
-export type RecipeEditEquipmentRowProps = {
+export type RecipeEditPhaseEquipmentRowProps = {
+    /** index into brewable.schedule.phases */
+    phase: number;
+    /** index into that phase's equipment */
     row: number;
-    item: Recipe["equipment"][number];
+    item: BrewablePhase["equipment"][number];
     remove: RemoveFn;
     update: UpdateFn;
     equipment: Equipment[];
     equipmentIndex: Map<string, Equipment>;
 };
 
-function RecipeEditEquipmentRow({ row, item, remove, update, equipment, equipmentIndex }: RecipeEditEquipmentRowProps) {
+function RecipeEditPhaseEquipmentRow({ phase, row, item, remove, update, equipment, equipmentIndex }: RecipeEditPhaseEquipmentRowProps) {
     const equipmentOptions = useMemo(() => equipment.map((({ name }) => ({ value: name, name }))), [equipment]);
+    const path = `schedule.phases[${phase}].equipment`;
 
     // free-text draft for the use[] field, committed to the array on blur —
     // rendering it straight from item.use.join(", ") would swallow a typed
@@ -26,19 +30,19 @@ function RecipeEditEquipmentRow({ row, item, remove, update, equipment, equipmen
     const [useText, setUseText] = useState(() => item.use.join(", "));
     useEffect(() => setUseText(item.use.join(", ")), [item.use]);
 
-    const onRemoveItem = useCallback(() => remove("equipment", row), [remove, row]);
+    const onRemoveItem = useCallback(() => remove(path, row), [remove, path, row]);
     const onChangeItem = useCallback((value: string) => {
         const catalogItem = equipmentIndex.get(value)!;
-        update(`equipment[${row}]`, { name: catalogItem.name, use: catalogItem.use, count: catalogItem.count });
-    }, [update, row, equipmentIndex]);
-    const onBlurUse = useCallback((value: string) => update(`equipment[${row}].use`, value.split(",").map(s => s.trim()).filter(Boolean)), [update, row]);
+        update(`${path}[${row}]`, { name: catalogItem.name, use: catalogItem.use, count: catalogItem.count });
+    }, [update, path, row, equipmentIndex]);
+    const onBlurUse = useCallback((value: string) => update(`${path}[${row}].use`, value.split(",").map(s => s.trim()).filter(Boolean)), [update, path, row]);
     const onChangeCount = useCallback((value: string) => {
         const trimmed = value.trim();
-        update(`equipment[${row}].count`, trimmed === "" ? undefined : Number(trimmed));
-    }, [update, row]);
+        update(`${path}[${row}].count`, trimmed === "" ? undefined : Number(trimmed));
+    }, [update, path, row]);
 
     return (
-        <DataGridRow zebra>
+        <DataGridRow zebra={false}>
             <DataGridLabel className="ml-6">
                 <DataGridRemoveButton onClick={onRemoveItem} />
                 <DataGridSelect
@@ -64,4 +68,4 @@ function RecipeEditEquipmentRow({ row, item, remove, update, equipment, equipmen
 
 // props are referentially stable (setIn keeps untouched branches, editors are
 // stable), so editing one row no longer re-renders its siblings
-export default memo(RecipeEditEquipmentRow);
+export default memo(RecipeEditPhaseEquipmentRow);

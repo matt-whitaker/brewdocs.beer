@@ -1,5 +1,5 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import {Entity, Scalar} from "@brewdocs.beer/core";
+import {Scalar} from "@brewdocs.beer/core";
 import {scalarFromNumberWithCurrency, scalarFromNumberWithUnit} from "@/utils/formatting";
 import {debounce, get, isEqual, setIn} from "@/utils/func";
 
@@ -10,7 +10,9 @@ export type AddFn = (dot: string, value: unknown) => void;
 export type RemoveFn = (dot: string, index: number) => void;
 export type MoveFn = (dot: string, from: number, to: number) => void;
 
-export default function useJsonEdit<T extends Entity>(data: T, onChange: (data: T) => void): [T, UpdateFn, UpdateScalarFn, ToggleFn, AddFn, RemoveFn, MoveFn] {
+// T is any editable object — a whole Entity (Recipe/Batch) or a sub-object of
+// one (e.g. a Brewable, edited by BrewableEdit and merged back on save).
+export default function useJsonEdit<T extends object>(data: T, onChange: (data: T) => void): [T, UpdateFn, UpdateScalarFn, ToggleFn, AddFn, RemoveFn, MoveFn] {
     const [state, setState] = useState<T>(data);
 
     // the editors below read the draft through this ref rather than closing over

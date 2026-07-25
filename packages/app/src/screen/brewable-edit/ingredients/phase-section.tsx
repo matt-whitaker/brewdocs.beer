@@ -1,0 +1,81 @@
+import {useCallback, useMemo} from "react";
+import {KbGrain, KbHop, KbYeast} from "@brewdocs.beer/kb";
+import DataGrid from "@/component/data-grid";
+import DataGridHeaderRow from "@/component/data-grid/header-row";
+import DataGridSubheaderRow from "@/component/data-grid/subheader-row";
+import {AddFn, RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
+import {Assignment, PhaseType} from "@/model/brewable";
+import RecipeEditAssignmentRow from "@/screen/brewable-edit/ingredients/assignment-row";
+import {PHASE_TYPE_LABELS, RESOURCE_TYPES, RESOURCE_TYPE_LABELS} from "@/screen/brewable-edit/ingredients/catalog-defaults";
+import RecipeEditPhaseAddRow from "@/screen/brewable-edit/ingredients/phase-add-row";
+import {saveSession, useSession} from "@/state/session";
+
+/** an assignment paired with its index in the flat `brewable.assignments` array — the index a row's remove/update calls must target, since this component only ever sees its phase's filtered slice */
+export type AssignmentWithIndex = { assignment: Assignment; index: number };
+
+export type RecipeEditPhaseSectionProps = {
+    /** 1-based position of this phase group, prefixed on the header to match the Phases panel's "1. Mash" labels */
+    position: number;
+    phaseType: PhaseType;
+    assignments: AssignmentWithIndex[];
+    add: AddFn;
+    remove: RemoveFn;
+    update: UpdateFn;
+    updateScalar: UpdateScalarFn;
+    resourceOptions: { value: string; name: string }[];
+    kbGrainsIndex: Map<string, KbGrain>;
+    kbHopsIndex: Map<string, KbHop>;
+    kbYeastsIndex: Map<string, KbYeast>;
+};
+
+export default function RecipeEditPhaseSection({
+    position, phaseType, assignments, add, remove, update, updateScalar, resourceOptions, kbGrainsIndex, kbHopsIndex, kbYeastsIndex,
+}: RecipeEditPhaseSectionProps) {
+    const sessionKey = `recipe-edit.brewable.phase.${phaseType}`;
+    const session = useSession();
+    const onToggleCollapsed = useCallback((collapsed: boolean) => saveSession(sessionKey, collapsed), [sessionKey]);
+
+    // only subsections with at least one assignment render — the phase's own
+    // add-row (below, inside the collapsible section) seeds the first item of
+    // any type into this phase
+    const subsections = useMemo(() => RESOURCE_TYPES
+        .map(resourceType => ({
+            resourceType,
+            items: assignments.filter(({ assignment }) => assignment.resourceType === resourceType),
+        }))
+        .filter(({ items }) => items.length > 0), [assignments]);
+
+    return (
+        <DataGrid>
+            <DataGridHeaderRow
+                collapsible
+                defaultCollapsed={session?.[sessionKey] as boolean ?? false}
+                onToggle={onToggleCollapsed}>
+                {position}. {PHASE_TYPE_LABELS[phaseType]}
+            </DataGridHeaderRow>
+            {subsections.map(({ resourceType, items }) => (
+                <div key={resourceType}>
+                    <DataGridSubheaderRow>{RESOURCE_TYPE_LABELS[resourceType]}</DataGridSubheaderRow>
+                    {items.map(({ assignment, index }) => (
+                        <RecipeEditAssignmentRow
+                            key={`assignment-${index}`}
+                            row={index}
+                            assignment={assignment}
+                            remove={remove}
+                            update={update}
+                            updateScalar={updateScalar}
+                        />
+                    ))}
+                </div>
+            ))}
+            <RecipeEditPhaseAddRow
+                phaseType={phaseType}
+                add={add}
+                resourceOptions={resourceOptions}
+                kbGrainsIndex={kbGrainsIndex}
+                kbHopsIndex={kbHopsIndex}
+                kbYeastsIndex={kbYeastsIndex}
+            />
+        </DataGrid>
+    );
+}
