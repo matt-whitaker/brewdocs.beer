@@ -176,5 +176,123 @@
     },
     "ibu": "35",
     "srm": "9"
+  },
+  "brewable": {
+    "schedule": {
+      "phases": [
+        {
+          "type": "mash",
+          "equipment": [
+            { "name": "Mash Tun - 10gal", "use": ["mash"] },
+            { "name": "Stirring Wand", "use": ["mash"] },
+            { "name": "Sparge Vessel - 15gal", "use": ["mash"] },
+            { "name": "Star San", "use": ["clean"] },
+            { "name": "PBW", "use": ["clean"] },
+            { "name": "Digital Hydrometer", "use": ["measure"] },
+            { "name": "Long Thermometer", "use": ["boil", "mash"] },
+            { "name": "Burner and stand", "use": ["mash", "boil"] }
+          ]
+        },
+        {
+          "type": "boil",
+          "equipment": [
+            { "name": "Boil Kettle - 15gal", "use": ["boil"] },
+            { "name": "Digital Hydrometer", "use": ["measure"] },
+            { "name": "Long Thermometer", "use": ["boil", "mash"] },
+            { "name": "Large Stirring Spoon", "use": ["boil"] },
+            { "name": "Racking Cane & Hose", "use": ["transfer"] },
+            { "name": "Burner and stand", "use": ["mash", "boil"] },
+            { "name": "Scale", "use": ["boil", "starter"] }
+          ]
+        },
+        {
+          "type": "ferment",
+          "equipment": [
+            { "name": "Glass Carboy - 7gal", "use": ["secondary"] },
+            { "name": "Erlenmeyer Flask", "use": ["starter"] },
+            { "name": "Scale", "use": ["boil", "starter"] }
+          ]
+        }
+      ]
+    },
+    "assignments": [
+      {
+        "phaseType": "mash",
+        "resourceType": "grain",
+        "slug": "German Pils",
+        "resource": { "name": "German Pils", "weight": { "value": "9.0lb", "unit": "lb" } }
+      },
+      {
+        "phaseType": "mash",
+        "resourceType": "grain",
+        "slug": "Crystal Malt 40L",
+        "resource": { "name": "Crystal Malt 40L", "weight": { "value": "1.0lb", "unit": "lb" } }
+      },
+      {
+        "phaseType": "mash",
+        "resourceType": "grain",
+        "slug": "Special Robust",
+        "resource": { "name": "Special Robust", "weight": { "value": "0.5lb", "unit": "lb" } }
+      },
+      {
+        "phaseType": "boil",
+        "resourceType": "hop",
+        "slug": "Northern Brewer",
+        "resource": {
+          "name": "Northern Brewer",
+          "weight": { "value": "1.0oz", "unit": "oz" },
+          "alpha": { "value": "7.4%", "unit": "%" },
+          "boil": { "value": "60min", "unit": "min" },
+          "phase": "boil"
+        }
+      },
+      {
+        "phaseType": "boil",
+        "resourceType": "hop",
+        "slug": "Northern Brewer",
+        "resource": {
+          "name": "Northern Brewer",
+          "weight": { "value": "0.75oz", "unit": "oz" },
+          "alpha": { "value": "7.4%", "unit": "%" },
+          "boil": { "value": "20min", "unit": "min" },
+          "phase": "boil"
+        }
+      },
+      {
+        "phaseType": "boil",
+        "resourceType": "hop",
+        "slug": "Northern Brewer",
+        "resource": {
+          "name": "Northern Brewer",
+          "weight": { "value": "1.0oz", "unit": "oz" },
+          "alpha": { "value": "7.4%", "unit": "%" },
+          "boil": { "value": "0min", "unit": "min" },
+          "phase": "boil"
+        }
+      },
+      {
+        "phaseType": "ferment",
+        "resourceType": "yeast",
+        "slug": "Wyeast 2112",
+        "resource": {
+          "name": "Wyeast 2112",
+          "avg_attn": { "value": "70%", "unit": "%" },
+          "temp": { "value": "62°F", "unit": "°F" },
+          "starter": false
+        }
+      },
+      {
+        "phaseType": "boil",
+        "resourceType": "additive",
+        "slug": "Yeast Nutrients",
+        "resource": { "name": "Yeast Nutrients", "boil": { "value": "15min", "unit": "min" } }
+      },
+      {
+        "phaseType": "boil",
+        "resourceType": "additive",
+        "slug": "Irish Moss",
+        "resource": { "name": "Irish Moss", "boil": { "value": "15min", "unit": "min" } }
+      }
+    ]
   }
 }
