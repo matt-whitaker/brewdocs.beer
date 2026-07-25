@@ -129,9 +129,9 @@ export default interface Batch extends Entity {
 
     /**
      * The batch's source-of-truth brewable — cloned from the recipe (user source)
-     * or derived via buildBrewable (kb source) at creation time. Projected onto
-     * the legacy fields below by createBatch/_updateRecipe; not yet read by any
-     * batch screen (see _Derived batch data_ in CLAUDE.md).
+     * or narrowed via kbBrewableToBrewable (kb source) at creation time. Projected
+     * onto the legacy fields below by createBatch/_updateRecipe; not yet read by
+     * any batch screen (see _Derived batch data_ in CLAUDE.md).
      */
     brewable: Brewable;
 

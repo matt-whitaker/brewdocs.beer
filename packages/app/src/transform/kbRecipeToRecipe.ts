@@ -1,6 +1,6 @@
 import {KbRecipe} from "@brewdocs.beer/kb";
 import Recipe, {RECIPE_MODEL_VERSION} from "@/model/recipe";
-import {buildBrewable} from "@/transform/buildBrewable";
+import {kbBrewableToBrewable} from "@/transform/kbBrewableToBrewable";
 import {kbRecipeBoilToBoil} from "@/transform/kbRecipeBoilToBoil";
 import {kbRecipeEquipmentToEquipment} from "@/transform/kbRecipeEquipmentToEquipment";
 import {kbRecipeHopsToHops} from "@/transform/kbRecipeHopsToHops";
@@ -21,10 +21,8 @@ export function kbRecipeToRecipe({id, ...kbRecipe}: KbRecipe): Omit<Recipe, "id"
         boil: kbRecipeBoilToBoil(kbRecipe.boil),
         mash: kbRecipeMashToMash(kbRecipe.mash),
         equipment: kbRecipeEquipmentToEquipment(kbRecipe.equipment),
-        // derive assignments (ingredients) + per-phase equipment from the kb
-        // recipe's arrays, rather than starting from an empty brewable — the
-        // edit screen reads the brewable, so a copied recipe would otherwise
-        // show no ingredients or equipment (same deriver createBatch uses)
-        brewable: buildBrewable(kbRecipe),
+        // the kb recipe already carries its own brewable; narrow it rather
+        // than re-deriving one from the legacy arrays
+        brewable: kbBrewableToBrewable(kbRecipe.brewable),
     };
 }
