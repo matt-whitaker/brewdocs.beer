@@ -22,7 +22,7 @@ export type RecipeEditPhaseEquipmentRowProps = {
 
 function RecipeEditPhaseEquipmentRow({ phase, row, item, remove, update, equipment, equipmentIndex }: RecipeEditPhaseEquipmentRowProps) {
     const equipmentOptions = useMemo(() => equipment.map((({ name }) => ({ value: name, name }))), [equipment]);
-    const path = `brewable.schedule.phases[${phase}].equipment`;
+    const path = `schedule.phases[${phase}].equipment`;
 
     // free-text draft for the use[] field, committed to the array on blur —
     // rendering it straight from item.use.join(", ") would swallow a typed
