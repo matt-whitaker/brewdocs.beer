@@ -1,5 +1,6 @@
 import {UNITS} from "@brewdocs.beer/core";
 import {KbGrain, KbHop, KbYeast} from "@brewdocs.beer/kb";
+import Additive from "@/model/additive";
 import {PhaseType, ResourceType} from "@/model/brewable";
 import Grain from "@/model/grain";
 import Hop from "@/model/hop";
@@ -65,5 +66,16 @@ export function kbYeastToRecipeYeast(kbYeast: KbYeast): Yeast {
             unit: UNITS.FAHRENHEIT
         },
         starter: false
+    };
+}
+
+/** Default boil time for a freeform additive — there's no kb catalog for additives, so the name is typed rather than picked. */
+export function defaultAdditive(name: string): Additive {
+    return {
+        name,
+        boil: {
+            value: "15min",
+            unit: UNITS.MINUTES
+        },
     };
 }
