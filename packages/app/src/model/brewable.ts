@@ -65,11 +65,10 @@ export const canRemovePhase = (schedule: Schedule, index: number): boolean => {
     return sameType.length > 1;
 };
 
-/** capitalized type + a 1-based count among phases of the same type, e.g. "Mash 1", "Boil 2" — repeats of a type are allowed (mash → boil → mash) */
+/** 1-based position + capitalized type, e.g. "1. Mash", "2. Boil" — numbering follows the phase's place in the list, so it renumbers on reorder (matches model/batch's phaseLabel) */
 export const phaseLabel = (phases: BrewablePhase[], index: number): string => {
-    const target = phases[index];
-    const ordinal = phases.slice(0, index + 1).filter(phase => phase.type === target.type).length;
-    return `${target.type[0].toUpperCase()}${target.type.slice(1)} ${ordinal}`;
+    const {type} = phases[index];
+    return `${index + 1}. ${type[0].toUpperCase()}${type.slice(1)}`;
 };
 
 /** resource's display name — also proves Assignment narrows `resource` correctly per `resourceType` when switched on */
