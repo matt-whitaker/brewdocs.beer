@@ -9,14 +9,14 @@ import Recipe, {RecipeSource} from "@/model/recipe";
 import Statuses from "@/model/statuses";
 import {saveBatch} from "@/state/batches";
 import batchesStorage from "@/storage/batches";
-import {buildBrewable} from "@/transform/buildBrewable";
+import {kbBrewableToBrewable} from "@/transform/kbBrewableToBrewable";
 import {cloneDeep} from "@/utils/func";
 
 export default async function createBatch(recipe: Recipe | KbRecipe, source: RecipeSource, inputs: CreateBatchState) {
     const id = await batchesStorage.generateId();
 
-    // a user recipe already has a brewable of its own; a kb recipe doesn't, so derive one
-    const brewable = source === "user" ? cloneDeep((recipe as Recipe).brewable) : buildBrewable(recipe);
+    // a user recipe already has a brewable of its own; a kb recipe's brewable needs narrowing to the app shape
+    const brewable = source === "user" ? cloneDeep((recipe as Recipe).brewable) : kbBrewableToBrewable((recipe as KbRecipe).brewable);
 
     const batch: Partial<Batch> = {
         ...defaultBatch,
