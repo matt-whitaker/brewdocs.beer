@@ -3,6 +3,7 @@ import PanelSwitcher from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
 import Screen from "@/component/screen";
 import RecipeEditDetails from "@/screen/recipe-edit-details";
+import RecipeEditEquipment from "@/screen/recipe-edit-equipment";
 import RecipeEditIngredients from "@/screen/recipe-edit-ingredients";
 import RecipeEditPhases from "@/screen/recipe-edit-phases";
 import {useRecipe} from "@/state/recipes";
@@ -29,6 +30,9 @@ export default function RecipeEdit({ recipeId }: RecipeEditProps) {
                 </PanelSwitcherContent>
                 <PanelSwitcherContent title="Ingredients">
                     <RecipeEditIngredients recipeId={recipeId} />
+                </PanelSwitcherContent>
+                <PanelSwitcherContent title="Equipment">
+                    <RecipeEditEquipment recipeId={recipeId} />
                 </PanelSwitcherContent>
                 <PanelSwitcherContent title="Phases">
                     <RecipeEditPhases recipeId={recipeId} />

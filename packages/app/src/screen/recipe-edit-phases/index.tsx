@@ -13,12 +13,12 @@ const SESSION_KEY = "recipeEdit.phases";
 
 export type RecipeEditPhasesProps = { recipeId: string };
 
-// The Phases panel lists the schedule's phases as entries: add a phase, remove
-// one, reorder them, and edit each phase's equipment in a nested grid.
+// The Phases panel lists the schedule's phases as entries — nothing more than
+// add a phase, remove one, and reorder them. Equipment lives on its own panel.
 export default function RecipeEditPhases({ recipeId }: RecipeEditPhasesProps) {
     const recipe = useRecipe(recipeId);
     const onChange = useCallback((r: Recipe) => saveRecipe(recipeId, r), [recipeId]);
-    const [data, update, , , add, remove, move] = useJsonEdit<Recipe>(recipe, onChange);
+    const [data, , , , add, remove, move] = useJsonEdit<Recipe>(recipe, onChange);
 
     const session = useSession();
     const phases = data.brewable.schedule.phases;
@@ -30,15 +30,12 @@ export default function RecipeEditPhases({ recipeId }: RecipeEditPhasesProps) {
         <RecipeEditPhasesRow
             key={`phase-${i}-${phase.type}`}
             row={i}
-            phase={phase}
             label={phaseLabel(phases, i)}
             removable={canRemovePhase(schedule, i)}
             count={phases.length}
-            add={add}
             remove={remove}
-            update={update}
             move={move} />
-    )), [phases, schedule, add, remove, update, move]);
+    )), [phases, schedule, remove, move]);
 
     return (
         <DataGrid>
