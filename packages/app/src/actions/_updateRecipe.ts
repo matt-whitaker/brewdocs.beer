@@ -54,16 +54,13 @@ export function phasesFromBrewable(phases: Phase[], brewable: Brewable): Phase[]
 }
 
 /**
- * Projects `brewable` (already built by createBatch — a clone for a user
- * recipe, kbBrewableToBrewable's output for a kb one) onto the legacy fields
- * the existing batch derivations read.
+ * Derives the batch's `phases` (per-phase equipment) from `brewable` at
+ * creation. Shopping/schedule/summary read the brewable directly now, so this
+ * only owns `phases` — the one legacy-shaped field with no reader-side
+ * replacement yet.
  */
 export default function _updateRecipe(brewable: Brewable, batch: Partial<Batch>) {
     return Object.assign(batch, {
-        grains: resourcesOf(brewable.assignments, "grain"),
-        hops: resourcesOf(brewable.assignments, "hop"),
-        yeasts: resourcesOf(brewable.assignments, "yeast"),
-        additives: resourcesOf(brewable.assignments, "additive"),
         phases: phasesFromBrewable(batch.phases ?? [], brewable),
     });
 }

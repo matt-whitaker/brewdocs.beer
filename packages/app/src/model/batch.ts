@@ -1,13 +1,9 @@
 import {Entity, Scalar} from "@brewdocs.beer/core";
-import Additive from "@/model/additive";
 import Brewable from "@/model/brewable";
-import Grain from "@/model/grain";
-import Hop from "@/model/hop";
 import Hydrometer from "@/model/hydrometer";
 import Measurements from "@/model/measurements";
 import {RecipeSource} from "@/model/recipe";
 import Statuses from "@/model/statuses";
-import Yeast from "@/model/yeast";
 
 /** what an item was derived from; replaces the old shopping "groups" */
 export type ShoppingTag = "hops"|"grains"|"yeasts"|"additives";
@@ -138,11 +134,6 @@ export default interface Batch extends Entity {
     efficiency: Scalar;
     boilTime: Scalar;
 
-    grains: Grain[];
-    hops: Hop[];
-    yeasts: Yeast[];
-    additives: Additive[];
-    //adjuncts
 
     actuals: Measurements;
     hydrometer: Hydrometer[];
