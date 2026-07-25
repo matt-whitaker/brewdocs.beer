@@ -43,6 +43,13 @@ export default interface Brewable {
 
 export const PHASE_TYPES: PhaseType[] = ["mash", "boil", "ferment"];
 
+/** hop.phase -> the Brewable phase it's assigned to; reused in reverse by _projectRecipeBrewable */
+export const HOP_PHASE_TO_PHASE_TYPE: Record<Hop["phase"], PhaseType> = {
+    boil: "boil",
+    secondary: "ferment",
+    dry: "ferment",
+};
+
 /** one empty phase of each type and no assignments — satisfies the "≥1 of each" rule by construction */
 export const defaultBrewable = (): Brewable => ({
     schedule: {

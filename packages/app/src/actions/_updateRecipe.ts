@@ -36,9 +36,9 @@ function phasesFromBrewable(phases: Phase[], brewable: Brewable): Phase[] {
 
 /**
  * Projects `brewable` (already built by createBatch — a clone for a user
- * recipe, buildBrewable's output for a kb one) onto the legacy fields the
- * existing batch screens read. mash/boil are step lists with no Brewable
- * equivalent (see buildBrewable) and still come straight from the recipe.
+ * recipe, kbBrewableToBrewable's output for a kb one) onto the legacy fields
+ * the existing batch screens read. mash/boil are step lists with no Brewable
+ * equivalent and still come straight from the recipe.
  */
 export default function _updateRecipe(recipe: KbRecipe, brewable: Brewable, batch: Partial<Batch>) {
     return Object.assign(batch, {
