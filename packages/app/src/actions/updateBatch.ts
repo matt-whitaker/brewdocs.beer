@@ -1,3 +1,4 @@
+import _projectBatchBrewable from "@/actions/_projectBatchBrewable";
 import _updateSchedule from "@/actions/_updateSchedule";
 import _updateShopping from "@/actions/_updateShopping";
 import Batch from "@/model/batch";
@@ -10,6 +11,8 @@ const scheduleTriggers: (keyof Batch)[] = ["hops", "grains", "yeasts", "additive
 
 export default async function updateBatch(id: string, batch: Batch) {
     const current = await batchesStorage.get(id);
+
+    _projectBatchBrewable(batch);
 
     if (shoppingTriggers.some(t => !isEqual(batch[t], current?.[t]))) {
         _updateShopping(batch);

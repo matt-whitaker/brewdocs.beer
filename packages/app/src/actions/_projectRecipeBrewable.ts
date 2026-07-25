@@ -13,7 +13,7 @@ const PHASE_TYPE_TO_DEFAULT_HOP_PHASE: Partial<Record<PhaseType, Hop["phase"]>> 
 };
 
 /** reverse of HOP_PHASE_TO_PHASE_TYPE: keeps the existing value when it already agrees (dry vs secondary survives), only overrides when the assignment moved the hop to a phaseType `phase` no longer implies */
-function projectHopPhase(hop: Hop, phaseType: PhaseType): Hop["phase"] {
+export function projectHopPhase(hop: Hop, phaseType: PhaseType): Hop["phase"] {
     if (HOP_PHASE_TO_PHASE_TYPE[hop.phase] === phaseType) return hop.phase;
     return PHASE_TYPE_TO_DEFAULT_HOP_PHASE[phaseType] ?? hop.phase;
 }
@@ -54,7 +54,7 @@ function projectEquipment(phases: BrewablePhase[]): Equipment[] {
     return [...byName.values()];
 }
 
-function byResourceType<T extends Assignment["resourceType"]>(assignments: Assignment[], resourceType: T) {
+export function byResourceType<T extends Assignment["resourceType"]>(assignments: Assignment[], resourceType: T) {
     return assignments.filter(
         (assignment): assignment is Extract<Assignment, {resourceType: T}> => assignment.resourceType === resourceType
     );
