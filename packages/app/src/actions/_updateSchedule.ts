@@ -1,3 +1,4 @@
+import {indexedResourcesOf, resourcesOf} from "@/actions/_updateRecipe";
 import Batch, {ScheduleItem, SchedulePhase, ScheduleKind} from "@/model/batch";
 import {isEqual} from "@/utils/func";
 
@@ -37,9 +38,14 @@ function keyer() {
     };
 }
 
-/** every grain goes in at each mash step's temperature, which the step owns */
+/**
+ * every grain goes in at each mash step's temperature, which the step owns —
+ * so its write-through `path` targets the mash step (`mash[s].temp`), not the
+ * grain; only the *list* of grains is read off the brewable now.
+ */
 function mash(batch: Partial<Batch>): Derived[] {
-    return (batch.mash ?? []).flatMap((step, s) => (batch.grains ?? []).map(grain => ({
+    const grains = resourcesOf(batch.brewable?.assignments ?? [], "grain");
+    return (batch.mash ?? []).flatMap((step, s) => grains.map(grain => ({
         name: grain.name,
         tags: tags("mash", "grains"),
         amount: grain.weight,
@@ -52,29 +58,35 @@ function mash(batch: Partial<Batch>): Derived[] {
  * Hops are listed once with their own boil timing rather than repeated per boil
  * step — `hop.boil` already says when each addition goes in, so iterating the
  * boil steps around them (as the old screen did) just duplicated every row.
+ *
+ * The `path` writes through to the assignment in the brewable
+ * (`brewable.assignments[i].resource.boil`) — the editing source of truth — so a
+ * boil-time edit from this screen survives `_projectBatchBrewable`, which rebuilds
+ * the legacy `batch.hops` from the brewable on every save.
  */
 function boil(batch: Partial<Batch>): Derived[] {
+    const assignments = batch.brewable?.assignments ?? [];
     return [
-        ...(batch.hops ?? []).map((hop, i) => ({
+        ...indexedResourcesOf(assignments, "hop").map(([hop, i]) => ({
             name: hop.name,
             tags: tags("boil", "hops"),
             note: hop.alpha.value,
             amount: hop.weight,
-            path: `hops[${i}].boil`
+            path: `brewable.assignments[${i}].resource.boil`
         })),
-        ...(batch.additives ?? []).map((additive, i) => ({
+        ...indexedResourcesOf(assignments, "additive").map(([additive, i]) => ({
             name: additive.name,
             tags: tags("boil", "additives"),
-            path: `additives[${i}].boil`
+            path: `brewable.assignments[${i}].resource.boil`
         }))
     ];
 }
 
 function ferment(batch: Partial<Batch>): Derived[] {
-    return (batch.yeasts ?? []).map((yeast, i) => ({
+    return indexedResourcesOf(batch.brewable?.assignments ?? [], "yeast").map(([yeast, i]) => ({
         name: yeast.name,
         tags: tags("ferment", "yeasts"),
-        path: `yeasts[${i}].temp`,
+        path: `brewable.assignments[${i}].resource.temp`,
         // when it went in matters less than what temperature to hold, so the date
         // sits behind the expander rather than taking a row of its own
         extra: [{ name: "Yeast Pitched", path: "pitchedDate", input: "date" as const }]
