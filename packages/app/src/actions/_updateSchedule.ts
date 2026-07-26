@@ -1,19 +1,16 @@
-import {indexedResourcesOf, resourcesOf} from "@/actions/brewableResources";
+import {indexedResourcesOf} from "@/actions/brewableResources";
 import Batch, {ScheduleItem, SchedulePhase, ScheduleKind} from "@/model/batch";
 import {isEqual} from "@/utils/func";
-
-/** the fields this action owns; `completed` belongs to the user */
-type Derived = Omit<ScheduleItem, "completed">;
 
 /** keeps the pair a mutable tuple — `as const` would infer it readonly */
 const tags = (phase: SchedulePhase, kind: ScheduleKind): [SchedulePhase, ScheduleKind] => [phase, kind];
 
 /**
- * Compares the derived fields by name rather than the whole object: isEqual is
- * key-count sensitive, so an absent `note` vs an explicit `note: undefined`
- * would read as a difference and defeat the reuse below.
+ * Compares every field but `id` (the reuse key itself): isEqual is key-count
+ * sensitive, so an absent `note` vs an explicit `note: undefined` would read as
+ * a difference and defeat the reuse below.
  */
-const sameDerived = (a: Derived|ScheduleItem, b: Derived|ScheduleItem) =>
+const sameDerived = (a: ScheduleItem, b: ScheduleItem) =>
     a.name === b.name
     && a.path === b.path
     && a.note === b.note
@@ -22,28 +19,13 @@ const sameDerived = (a: Derived|ScheduleItem, b: Derived|ScheduleItem) =>
     && isEqual(a.extra, b.extra);
 
 /**
- * Keyed on phase:kind:name rather than on `path`, so reordering or removing an
- * ingredient doesn't shift every later item's identity and drop its checkoff.
- * The counter disambiguates genuine repeats — the same grain across two mash
- * steps, say — which would otherwise collide and share one checkbox.
- */
-function keyer() {
-    const seen = new Map<string, number>();
-    return ({ tags, name }: Derived|ScheduleItem) => {
-        const key = `${tags[0]}:${tags[1]}:${name}`;
-        const n = seen.get(key) ?? 0;
-        seen.set(key, n + 1);
-        return n ? `${key}#${n}` : key;
-    };
-}
-
-/**
  * The grains to add during the mash, listed once with their weight. There's no
  * mash-step content in the brewable anymore, so there's no temperature to write
  * through — the row is a plain checklist entry (empty `path`).
  */
-function mash(batch: Partial<Batch>): Derived[] {
-    return resourcesOf(batch.brewable?.assignments ?? [], "grain").map(grain => ({
+function mash(batch: Partial<Batch>): ScheduleItem[] {
+    return indexedResourcesOf(batch.brewable?.assignments ?? [], "grain").map(([grain, , id]) => ({
+        id,
         name: grain.name,
         tags: tags("mash", "grains"),
         amount: grain.weight,
@@ -60,17 +42,19 @@ function mash(batch: Partial<Batch>): Derived[] {
  * (`brewable.assignments[i].resource.boil`) — the editing source of truth, so a
  * boil-time edit from this screen is never a copy that could go stale.
  */
-function boil(batch: Partial<Batch>): Derived[] {
+function boil(batch: Partial<Batch>): ScheduleItem[] {
     const assignments = batch.brewable?.assignments ?? [];
     return [
-        ...indexedResourcesOf(assignments, "hop").map(([hop, i]) => ({
+        ...indexedResourcesOf(assignments, "hop").map(([hop, i, id]) => ({
+            id,
             name: hop.name,
             tags: tags("boil", "hops"),
             note: hop.alpha.value,
             amount: hop.weight,
             path: `brewable.assignments[${i}].resource.boil`
         })),
-        ...indexedResourcesOf(assignments, "additive").map(([additive, i]) => ({
+        ...indexedResourcesOf(assignments, "additive").map(([additive, i, id]) => ({
+            id,
             name: additive.name,
             tags: tags("boil", "additives"),
             path: `brewable.assignments[${i}].resource.boil`
@@ -78,49 +62,49 @@ function boil(batch: Partial<Batch>): Derived[] {
     ];
 }
 
-function ferment(batch: Partial<Batch>): Derived[] {
-    return indexedResourcesOf(batch.brewable?.assignments ?? [], "yeast").map(([yeast, i]) => ({
+/**
+ * The yeast's pitch date is a brew-day event, not a step of its own, so it
+ * rides behind the expander as an `extra` — tracker-backed (no `path`), keyed
+ * off this same row's assignment ref (`model/tracker.ts`). That's also what
+ * lets more than one yeast track its own pitch date, instead of sharing one
+ * batch-wide field.
+ */
+function ferment(batch: Partial<Batch>): ScheduleItem[] {
+    return indexedResourcesOf(batch.brewable?.assignments ?? [], "yeast").map(([yeast, i, id]) => ({
+        id,
         name: yeast.name,
         tags: tags("ferment", "yeasts"),
         path: `brewable.assignments[${i}].resource.temp`,
-        // when it went in matters less than what temperature to hold, so the date
-        // sits behind the expander rather than taking a row of its own
-        extra: [{ name: "Yeast Pitched", path: "pitchedDate", input: "date" as const }]
+        extra: [{ name: "Yeast Pitched", input: "date" as const }]
     }));
 }
 
 /**
- * Rebuilds the flat brew schedule from the batch's ingredients and steps.
+ * Rebuilds the flat brew schedule from the batch's ingredients.
  *
- * Same contract as _updateShopping: items are matched against the previous list
- * so `completed` survives a recalculation, and when nothing this action owns has
- * changed the *previous object* is handed back by reference — which keeps
- * updateBatch's isEqual check cheap and stops an untouched schedule from looking
- * dirty on every save.
+ * Each item's `id` is its source assignment's id — stable across a Planning
+ * rename/reorder, so it's the reuse key here (matching this rebuild's items
+ * against the previous list) and, on the screen, the tracker ref the row
+ * computes for its checkoff/actual/pitch date (`batch.tracker`, keyed by
+ * `key({on:"assignment", id})` — see CLAUDE.md's BatchSchedule). When nothing
+ * this action owns has changed, the *previous object* is handed back by
+ * reference, which keeps updateBatch's isEqual check cheap and stops an
+ * untouched schedule from looking dirty on every save.
  */
 export default function _updateSchedule(batch: Partial<Batch>): Partial<Batch> {
-    const priorKey = keyer();
-    const previous = new Map((batch.schedule ?? []).map(item => [priorKey(item), item]));
+    const previous = new Map((batch.schedule ?? []).map(item => [item.id, item]));
 
-    const derived: Derived[] = [
+    const derived: ScheduleItem[] = [
         ...mash(batch),
         ...boil(batch),
         ...ferment(batch)
     ];
 
-    const nextKey = keyer();
-
     return Object.assign(batch, {
-        schedule: derived.map((item): ScheduleItem => {
-            const prior = previous.get(nextKey(item));
-
-            if (!prior) return { ...item, completed: false };
-
+        schedule: derived.map(item => {
+            const prior = previous.get(item.id);
             // derived data untouched → hand back the same object
-            if (sameDerived(prior, item)) return prior;
-
-            // derived data moved (a weight was edited, an index shifted) → refresh it, keep the checkoff
-            return { ...prior, ...item };
+            return prior && sameDerived(prior, item) ? prior : item;
         })
     });
 }

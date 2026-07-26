@@ -49,7 +49,7 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
     const session = useSession();
     const batch = useBatch(batchId);
 
-    const [data, update, updateScalar, toggle] = useJsonEdit<Batch>(batch, onChange);
+    const [data, update, updateScalar] = useJsonEdit<Batch>(batch, onChange);
 
     // toggleEquipment reads/writes through this ref rather than closing over
     // `data`, so its identity stays stable across the screen's other edits —
@@ -62,12 +62,14 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
     // tracker writes never go through useJsonEdit's dot-path (a key like
     // "equipment:<uuid>" isn't addressable that way — see CLAUDE.md's Model
     // boundary) — putEntry computes the next tracker and this saves it straight
-    // through the batch save path, mirroring BatchPlanning's onChangeBrewable
-    const toggleEquipment = useCallback((id: string) => {
-        const ref = { on: "equipment" as const, id };
+    // through the batch save path, mirroring BatchPlanning's onChangeBrewable.
+    // Shared by the equipment checklist and the ingredient rows' checkoff.
+    const toggleTrackerCompleted = useCallback((ref: Ref) => {
         const completed = dataRef.current.tracker[key(ref)]?.completed ?? false;
         onChange({ ...dataRef.current, tracker: putEntry(dataRef.current.tracker, ref, { completed: !completed }) });
     }, [onChange]);
+
+    const toggleEquipment = useCallback((id: string) => toggleTrackerCompleted({ on: "equipment", id }), [toggleTrackerCompleted]);
 
     // gravity/milestone edits are typed, so they route through useJsonEdit's
     // debounced `update` (setting the whole `tracker` object at a top-level path,
@@ -78,26 +80,22 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
     }, [update]);
 
     const panels = useMemo(() => {
-        // keep each item's index, so edit paths point at the real position in
-        // batch.schedule no matter how the tabs and groups rearrange the display
-        const entries = data.schedule.map((item, index) => ({ item, index }));
-
         return data.phases.map((phase, index) => {
             // intersection: an item is in the phase only if it carries every configured tag
-            const inPhase = entries
-                .filter(({ item }) => phase.tags.every(tag => item.tags.includes(tag)))
+            const inPhase = data.schedule
+                .filter(item => phase.tags.every(tag => item.tags.includes(tag)))
                 .sort((a, b) =>
-                    (KIND_ORDER.indexOf(a.item.tags[1]) - KIND_ORDER.indexOf(b.item.tags[1]))
-                    || a.item.name.localeCompare(b.item.name));
+                    (KIND_ORDER.indexOf(a.tags[1]) - KIND_ORDER.indexOf(b.tags[1]))
+                    || a.name.localeCompare(b.name));
 
             // sorted, so a group is a run of adjacent items sharing a kind; each run
             // becomes its own DataGrid, which is what bounds the collapse rule to it
-            const groups: { label: string; entries: typeof inPhase }[] = [];
-            inPhase.forEach(entry => {
-                const label = KIND_LABELS[entry.item.tags[1]];
+            const groups: { label: string; items: typeof inPhase }[] = [];
+            inPhase.forEach(item => {
+                const label = KIND_LABELS[item.tags[1]];
                 const current = groups[groups.length - 1];
-                if (current && current.label === label) current.entries.push(entry);
-                else groups.push({ label, entries: [entry] });
+                if (current && current.label === label) current.items.push(item);
+                else groups.push({ label, items: [item] });
             });
 
             // live off the brewable — matched to this tab by phase type, not stored on Phase
@@ -141,22 +139,23 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                                     items={equipment}
                                     tracker={data.tracker}
                                     onToggle={toggleEquipment} />
-                                {groups.map(({ label, entries }) => (
+                                {groups.map(({ label, items }) => (
                                     <DataGrid key={label}>
                                         <DataGridHeaderRow
                                             defaultCollapsed={session?.[`schedule.${phase.name.toLowerCase()}.${label.toLowerCase()}`] as boolean ?? false}
                                             onToggle={collapsed => saveSession(`schedule.${phase.name.toLowerCase()}.${label.toLowerCase()}`, collapsed)}>
                                             {label}
                                         </DataGridHeaderRow>
-                                        {entries.map(({ item, index }) => (
+                                        {items.map(item => (
                                             <ScheduleItemRow
-                                                key={`${item.tags[1]}-${item.name}-${index}`}
-                                                row={index}
+                                                key={item.id}
                                                 item={item}
                                                 // the ingredient's live value, never a copy on the item
                                                 value={valueAt(data, item.path)}
-                                                extraValues={item.extra?.map(({ path }) => valueAt(data, path))}
-                                                toggle={toggle}
+                                                extraValues={item.extra?.map(detail => detail.path ? valueAt(data, detail.path) : "")}
+                                                entry={data.tracker[key({ on: "assignment", id: item.id })]}
+                                                onToggle={toggleTrackerCompleted}
+                                                onPatch={patchTracker}
                                                 update={update}
                                                 updateScalar={updateScalar}
                                             />

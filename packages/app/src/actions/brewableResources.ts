@@ -20,11 +20,15 @@ export function resourcesOf<T extends ResourceType>(assignments: Assignment[], r
  * Like `resourcesOf`, but pairs each narrowed resource with its index in the
  * *flat* `assignments` array — so `_updateSchedule` can emit write-through paths
  * (`brewable.assignments[i].resource.boil`) that edit the real assignment in
- * place. The index is the position in the whole list, not within the type.
+ * place — and with the assignment's own `id`, which `_updateSchedule` surfaces
+ * on the schedule row as its tracker ref. The index is the position in the
+ * whole list, not within the type. `id` is guaranteed present by the time this
+ * runs: `ensureBrewableIds` always precedes `_updateSchedule`/`_updateShopping`
+ * in `createBatch`/`updateBatch` (batch brewables only — see `model/brewable.ts`).
  */
-export function indexedResourcesOf<T extends ResourceType>(assignments: Assignment[], resourceType: T): [ResourceFor<T>, number][] {
+export function indexedResourcesOf<T extends ResourceType>(assignments: Assignment[], resourceType: T): [ResourceFor<T>, number, string][] {
     return assignments
         .map((assignment, index) => [assignment, index] as const)
         .filter((pair): pair is [Extract<Assignment, { resourceType: T }>, number] => pair[0].resourceType === resourceType)
-        .map(([assignment, index]) => [assignment.resource as ResourceFor<T>, index]);
+        .map(([assignment, index]) => [assignment.resource as ResourceFor<T>, index, assignment.id!]);
 }
