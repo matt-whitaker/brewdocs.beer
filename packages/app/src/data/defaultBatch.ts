@@ -14,7 +14,7 @@ const defaultBatch  = {
     version: BATCH_MODEL_VERSION,
     phases,
     tracker: {},
-    // same placeholder the hydrometer dates use
+    // zero-date placeholder until the yeast is actually pitched
     pitchedDate: "0000-00-00",
     batchSize: {
         value: "5gal",
@@ -45,40 +45,6 @@ const defaultBatch  = {
         ibu: "0",
         srm: "0"
     },
-    hydrometer: [
-        {
-            date: "0000-00-00",
-            gravity: {
-                value: "0.00°P",
-                unit: UNITS.PLATO
-            },
-            name: "Before boil",
-        },
-        {
-            date: "0000-00-00",
-            gravity: {
-                value: "0.00°P",
-                unit: UNITS.PLATO
-            },
-            name: "After boil",
-        },
-        {
-            date: "0000-00-00",
-            gravity: {
-                value: "0.00°P",
-                unit: UNITS.PLATO
-            },
-            name: "After Ferment",
-        },
-        {
-            date: "0000-00-00",
-            gravity: {
-                value: "0.00°P",
-                unit: UNITS.PLATO
-            },
-            name: "After secondary",
-        }
-    ],
 };
 
 export default defaultBatch as Pick<Batch, keyof typeof defaultBatch>;
