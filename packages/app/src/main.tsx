@@ -27,13 +27,12 @@ declare module "@tanstack/react-router" {
 
 registerSW({immediate: true});
 
-// start hydrating the local kb cache as early as possible; route-level
-// Suspense boundaries join this in-flight fetch instead of re-triggering it
 prefetchKbGrains();
 prefetchKbHops();
 prefetchKbYeasts();
 prefetchKbRecipes();
 
+// TODO come back to this
 // no StrictMode: mutation actions are fire-and-forget and must not double-fire
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <QueryClientProvider client={queryClient}>

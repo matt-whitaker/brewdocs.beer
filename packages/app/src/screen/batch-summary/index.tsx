@@ -4,7 +4,7 @@ import {organicNames} from "@/component/organics/from-brewable";
 import Screen from "@/component/screen";
 import Vitals from "@/component/vitals";
 import {useBatch} from "@/state/batches";
-import {useRecipeResource} from "@/state/recipeResource";
+import {useRecipeResource} from "@/state/disambiguation";
 
 export type BatchSummaryProps = { batchId: string; };
 export default function BatchSummary({ batchId }: BatchSummaryProps) {

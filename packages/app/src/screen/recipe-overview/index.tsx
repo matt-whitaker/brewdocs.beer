@@ -2,7 +2,8 @@ import {ScreenP, ScreenH2} from "@brewdocs.beer/design";
 import Organics from "@/component/organics";
 import {organicNames} from "@/component/organics/from-brewable";
 import Screen from "@/component/screen";
-import {RecipeSource, useRecipeResource} from "@/state/recipeResource";
+import {RecipeSource} from "@/model/recipe";
+import {useRecipeResource} from "@/state/disambiguation";
 
 export type RecipeOverviewProps = { recipeId: string; source: RecipeSource };
 export default function RecipeOverview({ recipeId, source }: RecipeOverviewProps) {
