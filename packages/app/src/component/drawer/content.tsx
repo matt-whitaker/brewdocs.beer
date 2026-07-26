@@ -1,5 +1,5 @@
 import {PropsWithChildren} from "react";
-import {Hamburger} from "@/component/svg";
+import {Hamburger} from "@brewdocs.beer/design";
 
 export default function DrawerContent({ children }: PropsWithChildren) {
     return (

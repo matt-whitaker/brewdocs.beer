@@ -15,7 +15,7 @@ function RecipeEditPage() {
 
     const breadcrumbs = useMemo<Crumb[]>(() => [
         { label: "Recipes", to: "/recipes" },
-        dynamicCrumb(useRecipeResource, ["user", recipeId], (recipe) => recipe.name, { to: "/recipe/$recipeId", params: {recipeId} }),
+        dynamicCrumb(useRecipeResource, ["user", recipeId], ({ name }) => name, { to: "/recipe/$recipeId", params: {recipeId} }),
         { label: "Edit" },
     ], [recipeId]);
     useBreadcrumbs(breadcrumbs);

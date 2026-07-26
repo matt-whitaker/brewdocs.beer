@@ -1,9 +1,9 @@
 import {createFileRoute} from "@tanstack/react-router";
+import {Plus} from "@brewdocs.beer/design";
 import Action from "@/component/action";
 import {Crumb, useBreadcrumbs} from "@/component/breadcrumbs/context";
 import PanelSwitcher from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
-import {Plus} from "@/component/svg";
 import RecipeCreateModal from "@/screen/recipe-create-modal";
 import RecipeList from "@/screen/recipe-list";
 

@@ -15,8 +15,9 @@ function KbGrainPage() {
     const breadcrumbs = useMemo<Crumb[]>(() => [
         { label: "Knowledge", to: "/knowledge" },
         { label: "Grains" },
-        dynamicCrumb(useKbGrain, [grainId], (grain) => grain.name),
+        dynamicCrumb(useKbGrain, [grainId], ({ name }) => name),
     ], [grainId]);
+
     useBreadcrumbs(breadcrumbs);
 
     return (

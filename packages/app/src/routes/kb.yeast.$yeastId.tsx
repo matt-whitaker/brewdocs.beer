@@ -17,7 +17,7 @@ function KbYeastPage() {
     const breadcrumbs = useMemo<Crumb[]>(() => [
         { label: "Knowledge", to: "/knowledge" },
         { label: "Yeasts" },
-        dynamicCrumb(useKbYeast, [yeastId], (yeast) => yeast.name),
+        dynamicCrumb(useKbYeast, [yeastId], ({ name }) => name),
     ], [yeastId]);
     useBreadcrumbs(breadcrumbs);
 

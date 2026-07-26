@@ -1,10 +1,10 @@
 import {createFileRoute} from "@tanstack/react-router";
 import {useCallback, useMemo} from "react";
+import {Pencil, Plus} from "@brewdocs.beer/design";
 import Action from "@/component/action";
 import {Crumb, dynamicCrumb, useBreadcrumbs} from "@/component/breadcrumbs/context";
 import PanelSwitcher from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
-import {Pencil, Plus} from "@/component/svg";
 import Batch from "@/model/batch";
 import BatchCreateModal from "@/screen/batch-create-modal";
 import BatchList from "@/screen/batch-list";
@@ -25,8 +25,9 @@ function KbRecipePage() {
 
     const breadcrumbs = useMemo<Crumb[]>(() => [
         { label: "Recipes", to: "/recipes" },
-        dynamicCrumb(useRecipeResource, ["kb", recipeId], (recipe) => recipe.name),
+        dynamicCrumb(useRecipeResource, ["kb", recipeId], ({ name }) => name),
     ], [recipeId]);
+
     useBreadcrumbs(breadcrumbs);
 
     const brewAction = <Action label="Brew" icon={Plus} modalContent={<BatchCreateModal source="kb" recipeId={recipeId} />} />;

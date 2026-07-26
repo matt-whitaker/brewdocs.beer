@@ -17,7 +17,7 @@ function KbHopPage() {
     const breadcrumbs = useMemo<Crumb[]>(() => [
         { label: "Knowledge", to: "/knowledge" },
         { label: "Hops" },
-        dynamicCrumb(useKbHop, [hopId], (hop) => hop.name),
+        dynamicCrumb(useKbHop, [hopId], ({ name }) => name),
     ], [hopId]);
     useBreadcrumbs(breadcrumbs);
 

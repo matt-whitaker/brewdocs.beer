@@ -1,10 +1,10 @@
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
 import {useCallback, useMemo} from "react";
+import {Pencil, Plus} from "@brewdocs.beer/design";
 import Action from "@/component/action";
 import {Crumb, dynamicCrumb, useBreadcrumbs} from "@/component/breadcrumbs/context";
 import PanelSwitcher from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
-import {Pencil, Plus} from "@/component/svg";
 import Batch from "@/model/batch";
 import BatchCreateModal from "@/screen/batch-create-modal";
 import BatchList from "@/screen/batch-list";
@@ -22,7 +22,7 @@ function RecipePage() {
 
     const breadcrumbs = useMemo<Crumb[]>(() => [
         { label: "Recipes", to: "/recipes" },
-        dynamicCrumb(useRecipeResource, ["user", recipeId], (recipe) => recipe.name),
+        dynamicCrumb(useRecipeResource, ["user", recipeId], ({ name }) => name),
     ], [recipeId]);
     useBreadcrumbs(breadcrumbs);
 
