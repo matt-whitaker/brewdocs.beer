@@ -6,5 +6,7 @@ import base from "../core/eslint.config.base.js";
 // .storybook/* sits outside src/, so the src/**-scoped no-restricted-imports rule
 // (../ ban) doesn't apply to its relative "../src/design.css" import.
 export default [
-    ...base
+    ...base,
+    // generated from CSS by .storybook/main.ts on every start — not hand-authored
+    {ignores: [".storybook/tokens.generated.ts"]}
 ];
