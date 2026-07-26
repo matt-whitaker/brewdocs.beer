@@ -1,5 +1,6 @@
-import {useCallback, useMemo} from "react";
+import {useCallback, useMemo, useRef} from "react";
 import {Scalar} from "@brewdocs.beer/core";
+import {putEntry} from "@/actions/tracker";
 import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
 import DataGridLabel from "@/component/data-grid/label";
@@ -9,8 +10,9 @@ import PanelSwitcher from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
 import Screen from "@/component/screen";
 import useJsonEdit from "@/hooks/useJsonEdit";
-import Batch, {phaseLabel, ScheduleKind} from "@/model/batch";
+import Batch, {Phase, phaseLabel, SchedulePhase, ScheduleKind} from "@/model/batch";
 import {statuses} from "@/model/statuses";
+import {key} from "@/model/tracker";
 import BatchScheduleEquipment from "@/screen/batch-schedule/equipment";
 import ScheduleItemRow from "@/screen/batch-schedule/item-row";
 import {useBatch} from "@/state/batches";
@@ -19,19 +21,22 @@ import {get} from "@/utils/func";
 
 const STATUS_OPTIONS = Object.entries(statuses).map(([value, name]) => ({name, value}));
 
-// "equipment" never appears in batch.schedule (it lives on phase.equipment,
-// rendered separately by BatchScheduleEquipment) — listed for Record completeness
 const KIND_LABELS: Record<ScheduleKind, string> = {
     grains: "Grains",
     hops: "Hops",
     yeasts: "Yeasts",
     additives: "Additives",
-    gravity: "Gravity",
-    equipment: "Equipment"
+    gravity: "Gravity"
 };
 
 /** within a phase, rows read in the order you'd actually work through them */
 const KIND_ORDER: ScheduleKind[] = ["grains", "hops", "additives", "yeasts", "gravity"];
+
+const SCHEDULE_PHASES: SchedulePhase[] = ["mash", "boil", "ferment"];
+
+/** the SchedulePhase a Phase maps to, read off its own tags rather than its (renamable) name */
+const phaseTypeOf = (phase: Phase): SchedulePhase | undefined =>
+    phase.tags.find((tag): tag is SchedulePhase => (SCHEDULE_PHASES as string[]).includes(tag));
 
 /** a schedule path lands on either a Scalar or a plain string (the dates) */
 function valueAt(data: Batch, path: string): string {
@@ -46,7 +51,23 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
 
     const [data, update, updateScalar, toggle] = useJsonEdit<Batch>(batch, onChange);
 
+    // toggleEquipment reads/writes through this ref rather than closing over
+    // `data`, so its identity stays stable across the screen's other edits —
+    // ticking one box doesn't re-render the whole equipment list
+    const dataRef = useRef(data);
+    dataRef.current = data;
+
     const updateStatus = useCallback((value: string) => update("status", Number(value)), [update]);
+
+    // tracker writes never go through useJsonEdit's dot-path (a key like
+    // "equipment:<uuid>" isn't addressable that way — see CLAUDE.md's Model
+    // boundary) — putEntry computes the next tracker and this saves it straight
+    // through the batch save path, mirroring BatchPlanning's onChangeBrewable
+    const toggleEquipment = useCallback((id: string) => {
+        const ref = { on: "equipment" as const, id };
+        const completed = dataRef.current.tracker[key(ref)]?.completed ?? false;
+        onChange({ ...dataRef.current, tracker: putEntry(dataRef.current.tracker, ref, { completed: !completed }) });
+    }, [onChange]);
 
     const panels = useMemo(() => {
         // keep each item's index, so edit paths point at the real position in
@@ -71,9 +92,15 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                 else groups.push({ label, entries: [entry] });
             });
 
-            return { phase, index, groups };
+            // live off the brewable — matched to this tab by phase type, not stored on Phase
+            const type = phaseTypeOf(phase);
+            const equipment = type
+                ? data.brewable.schedule.phases.filter(p => p.type === type).flatMap(p => p.equipment)
+                : [];
+
+            return { phase, index, groups, equipment };
         });
-    }, [data.schedule, data.phases]);
+    }, [data.schedule, data.phases, data.brewable]);
 
     return (
         <Screen>
@@ -84,22 +111,21 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                 </DataGridRow>
             </DataGrid>
             <PanelSwitcher compact name="schedule" defaultTab={data.phases[0].name}>
-                {panels.map(({ phase, index, groups }) => (
+                {panels.map(({ phase, index, groups, equipment }) => (
                     <PanelSwitcherContent
                         key={phase.name}
                         title={phase.name}
                         label={phaseLabel(phase, index)}
                         // a phase with nothing in it renders as a disabled tab; say why,
                         // or it inherits the switcher's "Not implemented" tooltip
-                        titleAlt={groups.length || phase.equipment.length ? "" : "Nothing scheduled in this step"}>
-                        {groups.length || phase.equipment.length ? (
+                        titleAlt={groups.length || equipment.length ? "" : "Nothing scheduled in this step"}>
+                        {groups.length || equipment.length ? (
                             <div className="pt-2">
                                 {/* what to gather before the phase starts, ahead of the work itself */}
                                 <BatchScheduleEquipment
-                                    phase={index}
-                                    phaseName={phase.name}
-                                    items={phase.equipment}
-                                    toggle={toggle} />
+                                    items={equipment}
+                                    tracker={data.tracker}
+                                    onToggle={toggleEquipment} />
                                 {groups.map(({ label, entries }) => (
                                     <DataGrid key={label}>
                                         <DataGridHeaderRow

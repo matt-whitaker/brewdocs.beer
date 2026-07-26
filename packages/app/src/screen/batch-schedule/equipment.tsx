@@ -4,36 +4,30 @@ import DataGridCheckbox from "@/component/data-grid/checkbox";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridRow from "@/component/data-grid/row";
-import {ToggleFn} from "@/hooks/useJsonEdit";
-import {ScheduleItem} from "@/model/batch";
+import Equipment from "@/model/equipment";
+import {TrackerEntry, key} from "@/model/tracker";
 
 type BatchScheduleEquipmentItemProps = {
-    /** index into batch.phases */
-    phase: number;
-    phaseName: string;
-    /** index into that phase's equipment */
-    row: number;
-    name: string;
+    item: Equipment;
     completed: boolean;
-    toggle: ToggleFn;
+    onToggle: (id: string) => void;
 };
 
-function BatchScheduleEquipmentItem({ phase, phaseName, row, name, completed, toggle }: BatchScheduleEquipmentItemProps) {
-    const id = `equipment-${phaseName}-${name}`;
-    const toggleItem = useCallback(
-        () => toggle(`phases[${phase}].equipment[${row}].completed`),
-        [toggle, phase, row]
-    );
+function BatchScheduleEquipmentItem({ item, completed, onToggle }: BatchScheduleEquipmentItemProps) {
+    // batch brewable equipment is guaranteed an id by ensureBrewableIds (state/batches.ts) before it ever reaches this screen
+    const id = item.id!;
+    const domId = `equipment-${id}`;
+    const toggleItem = useCallback(() => onToggle(id), [onToggle, id]);
 
     return (
         <DataGridRow zebra>
             {/* no value column here, so the label spans the full grid */}
-            <DataGridLabel className="flex items-center col-span-6" htmlFor={id}>
+            <DataGridLabel className="flex items-center col-span-6" htmlFor={domId}>
                 <DataGridCheckbox
-                    id={id}
+                    id={domId}
                     checked={completed}
                     onChange={toggleItem} />
-                {name}
+                {item.name}
             </DataGridLabel>
         </DataGridRow>
     );
@@ -44,11 +38,9 @@ function BatchScheduleEquipmentItem({ phase, phaseName, row, name, completed, to
 const Item = memo(BatchScheduleEquipmentItem);
 
 export type BatchScheduleEquipmentProps = {
-    /** index into batch.phases — the toggle path's real position */
-    phase: number;
-    phaseName: string;
-    items: ScheduleItem[];
-    toggle: ToggleFn;
+    items: Equipment[];
+    tracker: Record<string, TrackerEntry>;
+    onToggle: (id: string) => void;
 };
 
 /**
@@ -56,17 +48,14 @@ export type BatchScheduleEquipmentProps = {
  * own DataGrid — the grid boundary is what would scope a collapse to these rows
  * rather than the ingredient groups below (same pattern as the shopping groups).
  */
-export default function BatchScheduleEquipment({ phase, phaseName, items, toggle }: BatchScheduleEquipmentProps) {
-    const rows = useMemo(() => items.map(({ name, completed }, row) => (
+export default function BatchScheduleEquipment({ items, tracker, onToggle }: BatchScheduleEquipmentProps) {
+    const rows = useMemo(() => items.map(item => (
         <Item
-            key={name}
-            phase={phase}
-            phaseName={phaseName}
-            row={row}
-            name={name}
-            completed={completed}
-            toggle={toggle} />
-    )), [items, phase, phaseName, toggle]);
+            key={item.id}
+            item={item}
+            completed={tracker[key({ on: "equipment", id: item.id! })]?.completed ?? false}
+            onToggle={onToggle} />
+    )), [items, tracker, onToggle]);
 
     if (!items.length) return null;
 

@@ -57,9 +57,8 @@ function mash(batch: Partial<Batch>): Derived[] {
  * boil steps around them (as the old screen did) just duplicated every row.
  *
  * The `path` writes through to the assignment in the brewable
- * (`brewable.assignments[i].resource.boil`) — the editing source of truth — so a
- * boil-time edit from this screen survives `_projectBatchBrewable`, which rebuilds
- * the legacy `batch.hops` from the brewable on every save.
+ * (`brewable.assignments[i].resource.boil`) — the editing source of truth, so a
+ * boil-time edit from this screen is never a copy that could go stale.
  */
 function boil(batch: Partial<Batch>): Derived[] {
     const assignments = batch.brewable?.assignments ?? [];
