@@ -22,6 +22,7 @@ const phases: Phase[] = [
 const defaultBatch  = {
     version: BATCH_MODEL_VERSION,
     phases,
+    tracker: {},
     // same placeholder the hydrometer dates use
     pitchedDate: "0000-00-00",
     batchSize: {

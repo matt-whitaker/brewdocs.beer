@@ -4,6 +4,7 @@ import Hydrometer from "@/model/hydrometer";
 import Measurements from "@/model/measurements";
 import {RecipeSource} from "@/model/recipe";
 import Statuses from "@/model/statuses";
+import {TrackerEntry} from "@/model/tracker";
 
 /** what an item was derived from; replaces the old shopping "groups" */
 export type ShoppingTag = "hops"|"grains"|"yeasts"|"additives";
@@ -139,6 +140,16 @@ export default interface Batch extends Entity {
     schedule: ScheduleItem[];
     /** configuration — how the derived schedule is sliced into tabs */
     phases: Phase[];
+
+    /**
+     * Batch-local brew-day overlay state (checkoffs, actuals, gravity readings,
+     * yeast pitch), keyed by `key(ref)` (`model/tracker.ts`) — a `Ref` points at
+     * a brewable assignment/equipment id or a phase milestone. Write through
+     * `actions/tracker.ts`'s `putEntry`/`pruneTracker`, never a `useJsonEdit`
+     * dot-path — a key like `equipment:<uuid>` has colons `utils/func.ts`'s
+     * `get`/`setIn` won't cleanly address.
+     */
+    tracker: Record<string, TrackerEntry>;
 
     notes?: string;
 }
