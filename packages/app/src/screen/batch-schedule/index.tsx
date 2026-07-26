@@ -12,8 +12,9 @@ import Screen from "@/component/screen";
 import useJsonEdit from "@/hooks/useJsonEdit";
 import Batch, {Phase, phaseLabel, SchedulePhase, ScheduleKind} from "@/model/batch";
 import {statuses} from "@/model/statuses";
-import {key} from "@/model/tracker";
+import {key, Ref, TrackerEntry} from "@/model/tracker";
 import BatchScheduleEquipment from "@/screen/batch-schedule/equipment";
+import BatchScheduleGravity from "@/screen/batch-schedule/gravity";
 import ScheduleItemRow from "@/screen/batch-schedule/item-row";
 import {useBatch} from "@/state/batches";
 import {saveSession, useSession} from "@/state/session";
@@ -25,12 +26,11 @@ const KIND_LABELS: Record<ScheduleKind, string> = {
     grains: "Grains",
     hops: "Hops",
     yeasts: "Yeasts",
-    additives: "Additives",
-    gravity: "Gravity"
+    additives: "Additives"
 };
 
 /** within a phase, rows read in the order you'd actually work through them */
-const KIND_ORDER: ScheduleKind[] = ["grains", "hops", "additives", "yeasts", "gravity"];
+const KIND_ORDER: ScheduleKind[] = ["grains", "hops", "additives", "yeasts"];
 
 const SCHEDULE_PHASES: SchedulePhase[] = ["mash", "boil", "ferment"];
 
@@ -69,6 +69,14 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
         onChange({ ...dataRef.current, tracker: putEntry(dataRef.current.tracker, ref, { completed: !completed }) });
     }, [onChange]);
 
+    // gravity/milestone edits are typed, so they route through useJsonEdit's
+    // debounced `update` (setting the whole `tracker` object at a top-level path,
+    // since a "milestone:..." key isn't dot-path addressable) rather than the
+    // immediate onChange the equipment toggle uses
+    const patchTracker = useCallback((ref: Ref, patch: TrackerEntry) => {
+        update("tracker", putEntry(dataRef.current.tracker, ref, patch));
+    }, [update]);
+
     const panels = useMemo(() => {
         // keep each item's index, so edit paths point at the real position in
         // batch.schedule no matter how the tabs and groups rearrange the display
@@ -98,7 +106,14 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                 ? data.brewable.schedule.phases.filter(p => p.type === type).flatMap(p => p.equipment)
                 : [];
 
-            return { phase, index, groups, equipment };
+            // one post-reading per mash/boil brewable phase (ferment gets none in v1)
+            const gravity = type === "mash" || type === "boil"
+                ? data.brewable.schedule.phases
+                    .filter(p => p.type === type)
+                    .map(p => ({ phaseId: p.id!, label: `Post-${type}` }))
+                : [];
+
+            return { phase, index, groups, equipment, gravity };
         });
     }, [data.schedule, data.phases, data.brewable]);
 
@@ -111,15 +126,15 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                 </DataGridRow>
             </DataGrid>
             <PanelSwitcher compact name="schedule" defaultTab={data.phases[0].name}>
-                {panels.map(({ phase, index, groups, equipment }) => (
+                {panels.map(({ phase, index, groups, equipment, gravity }) => (
                     <PanelSwitcherContent
                         key={phase.name}
                         title={phase.name}
                         label={phaseLabel(phase, index)}
                         // a phase with nothing in it renders as a disabled tab; say why,
                         // or it inherits the switcher's "Not implemented" tooltip
-                        titleAlt={groups.length || equipment.length ? "" : "Nothing scheduled in this step"}>
-                        {groups.length || equipment.length ? (
+                        titleAlt={groups.length || equipment.length || gravity.length ? "" : "Nothing scheduled in this step"}>
+                        {groups.length || equipment.length || gravity.length ? (
                             <div className="pt-2">
                                 {/* what to gather before the phase starts, ahead of the work itself */}
                                 <BatchScheduleEquipment
@@ -148,6 +163,11 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                                         ))}
                                     </DataGrid>
                                 ))}
+                                {/* readings come after the work — the wort's measured as the phase ends */}
+                                <BatchScheduleGravity
+                                    readings={gravity}
+                                    tracker={data.tracker}
+                                    onPatch={patchTracker} />
                             </div>
                         ) : null}
                     </PanelSwitcherContent>

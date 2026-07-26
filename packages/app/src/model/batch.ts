@@ -1,6 +1,5 @@
 import {Entity, Scalar} from "@brewdocs.beer/core";
 import Brewable from "@/model/brewable";
-import Hydrometer from "@/model/hydrometer";
 import Measurements from "@/model/measurements";
 import {RecipeSource} from "@/model/recipe";
 import Statuses from "@/model/statuses";
@@ -24,7 +23,7 @@ export interface ShoppingItem {
 /** the brew-day stage a schedule item happens in */
 export type SchedulePhase = "mash"|"boil"|"ferment";
 /** what the item is — the shopping vocabulary plus readings */
-export type ScheduleKind = "grains"|"hops"|"yeasts"|"additives"|"gravity";
+export type ScheduleKind = "grains"|"hops"|"yeasts"|"additives";
 /** either facet; a Phase filters on these without caring which kind it is */
 export type ScheduleTag = SchedulePhase|ScheduleKind;
 
@@ -128,7 +127,6 @@ export default interface Batch extends Entity {
 
 
     actuals: Measurements;
-    hydrometer: Hydrometer[];
     shopping: ShoppingItem[];
     schedule: ScheduleItem[];
     /** configuration — how the derived schedule is sliced into tabs */

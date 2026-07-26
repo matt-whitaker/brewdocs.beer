@@ -89,25 +89,6 @@ function ferment(batch: Partial<Batch>): Derived[] {
     }));
 }
 
-/** each entry is a slot in `batch.hydrometer`, in the order the readings are taken */
-const READINGS: [index: number, phase: SchedulePhase][] = [
-    [0, "mash"],
-    [1, "boil"],
-    [2, "ferment"]
-];
-
-/** exact date taken matters less than the reading itself, so it rides behind the row's expander, same as the yeast pitch date */
-function gravity(batch: Partial<Batch>): Derived[] {
-    return READINGS
-        .filter(([i]) => (batch.hydrometer ?? [])[i])
-        .map(([i, phase]) => ({
-            name: batch.hydrometer![i].name,
-            tags: tags(phase, "gravity"),
-            path: `hydrometer[${i}].gravity`,
-            extra: [{ name: "Reading Taken", path: `hydrometer[${i}].date`, input: "date" as const }]
-        }));
-}
-
 /**
  * Rebuilds the flat brew schedule from the batch's ingredients and steps.
  *
@@ -124,7 +105,6 @@ export default function _updateSchedule(batch: Partial<Batch>): Partial<Batch> {
     const derived: Derived[] = [
         ...mash(batch),
         ...boil(batch),
-        ...gravity(batch),
         ...ferment(batch)
     ];
 
