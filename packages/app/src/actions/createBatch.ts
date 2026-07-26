@@ -1,7 +1,6 @@
 import {KbRecipe} from "@brewdocs.beer/kb";
 import _updateSchedule from "@/actions/_updateSchedule";
 import _updateShopping from "@/actions/_updateShopping";
-import deriveBatchPhases from "@/actions/deriveBatchPhases";
 import ensureBrewableIds from "@/actions/ensureBrewableIds";
 import {CreateBatchState} from "@/component/create-batch-form/useCreateBatchForm";
 import defaultBatch from "@/data/defaultBatch";
@@ -30,7 +29,6 @@ export default async function createBatch(recipe: Recipe | KbRecipe, source: Rec
         ...inputs
     };
 
-    deriveBatchPhases(brewable, batch);
     _updateShopping(batch);
     _updateSchedule(batch);
 

@@ -23,8 +23,8 @@ export interface ShoppingItem {
 
 /** the brew-day stage a schedule item happens in */
 export type SchedulePhase = "mash"|"boil"|"ferment";
-/** what the item is — the shopping vocabulary plus readings and equipment, which aren't ingredients */
-export type ScheduleKind = "grains"|"hops"|"yeasts"|"additives"|"gravity"|"equipment";
+/** what the item is — the shopping vocabulary plus readings */
+export type ScheduleKind = "grains"|"hops"|"yeasts"|"additives"|"gravity";
 /** either facet; a Phase filters on these without caring which kind it is */
 export type ScheduleTag = SchedulePhase|ScheduleKind;
 
@@ -34,22 +34,15 @@ export type ScheduleTag = SchedulePhase|ScheduleKind;
  * `tags` is an intersection: an item belongs to the phase when it carries *every*
  * listed tag. So `["boil"]` is the whole boil, while `["boil","hops"]` narrows to
  * just the hop additions in it. An empty list matches everything.
+ *
+ * Config only — the phase's equipment kit is derived live from
+ * `batch.brewable.schedule.phases` (matched by type) and its checkoff lives in
+ * `batch.tracker`, not here (see _BatchSchedule_ in CLAUDE.md).
  */
 export interface Phase {
     /** identity — React key, tab title, query-param and session-key value; stays stable across reorders */
     name: string;
     tags: ScheduleTag[];
-    /**
-     * The kit to have ready before this phase starts, checked off in place — so
-     * it's config *and* state on the same object. That's fine here: phases already
-     * live per-batch, so there's nothing shared to contaminate.
-     *
-     * These are `ScheduleItem`s tagged `[phase, "equipment"]` rather than derived
-     * `_updateSchedule` output — equipment stays user-managed (added/removed from
-     * BatchPlanning) and lives here, not in `batch.schedule`. `path` is unused (there's
-     * no ingredient value to point at) and left `""`.
-     */
-    equipment: ScheduleItem[];
 }
 
 /**
@@ -122,8 +115,8 @@ export default interface Batch extends Entity {
     /**
      * The batch's source-of-truth brewable — cloned from the recipe (user source)
      * or narrowed via kbBrewableToBrewable (kb source) at creation time. Shopping,
-     * schedule, and summary all derive from it, and batch-planning edits it;
-     * `deriveBatchPhases` derives `phases` from it (see _Derived batch data_ in
+     * schedule, summary, and the Schedule screen's equipment checklist all derive
+     * from it live, and batch-planning edits it (see _Derived batch data_ in
      * CLAUDE.md).
      */
     brewable: Brewable;
