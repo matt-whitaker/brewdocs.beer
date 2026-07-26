@@ -2,6 +2,7 @@ import {KbRecipe} from "@brewdocs.beer/kb";
 import _updateSchedule from "@/actions/_updateSchedule";
 import _updateShopping from "@/actions/_updateShopping";
 import deriveBatchPhases from "@/actions/deriveBatchPhases";
+import ensureBrewableIds from "@/actions/ensureBrewableIds";
 import {CreateBatchState} from "@/component/create-batch-form/useCreateBatchForm";
 import defaultBatch from "@/data/defaultBatch";
 import Batch from "@/model/batch";
@@ -17,6 +18,7 @@ export default async function createBatch(recipe: Recipe | KbRecipe, source: Rec
 
     // a user recipe already has a brewable of its own; a kb recipe's brewable needs narrowing to the app shape
     const brewable = source === "user" ? cloneDeep((recipe as Recipe).brewable) : kbBrewableToBrewable((recipe as KbRecipe).brewable);
+    ensureBrewableIds(brewable);
 
     const batch: Partial<Batch> = {
         ...defaultBatch,

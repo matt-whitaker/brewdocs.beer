@@ -1,6 +1,7 @@
 import _projectBatchBrewable from "@/actions/_projectBatchBrewable";
 import _updateSchedule from "@/actions/_updateSchedule";
 import _updateShopping from "@/actions/_updateShopping";
+import ensureBrewableIds from "@/actions/ensureBrewableIds";
 import Batch from "@/model/batch";
 import {saveBatch} from "@/state/batches";
 import batchesStorage from "@/storage/batches";
@@ -17,6 +18,7 @@ const scheduleTriggers: (keyof Batch)[] = ["brewable", "hydrometer"];
 export default async function updateBatch(id: string, batch: Batch) {
     const current = await batchesStorage.get(id);
 
+    ensureBrewableIds(batch.brewable);
     _projectBatchBrewable(batch);
 
     if (shoppingTriggers.some(t => !isEqual(batch[t], current?.[t]))) {

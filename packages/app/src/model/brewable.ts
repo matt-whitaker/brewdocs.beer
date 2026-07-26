@@ -14,6 +14,8 @@ export type ResourceType = "grain" | "hop" | "yeast" | "additive";
  * different, batch-derived shape) — named `BrewablePhase` to avoid colliding.
  */
 export interface BrewablePhase {
+    /** stable per-instance id — batch brewables only, minted by ensureBrewableIds; absent on recipe/kb brewables */
+    id?: string;
     type: PhaseType;
     equipment: Equipment[];
 }
@@ -23,6 +25,8 @@ export interface Schedule {
 }
 
 interface AssignmentBase {
+    /** stable per-instance id — batch brewables only, minted by ensureBrewableIds; absent on recipe/kb brewables. Distinct from `slug` (catalog identity, shared across instances) */
+    id?: string;
     phaseType: PhaseType;
     /** identifies the resource within its catalog/collection */
     slug: string;
