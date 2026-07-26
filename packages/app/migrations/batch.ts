@@ -22,6 +22,19 @@ const batchV1ToV2: Migration<Batch> = {
     up: (data) => ({...data, version: 2, brewable: data.brewable ?? defaultBrewable()})
 };
 
-const batchMigrations: Migration<Batch>[] = [batchV0ToV1, batchV1ToV2];
+// v2 is any batch stored before the brew-day tracker replaced per-item state
+// (hydrometer, pitchedDate, Phase.equipment, and schedule/shopping-item
+// completed/actual fields all dropped in favor of `batch.tracker`). There's no
+// sound way to replay old checkoffs/actuals into tracker refs, so this stub
+// only stamps the version and backfills an empty tracker — brew-day progress
+// on a batch this old is lost either way (matches the POC's `/?purge=true`).
+const batchV2ToV3: Migration<Batch> = {
+    namespace: "app.batch",
+    from: 2,
+    to: 3,
+    up: (data) => ({...data, version: 3, tracker: data.tracker ?? {}})
+};
+
+const batchMigrations: Migration<Batch>[] = [batchV0ToV1, batchV1ToV2, batchV2ToV3];
 
 export default batchMigrations;

@@ -98,7 +98,7 @@ export interface ScheduleItem {
 export const phaseLabel = (phase: Phase, index: number): string => `${index + 1}. ${phase.name}`;
 
 /** current shape of the Batch model — bump when a stored batch would no longer parse/derive correctly */
-export const BATCH_MODEL_VERSION = 2;
+export const BATCH_MODEL_VERSION = 3;
 
 export default interface Batch extends Entity {
     /** schema version the batch was created under; see BATCH_MODEL_VERSION */
