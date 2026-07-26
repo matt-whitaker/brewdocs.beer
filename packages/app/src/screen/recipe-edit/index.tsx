@@ -4,7 +4,7 @@ import PanelSwitcherContent from "@/component/panel-switcher/content";
 import Screen from "@/component/screen";
 import Brewable from "@/model/brewable";
 import BrewableEdit from "@/screen/brewable-edit";
-import RecipeEditDetails from "@/screen/recipe-edit-details";
+import RecipeEditDetails from "@/screen/recipe-edit/details";
 import {saveRecipe, useRecipe} from "@/state/recipes";
 
 // A name/brewer header, then BrewableEdit for the Ingredients/Equipment/Phases
