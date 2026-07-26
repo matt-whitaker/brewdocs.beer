@@ -5,7 +5,8 @@ import CreateBatchForm from "@/component/create-batch-form";
 import useCreatBatchForm from "@/component/create-batch-form/useCreateBatchForm";
 import ModalScreen from "@/component/modal/screen";
 import {useBatches} from "@/state/batches";
-import {RecipeSource, useRecipeResource} from "@/state/recipeResource";
+import {useRecipeResource} from "@/state/disambiguation";
+import {RecipeSource} from "@/state/recipeResource";
 
 export type BatchCreateModalProps = { recipeId: string; source: RecipeSource };
 

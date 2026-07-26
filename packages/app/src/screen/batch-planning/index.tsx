@@ -10,7 +10,7 @@ import Batch from "@/model/batch";
 import Brewable from "@/model/brewable";
 import BrewableEdit from "@/screen/brewable-edit";
 import {useBatch} from "@/state/batches";
-import {useRecipeResource} from "@/state/recipeResource";
+import {useRecipeResource} from "@/state/disambiguation";
 
 export type BatchPlanningProps = {
     batchId: string;

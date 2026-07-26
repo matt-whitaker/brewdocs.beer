@@ -1,5 +1,5 @@
 import {useCallback, useEffect, useState, useTransition} from "react";
-import {saveQueryParams, useQueryParams} from "@/state/query-params";
+import {saveQueryParams, useQueryParams} from "@/state/queryParams";
 
 export type SwitchFn = (tab: string) => void;
 export default function usePanelSwitcher(name: string, defaultTab: string): [string, SwitchFn, boolean] {

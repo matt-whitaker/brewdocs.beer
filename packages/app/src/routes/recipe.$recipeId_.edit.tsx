@@ -4,7 +4,7 @@ import {Crumb, dynamicCrumb, useBreadcrumbs} from "@/component/breadcrumbs/conte
 import PanelSwitcher from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
 import RecipeEdit from "@/screen/recipe-edit";
-import {useRecipeResource} from "@/state/recipeResource";
+import {useRecipeResource} from "@/state/disambiguation";
 
 export const Route = createFileRoute("/recipe/$recipeId_/edit")({
     component: RecipeEditPage

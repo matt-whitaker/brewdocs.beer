@@ -10,7 +10,7 @@ import BatchCreateModal from "@/screen/batch-create-modal";
 import BatchList from "@/screen/batch-list";
 import RecipeEditModal from "@/screen/recipe-edit-modal";
 import RecipeOverview from "@/screen/recipe-overview";
-import {useRecipeResource} from "@/state/recipeResource";
+import {useRecipeResource} from "@/state/disambiguation";
 
 export const Route = createFileRoute("/kb/recipe/$recipeId")({
     component: KbRecipePage

@@ -1,8 +1,6 @@
 /**
- * Minimal replacements for the lodash utilities used in this app.
- * Signatures match lodash closely enough to be drop-in for our call sites.
+ * @claude comment
  */
-
 export function cloneDeep<T>(value: T): T {
     return structuredClone(value);
 }
@@ -19,9 +17,7 @@ export function debounce<A extends unknown[]>(fn: (...args: A) => void, wait: nu
 }
 
 /**
- * Splits a lodash-style path; supports dots and brackets, so
- * "checklists.0.items.2.completed" and "shopping.[0].items.[2].purchased"
- * both yield plain segments
+ * @claude comment
  */
 function toSegments(path: string): string[] {
     return path.replace(/\[(\w+)\]/g, ".$1").split(".").filter(Boolean);
@@ -37,8 +33,7 @@ export function get(obj: unknown, path: string): any {
 }
 
 /**
- * Dot-path assignment; mutates and returns obj, creating missing
- * intermediate objects/arrays like lodash does
+ * @claude comment
  */
 export function set<T extends object>(obj: T, path: string, value: unknown): T {
     const segments = toSegments(path);
@@ -54,15 +49,15 @@ export function set<T extends object>(obj: T, path: string, value: unknown): T {
     return obj;
 }
 
+/**
+ * @claude comment
+ */
 function shallowClone<T>(node: T): T {
     return (Array.isArray(node) ? [...node] : {...node}) as T;
 }
 
 /**
- * Immutable dot-path assignment with structural sharing: only the nodes along
- * `path` are cloned, every untouched branch keeps its identity. Much cheaper
- * than deep-cloning the whole tree per edit, and it lets memoized children skip
- * re-rendering when their own branch didn't change.
+ * @claude comment
  */
 export function setIn<T extends object>(obj: T, path: string, value: unknown): T {
     const segments = toSegments(path);
@@ -84,6 +79,9 @@ export function setIn<T extends object>(obj: T, path: string, value: unknown): T
     return next as T;
 }
 
+/**
+ * @claude comment
+ */
 export function omitBy<T extends object>(obj: T, predicate: (value: T[keyof T]) => boolean): Partial<T> {
     const result: Partial<T> = {};
     for (const key of Object.keys(obj) as (keyof T)[]) {
@@ -94,6 +92,9 @@ export function omitBy<T extends object>(obj: T, predicate: (value: T[keyof T]) 
     return result;
 }
 
+/**
+ * @claude comment
+ */
 export function isEmpty(value: unknown): boolean {
     if (value == null) return true;
     if (typeof value === "string" || Array.isArray(value)) return value.length === 0;
