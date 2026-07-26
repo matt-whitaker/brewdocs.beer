@@ -1,8 +1,7 @@
 import {Link} from "@tanstack/react-router";
 import {ScreenH2, ScreenP} from "@brewdocs.beer/design";
 import {KbRecipe} from "@brewdocs.beer/kb";
-import Recipe from "@/model/recipe";
-import {RecipeSource} from "@/state/recipeResource";
+import Recipe, {RecipeSource} from "@/model/recipe";
 
 
 export type RecipeListItemProps = {

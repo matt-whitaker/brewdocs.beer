@@ -1,6 +1,6 @@
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {KbRecipe} from "@brewdocs.beer/kb/src";
-import Recipe from "@/model/recipe";
+import Recipe, {RecipeSource} from "@/model/recipe";
 import {useBatch} from "@/state/batches";
 import {fetchKbRecipe} from "@/state/kbRecipes";
 import {fetchRecipe} from "@/state/recipes";

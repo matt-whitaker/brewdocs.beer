@@ -3,8 +3,8 @@ import {useCallback, useState} from "react";
 import {InputText} from "@brewdocs.beer/design";
 import createRecipe from "@/actions/createRecipe";
 import ModalScreen from "@/component/modal/screen";
+import {RecipeSource} from "@/model/recipe";
 import {useRecipeResource} from "@/state/disambiguation";
-import {RecipeSource} from "@/state/recipeResource";
 
 export type RecipeEditModalProps = { recipeId: string; source: RecipeSource };
 
