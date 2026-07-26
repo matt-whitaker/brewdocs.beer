@@ -49,17 +49,28 @@ export interface Phase {
  * the same "extra config" pattern the planning rows use for hop alpha.
  *
  * It points into the batch the way a ScheduleItem does, but carries no state of
- * its own: no checkoff, no planned-vs-actual. It's a field, not a step.
+ * its own: no checkoff, no planned-vs-actual.
  */
 export interface ScheduleDetail {
     name: string;
-    /** dot-path to the value, e.g. `pitchedDate` */
-    path: string;
+    /**
+     * dot-path to the value, e.g. `hops[2].boil`. Absent when the field is
+     * tracker-backed instead — the yeast pitch date has no path; it reads/writes
+     * `batch.tracker` keyed off the row's own assignment ref (see `ScheduleItem.id`).
+     */
+    path?: string;
     /** a date is a plain string at the path and skips unit formatting */
     input?: "date";
 }
 
 export interface ScheduleItem {
+    /**
+     * the source assignment's id (`ensureBrewableIds`, `model/brewable.ts`) —
+     * stable across a Planning rename/reorder. Doubles as the schedule's own
+     * reuse key and as the tracker ref (`{on:"assignment", id}`,
+     * `model/tracker.ts`) the row computes for its checkoff/actual/pitch date.
+     */
+    id: string;
     name: string;
     /** derived — [phase, kind]; two facets is what lets the screen group either way */
     tags: [SchedulePhase, ScheduleKind];
@@ -71,14 +82,6 @@ export interface ScheduleItem {
      */
     amount?: Scalar;
     /**
-     * user-owned — what actually went in, when it differed from the plan.
-     *
-     * Deliberately not a write-through to `grains[i].weight`: that figure is what
-     * the shopping list aggregates, and using 1.2oz on brew day shouldn't rewrite
-     * what you were told to buy. Unset means "went to plan".
-     */
-    actual?: Scalar;
-    /**
      * derived — dot-path to the value this row shows, e.g. `hops[2].boil`.
      *
      * Unlike a ShoppingItem's cost, the values a schedule row edits (a hop's boil
@@ -89,8 +92,6 @@ export interface ScheduleItem {
     path: string;
     /** derived — secondary fields, revealed only when the row is expanded */
     extra?: ScheduleDetail[];
-    /** user-owned — preserved across recalculation */
-    completed: boolean;
 }
 
 /** display label for a phase — the "1.", "2." prefix is derived from position, never stored */
@@ -104,8 +105,6 @@ export default interface Batch extends Entity {
     version: number;
     name: string;
     brewDate: string;
-    /** when the yeast went in — fermentation's start, edited from the Ferment phase */
-    pitchedDate: string;
     recipeId: string;
     /** which store recipeId points at — absent on batches created before this field, which were all catalog recipes (treat as "kb") */
     recipeSource?: RecipeSource;

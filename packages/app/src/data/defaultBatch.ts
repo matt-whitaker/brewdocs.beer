@@ -14,8 +14,6 @@ const defaultBatch  = {
     version: BATCH_MODEL_VERSION,
     phases,
     tracker: {},
-    // zero-date placeholder until the yeast is actually pitched
-    pitchedDate: "0000-00-00",
     batchSize: {
         value: "5gal",
         unit: UNITS.GALLONS
