@@ -61,7 +61,22 @@ turn into a sized breakdown — no more.
 - **Proposal** — the high-level shape (§3).
 - **Constraints** — standing + feature-specific.
 - **Research path** — the reading list + questions (§2). *This is the heart of the issue.*
+- **Integration branch** — the epic's feature branch (cut below) and the branch-per-epic flow.
 - **Your task** — the block below, addressed to the assignee agent.
+
+**Then cut the epic's feature branch — always.** This issue *is* the epic (the agent's sub-issues
+link to it as native sub-issues), so it gets one integration branch that all that work targets, not
+`mainline` — the feature lands together and merges as a single PR. Capture the issue number, then:
+
+```
+git checkout mainline && git pull --ff-only
+git checkout -b <issue#>-<kebab-summary>
+git push -u origin <issue#>-<kebab-summary>
+```
+
+The branch is empty (off `mainline`) until the first sub-issue PR merges in. After cutting it,
+`gh issue edit` the issue to fill the concrete branch name into its **Integration branch** section
+and the *Your task* block.
 
 ### The "Your task" block (include in the issue, addressed to the GitHub agent)
 
@@ -83,6 +98,16 @@ turn into a sized breakdown — no more.
 > repo, i.e. `$GITHUB_REPOSITORY`). If that API is unavailable, fall back to a
 > `Part of #<this-issue-number>` line in each body.
 >
+> **Target the epic's feature branch.** A branch `<issue#>-<kebab-summary>` has been cut off
+> `mainline` for this epic (its name is in the *Integration branch* section above). Every sub-issue
+> you create must carry a **Base branch** note telling its worker to *branch off that branch and open
+> the PR against it, not `mainline`; rebase onto it once the prerequisite sub-issue has landed there.*
+> Land the prerequisite sub-issue into the branch first.
+>
+> ⚠️ When your index comment or any issue body references sub-issues by number, use their **real
+> issue numbers** (assigned after creation), never ordinals like #1…#7 — GitHub auto-links `#N` to
+> whatever issue/PR already holds that number, so low ordinals silently point at unrelated old PRs.
+>
 > Then post ONE comment on *this* issue listing the sub-issues (with links) in prerequisite
 > order, marking which are parallel vs blocked — a single index to review.
 >
@@ -100,10 +125,11 @@ turn into a sized breakdown — no more.
 
 ## 5. Close with a one-liner for the maintainer
 
-After creating it, post the issue link in your response and remind the maintainer: review /
-iterate, then apply the **`claude` label** to trigger the research + decomposition — the
-label tier gets the full turn budget, while an `@claude` comment runs on the smaller poke
-budget and can time out on real research. The agent will then **create the sub-issues
+After creating it, post the issue link **and the epic's feature-branch name** in your response
+and remind the maintainer: review / iterate, then apply the **`claude` label** to trigger the
+research + decomposition — the label tier gets the full turn budget, while an `@claude` comment
+runs on the smaller poke budget and can time out on real research. The agent's sub-issues will
+target the feature branch, not `mainline`. The agent will then **create the sub-issues
 (unlabeled), link them as native sub-issues of the parent**, and post an index comment; the
 maintainer reviews and applies the `claude` label to whichever ones to start.
 
@@ -112,5 +138,7 @@ maintainer reviews and applies the `claude` label to whichever ones to start.
 - Light grounding only — never produce the final per-file decomposition yourself; that's the
   assignee agent's job.
 - Never implement and never apply a label. Create **only** the single research issue
-  (unlabeled) — never the sub-issues; those are the agent's job.
-- Stop once the research-path issue is created and its link posted.
+  (unlabeled) — never the sub-issues; those are the agent's job. Cutting the epic's **empty**
+  feature branch off `mainline` is the one expected exception — it's not code; write nothing onto it.
+- Stop once the research-path issue is created, its feature branch is cut, and its link + branch
+  name are posted.

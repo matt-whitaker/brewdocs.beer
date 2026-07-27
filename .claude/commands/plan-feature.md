@@ -23,7 +23,8 @@ is `mainline`. See CLAUDE.md for architecture and conventions.
 
 The overall goal and why, the shared constraints, and a short codebase map of where the
 relevant code lives. This is the review artifact — it's what the maintainer reads to
-decide whether the decomposition is right.
+decide whether the decomposition is right. Include an **Integration branch** section naming
+the epic's feature branch and the branch-per-epic flow (see §4).
 
 ## 3. Decompose into sub-issues sized for a bounded-turn worker
 
@@ -56,13 +57,26 @@ implemented without that context.
 Order them so prerequisites come first, and say plainly which are independent (safe to
 start in parallel) and which are blocked on an earlier child.
 
-## 4. Create the issues
+## 4. Create the issues and the epic's feature branch
 
-Create the **epic first**, then each sub-issue, then link them:
+Create the **epic first**, cut its feature branch, then each sub-issue, then link them:
 
 1. **Epic** — `gh issue create --title "<epic title>" --body "<parent body from §2>"` (no
    labels). Capture its number from the returned URL.
-2. **Sub-issues** — one `gh issue create` per child (no labels), body built from the
+2. **Cut the epic's feature branch — always.** Every epic gets one integration branch; sub-issue
+   work targets it, not `mainline`, so the whole feature lands together and merges to `mainline`
+   as a single PR. From the epic number:
+   ```
+   git checkout mainline && git pull --ff-only
+   git checkout -b <epic#>-<kebab-summary>
+   git push -u origin <epic#>-<kebab-summary>
+   ```
+   Cut from current `mainline`; it stays empty until the first sub-issue PR merges in. Then give the
+   **epic body** an **Integration branch** section: name the branch, say each sub-issue branches off
+   it and PRs **into** it, land the prerequisite child first, and note that if the `@claude` action
+   opens a sub-issue PR against `mainline` by default, the maintainer retargets the PR's base to the
+   epic branch (GitHub → the PR → Edit → base dropdown).
+3. **Sub-issues** — one `gh issue create` per child (no labels), body built from the
    `.github/ISSUE_TEMPLATE/claude-task.yml` headings:
    - **Summary** — what needs to happen and why
    - **Where the code lives** — specific, verified paths
@@ -71,7 +85,11 @@ Create the **epic first**, then each sub-issue, then link them:
    - **Out of scope** — what not to touch; prevents over-engineering
    - **Acceptance criteria** — a short checklist
    - **CLAUDE.md Updates (Optional)** — anything that will need updating in CLAUDE.md
-3. **Link each sub-issue as a native GitHub sub-issue of the epic** so they show in its
+
+   ⚠️ Every child body must also carry a **Base branch** note: *branch off `<epic#>-<kebab-summary>`
+   and open your PR against it, not `mainline`; rebase onto it once the prerequisite child has landed
+   there.* A worker sees only its own issue, so this can't be left implicit.
+4. **Link each sub-issue as a native GitHub sub-issue of the epic** so they show in its
    Sub-issues list — a `Part of #N` text line is *not* sufficient. The REST API wants the
    child's integer database `id`, **not** its issue number:
    - `gh api repos/{owner}/{repo}/issues/<child-number> --jq .id` → the child's id
@@ -79,6 +97,10 @@ Create the **epic first**, then each sub-issue, then link them:
 
    `gh api` fills `{owner}/{repo}` from the current repo. If the sub-issues API is
    unavailable, fall back to a `Part of #<epic-number>` line in each child body.
+
+⚠️ When the epic body lists its children, reference them by their **real issue numbers** (e.g.
+`#231`), added after the children exist — never as ordinals like "#1…#7". GitHub auto-links `#N` to
+whatever issue/PR already holds that number, so low ordinals silently point at ancient PRs.
 
 Carry these standing constraints into every sub-issue's Out of scope:
 
@@ -113,9 +135,10 @@ cadence is already wired for every run.
 
 ## 5. Close with a plan of attack
 
-After creating them, post the summary in your response: the epic link, then each
-sub-issue's title + link, which are independent vs. blocked and on what, and the order to
-apply the `claude` label. The issues are **unlabeled drafts** — the maintainer reviews and
+After creating them, post the summary in your response: the epic link, the epic's **feature
+branch** name (and the reminder that sub-issue PRs target it, retargeting off `mainline` if
+needed), then each sub-issue's title + link, which are independent vs. blocked and on what, and
+the order to apply the `claude` label. The issues are **unlabeled drafts** — the maintainer reviews and
 iterates, then **starts a sub-issue by applying the `claude` label** (the full feature-work
 turn budget; an `@claude` comment runs on the smaller poke budget and can time out on real
 implementation work).
@@ -124,5 +147,6 @@ implementation work).
 
 - Create the issues **unlabeled**. Never apply the `claude` label — the maintainer's
   label-apply is both the review gate and the trigger.
-- Never implement any of it — issues only, no code, no PR.
-- Stop once the issues are created, linked, and summarized.
+- Never implement any of it — issues only, no code, no PR. Cutting the epic's **empty** feature
+  branch off `mainline` (step 4.2) is the one expected exception — it's not code; write nothing onto it.
+- Stop once the issues are created, linked, the feature branch is cut, and everything is summarized.
