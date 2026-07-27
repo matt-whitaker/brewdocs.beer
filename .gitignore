@@ -1,5 +1,7 @@
 node_modules/
 notes.md
+test-results/
+playwright-report/
 .env.*
 !.env.development
 .idea/
