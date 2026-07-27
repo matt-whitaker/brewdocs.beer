@@ -10,7 +10,7 @@ This root file holds the **universal** rules. Each package's deep-dive lives in 
 - **Layout.** npm-workspaces monorepo; packages named `@brewdocs.beer/<name>`.
 - **Default branch.** `mainline` — also the target for all PRs and the **sole** deploy branch.
 - **Node.** ≥22. ⚠️ Non-interactive shells on this machine resolve `node` to an ancient v10 — if a command fails with syntax errors inside `node_modules`, prefix it: `PATH="$HOME/.nvm/versions/node/v22.23.1/bin:$PATH"`.
-- **Verify (the gate).** `npm test -ws` (eslint — app + www + design) + `tsc --noEmit` + `vite build`. No unit-test framework, no runtime tests — see _Linting_ (`packages/app/CLAUDE.md`) and _Definition of done_.
+- **Verify (the gate).** `npm test -ws` (eslint — app + www + design + e2e) + `tsc --noEmit` + `vite build`. No unit-test framework, no runtime tests in that gate — Playwright functional tests (`packages/e2e`) run separately in `.github/workflows/functional-test.yaml`, not in Verify. See _Linting_ (`packages/app/CLAUDE.md`) and _Definition of done_.
 
 | Package | Role |
 |---|---|
@@ -19,6 +19,7 @@ This root file holds the **universal** rules. Each package's deep-dive lives in 
 | `design` | React UI primitives (typography, inputs) that emit Tailwind/DaisyUI class strings. |
 | `app` | The PWA itself: Vite + React + TanStack Router/Query. Deployed to app.brewdocs.beer. |
 | `www` | Astro marketing/info site at brewdocs.beer. |
+| `e2e` | Playwright functional-test harness (config + specs) driving the app dev server. Not part of Verify — its own `functional-test.yaml` CI workflow. |
 
 ## Legend
 
@@ -70,6 +71,7 @@ Each package's deep-dive (Purpose / Where / Surface / Invariants / Gotchas …) 
 - **design** → [`packages/design/CLAUDE.md`](packages/design/CLAUDE.md) (+ long-form [`packages/design/DESIGN.md`](packages/design/DESIGN.md))
 - **app** → [`packages/app/CLAUDE.md`](packages/app/CLAUDE.md) — the largest; holds Routing, Breadcrumbs, State, the Kb\*/app _Model boundary_, Derived batch data, BatchSchedule, the `useJsonEdit` editing pattern, PanelSwitcher, _Styling_, kb dev/build serving, and _Linting_.
 - **www** → [`packages/www/CLAUDE.md`](packages/www/CLAUDE.md)
+- **e2e** → [`packages/e2e/CLAUDE.md`](packages/e2e/CLAUDE.md)
 
 ## Deployment
 
@@ -80,6 +82,8 @@ GitHub Actions, path-filtered on push to `mainline` (the sole deploy branch), al
 - `build-test-deploy.www-prod.yaml` — www dist → www bucket (brewdocs.beer).
 
 The **Verify** workflow (`.github/workflows/verify.yaml`) runs `npm ci`, then `npm test` (lint) and `npm run build` across **all workspaces** (`-ws`), on every PR (no deploy) — the real pre-merge gate; the `build-test-deploy.*` workflows run only *post*-merge on push.
+
+**Functional tests.** `.github/workflows/functional-test.yaml` runs the Playwright suite (`packages/e2e`) on every PR to `mainline`, independently of Verify — it installs the chromium browser and lets Playwright's `webServer` auto-start the app dev server, uploading the HTML report/traces as an artifact on failure. See `packages/e2e/CLAUDE.md`.
 
 ## Contributing
 
