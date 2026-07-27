@@ -50,7 +50,7 @@ test("switches between the Planning/Shopping/Schedule/Summary tabs", async ({pag
     await scheduleTab.click();
     await expect(scheduleTab).toHaveAttribute("aria-selected", "true");
     await expect(shoppingTab).toHaveAttribute("aria-selected", "false");
-    await expect(page.getByText("Status")).toBeVisible();
+    await expect(page.getByText("Status", {exact: true})).toBeVisible();
     // Schedule's phase sub-tabs (numbered by position, e.g. "1. Mash")
     await expect(page.getByRole("tab", {name: "1. Mash"})).toBeVisible();
     await expect(page.getByRole("tab", {name: "2. Boil"})).toBeVisible();
