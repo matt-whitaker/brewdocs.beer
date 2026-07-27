@@ -1,4 +1,4 @@
-import {useCallback, useRef} from "react";
+import {useCallback} from "react";
 import {ScreenH3, ScreenP} from "@brewdocs.beer/design";
 import DataGrid from "@/component/data-grid";
 import DataGridInput from "@/component/data-grid/input";
@@ -14,26 +14,24 @@ import {useRecipeResource} from "@/state/disambiguation";
 
 export type BatchPlanningProps = {
     batchId: string;
-    onChange: (batch: Batch) => void
+    onChange: (patch: Partial<Batch>) => void
 };
 
 // A name/brewDate header, then BrewableEdit for the Ingredients/Equipment/Phases
 // tabs, mirroring recipe-edit. brewDate stays header chrome (a single field
-// doesn't warrant its own panelsBefore panel) via its own useJsonEdit<Batch>;
-// both it and BrewableEdit's onChangeBrewable merge onto the freshest batch at
-// save time via batchRef, so neither clobbers the other's in-flight edit.
+// doesn't warrant its own panelsBefore panel) via its own useJsonEdit<Batch>.
+// The header and BrewableEdit each save only the slice they own (brewDate /
+// brewable); updateBatch merges each onto the freshest stored batch, so neither
+// clobbers the other's edit — no ref to the whole batch needed here.
 export default function BatchPlanning({ batchId, onChange }: BatchPlanningProps) {
     const batch = useBatch(batchId);
     const recipe = useRecipeResource(batch.recipeSource ?? "kb", batch.recipeId);
 
-    const batchRef = useRef(batch);
-    batchRef.current = batch;
-
-    const onChangeHeader = useCallback((b: Batch) => onChange({...b, brewable: batchRef.current.brewable}), [onChange]);
+    const onChangeHeader = useCallback((b: Batch) => onChange({ brewDate: b.brewDate }), [onChange]);
     const [data, update] = useJsonEdit<Batch>(batch, onChangeHeader);
     const updateDate = useCallback((value: string) => update("brewDate", value), [update]);
 
-    const onChangeBrewable = useCallback((brewable: Brewable) => onChange({...batchRef.current, brewable}), [onChange]);
+    const onChangeBrewable = useCallback((brewable: Brewable) => onChange({ brewable }), [onChange]);
 
     return (
         <Screen>

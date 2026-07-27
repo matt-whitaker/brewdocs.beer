@@ -37,3 +37,16 @@ export const saveRecipe = async (id: string, recipe: Recipe) => {
     await queryClient.invalidateQueries({queryKey: recipeQueryKey(id)});
     await queryClient.invalidateQueries({queryKey: recipesQueryKey()});
 };
+
+// Merge a slice onto the freshest stored recipe — for a screen that owns only
+// part of the recipe (recipe-edit's brewable, the Details panel's other fields).
+// Doing the merge here, against the current stored value, means a sibling panel
+// editing a different slice can't clobber this one, and the caller needn't hold
+// a ref to the whole recipe to reconstruct it.
+export const patchRecipe = async (id: string, patch: Partial<Recipe>) => {
+    const current = await recipesStorage.get(id);
+    if (!current) return;
+    await recipesStorage.save(id, {...current, ...patch});
+    await queryClient.invalidateQueries({queryKey: recipeQueryKey(id)});
+    await queryClient.invalidateQueries({queryKey: recipesQueryKey()});
+};

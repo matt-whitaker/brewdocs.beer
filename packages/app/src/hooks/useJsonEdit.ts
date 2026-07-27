@@ -9,10 +9,11 @@ export type ToggleFn = (dot: string) => void;
 export type AddFn = (dot: string, value: unknown) => void;
 export type RemoveFn = (dot: string, index: number) => void;
 export type MoveFn = (dot: string, from: number, to: number) => void;
+export type MutateFn<T> = (fn: (draft: T) => T, immediate?: boolean) => void;
 
 // T is any editable object — a whole Entity (Recipe/Batch) or a sub-object of
 // one (e.g. a Brewable, edited by BrewableEdit and merged back on save).
-export default function useJsonEdit<T extends object>(data: T, onChange: (data: T) => void): [T, UpdateFn, UpdateScalarFn, ToggleFn, AddFn, RemoveFn, MoveFn] {
+export default function useJsonEdit<T extends object>(data: T, onChange: (data: T) => void): [T, UpdateFn, UpdateScalarFn, ToggleFn, AddFn, RemoveFn, MoveFn, MutateFn<T>] {
     const [state, setState] = useState<T>(data);
 
     // the editors below read the draft through this ref rather than closing over
@@ -84,5 +85,16 @@ export default function useJsonEdit<T extends object>(data: T, onChange: (data: 
         commit(setIn(stateRef.current, dot, next), true);
     }, [commit]);
 
-    return [state, update, updateScalar, toggle, add, remove, move];
+    /**
+     * Functional whole-draft update — `fn` receives the latest draft and returns
+     * the next one. For edits a dot-path can't express (e.g. a map keyed by
+     * "equipment:<uuid>", whose colons aren't dot-addressable). Reads the freshest
+     * draft via `stateRef`, so a caller doesn't need its own ref to avoid a stale
+     * closure, and its identity stays stable like the other editors.
+     */
+    const mutate = useCallback<MutateFn<T>>((fn, immediate = false) => {
+        commit(fn(stateRef.current), immediate);
+    }, [commit]);
+
+    return [state, update, updateScalar, toggle, add, remove, move, mutate];
 }

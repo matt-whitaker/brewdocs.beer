@@ -7,8 +7,15 @@ import {saveBatch} from "@/state/batches";
 import batchesStorage from "@/storage/batches";
 import {isEqual} from "@/utils/func";
 
-export default async function updateBatch(id: string, batch: Batch) {
+export default async function updateBatch(id: string, patch: Partial<Batch>) {
     const current = await batchesStorage.get(id);
+
+    // Merge the caller's slice onto the freshest stored batch, so a screen that
+    // owns one field (BatchPlanning's brewable/brewDate) doesn't have to hand
+    // back a whole reconstructed batch — and a stale sibling field can't clobber
+    // one saved since. A full-batch caller (BatchSchedule/Shopping drafts) still
+    // works: every key is present, so the merge is a straight replace.
+    const batch = { ...current, ...patch } as Batch;
 
     ensureBrewableIds(batch.brewable);
 

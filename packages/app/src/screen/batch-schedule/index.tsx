@@ -1,4 +1,4 @@
-import {useCallback, useMemo, useRef} from "react";
+import {useCallback, useMemo} from "react";
 import {Scalar} from "@brewdocs.beer/core";
 import {putEntry} from "@/actions/tracker";
 import DataGrid from "@/component/data-grid";
@@ -49,35 +49,27 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
     const session = useSession();
     const batch = useBatch(batchId);
 
-    const [data, update, updateScalar] = useJsonEdit<Batch>(batch, onChange);
-
-    // toggleEquipment reads/writes through this ref rather than closing over
-    // `data`, so its identity stays stable across the screen's other edits —
-    // ticking one box doesn't re-render the whole equipment list
-    const dataRef = useRef(data);
-    dataRef.current = data;
+    const [data, update, updateScalar, , , , , mutate] = useJsonEdit<Batch>(batch, onChange);
 
     const updateStatus = useCallback((value: string) => update("status", Number(value)), [update]);
 
-    // tracker writes never go through useJsonEdit's dot-path (a key like
+    // tracker writes can't go through useJsonEdit's dot-path (a key like
     // "equipment:<uuid>" isn't addressable that way — see CLAUDE.md's Model
-    // boundary) — putEntry computes the next tracker and this saves it straight
-    // through the batch save path, mirroring BatchPlanning's onChangeBrewable.
-    // Shared by the equipment checklist and the ingredient rows' checkoff.
+    // boundary), so they use `mutate`: it hands `putEntry` the freshest draft and
+    // stays referentially stable, so ticking one box doesn't re-render the whole
+    // list. Shared by the equipment checklist and the ingredient rows' checkoff;
+    // immediate (like the old checkbox toggle), not debounced.
     const toggleTrackerCompleted = useCallback((ref: Ref) => {
-        const completed = dataRef.current.tracker[key(ref)]?.completed ?? false;
-        onChange({ ...dataRef.current, tracker: putEntry(dataRef.current.tracker, ref, { completed: !completed }) });
-    }, [onChange]);
+        mutate(d => ({ ...d, tracker: putEntry(d.tracker, ref, { completed: !d.tracker[key(ref)]?.completed }) }), true);
+    }, [mutate]);
 
     const toggleEquipment = useCallback((id: string) => toggleTrackerCompleted({ on: "equipment", id }), [toggleTrackerCompleted]);
 
-    // gravity/milestone edits are typed, so they route through useJsonEdit's
-    // debounced `update` (setting the whole `tracker` object at a top-level path,
-    // since a "milestone:..." key isn't dot-path addressable) rather than the
-    // immediate onChange the equipment toggle uses
+    // gravity/milestone edits are typed, so they debounce (no `immediate`),
+    // matching the rest of useJsonEdit's field editing
     const patchTracker = useCallback((ref: Ref, patch: TrackerEntry) => {
-        update("tracker", putEntry(dataRef.current.tracker, ref, patch));
-    }, [update]);
+        mutate(d => ({ ...d, tracker: putEntry(d.tracker, ref, patch) }));
+    }, [mutate]);
 
     const panels = useMemo(() => {
         return data.phases.map((phase, index) => {
