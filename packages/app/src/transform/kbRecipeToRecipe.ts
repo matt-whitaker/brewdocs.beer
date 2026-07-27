@@ -1,5 +1,5 @@
 import {KbRecipe} from "@brewdocs.beer/kb";
-import Recipe, {RECIPE_MODEL_VERSION} from "@/model/recipe";
+import Recipe from "@/model/recipe";
 import {kbBrewableToBrewable} from "@/transform/kbBrewableToBrewable";
 
 /**
@@ -12,7 +12,6 @@ import {kbBrewableToBrewable} from "@/transform/kbBrewableToBrewable";
 export function kbRecipeToRecipe({id, ...kbRecipe}: KbRecipe): Omit<Recipe, "id"> {
     return {
         ...kbRecipe,
-        version: RECIPE_MODEL_VERSION,
         sourceId: id,
         brewable: kbBrewableToBrewable(kbRecipe.brewable),
     };

@@ -14,7 +14,7 @@ type BatchScheduleEquipmentItemProps = {
 };
 
 function BatchScheduleEquipmentItem({ item, completed, onToggle }: BatchScheduleEquipmentItemProps) {
-    // batch brewable equipment is guaranteed an id by ensureBrewableIds (state/batches.ts) before it ever reaches this screen
+    // batch brewable equipment is guaranteed an id by ensureBrewableIds in the batch write path (createBatch/updateBatch) before it ever reaches this screen
     const id = item.id!;
     const domId = `equipment-${id}`;
     const toggleItem = useCallback(() => onToggle(id), [onToggle, id]);

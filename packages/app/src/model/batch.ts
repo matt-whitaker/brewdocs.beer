@@ -42,10 +42,7 @@ export interface ScheduleItem {
 
 export const phaseLabel = (phase: Phase, index: number): string => `${index + 1}. ${phase.name}`;
 
-export const BATCH_MODEL_VERSION = 3;
-
 export default interface Batch extends Entity {
-    version: number;
     name: string;
     brewDate: string;
     recipeId: string;

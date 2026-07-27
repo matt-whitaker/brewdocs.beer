@@ -1,23 +1,14 @@
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {defaultBrewable} from "@/model/brewable";
 import Recipe from "@/model/recipe";
 import queryClient from "@/queryClient";
 import recipesStorage from "@/storage/recipes";
 import {FilterFn} from "@/utils/func";
 
-// migration-on-load isn't wired yet (see CLAUDE.md), so a recipe stored
-// before `brewable` existed would otherwise reach the pilot without one.
-const ensureBrewable = (recipe: Recipe): Recipe =>
-    recipe.brewable ? recipe : {...recipe, brewable: defaultBrewable()};
-
 export const recipesQueryKey = () => ["recipes"];
-export const fetchRecipes = async () => (await recipesStorage.list()).map(ensureBrewable);
+export const fetchRecipes = async () => recipesStorage.list();
 
 export const recipeQueryKey = (id: string): [string, string] => ["recipe", id];
-export const fetchRecipe = async (id: string) => {
-    const recipe = await recipesStorage.get(id);
-    return recipe ? ensureBrewable(recipe) : recipe;
-};
+export const fetchRecipe = async (id: string) => recipesStorage.get(id);
 export const queryRecipe = ({ queryKey: [, id]}: { queryKey: [string, string]}) => fetchRecipe(id);
 
 export const useRecipes = (filter?: FilterFn<Recipe>): Recipe[] => {

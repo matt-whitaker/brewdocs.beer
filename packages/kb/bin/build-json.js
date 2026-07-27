@@ -7,10 +7,6 @@ const pkg = require("./../package.json");
 const srcDir = path.join(process.cwd(), "data");
 const outDir = path.join(process.cwd(), "dist");
 
-// current shape of a kb item — bump when a data file would no longer parse/derive correctly.
-// independent of pkg.version (the envelope version below), which tracks npm releases, not item shape.
-const KB_MODEL_VERSION = 4;
-
 // Execute the build process
 (() => {
   if (!fs.existsSync(srcDir)) {
@@ -42,7 +38,6 @@ const KB_MODEL_VERSION = 4;
       try {
         const data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
         data.id = path.basename(file, path.extname(file));
-        data.version = KB_MODEL_VERSION;
         combinedData.push(data);
       } catch (error) {
         console.error(`Error reading JSON from ${filePath}:`, error);
