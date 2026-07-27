@@ -1,5 +1,5 @@
 import {UNITS} from "@brewdocs.beer/core";
-import Batch, {BATCH_MODEL_VERSION, Phase} from "@/model/batch";
+import Batch, {Phase} from "@/model/batch";
 import Statuses from "@/model/statuses";
 
 /** the out-of-the-box BatchSchedule tabs: one per brew-day stage; equipment is derived live from the brewable */
@@ -11,7 +11,6 @@ const phases: Phase[] = [
 ];
 
 const defaultBatch  = {
-    version: BATCH_MODEL_VERSION,
     phases,
     tracker: {},
     batchSize: {

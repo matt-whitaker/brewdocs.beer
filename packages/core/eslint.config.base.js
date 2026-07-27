@@ -70,8 +70,8 @@ export default tseslint.config(
     },
     {
         // Import conventions scoped to source. Deliberately NOT applied to build/script
-        // files at the package root (vite.config.ts, astro.config.mjs, migrations/*),
-        // which legitimately reach into sibling packages' internals by relative path.
+        // files at the package root (vite.config.ts, astro.config.mjs), which
+        // legitimately reach into sibling packages' internals by relative path.
         files: ["src/**/*.{ts,tsx}"],
         rules: {
             "no-restricted-imports": ["error", {
