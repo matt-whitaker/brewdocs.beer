@@ -11,6 +11,7 @@ BrewDocs is an offline homebrewing application and info handbook.
 | [`design`](/packages/design)  | Design System + Component Library |
 | [`app`](/packages/app)        | App|
 | [`www`](/packages/www)        | Marketing Site |
+| [`e2e`](/packages/e2e)        | E2E test suite |
 
 ## Stack
 
