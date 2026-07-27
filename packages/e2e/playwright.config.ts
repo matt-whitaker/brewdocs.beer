@@ -22,6 +22,7 @@ export default defineConfig({
         env: { VITE_DEV_TOOLS: "false" }
     },
     projects: [
+        //{ name: "chromium", use: { ...devices["Desktop Chrome"], channel: "chrome" } }
         { name: "chromium", use: { ...devices["Desktop Chrome"] } }
     ]
 });
