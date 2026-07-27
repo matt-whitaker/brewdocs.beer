@@ -29,7 +29,8 @@
     "packages/app",
     "packages/www",
     "packages/design",
-    "packages/kb"
+    "packages/kb",
+    "packages/e2e"
   ],
   "devDependencies": {
     "nx": "23.1.0"
