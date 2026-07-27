@@ -1,5 +1,5 @@
 /**
- * @claude comment
+ * Structured deep clone — used to detach an editable draft from stored state.
  */
 export function cloneDeep<T>(value: T): T {
     return structuredClone(value);
@@ -17,7 +17,8 @@ export function debounce<A extends unknown[]>(fn: (...args: A) => void, wait: nu
 }
 
 /**
- * @claude comment
+ * Split a dot/bracket path ("a.b[0].c") into keys (["a","b","0","c"]) —
+ * the shared parser behind get/set/setIn.
  */
 function toSegments(path: string): string[] {
     return path.replace(/\[(\w+)\]/g, ".$1").split(".").filter(Boolean);
@@ -33,7 +34,8 @@ export function get(obj: unknown, path: string): any {
 }
 
 /**
- * @claude comment
+ * Mutating deep set at a dot/bracket path; creates missing containers along the
+ * way (a numeric next segment makes an array, otherwise an object). Mutates obj.
  */
 export function set<T extends object>(obj: T, path: string, value: unknown): T {
     const segments = toSegments(path);
@@ -50,14 +52,16 @@ export function set<T extends object>(obj: T, path: string, value: unknown): T {
 }
 
 /**
- * @claude comment
+ * One-level copy preserving array-vs-object type — the per-node clone setIn
+ * uses to rebuild only the path it touches.
  */
 function shallowClone<T>(node: T): T {
     return (Array.isArray(node) ? [...node] : {...node}) as T;
 }
 
 /**
- * @claude comment
+ * Immutable deep set: returns a new object, cloning only the nodes along the
+ * path and sharing the rest — safe for React state (the mutating twin of set).
  */
 export function setIn<T extends object>(obj: T, path: string, value: unknown): T {
     const segments = toSegments(path);
@@ -80,7 +84,7 @@ export function setIn<T extends object>(obj: T, path: string, value: unknown): T
 }
 
 /**
- * @claude comment
+ * Shallow copy of obj dropping every entry whose value satisfies the predicate.
  */
 export function omitBy<T extends object>(obj: T, predicate: (value: T[keyof T]) => boolean): Partial<T> {
     const result: Partial<T> = {};
@@ -93,7 +97,8 @@ export function omitBy<T extends object>(obj: T, predicate: (value: T[keyof T]) 
 }
 
 /**
- * @claude comment
+ * lodash-style emptiness: null/undefined, "", [], and empty Map/Set/object are
+ * empty — and so are primitives (numbers, booleans), which have no length.
  */
 export function isEmpty(value: unknown): boolean {
     if (value == null) return true;
