@@ -1,8 +1,5 @@
 import {createFileRoute} from "@tanstack/react-router";
 import {Crumb, useBreadcrumbs} from "@/component/breadcrumbs/context";
-import Batch from "@/model/batch";
-import SearchEverywhere from "@/screen/search-everywhere";
-import {FEATURES_SEARCH_EVERYWHERE} from "@/utils/env";
 
 // module const so the array is stable across renders (see useBreadcrumbs)
 const BREADCRUMBS: Crumb[] = [{ label: "Knowledge" }];
@@ -13,16 +10,6 @@ export const Route = createFileRoute("/knowledge")({
 
 function KnowledgePage() {
     useBreadcrumbs(BREADCRUMBS);
-
-    const batches = [] as Batch[];
-
-    if (!batches) {
-        return null;
-    }
-
-    if (FEATURES_SEARCH_EVERYWHERE) {
-        return <SearchEverywhere batches={batches} />;
-    }
 
     return <p>Page not implemented</p>;
 }
