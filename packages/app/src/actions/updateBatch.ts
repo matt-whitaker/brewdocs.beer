@@ -1,4 +1,3 @@
-import _updateSchedule from "@/actions/_updateSchedule";
 import _updateShopping from "@/actions/_updateShopping";
 import ensureBrewableIds from "@/actions/ensureBrewableIds";
 import {liveTrackerKeys, pruneTracker} from "@/actions/tracker";
@@ -19,16 +18,15 @@ export default async function updateBatch(id: string, patch: Partial<Batch>) {
 
     ensureBrewableIds(batch.brewable);
 
-    // shopping and schedule both derive from `brewable.assignments`; equipment
-    // and gravity are live-derived off the brewable directly (no batch-owned
-    // copy left to rebuild), so shopping's cost/purchased is the only
-    // persisted-derived-with-state a recompute needs to protect. Gating both
-    // rebuilds on the same brewable-changed check keeps an untouched brewable
-    // (a name/brewDate edit) from re-deriving either for nothing — each still
-    // reuses its previous result by reference when nothing it owns changed.
+    // Shopping is the last persisted derivation: it carries user-owned state
+    // (cost/purchased) that a rebuild has to re-attach, so it can't just be a
+    // live view. Schedule, equipment and gravity all derive live off the
+    // brewable on the screen instead — nothing batch-owned left to rebuild for
+    // them. Gating on brewable-changed keeps an untouched brewable (a
+    // name/brewDate edit) from re-deriving for nothing; the rebuild still
+    // reuses its previous items by reference when nothing it owns changed.
     if (!isEqual(batch.brewable, current?.brewable)) {
         _updateShopping(batch);
-        _updateSchedule(batch);
     }
 
     // eager-prune: drop tracker entries whose ref no longer exists in the

@@ -17,7 +17,7 @@ export function pruneTracker(tracker: Record<string, TrackerEntry>, liveKeys: Se
 /**
  * Every ref-key the current brewable's derivations produce: an `assignment`
  * entry per assignment (mash/boil/ferment rows all derive from these — see
- * `_updateSchedule`), an `equipment` entry per phase's equipment, and a
+ * `deriveSchedule`), an `equipment` entry per phase's equipment, and a
  * post-gravity `milestone` entry per mash/boil phase (`screen/batch-schedule/gravity.tsx`
  * — ferment gets no reading in v1). Ids are assumed already minted
  * (`ensureBrewableIds` runs before this in `updateBatch`).

@@ -55,7 +55,6 @@ export default interface Batch extends Entity {
     boilTime: Scalar;
     actuals: Measurements;
     shopping: ShoppingItem[];
-    schedule: ScheduleItem[];
     phases: Phase[];
     tracker: Record<string, TrackerEntry>;
 
