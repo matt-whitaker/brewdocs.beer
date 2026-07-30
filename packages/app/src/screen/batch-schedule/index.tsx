@@ -1,5 +1,6 @@
 import {useCallback, useMemo} from "react";
 import {Scalar} from "@brewdocs.beer/core";
+import deriveSchedule from "@/actions/deriveSchedule";
 import {putEntry} from "@/actions/tracker";
 import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
@@ -72,9 +73,13 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
     }, [mutate]);
 
     const panels = useMemo(() => {
+        // a pure view of the brewable, like equipment and gravity below — the batch
+        // stores no schedule copy, so this memo is the whole cache story
+        const schedule = deriveSchedule(data.brewable);
+
         return data.phases.map((phase, index) => {
             // intersection: an item is in the phase only if it carries every configured tag
-            const inPhase = data.schedule
+            const inPhase = schedule
                 .filter(item => phase.tags.every(tag => item.tags.includes(tag)))
                 .sort((a, b) =>
                     (KIND_ORDER.indexOf(a.tags[1]) - KIND_ORDER.indexOf(b.tags[1]))
@@ -105,7 +110,7 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
 
             return { phase, index, groups, equipment, gravity };
         });
-    }, [data.schedule, data.phases, data.brewable]);
+    }, [data.phases, data.brewable]);
 
     return (
         <Screen>

@@ -1,5 +1,4 @@
 import {KbRecipe} from "@brewdocs.beer/kb";
-import _updateSchedule from "@/actions/_updateSchedule";
 import _updateShopping from "@/actions/_updateShopping";
 import ensureBrewableIds from "@/actions/ensureBrewableIds";
 import {CreateBatchState} from "@/component/create-batch-form/useCreateBatchForm";
@@ -30,7 +29,6 @@ export default async function createBatch(recipe: Recipe | KbRecipe, source: Rec
     };
 
     _updateShopping(batch);
-    _updateSchedule(batch);
 
     // the pipeline above populates every required field, so it's a Batch by here
     await saveBatch(id, batch as Batch);
