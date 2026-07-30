@@ -59,7 +59,8 @@ export const useKbRecipes = (filter?: FilterFn<KbRecipe>): KbRecipe[] => {
 
 /**
  * Shares the "kbRecipes" query/cache entry with useRecipes() rather than
- * issuing its own fetch of the same resource
+ * issuing its own fetch of the same resource. No call site today — kept
+ * deliberately for future use, not dead code.
  */
 export const useKbRecipe = (id: string): KbRecipe => {
     const { data } = useSuspenseQuery({ queryKey: kbRecipesQueryKey(), queryFn: fetchKbRecipes });
