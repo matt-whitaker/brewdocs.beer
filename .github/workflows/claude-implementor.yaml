@@ -1,0 +1,167 @@
+name: Claude Implementor
+run-name: "Claude Implementor"
+
+# ROLE: Implementor — the main engineer. Executes issues and handles follow-up
+# engineering (bug fixes, requested changes, merge-conflict resolution). Reads the
+# issue + its comments (and, on a PR, the description + current comments) for context
+# before touching code. Deliverable is code + a PR against mainline.
+#
+# TRIGGERS (a combination, not just @claude):
+#   - the `implementor` label on an issue  -> fresh execution of that issue
+#   - an `@claude` mention on an issue comment, PR comment, or PR review -> follow-up
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  # review submissions carry their text in github.event.review.body
+  pull_request_review:
+    types: [submitted]
+  issues:
+    types: [labeled]
+
+# one Implementor run at a time per issue/PR. Queue rather than cancel: killing a run
+# midway can leave a half-pushed branch and no PR.
+concurrency:
+  group: claude-implementor-${{ github.event.issue.number || github.event.pull_request.number }}
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: 22
+
+jobs:
+  implementor:
+    # Per-event trigger check. The actor guard stops a self-trigger loop: track_progress
+    # posts as github-actions[bot], and a comment quoting "@claude" would re-enter here.
+    if: |
+      github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]' && (
+        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+        (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
+        (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
+        (github.event_name == 'issues' && github.event.label.name == 'implementor')
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+      # lets Claude read the Verify workflow's logs when a PR gate goes red
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # full history so it can branch from and diff against mainline
+          fetch-depth: 0
+      # Install as workflow steps, not from inside the run: this costs Claude zero turns,
+      # and without it `tsc` resolves to the runner image's global TypeScript (a different
+      # major) and fails on config this repo pins as valid.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # activates the action on a label-triggered run; @claude mentions on
+          # comments/reviews are handled by the default trigger phrase alongside it
+          label_trigger: "implementor"
+          track_progress: true
+          prompt: |
+            You are the **Implementor** — the engineer who executes issues and handles
+            follow-up engineering (bug fixes, requested changes, merge-conflict
+            resolution). You were triggered either by the `implementor` label on an issue
+            (fresh execution) or by an `@claude` mention on an issue/PR comment or review
+            (follow-up).
+
+            **Read for context before doing anything.** Your single biggest failure mode
+            is a cold run that re-surveys the whole codebase and burns its turn budget
+            before making the change. Start warm from the trigger:
+
+            - **From an issue** (label or a comment on an issue): read the issue body AND
+              its comments — `gh issue view <number> --comments` — since later comments
+              often refine or correct the task. Then read only the specific files the
+              issue names.
+            - **From a PR** (a review or a comment asking for a change): that PR's branch
+              is already checked out and the prior work is in the tree. Read the PR
+              description and its current comments — `gh pr view <number> --comments` — and
+              if a prior run left a Handoff block at the bottom of the Claude comment, read
+              that first: it's the previous run's note on what's done, what's left, the
+              decisions made, and a file map. Then `git diff mainline...HEAD` for the exact
+              changes and read only the files named in the feedback. Push follow-up commits
+              to the same branch — the PR already exists, so do NOT open a new one.
+
+            Follow the Contributing section of CLAUDE.md for branch naming, commit style,
+            and the PR description template. When you change code for a fresh issue, open a
+            pull request against `mainline` yourself — do not stop at pushing a branch and
+            returning a PR link.
+
+            Not every trigger is a code change. Some ask only for a written answer — post
+            it as a comment and stop; do not invent a code change or open a PR just to
+            satisfy the workflow. The task text (issue body, review, comment) is the
+            authority on which you're doing.
+
+            Whenever you change code, before opening the PR (or before finishing a
+            follow-up run), end your PR progress comment with a Handoff block — a
+            collapsible `<details><summary>Handoff</summary> … </details>` — covering
+            what's implemented and what's still open, decisions and gotchas the next run
+            shouldn't have to rediscover, a one-line-per-file map of what changed and why,
+            and how to verify. Keep it a terse status doc — it exists to save the next
+            run's turns, not to narrate. It lives only in the comment: never commit a
+            handoff file.
+
+            A denied tool call is settled. The permission layer is policy, not a syntax
+            problem, so rewording or re-quoting the same operation will be denied
+            identically — you are spending turns to learn nothing. Note what you couldn't
+            do, and move on. The one documented exception is the `$` escape for route
+            filenames, below.
+
+            Dependencies are already installed by the workflow — do not run `npm ci` or
+            `npm install`.
+
+            If you changed code, run the build once before opening the PR:
+            `npm run build -w packages/app` (and `-w packages/www` if you touched it).
+            Record the result under the PR's Verification heading.
+
+            If that build fails, the fault is in the change you just made — fix it. Do NOT
+            investigate node, tsc, or dependency versions, and do not go looking through
+            node_modules or tsconfig for an explanation. A previous run spent eleven turns
+            chasing a toolchain problem that did not exist. If two attempts don't fix it,
+            stop and say so in the PR.
+
+            Use Edit / Write / Read for file contents rather than shelling out.
+
+            Before any shell command touching a file under `src/routes/`, read the Routing
+            section of CLAUDE.md — param filenames contain `$` and need a specific escape.
+            Retrying with different outer quoting never works.
+
+            Run one command per Bash call. Chaining with `&&` or `;` trips the "multiple
+            operations" check and the whole call is denied.
+
+            When the work came from an issue, close the loop on it for the record: put
+            `Closes #<issue>` in the PR body so GitHub cross-links them, and post one short
+            comment on the issue saying what changed and linking the PR.
+
+            Keep your task checklist to at most 3-5 coarse, outcome-level items ("Add the
+            version field to the models", not one line per file). Group related edits under
+            a single item. Update the PR comment only at those few milestones — a checklist
+            item costs a turn to narrate, so a 10-item list spends most of the budget
+            before any code is written.
+
+            Never merge the PR. The maintainer merges.
+
+            Never apply a trigger label (`implementor`, `researcher`, `manager`) to any
+            issue or PR — including ones you create. Labeling is the maintainer's review
+            gate and handoff control; leave everything you create unlabeled.
+          # Allowlist by *family*, not per-subcommand. Deliberately NOT bare `Bash`: this
+          # runner carries GH_TOKEN and the Claude OAuth token in env, and arbitrary shell
+          # could exfiltrate them. Only write-access actors can trigger a run (see the `if:`
+          # actor gate). 80-turn budget: each run is a cold container that re-orients before
+          # making the change — the prompt's read-for-context note is the real cost control.
+          claude_args: |
+            --model sonnet
+            --allowedTools "Edit,Write,Bash(git:*),Bash(gh:*),Bash(npm:*)"
+            --max-turns 80
