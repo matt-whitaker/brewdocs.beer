@@ -2,6 +2,9 @@ import Brewable from "@/model/brewable";
 import {Ref, TrackerEntry, key} from "@/model/tracker";
 import {setIn} from "@/utils/func";
 
+/** fixed milestone id for the one post-phase gravity reading mash/boil phases get today, ahead of the `Milestone[]`-driven rework */
+export const POST_GRAVITY_MILESTONE_ID = "post-gravity";
+
 /** merges `patch` into the entry at `ref`'s key, immutably (mirrors `utils/func.ts`'s `setIn` — shallow-clones on write) */
 export function putEntry(tracker: Record<string, TrackerEntry>, ref: Ref, patch: TrackerEntry): Record<string, TrackerEntry> {
     const k = key(ref);
@@ -31,7 +34,7 @@ export function liveTrackerKeys(brewable: Brewable): Set<string> {
 
     brewable.schedule.phases.forEach(phase => {
         if (phase.id && (phase.type === "mash" || phase.type === "boil")) {
-            keys.add(key({on: "milestone", phaseId: phase.id, when: "post", kind: "gravity"}));
+            keys.add(key({on: "milestone", phaseId: phase.id, id: POST_GRAVITY_MILESTONE_ID}));
         }
         phase.equipment.forEach(item => {
             if (item.id) keys.add(key({on: "equipment", id: item.id}));
