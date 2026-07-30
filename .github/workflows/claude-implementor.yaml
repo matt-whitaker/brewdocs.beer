@@ -7,7 +7,7 @@ run-name: "Claude Implementor"
 # before touching code. Deliverable is code + a PR against mainline.
 #
 # TRIGGERS (a combination, not just @claude):
-#   - the `implementor` label on an issue  -> fresh execution of that issue
+#   - the `@claude/implementor` label on an issue  -> fresh execution of that issue
 #   - an `@claude` mention on an issue comment, PR comment, or PR review -> follow-up
 on:
   issue_comment:
@@ -38,7 +38,7 @@ jobs:
         (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
         (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
         (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
-        (github.event_name == 'issues' && github.event.label.name == 'implementor')
+        (github.event_name == 'issues' && github.event.label.name == '@claude/implementor')
       )
     runs-on: ubuntu-latest
     permissions:
@@ -68,12 +68,12 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # activates the action on a label-triggered run; @claude mentions on
           # comments/reviews are handled by the default trigger phrase alongside it
-          label_trigger: "implementor"
+          label_trigger: "@claude/implementor"
           track_progress: true
           prompt: |
             You are the **Implementor** — the engineer who executes issues and handles
             follow-up engineering (bug fixes, requested changes, merge-conflict
-            resolution). You were triggered either by the `implementor` label on an issue
+            resolution). You were triggered either by the `@claude/implementor` label on an issue
             (fresh execution) or by an `@claude` mention on an issue/PR comment or review
             (follow-up).
 
@@ -153,7 +153,7 @@ jobs:
 
             Never merge the PR. The maintainer merges.
 
-            Never apply a trigger label (`implementor`, `researcher`, `manager`) to any
+            Never apply a trigger label (`@claude/implementor`, `@claude/researcher`, `@claude/manager`) to any
             issue or PR — including ones you create. Labeling is the maintainer's review
             gate and handoff control; leave everything you create unlabeled.
           # Allowlist by *family*, not per-subcommand. Deliberately NOT bare `Bash`: this

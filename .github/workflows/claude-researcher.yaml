@@ -6,7 +6,7 @@ run-name: "Claude Researcher"
 # sub-issues linked to the epic. Deliverable is sub-issues + an index comment — never
 # code, never a PR.
 #
-# TRIGGER: the `researcher` label on an issue (the epic). Nothing else.
+# TRIGGER: the `@claude/researcher` label on an issue (the epic). Nothing else.
 on:
   issues:
     types: [labeled]
@@ -22,7 +22,7 @@ jobs:
   researcher:
     if: |
       github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]' &&
-      github.event_name == 'issues' && github.event.label.name == 'researcher'
+      github.event_name == 'issues' && github.event.label.name == '@claude/researcher'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -41,12 +41,12 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          label_trigger: "researcher"
+          label_trigger: "@claude/researcher"
           track_progress: true
           prompt: |
             You are the **Researcher** — the product owner who takes a well-defined epic,
             follows its guidance, does the file-by-file research, and breaks it into
-            independently-implementable sub-issues. You were triggered by the `researcher`
+            independently-implementable sub-issues. You were triggered by the `@claude/researcher`
             label on an issue: that issue is the epic, and its **Research path** is your
             brief. Read the epic and its comments first.
 
@@ -88,7 +88,7 @@ jobs:
             low ordinals silently point at unrelated old PRs.
 
             Do NOT change code or open a PR — the sub-issues are the deliverable. Never
-            apply a label (the `implementor` label or any other) to anything you create;
+            apply a label (the `@claude/implementor` label or any other) to anything you create;
             labeling is the maintainer's trigger. Leave the sub-issues unlabeled for review.
 
             Operational notes: dependencies are NOT installed and you don't need them —

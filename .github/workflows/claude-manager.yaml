@@ -6,7 +6,7 @@ run-name: "Claude Manager"
 # Deliverable is a better epic in the same issue (edit + comment) — never code, never
 # sub-issues, never a PR.
 #
-# TRIGGER: the `manager` label on an issue. Nothing else — no @claude, no PR events.
+# TRIGGER: the `@claude/manager` label on an issue. Nothing else — no @claude, no PR events.
 on:
   issues:
     types: [labeled]
@@ -22,7 +22,7 @@ jobs:
   manager:
     if: |
       github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]' &&
-      github.event_name == 'issues' && github.event.label.name == 'manager'
+      github.event_name == 'issues' && github.event.label.name == '@claude/manager'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -41,12 +41,12 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          label_trigger: "manager"
+          label_trigger: "@claude/manager"
           track_progress: true
           prompt: |
             You are the **Manager** — the product lead who turns a rough, loosely-defined
             epic into a well-defined one the Researcher and Implementor roles can act on.
-            You were triggered by the `manager` label on an issue: that issue holds the
+            You were triggered by the `@claude/manager` label on an issue: that issue holds the
             maintainer's rough epic, and it is your input.
 
             Your deliverable is a **better epic, in this same issue** — NOT code, NOT
@@ -68,7 +68,7 @@ jobs:
             post one short comment summarizing what you filled in and what's still an open
             question for the maintainer. Do NOT create sub-issues, change code, or open a
             PR — that's the Researcher's and Implementor's job once the maintainer hands
-            off by applying the `researcher` label.
+            off by applying the `@claude/researcher` label.
 
             Never apply a label to any issue (including this one). Labeling is the
             maintainer's handoff control — leave the epic unlabeled for them to route.
