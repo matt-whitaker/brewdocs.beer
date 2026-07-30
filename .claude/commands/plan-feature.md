@@ -49,6 +49,18 @@ turn cap having made almost no edits.
 - Precise paths in *Where the code lives* directly cut exploration cost — the more exact,
   the fewer files the worker reads to orient.
 
+⚠️ **Every sub-issue must be independently mergeable — its PR has to pass the gate alone.**
+The gate is repo-wide (`npm test -ws` + `tsc --noEmit` + `vite build`), so a sub-issue that
+leaves the tree not compiling can *never* go green, and its worker will burn the whole turn
+budget trying. **Never** write "it's fine if this doesn't compile yet" or "the next sub-issue
+fixes the type errors" — that's an unsatisfiable task, not a scoping decision. A
+rename/signature change and its call sites are **one** sub-issue, not two. If a split would
+break the build, either fold the consumers in, or make the step **additive** (new shape
+alongside old, both working, old one deleted in a later sub-issue — mark the transitional
+code in-file with the issue that removes it). An additive step must also be
+**behaviour-preserving**: if old consumers still write data the new code ignores, keep the
+old path live until they migrate rather than shipping silent data loss.
+
 **Write every sub-issue self-contained.** There is no runtime parent lookup — a worker
 picks up one labeled issue and sees only that issue. Restating shared constraints in
 each child is correct here; a child that says "see the parent for context" will be

@@ -116,6 +116,15 @@ and the *Your task* block.
 > screens/rows, split it further. Size is the hard constraint; the number of sub-issues is
 > soft — prefer more small issues over one that balloons.
 >
+> ⚠️ **Every sub-issue must be independently mergeable — its PR has to pass the gate alone.**
+> The gate is repo-wide (`npm test -ws` + `tsc --noEmit` + `vite build`), so a sub-issue that
+> leaves the tree not compiling can *never* go green and its worker will burn its whole turn
+> budget trying. **Never** write "it's fine if this doesn't compile yet" or "the next
+> sub-issue fixes the type errors". A rename/signature change and its call sites are **one**
+> sub-issue. If a split would break the build, fold the consumers in, or make the step
+> **additive** (new shape alongside old, old deleted later) — and keep it
+> behaviour-preserving, so old consumers' data isn't silently dropped.
+>
 > Write each sub-issue self-contained, using the headings from
 > `.github/ISSUE_TEMPLATE/claude-task.yml` (Summary / Where the code lives / What to change /
 > Patterns to follow / Out of scope / Acceptance criteria / CLAUDE.md Updates). Put verified,
