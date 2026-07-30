@@ -28,6 +28,11 @@ BrewDocs is an offline homebrewing application and info handbook.
 - [Daisy UI](https://daisyui.com/)
 - [Astro](https://astro.build/)
 
+### Design System & Component Library (design.brewdocs.beer)
+- [Storybook](https://storybook.js.org/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Daisy UI](https://daisyui.com/)
+
 ## Claude Code
 
 [Claude Code](https://claude.com/claude-code) enabled with [`@claude` integration](.github/workflows/claude.yaml)
