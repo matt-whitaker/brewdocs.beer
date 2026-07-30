@@ -56,3 +56,19 @@ export const useKbRecipes = (filter?: FilterFn<KbRecipe>): KbRecipe[] => {
 
     return filter ? data.filter(filter) : data;
 };
+
+/**
+ * Shares the "kbRecipes" query/cache entry with useRecipes() rather than
+ * issuing its own fetch of the same resource. No call site today — kept
+ * deliberately for future use, not dead code.
+ */
+export const useKbRecipe = (id: string): KbRecipe => {
+    const { data } = useSuspenseQuery({ queryKey: kbRecipesQueryKey(), queryFn: fetchKbRecipes });
+    const recipe = data?.find(recipe => recipe.id === id);
+
+    if (!recipe) {
+        throw new Error("Unable to load recipe from Knowledge Base");
+    }
+
+    return recipe;
+};
