@@ -1,0 +1,335 @@
+name: Claude
+# The history entry names the role that actually ran, so a single "Claude" row is
+# still self-describing. `github.event.label` is null on comment/review events, so
+# those fall through to the mention case.
+run-name: "Claude · ${{ github.event.label.name == '@claude/manager' && 'Manager' || github.event.label.name == '@claude/researcher' && 'Researcher' || github.event.label.name == '@claude/implementor' && 'Implementor' || 'Implementor (@claude)' }} #${{ github.event.issue.number || github.event.pull_request.number }}"
+
+# THREE ROLES, ONE WORKFLOW. Manager / Researcher / Implementor are jobs here, not
+# separate workflow files, purely to keep the Actions history readable: GitHub has no
+# label filter on `on.issues` (only `types`), so a run is always created and the role
+# must be selected by a job-level `if:`. As three files, applying one label created
+# three runs — one real, two skipped — and the skipped ones cluttered the history. As
+# one file it's a single run per event, with the unselected roles skipping *inside* it.
+#
+# TRIGGERS (narrowed per role, not a blanket @claude):
+#   @claude/manager      label on an issue  -> Manager     (rough epic -> filled-out epic)
+#   @claude/researcher   label on an issue  -> Researcher  (epic -> sub-issue breakdown)
+#   @claude/implementor  label on an issue  -> Implementor (fresh execution)
+#   @claude mention on an issue/PR comment or PR review -> Implementor (follow-up)
+on:
+  issues:
+    types: [labeled]
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  # review submissions (approve / request-changes) carry their text in
+  # github.event.review.body, not github.event.comment.body
+  pull_request_review:
+    types: [submitted]
+
+# one Claude run at a time per issue/PR, across all roles. Queue rather than cancel:
+# killing a run midway can leave a half-pushed branch and no PR.
+concurrency:
+  group: claude-${{ github.event.issue.number || github.event.pull_request.number }}
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: 22
+
+jobs:
+  # ── Manager ────────────────────────────────────────────────────────────────────
+  # The least-active role. Turns a loosely-defined epic the maintainer drops in into a
+  # well-defined one the other two roles can act on. Deliverable is a better epic in the
+  # same issue (edit + comment) — never code, never sub-issues, never a PR.
+  manager:
+    if: |
+      github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]' &&
+      github.event_name == 'issues' && github.event.label.name == '@claude/manager'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      # No `npm ci`: the Manager reads code to shape the epic, it doesn't build.
+      - uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          label_trigger: "@claude/manager"
+          track_progress: true
+          prompt: |
+            You are the **Manager** — the product lead who turns a rough, loosely-defined
+            epic into a well-defined one the Researcher and Implementor roles can act on.
+            You were triggered by the `@claude/manager` label on an issue: that issue holds the
+            maintainer's rough epic, and it is your input.
+
+            Your deliverable is a **better epic, in this same issue** — NOT code, NOT
+            sub-issues, NOT a pull request. Ground lightly in the codebase (see CLAUDE.md
+            and the packages it points to) — just enough to make the epic concrete and
+            correctly scoped — then rewrite the issue body into a filled-out epic with:
+
+            - **Goal** — what and why.
+            - **Proposal** — the rough, conceptual shape of the solution (not per-file).
+            - **Constraints** — standing repo rules plus anything specific to this work.
+            - **Research path** — a reading list + the open questions the Researcher must
+              answer before it can decompose. This is the most valuable part: name exact
+              files and CLAUDE.md sections so the next role starts warm rather than
+              re-discovering the repo.
+            - **Codebase map** — the packages/subsystems and anchor files this touches.
+              Confirm every path you name actually exists.
+
+            Update the issue body with `gh issue edit <number> --body-file <file>`, then
+            post one short comment summarizing what you filled in and what's still an open
+            question for the maintainer. Do NOT create sub-issues, change code, or open a
+            PR — that's the Researcher's and Implementor's job once the maintainer hands
+            off by applying the `@claude/researcher` label.
+
+            Never apply a label to any issue (including this one). Labeling is the
+            maintainer's handoff control — leave the epic unlabeled for them to route.
+
+            Operational notes: dependencies are NOT installed and you don't need them —
+            don't run `npm ci`/`npm install` or the build. Run one command per Bash call
+            (chaining with `&&`/`;` trips the permission check). A denied tool call is
+            settled — note it and move on. Use Read for file contents rather than shelling
+            out. Before any shell command touching `src/routes/`, read the Routing section
+            of CLAUDE.md — param filenames contain `$` and need a specific escape.
+          # Read-and-write-issues only; no build tools needed for shaping an epic.
+          claude_args: |
+            --model sonnet
+            --allowedTools "Read,Edit,Write,Bash(gh:*),Bash(git:*)"
+            --max-turns 40
+
+  # ── Researcher ─────────────────────────────────────────────────────────────────
+  # The product owner. Takes a well-defined epic, follows its Research path, does the
+  # file-by-file grounding, and breaks the work into implementable sub-issues linked to
+  # the epic. Deliverable is sub-issues + an index comment — never code, never a PR.
+  researcher:
+    if: |
+      github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]' &&
+      github.event_name == 'issues' && github.event.label.name == '@claude/researcher'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      # No `npm ci`: the Researcher reads code and files issues, it doesn't build.
+      - uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          label_trigger: "@claude/researcher"
+          track_progress: true
+          prompt: |
+            You are the **Researcher** — the product owner who takes a well-defined epic,
+            follows its guidance, does the file-by-file research, and breaks it into
+            independently-implementable sub-issues. You were triggered by the `@claude/researcher`
+            label on an issue: that issue is the epic, and its **Research path** is your
+            brief. Read the epic and its comments first.
+
+            Your deliverable is **sub-issues + one index comment — NO code, NO pull
+            request.** Follow the epic's Research path to get your bearings (read the exact
+            files and CLAUDE.md sections it names), answer the open questions it poses, then:
+
+            - Break the work into sub-issues sized by *exploration cost*, not just
+              human-reviewability: a small, cohesive set of files each (a handful, not a
+              whole directory tree). If one would span a directory of screens/rows, split
+              it further. Size is the hard constraint; the number of sub-issues is soft —
+              prefer more small issues over one that balloons.
+            - Create each as its own GitHub issue (`gh issue create`), **unlabeled**, and
+              self-contained (a worker sees only that one issue), using the headings from
+              `.github/ISSUE_TEMPLATE/claude-task.yml`: Summary / Where the code lives /
+              What to change / Patterns to follow / Out of scope / Acceptance criteria /
+              CLAUDE.md Updates. Put verified, exact paths in *Where the code lives* — a
+              path you haven't confirmed exists costs the Implementor turns rediscovering
+              the repo.
+            - **Link each new issue as a native sub-issue of this epic**: get the child's
+              integer id with `gh api repos/<owner>/<repo>/issues/<child-number> --jq .id`,
+              then `gh api --method POST repos/<owner>/<repo>/issues/<this-epic-number>/sub_issues -F sub_issue_id=<that-id>`.
+              The API wants the integer REST id, not the issue number (`<owner>/<repo>` is
+              `$GITHUB_REPOSITORY`). If the sub-issues API is unavailable, fall back to a
+              `Part of #<epic-number>` line in each body.
+            - Post ONE comment on this epic listing the sub-issues (with links) in
+              prerequisite order, marking which are parallel vs blocked — a single index
+              to review.
+
+            Carry these standing Out-of-scope items into every sub-issue: don't hand-edit
+            generated files (`routeTree.gen.ts`); don't add lodash (use
+            `packages/app/src/utils/func.ts`); don't rename under `packages/kb/data/**`.
+            Carry a handoff acceptance-criterion into each too: before opening its PR the
+            Implementor should end the PR comment with a collapsible Handoff block.
+
+            ⚠️ When the epic body or your index comment references the sub-issues by number,
+            use their **real issue numbers** (assigned after creation), never ordinals like
+            #1…#7 — GitHub auto-links `#N` to whatever issue/PR already holds that number, so
+            low ordinals silently point at unrelated old PRs.
+
+            Do NOT change code or open a PR — the sub-issues are the deliverable. Never
+            apply a label (the `@claude/implementor` label or any other) to anything you create;
+            labeling is the maintainer's trigger. Leave the sub-issues unlabeled for review.
+
+            Operational notes: dependencies are NOT installed and you don't need them —
+            don't run `npm ci`/`install` or the build. Run one command per Bash call
+            (chaining trips the permission check). A denied tool call is settled — note it
+            and move on. Use Read for file contents rather than shelling out.
+          claude_args: |
+            --model sonnet
+            --allowedTools "Read,Edit,Write,Bash(gh:*),Bash(git:*)"
+            --max-turns 80
+
+  # ── Implementor ────────────────────────────────────────────────────────────────
+  # The main engineer. Executes issues and handles follow-up engineering (bug fixes,
+  # requested changes, merge-conflict resolution). Reads the issue + its comments (and,
+  # on a PR, the description + current comments) for context before touching code.
+  # Deliverable is code + a PR against mainline. The only role that answers @claude.
+  implementor:
+    # Per-event trigger check. The actor guard stops a self-trigger loop: track_progress
+    # posts as github-actions[bot], and a comment quoting "@claude" would re-enter here.
+    if: |
+      github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]' && (
+        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+        (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
+        (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
+        (github.event_name == 'issues' && github.event.label.name == '@claude/implementor')
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+      # lets Claude read the Verify workflow's logs when a PR gate goes red
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # full history so it can branch from and diff against mainline
+          fetch-depth: 0
+      # Install as workflow steps, not from inside the run: this costs Claude zero turns,
+      # and without it `tsc` resolves to the runner image's global TypeScript (a different
+      # major) and fails on config this repo pins as valid.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # activates the action on a label-triggered run; @claude mentions on
+          # comments/reviews are handled by the default trigger phrase alongside it
+          label_trigger: "@claude/implementor"
+          track_progress: true
+          prompt: |
+            You are the **Implementor** — the engineer who executes issues and handles
+            follow-up engineering (bug fixes, requested changes, merge-conflict
+            resolution). You were triggered either by the `@claude/implementor` label on an issue
+            (fresh execution) or by an `@claude` mention on an issue/PR comment or review
+            (follow-up).
+
+            **Read for context before doing anything.** Your single biggest failure mode
+            is a cold run that re-surveys the whole codebase and burns its turn budget
+            before making the change. Start warm from the trigger:
+
+            - **From an issue** (label or a comment on an issue): read the issue body AND
+              its comments — `gh issue view <number> --comments` — since later comments
+              often refine or correct the task. Then read only the specific files the
+              issue names.
+            - **From a PR** (a review or a comment asking for a change): that PR's branch
+              is already checked out and the prior work is in the tree. Read the PR
+              description and its current comments — `gh pr view <number> --comments` — and
+              if a prior run left a Handoff block at the bottom of the Claude comment, read
+              that first: it's the previous run's note on what's done, what's left, the
+              decisions made, and a file map. Then `git diff mainline...HEAD` for the exact
+              changes and read only the files named in the feedback. Push follow-up commits
+              to the same branch — the PR already exists, so do NOT open a new one.
+
+            Follow the Contributing section of CLAUDE.md for branch naming, commit style,
+            and the PR description template. When you change code for a fresh issue, open a
+            pull request against `mainline` yourself — do not stop at pushing a branch and
+            returning a PR link.
+
+            Not every trigger is a code change. Some ask only for a written answer — post
+            it as a comment and stop; do not invent a code change or open a PR just to
+            satisfy the workflow. The task text (issue body, review, comment) is the
+            authority on which you're doing.
+
+            Whenever you change code, before opening the PR (or before finishing a
+            follow-up run), end your PR progress comment with a Handoff block — a
+            collapsible `<details><summary>Handoff</summary> … </details>` — covering
+            what's implemented and what's still open, decisions and gotchas the next run
+            shouldn't have to rediscover, a one-line-per-file map of what changed and why,
+            and how to verify. Keep it a terse status doc — it exists to save the next
+            run's turns, not to narrate. It lives only in the comment: never commit a
+            handoff file.
+
+            A denied tool call is settled. The permission layer is policy, not a syntax
+            problem, so rewording or re-quoting the same operation will be denied
+            identically — you are spending turns to learn nothing. Note what you couldn't
+            do, and move on. The one documented exception is the `$` escape for route
+            filenames, below.
+
+            Dependencies are already installed by the workflow — do not run `npm ci` or
+            `npm install`.
+
+            If you changed code, run the build once before opening the PR:
+            `npm run build -w packages/app` (and `-w packages/www` if you touched it).
+            Record the result under the PR's Verification heading.
+
+            If that build fails, the fault is in the change you just made — fix it. Do NOT
+            investigate node, tsc, or dependency versions, and do not go looking through
+            node_modules or tsconfig for an explanation. A previous run spent eleven turns
+            chasing a toolchain problem that did not exist. If two attempts don't fix it,
+            stop and say so in the PR.
+
+            Use Edit / Write / Read for file contents rather than shelling out.
+
+            Before any shell command touching a file under `src/routes/`, read the Routing
+            section of CLAUDE.md — param filenames contain `$` and need a specific escape.
+            Retrying with different outer quoting never works.
+
+            Run one command per Bash call. Chaining with `&&` or `;` trips the "multiple
+            operations" check and the whole call is denied.
+
+            When the work came from an issue, close the loop on it for the record: put
+            `Closes #<issue>` in the PR body so GitHub cross-links them, and post one short
+            comment on the issue saying what changed and linking the PR.
+
+            Keep your task checklist to at most 3-5 coarse, outcome-level items ("Add the
+            version field to the models", not one line per file). Group related edits under
+            a single item. Update the PR comment only at those few milestones — a checklist
+            item costs a turn to narrate, so a 10-item list spends most of the budget
+            before any code is written.
+
+            Never merge the PR. The maintainer merges.
+
+            Never apply a trigger label (`@claude/implementor`, `@claude/researcher`, `@claude/manager`) to any
+            issue or PR — including ones you create. Labeling is the maintainer's review
+            gate and handoff control; leave everything you create unlabeled.
+          # Allowlist by *family*, not per-subcommand. Deliberately NOT bare `Bash`: this
+          # runner carries GH_TOKEN and the Claude OAuth token in env, and arbitrary shell
+          # could exfiltrate them. Only write-access actors can trigger a run (see the `if:`
+          # actor gate). 80-turn budget: each run is a cold container that re-orients before
+          # making the change — the prompt's read-for-context note is the real cost control.
+          claude_args: |
+            --model sonnet
+            --allowedTools "Edit,Write,Bash(git:*),Bash(gh:*),Bash(npm:*)"
+            --max-turns 80
