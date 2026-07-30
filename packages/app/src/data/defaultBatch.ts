@@ -1,13 +1,14 @@
 import {UNITS} from "@brewdocs.beer/core";
 import Batch, {Phase} from "@/model/batch";
 import Statuses from "@/model/statuses";
+import {newId} from "@/utils/id";
 
 /** the out-of-the-box BatchSchedule tabs: one per brew-day stage; equipment is derived live from the brewable */
 const phases: Phase[] = [
-    { name: "Mash", tags: ["mash"] },
+    { id: newId(), name: "Mash", tags: ["mash"], milestones: [] },
     // chilling is just the closing gravity reading, so it rides along with the boil
-    { name: "Boil", tags: ["boil"] },
-    { name: "Ferment", tags: ["ferment"] }
+    { id: newId(), name: "Boil", tags: ["boil"], milestones: [] },
+    { id: newId(), name: "Ferment", tags: ["ferment"], milestones: [] }
 ];
 
 const defaultBatch  = {

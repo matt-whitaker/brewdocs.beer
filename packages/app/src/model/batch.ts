@@ -19,9 +19,19 @@ export type SchedulePhase = "mash"|"boil"|"ferment";
 export type ScheduleKind = "grains"|"hops"|"yeasts"|"additives";
 export type ScheduleTag = SchedulePhase|ScheduleKind;
 
+export type MilestoneKind = "gravity";
+
+export interface Milestone {
+    id: string;
+    label: string;
+    kind: MilestoneKind;
+}
+
 export interface Phase {
+    id: string;
     name: string;
     tags: ScheduleTag[];
+    milestones: Milestone[];
 }
 
 export interface ScheduleDetail {

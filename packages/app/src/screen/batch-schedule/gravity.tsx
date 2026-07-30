@@ -1,5 +1,6 @@
 import {memo, useCallback} from "react";
 import {UNITS} from "@brewdocs.beer/core";
+import {POST_GRAVITY_MILESTONE_ID} from "@/actions/tracker";
 import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
 import DataGridInput from "@/component/data-grid/input";
@@ -11,7 +12,7 @@ import {scalarFromNumberWithUnit} from "@/utils/formatting";
 /** one gravity milestone slot — a post-reading on a mash or boil brewable phase */
 export type GravityReading = { phaseId: string; label: string };
 
-const refOf = (phaseId: string): Ref => ({ on: "milestone", phaseId, when: "post", kind: "gravity" });
+const refOf = (phaseId: string): Ref => ({ on: "milestone", phaseId, id: POST_GRAVITY_MILESTONE_ID });
 
 type BatchScheduleGravityItemProps = {
     reading: GravityReading;
@@ -59,7 +60,7 @@ export type BatchScheduleGravityProps = {
 
 /**
  * Post-phase gravity reads (one per mash/boil brewable phase), each keyed to a
- * `{on:"milestone", phaseId, when:"post", kind:"gravity"}` entry in `batch.tracker`.
+ * `{on:"milestone", phaseId, id: POST_GRAVITY_MILESTONE_ID}` entry in `batch.tracker`.
  * Its own DataGrid so the collapse rule scopes to these rows, like Equipment.
  */
 export default function BatchScheduleGravity({ readings, tracker, onPatch }: BatchScheduleGravityProps) {

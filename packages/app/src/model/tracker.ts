@@ -1,12 +1,9 @@
 import {Scalar} from "@brewdocs.beer/core";
 
-type PhaseEvent = "pre" | "during" | "post";
-type MilestoneKind = "gravity";
-
 export type Ref =
     | { on: "assignment"; id: string }
     | { on: "equipment"; id: string }
-    | { on: "milestone"; phaseId: string; when: PhaseEvent; kind: MilestoneKind };
+    | { on: "milestone"; phaseId: string; id: string };
 
 export type TrackerEntry = {
     completed?: boolean;
@@ -22,6 +19,6 @@ export const key = (ref: Ref): string => {
         case "equipment":
             return `equipment:${ref.id}`;
         case "milestone":
-            return `milestone:${ref.phaseId}:${ref.when}:${ref.kind}`;
+            return `milestone:${ref.phaseId}:${ref.id}`;
     }
 };
