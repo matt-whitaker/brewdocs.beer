@@ -1,20 +1,18 @@
-name: Claude
-run-name: "Claude"
+name: Claude (legacy pipeline — DISABLED)
+run-name: "Claude (legacy — disabled)"
 
+# ⚠️ RETIRED & DISABLED. This single do-everything pipeline was split into three
+# role-specific workflows: claude-manager, claude-researcher, and claude-implementor
+# (each with its own narrowed trigger — the `manager`/`researcher`/`implementor`
+# labels, and `@claude` mentions only for the Implementor). This file is kept for
+# reference only.
+#
+# It is disabled by subscribing to no automatic trigger — only `workflow_dispatch`,
+# so it never fires on comments/reviews/labels. And even a manual dispatch no-ops,
+# because the job `if:` below matches none of the `workflow_dispatch` event context.
+# Delete this file once the role workflows are proven.
 on:
-  issue_comment:
-    types: [created]
-  pull_request_review_comment:
-    types: [created]
-  # review submissions (approve / request-changes) carry their text in
-  # github.event.review.body, not github.event.comment.body
-  pull_request_review:
-    types: [submitted]
-  # issues are label-triggered, not mention-triggered: `opened` is deliberately
-  # not subscribed, so creating an issue produces no workflow run at all. Only
-  # applying a label does, and only the `claude` label gets past the `if:`.
-  issues:
-    types: [labeled]
+  workflow_dispatch:
 
 # one Claude run at a time per issue/PR. Queue rather than cancel: killing a run
 # midway can leave a half-pushed branch and no PR.
