@@ -12,7 +12,7 @@ export type RecipeSource = "kb" | "user";
  * anywhere a KbRecipe is.
  */
 export default interface Recipe extends KbRecipe {
-    /** id of the KbRecipe this was cloned from, if any — kept for reference and to load the original (useKbRecipe(sourceId)) for review/reset; absent on recipes created from scratch */
+    /** id of the KbRecipe this was cloned from, if any — kept for reference and to load the original (useRecipeResource("kb", sourceId)) for review/reset; absent on recipes created from scratch */
     sourceId?: string;
     targets: Measurements;
     brewable: Brewable;
