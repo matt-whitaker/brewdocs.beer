@@ -152,6 +152,23 @@ jobs:
               whole directory tree). If one would span a directory of screens/rows, split
               it further. Size is the hard constraint; the number of sub-issues is soft —
               prefer more small issues over one that balloons.
+            - ⚠️ **Every sub-issue must be independently mergeable — its PR has to pass the
+              gate on its own.** The gate is repo-wide (`npm test -ws` + `tsc --noEmit` +
+              `vite build`), so a sub-issue that leaves the tree not compiling can *never*
+              go green and its Implementor will burn its whole turn budget trying. **Never**
+              write "it's fine if this doesn't compile yet", "the next sub-issue fixes the
+              type errors", or "expected errors in <other file> belong to sub-issue N" —
+              that is an unsatisfiable task, not a scoping decision. This has already cost
+              a full run.
+              A rename/signature change and its call sites are **one** sub-issue, not two.
+              When a split would break the build, pick one:
+                - put the definition and all its consumers in the same sub-issue; or
+                - make the step **additive** — add the new shape alongside the old, keep
+                  both working, and delete the old one in a later sub-issue (mark the
+                  transitional code in-file with the issue that removes it).
+              ⚠️ An additive step must also be **behaviour-preserving**: if the old
+              consumers still write data the new code no longer accounts for, say so and
+              keep the old path live until they migrate — don't ship silent data loss.
             - Create each as its own GitHub issue (`gh issue create`), **unlabeled**, and
               self-contained (a worker sees only that one issue), using the headings from
               `.github/ISSUE_TEMPLATE/claude-task.yml`: Summary / Where the code lives /
