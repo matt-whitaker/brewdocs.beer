@@ -20,7 +20,7 @@ export default function RecipeCreateModal() {
     ], [templates]);
 
     const onConfirm = useCallback(() =>
-        createRecipe(undefined, name.trim() || DEFAULT_NAME, templates.find(t => t.id === templateId))
+        createRecipe(templates.find(t => t.id === templateId), name.trim() || DEFAULT_NAME)
             .then((id) => navigate({to: "/recipe/$recipeId/edit", params: {recipeId: id}})),
     [navigate, name, templates, templateId]);
 
