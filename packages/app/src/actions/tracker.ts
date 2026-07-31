@@ -2,10 +2,25 @@ import Brewable from "@/model/brewable";
 import {Ref, TrackerEntry, key} from "@/model/tracker";
 import {setIn} from "@/utils/func";
 
-/** merges `patch` into the entry at `ref`'s key, immutably (mirrors `utils/func.ts`'s `setIn` — shallow-clones on write) */
+/**
+ * Merges `patch` into the entry at `ref`'s key, immutably (mirrors `utils/func.ts`'s
+ * `setIn` — shallow-clones on write).
+ *
+ * ⚠️ `resource` is merged **one level deeper** than the rest. It's a bag of
+ * per-field actuals written a field at a time (each schedule column patches its
+ * own key), so a plain spread would let recording a boil time silently wipe a
+ * weight recorded a moment earlier.
+ */
 export function putEntry(tracker: Record<string, TrackerEntry>, ref: Ref, patch: TrackerEntry): Record<string, TrackerEntry> {
     const k = key(ref);
-    return setIn(tracker, k, {...tracker[k], ...patch});
+    const previous = tracker[k];
+    const merged: TrackerEntry = {...previous, ...patch};
+
+    if (patch.resource || previous?.resource) {
+        merged.resource = {...previous?.resource, ...patch.resource};
+    }
+
+    return setIn(tracker, k, merged);
 }
 
 /** drops every entry whose key isn't in `liveKeys` — the eager-prune callers run when a batch's brewable/phases change out from under stale tracker keys */

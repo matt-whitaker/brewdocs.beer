@@ -1,4 +1,5 @@
 import {memo, useCallback} from "react";
+import {Scalar} from "@brewdocs.beer/core";
 import DataGrid from "@/component/data-grid";
 import DataGridCheckbox from "@/component/data-grid/checkbox";
 import DataGridInput from "@/component/data-grid/input";
@@ -6,10 +7,68 @@ import DataGridLabel from "@/component/data-grid/label";
 import DataGridLabelNote from "@/component/data-grid/label-note";
 import DataGridRow from "@/component/data-grid/row";
 import {ScheduleDetail, ScheduleItem} from "@/model/batch";
-import {Ref, TrackerEntry} from "@/model/tracker";
+import {ResourceType} from "@/model/brewable";
+import {Ref, ResourceScalarField, TrackerEntry} from "@/model/tracker";
 import {scalarFromNumberWithUnit} from "@/utils/formatting";
 
 const refOf = (id: string): Ref => ({ on: "assignment", id });
+
+/**
+ * Which of a resource's fields get an editable column, in order. This is the
+ * screen's call, not the model's — `deriveSchedule` passes the whole planned
+ * resource through and this decides what's worth showing on brew day.
+ *
+ * Both plan and actual are read from the *same* key (`item.resource[field]` and
+ * `entry.resource[field]`), so adding a field here — e.g. `"alpha"` for hops —
+ * needs no model, tracker or derivation change.
+ */
+const COLUMNS: Record<ResourceType, ResourceScalarField[]> = {
+    grain: ["weight"],
+    hop: ["weight", "boil"],
+    additive: ["boil"],
+    yeast: ["temp"]
+};
+
+type ScheduleValueCellProps = {
+    field: ResourceScalarField;
+    colStart: number;
+    planned?: Scalar;
+    actual?: Scalar;
+    /** patches this row's tracker entry — already bound to the row's ref */
+    onPatch: (patch: TrackerEntry) => void;
+};
+
+/**
+ * One editable column: shows the plan until an as-brewed value is entered, then
+ * shows that. Writes only to the tracker — the plan is never overwritten.
+ */
+function ScheduleValueCell({ field, colStart, planned, actual, onPatch }: ScheduleValueCellProps) {
+    // the actual may not exist yet, so write a whole scalar and carry the planned
+    // field's unit across — formatting on blur needs a unit to fall back on when
+    // the user types a bare number
+    const onChange = useCallback(
+        (next: string) => onPatch({ resource: { [field]: { value: next, unit: planned?.unit } } }),
+        [onPatch, field, planned?.unit]
+    );
+    // focus-then-blur without typing leaves the field unset, and there'd be no unit
+    // on the entry yet — only reformat once something is actually recorded
+    const onBlur = useCallback((next: string) => {
+        if (actual && planned?.unit) {
+            onPatch({ resource: { [field]: scalarFromNumberWithUnit(next, planned.unit) } });
+        }
+    }, [onPatch, field, actual, planned?.unit]);
+
+    return (
+        <DataGridInput
+            colStart={colStart}
+            value={actual?.value ?? planned?.value ?? ""}
+            onChange={onChange}
+            onBlur={onBlur}
+        />
+    );
+}
+
+const ValueCell = memo(ScheduleValueCell);
 
 type BatchScheduleItemDetailProps = {
     detail: ScheduleDetail;
@@ -42,55 +101,23 @@ function BatchScheduleItemRow({ item, entry, onToggle, onPatch }: BatchScheduleI
 
     const onToggleCompleted = useCallback(() => onToggle(refOf(item.id)), [onToggle, item.id]);
 
-    // ⚠️ Records what actually happened; it does NOT write back over the plan.
-    // Editing `brewable.assignments[i].resource.boil` from the brew-day screen
-    // would overwrite the recipe-derived plan and lose what you meant to do —
-    // that's Planning's job. Same shape as the amount handlers below.
-    const onChangeDetail = useCallback(
-        (next: string) => onPatch(refOf(item.id), { actualDetail: { value: next, unit: item.detail?.unit } }),
-        [onPatch, item.id, item.detail?.unit]
-    );
-    const onBlurDetail = useCallback((next: string) => {
-        if (entry?.actualDetail && item.detail?.unit) {
-            onPatch(refOf(item.id), { actualDetail: scalarFromNumberWithUnit(next, item.detail.unit) });
-        }
-    }, [onPatch, item.id, entry?.actualDetail, item.detail?.unit]);
+    // ⚠️ Records what actually happened; it never writes back over the plan.
+    // Editing `brewable.assignments[i].resource.*` from the brew-day screen would
+    // overwrite the recipe-derived intent — that's Planning's job.
+    const patch = useCallback((next: TrackerEntry) => onPatch(refOf(item.id), next), [onPatch, item.id]);
 
-    // `actual` may not exist yet, so write the whole scalar and carry the planned
-    // amount's unit across — updateScalar needs a unit to fall back on when the
-    // user types a bare number
-    const onChangeAmount = useCallback(
-        (next: string) => onPatch(refOf(item.id), { actual: { value: next, unit: item.amount?.unit } }),
-        [onPatch, item.id, item.amount?.unit]
-    );
-    // focus-then-blur without typing leaves `actual` unset, and there'd be no
-    // unit on the tracker entry yet — fall back to the planned amount's unit
-    const onBlurAmount = useCallback((next: string) => {
-        if (entry?.actual && item.amount?.unit) {
-            onPatch(refOf(item.id), { actual: scalarFromNumberWithUnit(next, item.amount.unit) });
-        }
-    }, [onPatch, item.id, entry?.actual, item.amount?.unit]);
+    // the yeast row's pitch date lives on this same assignment's tracker entry
+    const onChangePitchDate = useCallback((next: string) => patch({ date: next }), [patch]);
 
-    // the yeast row's pitch date lives on this same assignment's tracker entry, not a dot-path
-    const onChangePitchDate = useCallback((next: string) => onPatch(refOf(item.id), { date: next }), [onPatch, item.id]);
+    const columns = COLUMNS[item.resourceType];
 
-    const planned = item.amount?.value;
-    const actual = entry?.actual;
-    const used = actual?.value ?? planned ?? "";
-    // once what went in differs from the plan, show the plan alongside it
-    const drifted = !!actual && !!planned && actual.value !== planned;
+    // one note per field that came in off-plan, so the intent is never lost
+    const drifts = columns
+        .map(field => ({ planned: item.resource[field]?.value, actual: entry?.resource?.[field]?.value }))
+        .filter(({ planned, actual }) => !!actual && !!planned && actual !== planned)
+        .map(({ planned }) => `plan ${planned}`);
 
-    const plannedDetail = item.detail?.value;
-    const actualDetail = entry?.actualDetail;
-    const usedDetail = actualDetail?.value ?? plannedDetail ?? "";
-    const detailDrifted = !!actualDetail && !!plannedDetail && actualDetail.value !== plannedDetail;
-
-    // show the plan alongside whatever drifted, so the intent is never lost
-    const note = [
-        item.note,
-        drifted ? `plan ${planned}` : null,
-        detailDrifted ? `plan ${plannedDetail}` : null
-    ].filter(Boolean).join(" · ");
+    const note = [item.note, ...drifts].filter(Boolean).join(" · ");
     const completed = entry?.completed ?? false;
 
     return (
@@ -118,23 +145,19 @@ function BatchScheduleItemRow({ item, entry, onToggle, onPatch }: BatchScheduleI
                 {item.name}
                 {note ? <DataGridLabelNote>({note})</DataGridLabelNote> : null}
             </DataGridLabel>
-            {item.amount ? (
-                <DataGridInput
-                    colStart={2}
-                    value={used}
-                    onChange={onChangeAmount}
-                    onBlur={onBlurAmount}
+            {/* one column per field this resource type exposes — a mash grain gets
+                just its weight, a hop weight + boil time. Both plan and actual are
+                read from the same key, so the set is driven entirely by COLUMNS. */}
+            {columns.map((field, i) => (
+                <ValueCell
+                    key={field}
+                    field={field}
+                    colStart={i + 2}
+                    planned={item.resource[field]}
+                    actual={entry?.resource?.[field]}
+                    onPatch={patch}
                 />
-            ) : null}
-            {/* mash grains have no secondary value — checklist only, no third column */}
-            {item.detail ? (
-                <DataGridInput
-                    colStart={3}
-                    value={usedDetail}
-                    onChange={onChangeDetail}
-                    onBlur={onBlurDetail}
-                />
-            ) : null}
+            ))}
         </DataGridRow>
     );
 }
