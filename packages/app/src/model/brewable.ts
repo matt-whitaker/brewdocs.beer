@@ -16,7 +16,7 @@ export type MilestoneKind = "gravity";
 /**
  * A reading the brewer plans to take during a phase — *plan* config, not the
  * measurement. The value and date live in `batch.tracker`, keyed by
- * `{on:"milestone", phaseId, id}` (see `model/tracker.ts`). Because it's plan
+ * `{on:"milestone", id}` (see `model/tracker.ts`). Because it's plan
  * data it rides on the brewable, so a recipe can prescribe its own readings.
  */
 export interface Milestone {
