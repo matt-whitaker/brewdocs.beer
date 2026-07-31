@@ -1,24 +1,41 @@
 import {Scalar} from "@brewdocs.beer/core";
+import Additive from "@/model/additive";
+import Grain from "@/model/grain";
+import Hop from "@/model/hop";
+import Yeast from "@/model/yeast";
 
 export type Ref =
     | { on: "assignment"; id: string }
     | { on: "equipment"; id: string }
     | { on: "milestone"; phaseId: string; id: string };
 
+/**
+ * The as-brewed counterpart of an assignment's `resource`, keyed by the **same
+ * field names as the plan**: a hop records `weight`/`boil`, a grain `weight`, a
+ * yeast `temp`. Every field is optional — only what actually differed is stored.
+ *
+ * Deriving this from the resource models, rather than listing bespoke slots, is
+ * the point: adding a field to `Hop` makes it recordable here for free, a hop can
+ * never carry a yeast's `temp`, and a row can record *any number* of differing
+ * values instead of the two a fixed `actual`/`actualDetail` pair allowed. `name`
+ * is excluded — it identifies the resource, it isn't something you observe.
+ */
+export type ResourceActuals = Partial<Omit<Grain & Hop & Yeast & Additive, "name">>;
+
+/** the `ResourceActuals` fields holding a `Scalar` — the ones a schedule column can edit (`starter` is a boolean) */
+export type ResourceScalarField = Exclude<keyof ResourceActuals, "starter">;
+
 export type TrackerEntry = {
     completed?: boolean;
-    /** what actually went in — the amount, against the plan's `ScheduleItem.amount` */
-    actual?: Scalar;
     /**
-     * how it actually went in — a hop/additive's boil time, a yeast's pitch
-     * temperature — against the plan's `ScheduleItem.detail`. Named for the row's
-     * secondary column; unrelated to `ScheduleDetail` (the expander fields).
+     * Universal — when this happened or was measured (a yeast's pitch date, a
+     * gravity reading's date). Any ref kind may carry one.
      */
-    actualDetail?: Scalar;
-    /** milestone — the gravity value read */
-    reading?: Scalar;
-    /** (yeast) assignment — pitch date | milestone — reading-taken date */
     date?: string;
+    /** assignment — as-brewed values, mirroring the plan's own resource shape */
+    resource?: ResourceActuals;
+    /** milestone — the gravity value read (a milestone has no resource to mirror) */
+    reading?: Scalar;
 };
 
 export const key = (ref: Ref): string => {

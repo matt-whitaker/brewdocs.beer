@@ -1,9 +1,9 @@
 import {Entity, Scalar} from "@brewdocs.beer/core";
-import Brewable from "@/model/brewable";
+import Brewable, {ResourceType} from "@/model/brewable";
 import Measurements from "@/model/measurements";
 import {RecipeSource} from "@/model/recipe";
 import Statuses from "@/model/statuses";
-import {TrackerEntry} from "@/model/tracker";
+import {ResourceActuals, TrackerEntry} from "@/model/tracker";
 
 export type ShoppingTag = "hops"|"grains"|"yeasts"|"additives";
 
@@ -30,10 +30,10 @@ export interface ScheduleItem {
     phaseId: string;
     kind: ScheduleKind;
     note?: string;
-    /** planned amount — a grain/hop weight */
-    amount?: Scalar;
-    /** planned secondary value — a hop/additive's boil time, a yeast's pitch temp */
-    detail?: Scalar;
+    /** which resource this row is, so the screen knows which fields to show as columns */
+    resourceType: ResourceType;
+    /** the **planned** resource, read-only here — the as-brewed counterpart lives in `batch.tracker` under the same field names */
+    resource: ResourceActuals;
     extra?: ScheduleDetail[];
 }
 
