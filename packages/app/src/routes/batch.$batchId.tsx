@@ -43,7 +43,7 @@ function BatchPage() {
             <PanelSwitcherContent title="Shopping">
                 <BatchShopping batchId={batchId} onChange={onChange} />
             </PanelSwitcherContent>
-            <PanelSwitcherContent title="Schedule">
+            <PanelSwitcherContent title="Brewing">
                 <BatchSchedule batchId={batchId} onChange={onChange} />
             </PanelSwitcherContent>
             <PanelSwitcherContent title="Summary">
