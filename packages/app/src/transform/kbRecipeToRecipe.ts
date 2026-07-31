@@ -12,6 +12,7 @@ import {kbBrewableToBrewable} from "@/transform/kbBrewableToBrewable";
 export function kbRecipeToRecipe({id, ...kbRecipe}: KbRecipe): Omit<Recipe, "id"> {
     return {
         ...kbRecipe,
+        __type: "recipe",
         sourceId: id,
         brewable: kbBrewableToBrewable(kbRecipe.brewable),
     };
