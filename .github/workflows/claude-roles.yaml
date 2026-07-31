@@ -52,7 +52,9 @@ jobs:
       && contains(github.event.issue.labels.*.name, '@claude/manager')
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      # write purely to push the epic's (empty) integration branch — the prompt
+      # forbids committing to it; this role writes no code
+      contents: write
       issues: write
       id-token: write
     steps:
@@ -83,10 +85,11 @@ jobs:
             newest `@claude` comment as the instruction and adjust exactly what it asks
             rather than rewriting the epic from scratch.
 
-            Your deliverable is a **better epic, in this same issue** — NOT code, NOT
-            sub-issues, NOT a pull request. Ground lightly in the codebase (see CLAUDE.md
-            and the packages it points to) — just enough to make the epic concrete and
-            correctly scoped — then rewrite the issue body into a filled-out epic with:
+            Your deliverable is a **better epic, in this same issue, plus the epic's
+            integration branch** — NOT code, NOT sub-issues, NOT a pull request. Ground
+            lightly in the codebase (see CLAUDE.md and the packages it points to) — just
+            enough to make the epic concrete and correctly scoped — then rewrite the issue
+            body into a filled-out epic with:
 
             - **Goal** — what and why.
             - **Proposal** — the rough, conceptual shape of the solution (not per-file).
@@ -97,12 +100,30 @@ jobs:
               re-discovering the repo.
             - **Codebase map** — the packages/subsystems and anchor files this touches.
               Confirm every path you name actually exists.
+            - **Integration branch** — the branch every sub-issue targets (below).
+
+            **Cut the epic's integration branch.** Every epic gets one, so the whole feature
+            lands together and reaches `mainline` as a single reviewable PR instead of a
+            dozen loose ones:
+
+                git checkout mainline
+                git pull --ff-only
+                git checkout -b <issue#>-<kebab-summary>
+                git push -u origin <issue#>-<kebab-summary>
+
+            ⚠️ Cut it **empty**, off current `mainline`, and never commit to it — you write
+            no code. It stays empty until the first sub-issue PR merges in. Then name it in
+            the epic's **Integration branch** section, stating that each sub-issue branches
+            off it and opens its PR **into** it (not into `mainline`), and that the branch
+            merges to `mainline` once the feature is complete. If the branch already exists
+            (you're re-running on this epic), reuse it — don't cut a second one.
 
             Update the issue body with `gh issue edit <number> --body-file <file>`, then
-            post one short comment summarizing what you filled in and what's still an open
-            question for the maintainer. Do NOT create sub-issues, change code, or open a
-            PR — that's the Researcher's and Implementor's job once the maintainer hands
-            off by applying the `@claude/researcher` label.
+            post one short comment summarizing what you filled in, naming the integration
+            branch you cut, and flagging what's still an open question for the maintainer.
+            Do NOT create sub-issues, change code, or open a PR — that's the Researcher's
+            and Implementor's job once the maintainer hands off by relabelling the issue
+            `@claude/researcher` and commenting.
 
             Never apply a label to any issue (including this one). Labeling is the
             maintainer's handoff control — leave the epic unlabeled for them to route.
@@ -197,12 +218,35 @@ jobs:
               CLAUDE.md Updates. Put verified, exact paths in *Where the code lives* — a
               path you haven't confirmed exists costs the Implementor turns rediscovering
               the repo.
+            - ⚠️ **Propagate the epic's integration branch into every sub-issue.** Read it
+              from the epic's **Integration branch** section (the Manager cut it). Each
+              sub-issue body needs a **Base branch** line of its own:
+
+                  > **Base branch: `<branch>`.** Branch off it and open your PR **against
+                  > `<branch>`**, not `mainline`, so the feature lands together. Rebase onto
+                  > it if earlier sub-issues have merged since.
+
+              A worker only ever sees its own issue, so an epic-level mention doesn't reach
+              it — omit this and the sub-issue PRs go straight at `mainline` and the epic
+              branch is silently bypassed. If the epic names no branch, say so in your index
+              comment and stop rather than guessing a name.
             - **Link each new issue as a native sub-issue of this epic**: get the child's
               integer id with `gh api repos/<owner>/<repo>/issues/<child-number> --jq .id`,
               then `gh api --method POST repos/<owner>/<repo>/issues/<this-epic-number>/sub_issues -F sub_issue_id=<that-id>`.
               The API wants the integer REST id, not the issue number (`<owner>/<repo>` is
               `$GITHUB_REPOSITORY`). If the sub-issues API is unavailable, fall back to a
               `Part of #<epic-number>` line in each body.
+            - ⚠️ **The last sub-issue also opens the epic's PR.** Whichever sub-issue is
+              last in prerequisite order gets one extra acceptance-criteria line:
+
+                  - [ ] After opening this sub-issue's own PR into `<branch>`, open the
+                        **integration PR** from `<branch>` → `mainline` if one isn't already
+                        open (`gh pr list --head <branch> --base mainline` to check), titled
+                        for the epic and with `Closes #<epic-number>` in the body. That PR is
+                        how the whole feature reaches `mainline`; the maintainer merges it.
+
+              Without this, every sub-issue merges into the branch and the feature stalls
+              there with nothing proposing it to `mainline`.
             - Post ONE comment on this epic listing the sub-issues (with links) in
               prerequisite order, marking which are parallel vs blocked — a single index
               to review.
@@ -307,9 +351,16 @@ jobs:
               to the same branch — the PR already exists, so do NOT open a new one.
 
             Follow the Contributing section of CLAUDE.md for branch naming, commit style,
-            and the PR description template. When you change code for a fresh issue, open a
-            pull request against `mainline` yourself — do not stop at pushing a branch and
-            returning a PR link.
+            and the PR description template. When you change code for a fresh issue, open
+            the pull request yourself — do not stop at pushing a branch and returning a PR
+            link.
+
+            ⚠️ **Target the issue's stated base branch.** If the issue names a **Base
+            branch** (sub-issues of an epic do — they land on the epic's integration branch,
+            not `mainline`), branch off *that* and open the PR against it:
+            `gh pr create --base <branch> --head <your-branch>`. Only default to `mainline`
+            when the issue names no base branch. Getting this wrong bypasses the epic branch
+            and scatters a feature across unrelated PRs.
 
             ⚠️ **Write no code comments.** See CLAUDE.md's _Code style_. Not explanatory
             blocks, not `⚠️` notes, not JSDoc — none, unless the issue or a reviewer asks
