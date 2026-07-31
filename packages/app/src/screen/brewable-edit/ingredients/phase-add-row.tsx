@@ -22,6 +22,8 @@ const ADDITIVE_OPTION = { value: ADDITIVE_VALUE, name: "Additive…" };
  */
 export type RecipeEditPhaseAddRowProps = {
     phaseId: string;
+    /** the phase's display label, used for the add button's accessible name */
+    phaseLabel: string;
     add: AddFn;
     /** merged grain/hop/yeast options, each value encoded as `"<resourceType>:<name>"` */
     resourceOptions: { value: string; name: string }[];
@@ -59,7 +61,7 @@ function buildCatalogAssignment(
     }
 }
 
-export default function RecipeEditPhaseAddRow({ phaseId, add, resourceOptions, kbGrainsIndex, kbHopsIndex, kbYeastsIndex }: RecipeEditPhaseAddRowProps) {
+export default function RecipeEditPhaseAddRow({ phaseId, phaseLabel, add, resourceOptions, kbGrainsIndex, kbHopsIndex, kbYeastsIndex }: RecipeEditPhaseAddRowProps) {
     const [value, setValue] = useState<string | null>(null);
     const [additiveName, setAdditiveName] = useState("");
 
@@ -83,9 +85,10 @@ export default function RecipeEditPhaseAddRow({ phaseId, add, resourceOptions, k
 
     return (
         <DataGridRow zebra reserveExpand>
-            <DataGridAddButton onClick={addAssignment} />
+            <DataGridAddButton label={`Add ingredient to ${phaseLabel}`} onClick={addAssignment} />
             <DataGridLabel className="ml-6" cols={isAdditive ? 2 : 4}>
                 <DataGridSelect
+                    label={`Ingredient for ${phaseLabel}`}
                     allowNull
                     data={options}
                     value={value}

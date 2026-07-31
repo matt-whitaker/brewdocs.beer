@@ -7,15 +7,18 @@ export type InputDateProps = PropsWithClass & PropsWithOnChange<string> & {
     readonly?: boolean;
     placeholder?: string;
     name?: string
+    /** accessible name, when no visible <label> is associated — rendered as aria-label */
+    label?: string;
     primary?: boolean;
     align?: "left"|"center"|"right";
 };
-export function InputDate({ className, onChange, value, readonly, placeholder, name, primary, align }: InputDateProps) {
+export function InputDate({ className, onChange, value, readonly, placeholder, name, label, primary, align }: InputDateProps) {
     const handleChange = useCallback(eventValue((v: string) => onChange?.(v)), [onChange]);
     const optionalProps = onChange ? { onChange: handleChange } : {};
 
     return <input
         name={name ?? void 0}
+        aria-label={label ?? void 0}
         placeholder={placeholder ?? "MM/DD/YYYY"}
         readOnly={!!readonly}
         value={value}
