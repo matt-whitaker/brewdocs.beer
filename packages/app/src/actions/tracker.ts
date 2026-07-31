@@ -53,7 +53,7 @@ export function liveTrackerKeys(brewable: Brewable): Set<string> {
             if (item.id) keys.add(key({on: "equipment", id: item.id}));
         });
         phase.milestones.forEach(milestone => {
-            keys.add(key({on: "milestone", phaseId: phase.id, id: milestone.id}));
+            keys.add(key({on: "milestone", id: milestone.id}));
         });
     });
 

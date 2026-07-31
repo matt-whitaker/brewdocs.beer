@@ -19,10 +19,9 @@ const READING_UNIT_OPTIONS = [
     { name: "SG", value: UNITS.SPECIFIC_GRAVITY },
 ];
 
-const refOf = (phaseId: string, milestoneId: string): Ref => ({ on: "milestone", phaseId, id: milestoneId });
+const refOf = (milestoneId: string): Ref => ({ on: "milestone", id: milestoneId });
 
 type BatchScheduleGravityItemProps = {
-    phaseId: string;
     phaseIndex: number;
     row: number;
     milestone: Milestone;
@@ -32,7 +31,7 @@ type BatchScheduleGravityItemProps = {
     remove: RemoveFn;
 };
 
-function BatchScheduleGravityItem({ phaseId, phaseIndex, row, milestone, entry, onPatch, update, remove }: BatchScheduleGravityItemProps) {
+function BatchScheduleGravityItem({ phaseIndex, row, milestone, entry, onPatch, update, remove }: BatchScheduleGravityItemProps) {
     // reading unit defaults to the entry's own existing unit, like updateScalar's
     // prev.unit fallback — only a brand-new reading falls back to Plato
     const unit = entry?.reading?.unit ?? UNITS.PLATO;
@@ -42,16 +41,16 @@ function BatchScheduleGravityItem({ phaseId, phaseIndex, row, milestone, entry, 
 
     // the reading is a raw scalar while typing, formatted to its unit on blur —
     // mirrors the ingredient rows' updateScalar, but written to the tracker not a path
-    const onChangeReading = useCallback((next: string) => onPatch(refOf(phaseId, milestone.id), { reading: { value: next, unit } }), [onPatch, phaseId, milestone.id, unit]);
-    const onBlurReading = useCallback((next: string) => onPatch(refOf(phaseId, milestone.id), { reading: scalarFromNumberWithUnit(next, unit) }), [onPatch, phaseId, milestone.id, unit]);
+    const onChangeReading = useCallback((next: string) => onPatch(refOf(milestone.id), { reading: { value: next, unit } }), [onPatch, milestone.id, unit]);
+    const onBlurReading = useCallback((next: string) => onPatch(refOf(milestone.id), { reading: scalarFromNumberWithUnit(next, unit) }), [onPatch, milestone.id, unit]);
     // switching units reformats the existing numeric value under the new one, same
     // as updateScalar's lockUnit path — an empty reading just adopts the new unit
     const onChangeUnit = useCallback((next: string) => {
         const value = entry?.reading?.value;
-        onPatch(refOf(phaseId, milestone.id), { reading: value ? scalarFromNumberWithUnit(value, next as Unit, true) : { value: "", unit: next as Unit } });
-    }, [onPatch, phaseId, milestone.id, entry?.reading?.value]);
+        onPatch(refOf(milestone.id), { reading: value ? scalarFromNumberWithUnit(value, next as Unit, true) : { value: "", unit: next as Unit } });
+    }, [onPatch, milestone.id, entry?.reading?.value]);
     // exact date taken matters less than the reading, so it rides behind the expander
-    const onChangeDate = useCallback((next: string) => onPatch(refOf(phaseId, milestone.id), { date: next }), [onPatch, phaseId, milestone.id]);
+    const onChangeDate = useCallback((next: string) => onPatch(refOf(milestone.id), { date: next }), [onPatch, milestone.id]);
 
     return (
         <DataGridRow
@@ -91,7 +90,7 @@ export type BatchScheduleGravityProps = {
 
 /**
  * Editable gravity readings for a phase, one row per `phase.milestones[]`
- * entry, each keyed to a `{on:"milestone", phaseId, id}` entry in
+ * entry, each keyed to a `{on:"milestone", id}` entry in
  * `batch.tracker`. Its own DataGrid so the collapse rule scopes to these
  * rows, like Equipment. Renders on every phase tab, including an empty one —
  * the brewer adds the first reading from here.
@@ -107,11 +106,10 @@ export default function BatchScheduleGravity({ phase, phaseIndex, tracker, onPat
             {phase.milestones.map((milestone, row) => (
                 <Item
                     key={milestone.id}
-                    phaseId={phase.id}
                     phaseIndex={phaseIndex}
                     row={row}
                     milestone={milestone}
-                    entry={tracker[key(refOf(phase.id, milestone.id))]}
+                    entry={tracker[key(refOf(milestone.id))]}
                     onPatch={onPatch}
                     update={update}
                     remove={remove} />
