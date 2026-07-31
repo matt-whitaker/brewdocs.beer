@@ -68,6 +68,18 @@ test("creating from a template applies its equipment and keeps the recipe defaul
     await expect(page.getByRole("combobox").first()).toHaveValue("Mash Tun - 10gal");
 });
 
+test("boil phase shows each stored equipment item, even names outside the app catalog", async ({ page }) => {
+    await createRecipeFromTemplate(page, "E2E Kettle Sour Boil", "kettle-sour");
+
+    await page.getByRole("tab", { name: "Equipment", exact: true }).click();
+
+    const boilSection = page.locator(".data-grid").filter({ has: page.getByRole("button", { name: "2. Boil" }) });
+    const boilCombobox = boilSection.getByRole("combobox");
+    await expect(boilCombobox.nth(0)).toHaveValue("Boil Kettle - 15gal");
+    await expect(boilCombobox.nth(1)).toHaveValue("pH Meter");
+    await expect(boilCombobox.nth(2)).toHaveValue("Souring Vessel Lid / Cover");
+});
+
 test("creating an empty recipe brings no template equipment", async ({ page }) => {
     await createRecipeFromTemplate(page, "E2E Empty Recipe", "Empty");
 
