@@ -1,4 +1,3 @@
-import {Phase} from "@/model/batch";
 import Brewable from "@/model/brewable";
 import {Ref, TrackerEntry, key} from "@/model/tracker";
 import {setIn} from "@/utils/func";
@@ -16,16 +15,18 @@ export function pruneTracker(tracker: Record<string, TrackerEntry>, liveKeys: Se
 }
 
 /**
- * Every ref-key the current brewable/phases derivations produce: an
- * `assignment` entry per assignment (mash/boil/ferment rows all derive from
- * these — see `deriveSchedule`), an `equipment` entry per phase's equipment,
- * and one `milestone` entry per configured milestone on any batch phase
- * (`batch.phases[].milestones[]`). Ids are assumed already present — brewable
- * ids are minted by `ensureBrewableIds` (which runs before this in
- * `updateBatch`), while milestone ids are minted at add-time in the UI, not
- * by a write-path "ensure" step.
+ * Every ref-key the current brewable produces: an `assignment` entry per
+ * assignment (all schedule rows derive from these — see `deriveSchedule`), an
+ * `equipment` entry per phase's equipment, and a `milestone` entry per reading
+ * configured on a phase. All three now come off the **brewable**, which is the
+ * plan's single source of truth — there's no second phase list to reconcile.
+ *
+ * Ids are assumed already present: phase and milestone ids are minted at
+ * creation (`defaultBrewable`/`kbBrewableToBrewable`/the add-rows), assignment
+ * and equipment ids by `ensureBrewableIds`, which runs before this in
+ * `updateBatch`.
  */
-export function liveTrackerKeys(brewable: Brewable, phases: Phase[]): Set<string> {
+export function liveTrackerKeys(brewable: Brewable): Set<string> {
     const keys = new Set<string>();
 
     brewable.assignments.forEach(assignment => {
@@ -36,9 +37,6 @@ export function liveTrackerKeys(brewable: Brewable, phases: Phase[]): Set<string
         phase.equipment.forEach(item => {
             if (item.id) keys.add(key({on: "equipment", id: item.id}));
         });
-    });
-
-    phases.forEach(phase => {
         phase.milestones.forEach(milestone => {
             keys.add(key({on: "milestone", phaseId: phase.id, id: milestone.id}));
         });

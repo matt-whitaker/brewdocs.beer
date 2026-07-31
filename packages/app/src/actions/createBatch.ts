@@ -19,7 +19,7 @@ export default async function createBatch(recipe: Recipe | KbRecipe, source: Rec
     ensureBrewableIds(brewable);
 
     const batch: Partial<Batch> = {
-        ...defaultBatch,
+        ...defaultBatch(),
         id,
         status: Statuses.PREP,
         recipeId: recipe.id,

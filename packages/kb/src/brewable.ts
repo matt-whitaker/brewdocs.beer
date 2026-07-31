@@ -20,7 +20,17 @@ export interface KbSchedule {
  * a discriminated one so it stays assignable from the app's narrower discriminated-union `Assignment`
  */
 export interface KbAssignment {
-    phaseType: string;
+    /**
+     * ⚠️ Two ways to say which phase, because this type is the supertype of both
+     * the authored data *and* the app's `Assignment` (`Recipe extends KbRecipe`).
+     * Authored kb JSON carries `phaseType` (a loose "mash"/"boil"/"ferment" string —
+     * hand-written data shouldn't contain uuids); the app narrows that to a
+     * `phaseId` referencing a specific `BrewablePhase` instance in
+     * `kbBrewableToBrewable`. Exactly one is present in practice.
+     */
+    phaseType?: string;
+    /** set on app-side brewables only — see `phaseType` above */
+    phaseId?: string;
     /** identifies the resource within its catalog/collection */
     slug: string;
     resourceType: string;

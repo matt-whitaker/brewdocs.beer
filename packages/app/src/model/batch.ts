@@ -15,24 +15,8 @@ export interface ShoppingItem {
     purchased: boolean;
 }
 
-export type SchedulePhase = "mash"|"boil"|"ferment";
+/** the grouping a schedule row falls under within its phase */
 export type ScheduleKind = "grains"|"hops"|"yeasts"|"additives";
-export type ScheduleTag = SchedulePhase|ScheduleKind;
-
-export type MilestoneKind = "gravity";
-
-export interface Milestone {
-    id: string;
-    label: string;
-    kind: MilestoneKind;
-}
-
-export interface Phase {
-    id: string;
-    name: string;
-    tags: ScheduleTag[];
-    milestones: Milestone[];
-}
 
 export interface ScheduleDetail {
     name: string;
@@ -43,14 +27,14 @@ export interface ScheduleDetail {
 export interface ScheduleItem {
     id: string;
     name: string;
-    tags: [SchedulePhase, ScheduleKind];
+    /** the `BrewablePhase.id` this row belongs to — taken from its source assignment, so repeats of a phase type stay distinct */
+    phaseId: string;
+    kind: ScheduleKind;
     note?: string;
     amount?: Scalar;
     path: string;
     extra?: ScheduleDetail[];
 }
-
-export const phaseLabel = (phase: Phase, index: number): string => `${index + 1}. ${phase.name}`;
 
 export default interface Batch extends Entity {
     name: string;
@@ -65,7 +49,6 @@ export default interface Batch extends Entity {
     boilTime: Scalar;
     actuals: Measurements;
     shopping: ShoppingItem[];
-    phases: Phase[];
     tracker: Record<string, TrackerEntry>;
 
     notes?: string;

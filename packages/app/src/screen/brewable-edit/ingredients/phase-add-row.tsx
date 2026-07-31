@@ -6,7 +6,7 @@ import DataGridLabel from "@/component/data-grid/label";
 import DataGridRow from "@/component/data-grid/row";
 import DataGridSelect from "@/component/data-grid/select";
 import {AddFn} from "@/hooks/useJsonEdit";
-import {Assignment, PhaseType} from "@/model/brewable";
+import {Assignment} from "@/model/brewable";
 import {defaultAdditive, kbGrainToRecipeGrain, kbHopToRecipeHop, kbYeastToRecipeYeast} from "@/screen/brewable-edit/ingredients/catalog-defaults";
 
 /** dropdown value for the freeform-additive choice — no colon, so it never collides with a `"<type>:<name>"` catalog value */
@@ -21,7 +21,7 @@ const ADDITIVE_OPTION = { value: ADDITIVE_VALUE, name: "Additive…" };
  * a text field, since additives are freeform (no catalog).
  */
 export type RecipeEditPhaseAddRowProps = {
-    phaseType: PhaseType;
+    phaseId: string;
     add: AddFn;
     /** merged grain/hop/yeast options, each value encoded as `"<resourceType>:<name>"` */
     resourceOptions: { value: string; name: string }[];
@@ -32,7 +32,7 @@ export type RecipeEditPhaseAddRowProps = {
 
 /** decodes a `"<resourceType>:<name>"` catalog value into a full Assignment; each case builds a single discriminated-union member so `resource` stays typed with no cast */
 function buildCatalogAssignment(
-    phaseType: PhaseType,
+    phaseId: string,
     encoded: string,
     kbGrainsIndex: Map<string, KbGrain>,
     kbHopsIndex: Map<string, KbHop>,
@@ -44,22 +44,22 @@ function buildCatalogAssignment(
     switch (resourceType) {
         case "grain": {
             const kbGrain = kbGrainsIndex.get(name);
-            return kbGrain && { phaseType, resourceType, slug: kbGrain.name, resource: kbGrainToRecipeGrain(kbGrain) };
+            return kbGrain && { phaseId, resourceType, slug: kbGrain.name, resource: kbGrainToRecipeGrain(kbGrain) };
         }
         case "hop": {
             const kbHop = kbHopsIndex.get(name);
-            return kbHop && { phaseType, resourceType, slug: kbHop.name, resource: kbHopToRecipeHop(kbHop) };
+            return kbHop && { phaseId, resourceType, slug: kbHop.name, resource: kbHopToRecipeHop(kbHop) };
         }
         case "yeast": {
             const kbYeast = kbYeastsIndex.get(name);
-            return kbYeast && { phaseType, resourceType, slug: kbYeast.name, resource: kbYeastToRecipeYeast(kbYeast) };
+            return kbYeast && { phaseId, resourceType, slug: kbYeast.name, resource: kbYeastToRecipeYeast(kbYeast) };
         }
         default:
             return undefined;
     }
 }
 
-export default function RecipeEditPhaseAddRow({ phaseType, add, resourceOptions, kbGrainsIndex, kbHopsIndex, kbYeastsIndex }: RecipeEditPhaseAddRowProps) {
+export default function RecipeEditPhaseAddRow({ phaseId, add, resourceOptions, kbGrainsIndex, kbHopsIndex, kbYeastsIndex }: RecipeEditPhaseAddRowProps) {
     const [value, setValue] = useState<string | null>(null);
     const [additiveName, setAdditiveName] = useState("");
 
@@ -70,16 +70,16 @@ export default function RecipeEditPhaseAddRow({ phaseType, add, resourceOptions,
         if (isAdditive) {
             const name = additiveName.trim();
             if (!name) return;
-            add("assignments", { phaseType, resourceType: "additive", slug: name, resource: defaultAdditive(name) });
+            add("assignments", { phaseId, resourceType: "additive", slug: name, resource: defaultAdditive(name) });
         } else {
             if (!value) return;
-            const assignment = buildCatalogAssignment(phaseType, value, kbGrainsIndex, kbHopsIndex, kbYeastsIndex);
+            const assignment = buildCatalogAssignment(phaseId, value, kbGrainsIndex, kbHopsIndex, kbYeastsIndex);
             if (!assignment) return;
             add("assignments", assignment);
         }
         setValue(null);
         setAdditiveName("");
-    }, [add, phaseType, value, isAdditive, additiveName, kbGrainsIndex, kbHopsIndex, kbYeastsIndex]);
+    }, [add, phaseId, value, isAdditive, additiveName, kbGrainsIndex, kbHopsIndex, kbYeastsIndex]);
 
     return (
         <DataGridRow zebra reserveExpand>

@@ -11,7 +11,8 @@ import PanelSwitcher from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
 import Screen from "@/component/screen";
 import useJsonEdit from "@/hooks/useJsonEdit";
-import Batch, {Phase, phaseLabel, SchedulePhase, ScheduleKind} from "@/model/batch";
+import Batch, {ScheduleKind} from "@/model/batch";
+import {phaseLabel} from "@/model/brewable";
 import {statuses} from "@/model/statuses";
 import {key, Ref, TrackerEntry} from "@/model/tracker";
 import BatchScheduleEquipment from "@/screen/batch-schedule/equipment";
@@ -32,12 +33,6 @@ const KIND_LABELS: Record<ScheduleKind, string> = {
 
 /** within a phase, rows read in the order you'd actually work through them */
 const KIND_ORDER: ScheduleKind[] = ["grains", "hops", "additives", "yeasts"];
-
-const SCHEDULE_PHASES: SchedulePhase[] = ["mash", "boil", "ferment"];
-
-/** the SchedulePhase a Phase maps to, read off its own tags rather than its (renamable) name */
-const phaseTypeOf = (phase: Phase): SchedulePhase | undefined =>
-    phase.tags.find((tag): tag is SchedulePhase => (SCHEDULE_PHASES as string[]).includes(tag));
 
 /** a schedule path lands on either a Scalar or a plain string (the dates) */
 function valueAt(data: Batch, path: string): string {
@@ -77,36 +72,28 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
         // stores no schedule copy, so this memo is the whole cache story
         const schedule = deriveSchedule(data.brewable);
 
-        return data.phases.map((phase, index) => {
-            // intersection: an item is in the phase only if it carries every configured tag
+        // one panel per phase *instance* — a second Boil is its own tab with its own
+        // ingredients, equipment and readings, never merged into the first
+        return data.brewable.schedule.phases.map((phase, index) => {
             const inPhase = schedule
-                .filter(item => phase.tags.every(tag => item.tags.includes(tag)))
+                .filter(item => item.phaseId === phase.id)
                 .sort((a, b) =>
-                    (KIND_ORDER.indexOf(a.tags[1]) - KIND_ORDER.indexOf(b.tags[1]))
+                    (KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind))
                     || a.name.localeCompare(b.name));
 
             // sorted, so a group is a run of adjacent items sharing a kind; each run
             // becomes its own DataGrid, which is what bounds the collapse rule to it
             const groups: { label: string; items: typeof inPhase }[] = [];
             inPhase.forEach(item => {
-                const label = KIND_LABELS[item.tags[1]];
+                const label = KIND_LABELS[item.kind];
                 const current = groups[groups.length - 1];
                 if (current && current.label === label) current.items.push(item);
                 else groups.push({ label, items: [item] });
             });
 
-            // live off the brewable — matched to this tab by phase type, not stored on Phase
-            const type = phaseTypeOf(phase);
-            const equipment = type
-                ? data.brewable.schedule.phases.filter(p => p.type === type).flatMap(p => p.equipment)
-                : [];
-
-            // config-driven now — a phase's own milestones, not derived from the brewable
-            const milestones = phase.milestones;
-
-            return { phase, index, groups, equipment, milestones };
+            return { phase, index, groups, equipment: phase.equipment, milestones: phase.milestones };
         });
-    }, [data.phases, data.brewable]);
+    }, [data.brewable]);
 
     return (
         <Screen>
@@ -116,12 +103,12 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                     <DataGridSelect cols={3} data={STATUS_OPTIONS} value={String(data.status)} onChange={updateStatus} />
                 </DataGridRow>
             </DataGrid>
-            <PanelSwitcher compact name="schedule" defaultTab={data.phases[0].name}>
+            <PanelSwitcher compact name="schedule" defaultTab={phaseLabel(data.brewable.schedule.phases, 0)}>
                 {panels.map(({ phase, index, groups, equipment, milestones }) => (
                     <PanelSwitcherContent
-                        key={phase.name}
-                        title={phase.name}
-                        label={phaseLabel(phase, index)}
+                        key={phase.id}
+                        // position-prefixed ("2. Boil"), so repeated phase types stay distinct as tab titles
+                        title={phaseLabel(data.brewable.schedule.phases, index)}
                         // a phase with nothing in it renders as a disabled tab; say why,
                         // or it inherits the switcher's "Not implemented" tooltip
                         titleAlt={groups.length || equipment.length || milestones.length ? "" : "Nothing scheduled in this step"}>
@@ -135,8 +122,8 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                                 {groups.map(({ label, items }) => (
                                     <DataGrid key={label}>
                                         <DataGridHeaderRow
-                                            defaultCollapsed={session?.[`schedule.${phase.name.toLowerCase()}.${label.toLowerCase()}`] as boolean ?? false}
-                                            onToggle={collapsed => saveSession(`schedule.${phase.name.toLowerCase()}.${label.toLowerCase()}`, collapsed)}>
+                                            defaultCollapsed={session?.[`schedule.${phase.id}.${label.toLowerCase()}`] as boolean ?? false}
+                                            onToggle={collapsed => saveSession(`schedule.${phase.id}.${label.toLowerCase()}`, collapsed)}>
                                             {label}
                                         </DataGridHeaderRow>
                                         {items.map(item => (

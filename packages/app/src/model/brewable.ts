@@ -3,21 +3,41 @@ import Equipment from "@/model/equipment";
 import Grain from "@/model/grain";
 import Hop from "@/model/hop";
 import Yeast from "@/model/yeast";
+import {newId} from "@/utils/id";
 
 /** the brew-day stage a phase or assignment belongs to */
 export type PhaseType = "mash" | "boil" | "ferment";
 /** which element model an Assignment's `resource` narrows to */
 export type ResourceType = "grain" | "hop" | "yeast" | "additive";
 
+/** the kind of reading a phase's milestone captures — only gravity today */
+export type MilestoneKind = "gravity";
+
 /**
- * One slot in the schedule. Distinct from `model/batch.ts`'s `Phase` (a
- * different, batch-derived shape) — named `BrewablePhase` to avoid colliding.
+ * A reading the brewer plans to take during a phase — *plan* config, not the
+ * measurement. The value and date live in `batch.tracker`, keyed by
+ * `{on:"milestone", phaseId, id}` (see `model/tracker.ts`). Because it's plan
+ * data it rides on the brewable, so a recipe can prescribe its own readings.
+ */
+export interface Milestone {
+    id: string;
+    label: string;
+    kind: MilestoneKind;
+}
+
+/**
+ * One phase in the schedule — the **plan's** unit of identity. Every phase
+ * carries a stable `id` from the moment it's created (recipes and kb imports
+ * included), because assignments and tracker refs point at a *specific phase
+ * instance*, not at its type. Two "boil" phases are two distinct phases.
  */
 export interface BrewablePhase {
-    /** stable per-instance id — batch brewables only, minted by ensureBrewableIds; absent on recipe/kb brewables */
-    id?: string;
+    /** stable per-instance id — minted at creation everywhere (defaultBrewable, kbBrewableToBrewable, the add-row) */
+    id: string;
     type: PhaseType;
     equipment: Equipment[];
+    /** readings planned for this phase; values live in the batch's tracker */
+    milestones: Milestone[];
 }
 
 export interface Schedule {
@@ -27,7 +47,8 @@ export interface Schedule {
 interface AssignmentBase {
     /** stable per-instance id — batch brewables only, minted by ensureBrewableIds; absent on recipe/kb brewables. Distinct from `slug` (catalog identity, shared across instances) */
     id?: string;
-    phaseType: PhaseType;
+    /** the `BrewablePhase.id` this resource goes into — a specific phase instance, so repeats of one type stay distinct */
+    phaseId: string;
     /** identifies the resource within its catalog/collection */
     slug: string;
 }
@@ -50,7 +71,7 @@ export const PHASE_TYPES: PhaseType[] = ["mash", "boil", "ferment"];
 /** one empty phase of each type and no assignments — satisfies the "≥1 of each" rule by construction */
 export const defaultBrewable = (): Brewable => ({
     schedule: {
-        phases: PHASE_TYPES.map(type => ({type, equipment: []}))
+        phases: PHASE_TYPES.map(type => ({id: newId(), type, equipment: [], milestones: []}))
     },
     assignments: []
 });

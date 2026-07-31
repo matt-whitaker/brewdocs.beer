@@ -9,7 +9,7 @@ import DataGridRemoveButton from "@/component/data-grid/remove-button";
 import DataGridRow from "@/component/data-grid/row";
 import DataGridSelect from "@/component/data-grid/select";
 import {AddFn, RemoveFn, UpdateFn} from "@/hooks/useJsonEdit";
-import {Milestone, Phase} from "@/model/batch";
+import {BrewablePhase, Milestone} from "@/model/brewable";
 import {key, Ref, TrackerEntry} from "@/model/tracker";
 import {scalarFromNumberWithUnit} from "@/utils/formatting";
 import {newId} from "@/utils/id";
@@ -37,8 +37,8 @@ function BatchScheduleGravityItem({ phaseId, phaseIndex, row, milestone, entry, 
     // prev.unit fallback — only a brand-new reading falls back to Plato
     const unit = entry?.reading?.unit ?? UNITS.PLATO;
 
-    const onChangeLabel = useCallback((next: string) => update(`phases[${phaseIndex}].milestones[${row}].label`, next), [update, phaseIndex, row]);
-    const onRemove = useCallback(() => remove(`phases[${phaseIndex}].milestones`, row), [remove, phaseIndex, row]);
+    const onChangeLabel = useCallback((next: string) => update(`brewable.schedule.phases[${phaseIndex}].milestones[${row}].label`, next), [update, phaseIndex, row]);
+    const onRemove = useCallback(() => remove(`brewable.schedule.phases[${phaseIndex}].milestones`, row), [remove, phaseIndex, row]);
 
     // the reading is a raw scalar while typing, formatted to its unit on blur —
     // mirrors the ingredient rows' updateScalar, but written to the tracker not a path
@@ -80,7 +80,7 @@ function BatchScheduleGravityItem({ phaseId, phaseIndex, row, milestone, entry, 
 const Item = memo(BatchScheduleGravityItem);
 
 export type BatchScheduleGravityProps = {
-    phase: Phase;
+    phase: BrewablePhase;
     phaseIndex: number;
     tracker: Record<string, TrackerEntry>;
     onPatch: (ref: Ref, patch: TrackerEntry) => void;
@@ -98,7 +98,7 @@ export type BatchScheduleGravityProps = {
  */
 export default function BatchScheduleGravity({ phase, phaseIndex, tracker, onPatch, update, add, remove }: BatchScheduleGravityProps) {
     const onAdd = useCallback(() => {
-        add(`phases[${phaseIndex}].milestones`, { id: newId(), label: "Reading", kind: "gravity" });
+        add(`brewable.schedule.phases[${phaseIndex}].milestones`, { id: newId(), label: "Reading", kind: "gravity" });
     }, [add, phaseIndex]);
 
     return (

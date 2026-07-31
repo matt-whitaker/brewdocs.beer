@@ -32,7 +32,7 @@ export default async function updateBatch(id: string, patch: Partial<Batch>) {
     // eager-prune: drop tracker entries whose ref no longer exists in the
     // current brewable, so a removed ingredient/equipment/phase's checkoff
     // doesn't linger, and re-adding one (a fresh id) starts unchecked.
-    batch.tracker = pruneTracker(batch.tracker, liveTrackerKeys(batch.brewable, batch.phases));
+    batch.tracker = pruneTracker(batch.tracker, liveTrackerKeys(batch.brewable));
 
     await saveBatch(id, batch);
 }

@@ -1,90 +1,80 @@
-import {indexedResourcesOf} from "@/actions/brewableResources";
-import {ScheduleItem, SchedulePhase, ScheduleKind} from "@/model/batch";
-import Brewable, {Assignment} from "@/model/brewable";
+import {ScheduleItem, ScheduleKind} from "@/model/batch";
+import Brewable, {Assignment, ResourceType} from "@/model/brewable";
 
-/** keeps the pair a mutable tuple — `as const` would infer it readonly */
-const tags = (phase: SchedulePhase, kind: ScheduleKind): [SchedulePhase, ScheduleKind] => [phase, kind];
-
-/**
- * The grains to add during the mash, listed once with their weight. There's no
- * mash-step content in the brewable anymore, so there's no temperature to write
- * through — the row is a plain checklist entry (empty `path`).
- */
-function mash(assignments: Assignment[]): ScheduleItem[] {
-    return indexedResourcesOf(assignments, "grain").map(([grain, , id]) => ({
-        id,
-        name: grain.name,
-        tags: tags("mash", "grains"),
-        amount: grain.weight,
-        path: ""
-    }));
-}
+/** the schedule grouping each resource type falls under */
+const KIND_OF: Record<ResourceType, ScheduleKind> = {
+    grain: "grains",
+    hop: "hops",
+    yeast: "yeasts",
+    additive: "additives"
+};
 
 /**
- * Hops are listed once with their own boil timing rather than repeated per boil
- * step — `hop.boil` already says when each addition goes in, so iterating the
- * boil steps around them (as the old screen did) just duplicated every row.
+ * The write-through path for a row's headline editable value, or "" when the
+ * row is a plain checklist entry. Paths are relative to the **batch**, since
+ * that's what the schedule screen's `useJsonEdit<Batch>` reads and writes, and
+ * they target the assignment in the brewable — the editing source of truth, so
+ * an edit here is never a copy that can go stale.
  *
- * The `path` writes through to the assignment in the brewable
- * (`brewable.assignments[i].resource.boil`) — the editing source of truth, so a
- * boil-time edit from this screen is never a copy that could go stale. Paths are
- * relative to the *batch*, since that's what the screen's `useJsonEdit<Batch>`
- * reads and writes.
+ * Grains are a checklist only (their weight is the plan, nothing to record).
+ * Hops and additives write their boil timing; yeasts their pitch temperature.
  */
-function boil(assignments: Assignment[]): ScheduleItem[] {
-    return [
-        ...indexedResourcesOf(assignments, "hop").map(([hop, i, id]) => ({
-            id,
-            name: hop.name,
-            tags: tags("boil", "hops"),
-            note: hop.alpha.value,
-            amount: hop.weight,
-            path: `brewable.assignments[${i}].resource.boil`
-        })),
-        ...indexedResourcesOf(assignments, "additive").map(([additive, i, id]) => ({
-            id,
-            name: additive.name,
-            tags: tags("boil", "additives"),
-            path: `brewable.assignments[${i}].resource.boil`
-        }))
-    ];
+function pathFor(assignment: Assignment, index: number): string {
+    const base = `brewable.assignments[${index}].resource`;
+    switch (assignment.resourceType) {
+        case "grain":
+            return "";
+        case "hop":
+        case "additive":
+            return `${base}.boil`;
+        case "yeast":
+            return `${base}.temp`;
+    }
+}
+
+/** the row's secondary fields, shown behind its expander */
+function extraFor(assignment: Assignment): ScheduleItem["extra"] {
+    // a yeast's pitch date is a brew-day event, not a step of its own — no `path`,
+    // so it's tracker-backed, keyed off this row's own assignment ref
+    return assignment.resourceType === "yeast"
+        ? [{ name: "Yeast Pitched", input: "date" as const }]
+        : undefined;
+}
+
+/** the headline planned amount, where the resource has one */
+function amountFor(assignment: Assignment): ScheduleItem["amount"] {
+    switch (assignment.resourceType) {
+        case "grain":
+        case "hop":
+            return assignment.resource.weight;
+        default:
+            return undefined;
+    }
 }
 
 /**
- * The yeast's pitch date is a brew-day event, not a step of its own, so it
- * rides behind the expander as an `extra` — tracker-backed (no `path`), keyed
- * off this same row's assignment ref (`model/tracker.ts`). That's also what
- * lets more than one yeast track its own pitch date, instead of sharing one
- * batch-wide field.
- */
-function ferment(assignments: Assignment[]): ScheduleItem[] {
-    return indexedResourcesOf(assignments, "yeast").map(([yeast, i, id]) => ({
-        id,
-        name: yeast.name,
-        tags: tags("ferment", "yeasts"),
-        path: `brewable.assignments[${i}].resource.temp`,
-        extra: [{ name: "Yeast Pitched", input: "date" as const }]
-    }));
-}
-
-/**
- * Derives the flat brew schedule from the brewable's ingredients — a **pure
- * view**, computed live by BatchSchedule rather than stored on the batch.
+ * Derives the brew schedule from the brewable's assignments — a **pure view**,
+ * computed live by BatchSchedule rather than stored on the batch.
  *
- * Each item's `id` is its source assignment's id (stable across a Planning
- * rename/reorder), which is also the tracker ref the row computes for its
- * checkoff/actual/pitch date (`batch.tracker`, keyed by
- * `key({on:"assignment", id})` — see CLAUDE.md's BatchSchedule). Schedule items
- * carry no user-owned state of their own, so there's nothing to re-attach
- * across a rebuild: the caller memoizes on `brewable` and that's the whole
- * cache story.
+ * Each row is filed under the **phase instance its assignment points at**
+ * (`assignment.phaseId`), not under a phase inferred from the resource type. That's
+ * what lets two "boil" phases hold different hops, and it keeps this screen
+ * agreeing with Planning, which groups by the same reference.
+ *
+ * A row's `id` is its source assignment's id (stable across a rename/reorder),
+ * which is also the tracker ref the row computes for its checkoff/actual/pitch
+ * date. Rows carry no user-owned state, so there's nothing to re-attach across a
+ * rebuild: the caller memoizes on `brewable`, and that's the whole cache story.
  */
 export default function deriveSchedule(brewable: Brewable): ScheduleItem[] {
-    const assignments = brewable?.assignments ?? [];
-
-    return [
-        ...mash(assignments),
-        ...boil(assignments),
-        ...ferment(assignments)
-    ];
+    return (brewable?.assignments ?? []).map((assignment, index) => ({
+        id: assignment.id!,
+        name: assignment.resource.name,
+        phaseId: assignment.phaseId,
+        kind: KIND_OF[assignment.resourceType],
+        note: assignment.resourceType === "hop" ? assignment.resource.alpha.value : undefined,
+        amount: amountFor(assignment),
+        path: pathFor(assignment, index),
+        extra: extraFor(assignment)
+    }));
 }
