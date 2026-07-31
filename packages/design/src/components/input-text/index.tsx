@@ -10,11 +10,13 @@ export type InputTextProps = PropsWithClass
         readonly?: boolean;
         placeholder?: string;
         name?: string
+        /** accessible name, when no visible <label> is associated — rendered as aria-label */
+        label?: string;
         primary?: boolean;
         align?: "left"|"center"|"right";
         size?: "small"|"medium"|"large";
     };
-export function InputText({ className, onChange, onBlur, value, readonly, placeholder, name, primary, align, size }: InputTextProps) {
+export function InputText({ className, onChange, onBlur, value, readonly, placeholder, name, label, primary, align, size }: InputTextProps) {
     const handleChange = useCallback(eventValue((v: string) => onChange?.(v)), [onChange]);
     const handleBlur = useCallback(eventValue((v: string) => onBlur?.(v)), [onBlur]);
     const optionalProps  = {
@@ -23,6 +25,7 @@ export function InputText({ className, onChange, onBlur, value, readonly, placeh
     };
     return <input
         name={name ?? void 0}
+        aria-label={label ?? void 0}
         placeholder={placeholder!}
         readOnly={!!readonly}
         value={value}

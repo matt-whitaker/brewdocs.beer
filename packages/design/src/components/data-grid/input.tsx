@@ -14,9 +14,11 @@ export type DataGridInputProps = PropsWithClass
         readonly?: boolean;
         value: string;
         type?: "text"|"date";
+        /** accessible name for the control — these grid inputs have no visible <label> */
+        label?: string;
         unit?: Unit | Currency
     };
-export function DataGridInput({ colStart = 1, cols = 1, readonly = false, value, onChange, onBlur, className, type = "text" }: DataGridInputProps) {
+export function DataGridInput({ colStart = 1, cols = 1, readonly = false, value, onChange, onBlur, className, label, type = "text" }: DataGridInputProps) {
     const classes = classNames(
         VALUE_COL_STARTS[colStart - 1],
         COL_SPANS[cols - 1],
@@ -27,6 +29,7 @@ export function DataGridInput({ colStart = 1, cols = 1, readonly = false, value,
     if (type === "date") {
         return (
             <InputDate
+                label={label}
                 readonly={readonly}
                 primary={!readonly}
                 value={value}
@@ -39,6 +42,7 @@ export function DataGridInput({ colStart = 1, cols = 1, readonly = false, value,
 
     return (
         <InputText
+            label={label}
             readonly={readonly}
             primary={!readonly}
             value={value}

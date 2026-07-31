@@ -30,9 +30,10 @@ export default function RecipeEditPhasesAddRow({ add }: RecipeEditPhasesAddRowPr
 
     return (
         <DataGridRow zebra reserveExpand>
-            <DataGridAddButton onClick={addPhase} />
+            <DataGridAddButton label="Add phase" onClick={addPhase} />
             <DataGridLabel className="ml-6" cols={4}>
                 <DataGridSelect
+                    label="Phase type to add"
                     allowNull
                     data={options}
                     value={type}

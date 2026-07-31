@@ -30,6 +30,8 @@ const COLUMNS: Record<ResourceType, ResourceScalarField[]> = {
 };
 
 type ScheduleValueCellProps = {
+    /** the row's resource name, so the control has an accessible name ("Northern Brewer weight") */
+    name: string;
     field: ResourceScalarField;
     colStart: number;
     planned?: Scalar;
@@ -42,7 +44,7 @@ type ScheduleValueCellProps = {
  * One editable column: shows the plan until an as-brewed value is entered, then
  * shows that. Writes only to the tracker — the plan is never overwritten.
  */
-function ScheduleValueCell({ field, colStart, planned, actual, onPatch }: ScheduleValueCellProps) {
+function ScheduleValueCell({ name, field, colStart, planned, actual, onPatch }: ScheduleValueCellProps) {
     // the actual may not exist yet, so write a whole scalar and carry the planned
     // field's unit across — formatting on blur needs a unit to fall back on when
     // the user types a bare number
@@ -60,6 +62,7 @@ function ScheduleValueCell({ field, colStart, planned, actual, onPatch }: Schedu
 
     return (
         <DataGridInput
+            label={`${name} ${field}`}
             colStart={colStart}
             value={actual?.value ?? planned?.value ?? ""}
             onChange={onChange}
@@ -81,7 +84,7 @@ function BatchScheduleItemDetail({ detail, value, onChange }: BatchScheduleItemD
     return (
         <DataGridRow zebra={false}>
             <DataGridLabel tiny cols={3}>{detail.name}</DataGridLabel>
-            <DataGridInput cols={3} type={detail.input === "date" ? "date" : undefined} value={value} onChange={onChange} />
+            <DataGridInput label={detail.name} cols={3} type={detail.input === "date" ? "date" : undefined} value={value} onChange={onChange} />
         </DataGridRow>
     );
 }
@@ -151,6 +154,7 @@ function BatchScheduleItemRow({ item, entry, onToggle, onPatch }: BatchScheduleI
             {columns.map((field, i) => (
                 <ValueCell
                     key={field}
+                    name={item.name}
                     field={field}
                     colStart={i + 2}
                     planned={item.resource[field]}

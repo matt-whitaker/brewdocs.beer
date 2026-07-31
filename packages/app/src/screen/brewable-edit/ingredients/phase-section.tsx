@@ -71,6 +71,7 @@ export default function RecipeEditPhaseSection({
             ))}
             <RecipeEditPhaseAddRow
                 phaseId={phaseId}
+                phaseLabel={label}
                 add={add}
                 resourceOptions={resourceOptions}
                 kbGrainsIndex={kbGrainsIndex}

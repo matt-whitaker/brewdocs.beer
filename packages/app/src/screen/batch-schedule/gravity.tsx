@@ -61,16 +61,16 @@ function BatchScheduleGravityItem({ phaseId, phaseIndex, row, milestone, entry, 
                 <DataGrid>
                     <DataGridRow zebra={false}>
                         <DataGridLabel tiny cols={3}>Reading Taken</DataGridLabel>
-                        <DataGridInput cols={3} type="date" value={entry?.date ?? ""} onChange={onChangeDate} />
+                        <DataGridInput label={`${milestone.label} date`} cols={3} type="date" value={entry?.date ?? ""} onChange={onChangeDate} />
                     </DataGridRow>
                 </DataGrid>
             )}
             reserveExpand
         >
             <DataGridRemoveButton onClick={onRemove} />
-            <DataGridInput className="ml-6" cols={3} value={milestone.label} onChange={onChangeLabel} />
+            <DataGridInput label={`${milestone.label} name`} className="ml-6" cols={3} value={milestone.label} onChange={onChangeLabel} />
             <DataGridSelect cols={1} data={READING_UNIT_OPTIONS} value={unit} onChange={onChangeUnit} />
-            <DataGridInput colStart={3} value={entry?.reading?.value ?? ""} onChange={onChangeReading} onBlur={onBlurReading} />
+            <DataGridInput label={`${milestone.label} reading`} colStart={3} value={entry?.reading?.value ?? ""} onChange={onChangeReading} onBlur={onBlurReading} />
         </DataGridRow>
     );
 }
@@ -117,7 +117,7 @@ export default function BatchScheduleGravity({ phase, phaseIndex, tracker, onPat
                     remove={remove} />
             ))}
             <DataGridRow zebra reserveExpand>
-                <DataGridAddButton onClick={onAdd} />
+                <DataGridAddButton label="Add reading" onClick={onAdd} />
                 <DataGridLabel className="ml-6" cols={4}>Add reading</DataGridLabel>
             </DataGridRow>
         </DataGrid>
