@@ -1,37 +1,62 @@
 import {memo, useCallback} from "react";
-import {UNITS} from "@brewdocs.beer/core";
-import {POST_GRAVITY_MILESTONE_ID} from "@/actions/tracker";
+import {Unit, UNITS} from "@brewdocs.beer/core";
 import DataGrid from "@/component/data-grid";
+import DataGridAddButton from "@/component/data-grid/add-button";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
 import DataGridInput from "@/component/data-grid/input";
 import DataGridLabel from "@/component/data-grid/label";
+import DataGridRemoveButton from "@/component/data-grid/remove-button";
 import DataGridRow from "@/component/data-grid/row";
+import DataGridSelect from "@/component/data-grid/select";
+import {AddFn, RemoveFn, UpdateFn} from "@/hooks/useJsonEdit";
+import {Milestone, Phase} from "@/model/batch";
 import {key, Ref, TrackerEntry} from "@/model/tracker";
 import {scalarFromNumberWithUnit} from "@/utils/formatting";
+import {newId} from "@/utils/id";
 
-/** one gravity milestone slot — a post-reading on a mash or boil brewable phase */
-export type GravityReading = { phaseId: string; label: string };
+const READING_UNIT_OPTIONS = [
+    { name: "°P", value: UNITS.PLATO },
+    { name: "SG", value: UNITS.SPECIFIC_GRAVITY },
+];
 
-const refOf = (phaseId: string): Ref => ({ on: "milestone", phaseId, id: POST_GRAVITY_MILESTONE_ID });
+const refOf = (phaseId: string, milestoneId: string): Ref => ({ on: "milestone", phaseId, id: milestoneId });
 
 type BatchScheduleGravityItemProps = {
-    reading: GravityReading;
+    phaseId: string;
+    phaseIndex: number;
+    row: number;
+    milestone: Milestone;
     entry: TrackerEntry | undefined;
     onPatch: (ref: Ref, patch: TrackerEntry) => void;
+    update: UpdateFn;
+    remove: RemoveFn;
 };
 
-function BatchScheduleGravityItem({ reading: { phaseId, label }, entry, onPatch }: BatchScheduleGravityItemProps) {
-    // the reading is a raw scalar while typing, formatted to °P on blur — mirrors
-    // the ingredient rows' updateScalar, but written to the tracker not a path
-    const onChangeReading = useCallback((next: string) => onPatch(refOf(phaseId), { reading: { value: next, unit: UNITS.PLATO } }), [onPatch, phaseId]);
-    const onBlurReading = useCallback((next: string) => onPatch(refOf(phaseId), { reading: scalarFromNumberWithUnit(next, UNITS.PLATO) }), [onPatch, phaseId]);
+function BatchScheduleGravityItem({ phaseId, phaseIndex, row, milestone, entry, onPatch, update, remove }: BatchScheduleGravityItemProps) {
+    // reading unit defaults to the entry's own existing unit, like updateScalar's
+    // prev.unit fallback — only a brand-new reading falls back to Plato
+    const unit = entry?.reading?.unit ?? UNITS.PLATO;
+
+    const onChangeLabel = useCallback((next: string) => update(`phases[${phaseIndex}].milestones[${row}].label`, next), [update, phaseIndex, row]);
+    const onRemove = useCallback(() => remove(`phases[${phaseIndex}].milestones`, row), [remove, phaseIndex, row]);
+
+    // the reading is a raw scalar while typing, formatted to its unit on blur —
+    // mirrors the ingredient rows' updateScalar, but written to the tracker not a path
+    const onChangeReading = useCallback((next: string) => onPatch(refOf(phaseId, milestone.id), { reading: { value: next, unit } }), [onPatch, phaseId, milestone.id, unit]);
+    const onBlurReading = useCallback((next: string) => onPatch(refOf(phaseId, milestone.id), { reading: scalarFromNumberWithUnit(next, unit) }), [onPatch, phaseId, milestone.id, unit]);
+    // switching units reformats the existing numeric value under the new one, same
+    // as updateScalar's lockUnit path — an empty reading just adopts the new unit
+    const onChangeUnit = useCallback((next: string) => {
+        const value = entry?.reading?.value;
+        onPatch(refOf(phaseId, milestone.id), { reading: value ? scalarFromNumberWithUnit(value, next as Unit, true) : { value: "", unit: next as Unit } });
+    }, [onPatch, phaseId, milestone.id, entry?.reading?.value]);
     // exact date taken matters less than the reading, so it rides behind the expander
-    const onChangeDate = useCallback((next: string) => onPatch(refOf(phaseId), { date: next }), [onPatch, phaseId]);
+    const onChangeDate = useCallback((next: string) => onPatch(refOf(phaseId, milestone.id), { date: next }), [onPatch, phaseId, milestone.id]);
 
     return (
         <DataGridRow
             zebra
-            label={`${label} reading`}
+            label={`${milestone.label || "reading"} details`}
             expandContent={(
                 <DataGrid>
                     <DataGridRow zebra={false}>
@@ -42,40 +67,59 @@ function BatchScheduleGravityItem({ reading: { phaseId, label }, entry, onPatch 
             )}
             reserveExpand
         >
-            <DataGridLabel>{label}</DataGridLabel>
+            <DataGridRemoveButton onClick={onRemove} />
+            <DataGridInput className="ml-6" cols={3} value={milestone.label} onChange={onChangeLabel} />
+            <DataGridSelect cols={1} data={READING_UNIT_OPTIONS} value={unit} onChange={onChangeUnit} />
             <DataGridInput colStart={3} value={entry?.reading?.value ?? ""} onChange={onChangeReading} onBlur={onBlurReading} />
         </DataGridRow>
     );
 }
 
-// props are primitives plus a stable onPatch, so editing one reading doesn't
-// re-render the rest — same reasoning as the equipment list
+// props are primitives plus a stable onPatch/update/remove, so editing one
+// reading doesn't re-render the rest — same reasoning as the equipment list
 const Item = memo(BatchScheduleGravityItem);
 
 export type BatchScheduleGravityProps = {
-    readings: GravityReading[];
+    phase: Phase;
+    phaseIndex: number;
     tracker: Record<string, TrackerEntry>;
     onPatch: (ref: Ref, patch: TrackerEntry) => void;
+    update: UpdateFn;
+    add: AddFn;
+    remove: RemoveFn;
 };
 
 /**
- * Post-phase gravity reads (one per mash/boil brewable phase), each keyed to a
- * `{on:"milestone", phaseId, id: POST_GRAVITY_MILESTONE_ID}` entry in `batch.tracker`.
- * Its own DataGrid so the collapse rule scopes to these rows, like Equipment.
+ * Editable gravity readings for a phase, one row per `phase.milestones[]`
+ * entry, each keyed to a `{on:"milestone", phaseId, id}` entry in
+ * `batch.tracker`. Its own DataGrid so the collapse rule scopes to these
+ * rows, like Equipment. Renders on every phase tab, including an empty one —
+ * the brewer adds the first reading from here.
  */
-export default function BatchScheduleGravity({ readings, tracker, onPatch }: BatchScheduleGravityProps) {
-    if (!readings.length) return null;
+export default function BatchScheduleGravity({ phase, phaseIndex, tracker, onPatch, update, add, remove }: BatchScheduleGravityProps) {
+    const onAdd = useCallback(() => {
+        add(`phases[${phaseIndex}].milestones`, { id: newId(), label: "Reading", kind: "gravity" });
+    }, [add, phaseIndex]);
 
     return (
         <DataGrid>
             <DataGridHeaderRow collapsible>Gravity</DataGridHeaderRow>
-            {readings.map(reading => (
+            {phase.milestones.map((milestone, row) => (
                 <Item
-                    key={reading.phaseId}
-                    reading={reading}
-                    entry={tracker[key(refOf(reading.phaseId))]}
-                    onPatch={onPatch} />
+                    key={milestone.id}
+                    phaseId={phase.id}
+                    phaseIndex={phaseIndex}
+                    row={row}
+                    milestone={milestone}
+                    entry={tracker[key(refOf(phase.id, milestone.id))]}
+                    onPatch={onPatch}
+                    update={update}
+                    remove={remove} />
             ))}
+            <DataGridRow zebra reserveExpand>
+                <DataGridAddButton onClick={onAdd} />
+                <DataGridLabel className="ml-6" cols={4}>Add reading</DataGridLabel>
+            </DataGridRow>
         </DataGrid>
     );
 }
