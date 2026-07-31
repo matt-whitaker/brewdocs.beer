@@ -7,8 +7,17 @@ export type Ref =
 
 export type TrackerEntry = {
     completed?: boolean;
+    /** what actually went in — the amount, against the plan's `ScheduleItem.amount` */
     actual?: Scalar;
+    /**
+     * how it actually went in — a hop/additive's boil time, a yeast's pitch
+     * temperature — against the plan's `ScheduleItem.detail`. Named for the row's
+     * secondary column; unrelated to `ScheduleDetail` (the expander fields).
+     */
+    actualDetail?: Scalar;
+    /** milestone — the gravity value read */
     reading?: Scalar;
+    /** (yeast) assignment — pitch date | milestone — reading-taken date */
     date?: string;
 };
 

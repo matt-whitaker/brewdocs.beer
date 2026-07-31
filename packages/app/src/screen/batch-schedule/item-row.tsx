@@ -5,7 +5,6 @@ import DataGridInput from "@/component/data-grid/input";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridLabelNote from "@/component/data-grid/label-note";
 import DataGridRow from "@/component/data-grid/row";
-import {UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
 import {ScheduleDetail, ScheduleItem} from "@/model/batch";
 import {Ref, TrackerEntry} from "@/model/tracker";
 import {scalarFromNumberWithUnit} from "@/utils/formatting";
@@ -15,64 +14,47 @@ const refOf = (id: string): Ref => ({ on: "assignment", id });
 type BatchScheduleItemDetailProps = {
     detail: ScheduleDetail;
     value: string;
-    update: UpdateFn;
-    updateScalar: UpdateScalarFn;
-    /** set only for a tracker-backed detail (no `path`) — the yeast pitch date */
-    onChangeTrackerDate?: (next: string) => void;
+    onChange: (next: string) => void;
 };
 
-/** one row of the nested grid behind a row's expander */
-function BatchScheduleItemDetail({ detail, value, update, updateScalar, onChangeTrackerDate }: BatchScheduleItemDetailProps) {
-    // a date is a plain string at the path, not a scalar, so it's written whole
-    // — unless it's tracker-backed (no path), which writes through the tracker instead
-    const onChangeDate = useCallback(
-        (next: string) => (detail.path ? update(detail.path, next) : onChangeTrackerDate?.(next)),
-        [update, detail.path, onChangeTrackerDate]
-    );
-    const onChangeValue = useCallback((next: string) => update(`${detail.path}.value`, next), [update, detail.path]);
-    const onBlurValue = useCallback((next: string) => updateScalar(detail.path!, next), [updateScalar, detail.path]);
-
+/** one row of the nested grid behind a row's expander — brew-day facts, all tracker-backed */
+function BatchScheduleItemDetail({ detail, value, onChange }: BatchScheduleItemDetailProps) {
     return (
         <DataGridRow zebra={false}>
             <DataGridLabel tiny cols={3}>{detail.name}</DataGridLabel>
-            {detail.input === "date" ? (
-                <DataGridInput cols={3} type="date" value={value} onChange={onChangeDate} />
-            ) : (
-                <DataGridInput
-                    colStart={3}
-                    value={value}
-                    onChange={onChangeValue}
-                    onBlur={onBlurValue}
-                />
-            )}
+            <DataGridInput cols={3} type={detail.input === "date" ? "date" : undefined} value={value} onChange={onChange} />
         </DataGridRow>
     );
 }
 
 export type BatchScheduleItemRowProps = {
     item: ScheduleItem;
-    /** live value at item.path, read by the screen so this stays a dumb row */
-    value: string;
-    /** live values for item.extra, in the same order; empty for a tracker-backed (path-less) detail */
-    extraValues?: string[];
     /** this row's own tracker entry — `batch.tracker[key({on:"assignment", id: item.id})]` */
     entry: TrackerEntry | undefined;
     /** immediate checkoff toggle, mirroring the equipment list's onToggle (see index.tsx) */
     onToggle: (ref: Ref) => void;
-    /** debounced tracker patch — actual amount and yeast pitch date (see index.tsx's patchTracker) */
+    /** debounced tracker patch — every editable value on this row (see index.tsx's patchTracker) */
     onPatch: (ref: Ref, patch: TrackerEntry) => void;
-    update: UpdateFn;
-    updateScalar: UpdateScalarFn;
 };
 
-function BatchScheduleItemRow({ item, value, extraValues, entry, onToggle, onPatch, update, updateScalar }: BatchScheduleItemRowProps) {
+function BatchScheduleItemRow({ item, entry, onToggle, onPatch }: BatchScheduleItemRowProps) {
     const id = `schedule-item-${item.id}`;
 
     const onToggleCompleted = useCallback(() => onToggle(refOf(item.id)), [onToggle, item.id]);
 
-    // writes through to the ingredient itself — item.path, never a copy on the item
-    const onChangeValue = useCallback((next: string) => update(`${item.path}.value`, next), [update, item.path]);
-    const onBlurValue = useCallback((next: string) => updateScalar(item.path, next), [updateScalar, item.path]);
+    // ⚠️ Records what actually happened; it does NOT write back over the plan.
+    // Editing `brewable.assignments[i].resource.boil` from the brew-day screen
+    // would overwrite the recipe-derived plan and lose what you meant to do —
+    // that's Planning's job. Same shape as the amount handlers below.
+    const onChangeDetail = useCallback(
+        (next: string) => onPatch(refOf(item.id), { actualDetail: { value: next, unit: item.detail?.unit } }),
+        [onPatch, item.id, item.detail?.unit]
+    );
+    const onBlurDetail = useCallback((next: string) => {
+        if (entry?.actualDetail && item.detail?.unit) {
+            onPatch(refOf(item.id), { actualDetail: scalarFromNumberWithUnit(next, item.detail.unit) });
+        }
+    }, [onPatch, item.id, entry?.actualDetail, item.detail?.unit]);
 
     // `actual` may not exist yet, so write the whole scalar and carry the planned
     // amount's unit across — updateScalar needs a unit to fall back on when the
@@ -97,7 +79,18 @@ function BatchScheduleItemRow({ item, value, extraValues, entry, onToggle, onPat
     const used = actual?.value ?? planned ?? "";
     // once what went in differs from the plan, show the plan alongside it
     const drifted = !!actual && !!planned && actual.value !== planned;
-    const note = [item.note, drifted ? `plan ${planned}` : null].filter(Boolean).join(" · ");
+
+    const plannedDetail = item.detail?.value;
+    const actualDetail = entry?.actualDetail;
+    const usedDetail = actualDetail?.value ?? plannedDetail ?? "";
+    const detailDrifted = !!actualDetail && !!plannedDetail && actualDetail.value !== plannedDetail;
+
+    // show the plan alongside whatever drifted, so the intent is never lost
+    const note = [
+        item.note,
+        drifted ? `plan ${planned}` : null,
+        detailDrifted ? `plan ${plannedDetail}` : null
+    ].filter(Boolean).join(" · ");
     const completed = entry?.completed ?? false;
 
     return (
@@ -106,14 +99,12 @@ function BatchScheduleItemRow({ item, value, extraValues, entry, onToggle, onPat
             label={`${item.name} details`}
             expandContent={item.extra?.length ? (
                 <DataGrid>
-                    {item.extra.map((detail, i) => (
+                    {item.extra.map(detail => (
                         <BatchScheduleItemDetail
                             key={detail.name}
                             detail={detail}
-                            value={detail.path ? extraValues?.[i] ?? "" : entry?.date ?? ""}
-                            update={update}
-                            updateScalar={updateScalar}
-                            onChangeTrackerDate={detail.path ? undefined : onChangePitchDate} />
+                            value={entry?.date ?? ""}
+                            onChange={onChangePitchDate} />
                     ))}
                 </DataGrid>
             ) : undefined}
@@ -135,13 +126,13 @@ function BatchScheduleItemRow({ item, value, extraValues, entry, onToggle, onPat
                     onBlur={onBlurAmount}
                 />
             ) : null}
-            {/* mash grains carry no write-through value (empty path) — checklist only, no third column */}
-            {item.path ? (
+            {/* mash grains have no secondary value — checklist only, no third column */}
+            {item.detail ? (
                 <DataGridInput
                     colStart={3}
-                    value={value}
-                    onChange={onChangeValue}
-                    onBlur={onBlurValue}
+                    value={usedDetail}
+                    onChange={onChangeDetail}
+                    onBlur={onBlurDetail}
                 />
             ) : null}
         </DataGridRow>

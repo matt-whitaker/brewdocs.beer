@@ -20,7 +20,6 @@ export type ScheduleKind = "grains"|"hops"|"yeasts"|"additives";
 
 export interface ScheduleDetail {
     name: string;
-    path?: string;
     input?: "date";
 }
 
@@ -31,8 +30,10 @@ export interface ScheduleItem {
     phaseId: string;
     kind: ScheduleKind;
     note?: string;
+    /** planned amount — a grain/hop weight */
     amount?: Scalar;
-    path: string;
+    /** planned secondary value — a hop/additive's boil time, a yeast's pitch temp */
+    detail?: Scalar;
     extra?: ScheduleDetail[];
 }
 
