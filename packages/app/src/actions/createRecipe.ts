@@ -10,11 +10,14 @@ import {cloneDeep} from "@/utils/func";
 export default async function createRecipe(source?: KbRecipe, name?: string, template?: KbRecipeTemplate): Promise<string> {
     const id = await recipesStorage.generateId();
 
-    const recipe: Recipe = source
-        ? {...kbRecipeToRecipe(source), id}
-        : template
-            ? {...cloneDeep(defaultRecipe), id, brewable: kbBrewableToBrewable(template.brewable)}
-            : {...cloneDeep(defaultRecipe), id};
+    let recipe: Recipe;
+    if (source) {
+        recipe = {...kbRecipeToRecipe(source), id};
+    } else if (template) {
+        recipe = {...cloneDeep(defaultRecipe), id, brewable: kbBrewableToBrewable(template.brewable)};
+    } else {
+        recipe = {...cloneDeep(defaultRecipe), id};
+    }
 
     // let a caller (re)name the clone — e.g. "Edit" clones a catalog recipe into
     // a local one under a user-chosen name
