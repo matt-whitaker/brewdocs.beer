@@ -1,0 +1,45 @@
+{
+  "id": "single-infusion-all-grain",
+  "name": "Single-Infusion All-Grain",
+  "description": "A standard single-mash, single-boil all-grain process — mash, boil, and ferment with no ingredients assigned.",
+  "brewable": {
+    "schedule": {
+      "phases": [
+        {
+          "type": "mash",
+          "equipment": [
+            { "name": "Mash Tun - 10gal", "use": ["mash"] },
+            { "name": "Stirring Wand", "use": ["mash"] },
+            { "name": "Sparge Vessel - 15gal", "use": ["mash"] },
+            { "name": "Star San", "use": ["clean"] },
+            { "name": "PBW", "use": ["clean"] },
+            { "name": "Digital Hydrometer", "use": ["measure"] },
+            { "name": "Long Thermometer", "use": ["boil", "mash"] },
+            { "name": "Burner and stand", "use": ["mash", "boil"] }
+          ]
+        },
+        {
+          "type": "boil",
+          "equipment": [
+            { "name": "Boil Kettle - 15gal", "use": ["boil"] },
+            { "name": "Digital Hydrometer", "use": ["measure"] },
+            { "name": "Long Thermometer", "use": ["boil", "mash"] },
+            { "name": "Large Stirring Spoon", "use": ["boil"] },
+            { "name": "Racking Cane & Hose", "use": ["transfer"] },
+            { "name": "Burner and stand", "use": ["mash", "boil"] },
+            { "name": "Scale", "use": ["boil", "starter"] }
+          ]
+        },
+        {
+          "type": "ferment",
+          "equipment": [
+            { "name": "Glass Carboy - 7gal", "use": ["secondary"] },
+            { "name": "Erlenmeyer Flask", "use": ["starter"] },
+            { "name": "Scale", "use": ["boil", "starter"] }
+          ]
+        }
+      ]
+    },
+    "assignments": []
+  }
+}
