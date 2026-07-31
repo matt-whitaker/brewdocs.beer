@@ -1,12 +1,11 @@
 import { expect, test } from "@playwright/test";
-import { activeTabName } from "./helpers";
 
 // Stable seeded kb recipe id (see packages/kb/data/recipes/anchor-steam-beer-clone.json).
 const RECIPE_PATH = "/kb/recipe/anchor-steam-beer-clone";
 
 test("Overview is the default active tab and shows recipe content", async ({ page }) => {
     await page.goto(RECIPE_PATH);
-    expect(await activeTabName(page)).toBe("Overview");
+    await expect(page.getByRole("tab", { name: "Overview" })).toHaveAttribute("aria-selected", "true");
     await expect(page.getByText("Northern Brewer")).toBeVisible();
     await expect(page.getByText("German Pils")).toBeVisible();
 });
@@ -14,7 +13,7 @@ test("Overview is the default active tab and shows recipe content", async ({ pag
 test("Batches tab activates on click", async ({ page }) => {
     await page.goto(RECIPE_PATH);
     await page.getByRole("tab", { name: "Batches" }).click();
-    expect(await activeTabName(page)).toBe("Batches");
+    await expect(page.getByRole("tab", { name: "Batches" })).toHaveAttribute("aria-selected", "true");
 });
 
 test("Brew action opens the batch-name modal, which can be cancelled", async ({ page }) => {
