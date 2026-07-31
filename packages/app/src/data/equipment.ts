@@ -17,6 +17,8 @@ const equipment: Equipment[] = [
     { name: "Burner and stand", use: ["mash", "boil"]},
     { name: "Scale", use: ["boil", "starter"]},
     { name: "CO2", use: ["kegging"]},
+    { name: "pH Meter", use: ["sour"] },
+    { name: "Souring Vessel Lid / Cover", use: ["sour"] },
 ];
 
 export default equipment;
