@@ -1,19 +1,18 @@
 import { expect, Page, test } from "@playwright/test";
-import { activeTabName } from "./helpers";
 
 test("recipes page defaults to the All tab, listing the kb catalog", async ({ page }) => {
     await page.goto("/recipes");
     await expect(page.getByRole("tab", { name: "All" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "Starred" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "My Recipes" })).toBeVisible();
-    await expect(await activeTabName(page)).toBe("All");
+    await expect(page.getByRole("tab", { name: "All" })).toHaveAttribute("aria-selected", "true");
     await expect(page.getByText("Anchor Steam Beer Clone")).toBeVisible();
 });
 
 test("My Recipes tab activates and shows the Create action with an empty list", async ({ page }) => {
     await page.goto("/recipes");
     await page.getByRole("tab", { name: "My Recipes" }).click();
-    await expect(await activeTabName(page)).toBe("My Recipes");
+    await expect(page.getByRole("tab", { name: "My Recipes" })).toHaveAttribute("aria-selected", "true");
     await expect(page.getByRole("button", { name: "Create" })).toBeVisible();
     await expect(page.getByText("Anchor Steam Beer Clone")).not.toBeVisible();
 });
