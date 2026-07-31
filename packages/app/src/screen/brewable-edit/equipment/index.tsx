@@ -13,7 +13,7 @@ export type BrewableEditEquipmentProps = {
 
 // A brewable panel organized like Ingredients, but grouped by phase *instance*
 // (equipment is stored per phase at schedule.phases[i].equipment, not as a flat
-// phaseType-tagged list). One collapsible section per phase, each with its
+// flat list). One collapsible section per phase instance, each with its
 // equipment plus a per-phase add-row. Dot-paths are relative to the brewable.
 export default function BrewableEditEquipment({ brewable, update, add, remove }: BrewableEditEquipmentProps) {
     const equipmentIndex = useIndexBy(equipmentCatalog, "name");

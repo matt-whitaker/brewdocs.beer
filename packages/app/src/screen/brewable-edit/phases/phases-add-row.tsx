@@ -4,7 +4,8 @@ import DataGridLabel from "@/component/data-grid/label";
 import DataGridRow from "@/component/data-grid/row";
 import DataGridSelect from "@/component/data-grid/select";
 import {AddFn} from "@/hooks/useJsonEdit";
-import {PHASE_TYPES, PhaseType} from "@/model/brewable";
+import {BrewablePhase, PHASE_TYPES, PhaseType} from "@/model/brewable";
+import {newId} from "@/utils/id";
 
 export type RecipeEditPhasesAddRowProps = {
     add: AddFn;
@@ -18,7 +19,12 @@ export default function RecipeEditPhasesAddRow({ add }: RecipeEditPhasesAddRowPr
 
     const addPhase = useCallback(() => {
         if (!type) return;
-        add("schedule.phases", { type, equipment: [] });
+        // ⚠️ Typed as a full BrewablePhase on purpose: `AddFn` takes `unknown`, so a
+        // missing `id`/`milestones` would sail past tsc and only surface at runtime
+        // as a silent save failure (liveTrackerKeys reading `milestones` of undefined).
+        // The id is minted here because assignments reference a phase *instance*.
+        const phase: BrewablePhase = { id: newId(), type, equipment: [], milestones: [] };
+        add("schedule.phases", phase);
         setType(null);
     }, [add, type]);
 

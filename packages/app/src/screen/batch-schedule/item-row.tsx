@@ -66,7 +66,7 @@ export type BatchScheduleItemRowProps = {
 };
 
 function BatchScheduleItemRow({ item, value, extraValues, entry, onToggle, onPatch, update, updateScalar }: BatchScheduleItemRowProps) {
-    const id = `schedule-item-${item.tags[0]}-${item.tags[1]}-${item.name}`;
+    const id = `schedule-item-${item.id}`;
 
     const onToggleCompleted = useCallback(() => onToggle(refOf(item.id)), [onToggle, item.id]);
 

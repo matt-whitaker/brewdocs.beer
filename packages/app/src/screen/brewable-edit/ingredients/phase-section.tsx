@@ -4,9 +4,9 @@ import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
 import DataGridSubheaderRow from "@/component/data-grid/subheader-row";
 import {AddFn, RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
-import {Assignment, PhaseType} from "@/model/brewable";
+import {Assignment} from "@/model/brewable";
 import RecipeEditAssignmentRow from "@/screen/brewable-edit/ingredients/assignment-row";
-import {PHASE_TYPE_LABELS, RESOURCE_TYPES, RESOURCE_TYPE_LABELS} from "@/screen/brewable-edit/ingredients/catalog-defaults";
+import {RESOURCE_TYPES, RESOURCE_TYPE_LABELS} from "@/screen/brewable-edit/ingredients/catalog-defaults";
 import RecipeEditPhaseAddRow from "@/screen/brewable-edit/ingredients/phase-add-row";
 import {saveSession, useSession} from "@/state/session";
 
@@ -14,9 +14,10 @@ import {saveSession, useSession} from "@/state/session";
 export type AssignmentWithIndex = { assignment: Assignment; index: number };
 
 export type RecipeEditPhaseSectionProps = {
-    /** 1-based position of this phase group, prefixed on the header to match the Phases panel's "1. Mash" labels */
-    position: number;
-    phaseType: PhaseType;
+    /** the phase's display label, e.g. "2. Boil" — matches the Phases panel */
+    label: string;
+    /** the BrewablePhase.id this section edits; new assignments point at it */
+    phaseId: string;
     assignments: AssignmentWithIndex[];
     add: AddFn;
     remove: RemoveFn;
@@ -29,9 +30,9 @@ export type RecipeEditPhaseSectionProps = {
 };
 
 export default function RecipeEditPhaseSection({
-    position, phaseType, assignments, add, remove, update, updateScalar, resourceOptions, kbGrainsIndex, kbHopsIndex, kbYeastsIndex,
+    label, phaseId, assignments, add, remove, update, updateScalar, resourceOptions, kbGrainsIndex, kbHopsIndex, kbYeastsIndex,
 }: RecipeEditPhaseSectionProps) {
-    const sessionKey = `recipe-edit.brewable.phase.${phaseType}`;
+    const sessionKey = `recipe-edit.brewable.phase.${phaseId}`;
     const session = useSession();
     const onToggleCollapsed = useCallback((collapsed: boolean) => saveSession(sessionKey, collapsed), [sessionKey]);
 
@@ -51,7 +52,7 @@ export default function RecipeEditPhaseSection({
                 collapsible
                 defaultCollapsed={session?.[sessionKey] as boolean ?? false}
                 onToggle={onToggleCollapsed}>
-                {position}. {PHASE_TYPE_LABELS[phaseType]}
+                {label}
             </DataGridHeaderRow>
             {subsections.map(({ resourceType, items }) => (
                 <div key={resourceType}>
@@ -69,7 +70,7 @@ export default function RecipeEditPhaseSection({
                 </div>
             ))}
             <RecipeEditPhaseAddRow
-                phaseType={phaseType}
+                phaseId={phaseId}
                 add={add}
                 resourceOptions={resourceOptions}
                 kbGrainsIndex={kbGrainsIndex}

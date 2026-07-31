@@ -1,7 +1,7 @@
 import {useMemo} from "react";
 import useIndexBy from "@/hooks/useIndexBy";
 import {AddFn, RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
-import Brewable, {PhaseType} from "@/model/brewable";
+import Brewable, {phaseLabel} from "@/model/brewable";
 import RecipeEditPhaseSection, {AssignmentWithIndex} from "@/screen/brewable-edit/ingredients/phase-section";
 import {useKbGrains} from "@/state/kbGrains";
 import {useKbHops} from "@/state/kbHops";
@@ -35,37 +35,24 @@ export default function BrewableEditIngredients({ brewable, update, updateScalar
         ...kbYeasts.map(({ name }) => ({ value: `yeast:${name}`, name })),
     ], [kbGrains, kbHops, kbYeasts]);
 
-    // the grouping order — distinct phase types, in the order they first
-    // appear in the schedule (an assignment only carries a `phaseType`, not a
-    // specific phase instance, so repeated phases of one type collapse together)
-    const phaseTypes = useMemo(() => {
-        const seen = new Set<PhaseType>();
-        const ordered: PhaseType[] = [];
-        for (const phase of brewable.schedule.phases) {
-            if (!seen.has(phase.type)) {
-                seen.add(phase.type);
-                ordered.push(phase.type);
-            }
-        }
-        return ordered;
-    }, [brewable.schedule.phases]);
-
+    // group by phase *instance*, in schedule order — two "boil" phases are two
+    // sections, each holding only the assignments that point at it
     const assignmentsByPhase = useMemo(() => {
         const withIndex: AssignmentWithIndex[] = brewable.assignments.map((assignment, index) => ({ assignment, index }));
-        return new Map(phaseTypes.map(phaseType => [
-            phaseType,
-            withIndex.filter(({ assignment }) => assignment.phaseType === phaseType),
+        return new Map(brewable.schedule.phases.map(phase => [
+            phase.id,
+            withIndex.filter(({ assignment }) => assignment.phaseId === phase.id),
         ]));
-    }, [brewable.assignments, phaseTypes]);
+    }, [brewable.assignments, brewable.schedule.phases]);
 
     return (
         <>
-            {phaseTypes.map((phaseType, i) => (
+            {brewable.schedule.phases.map((phase, i) => (
                 <RecipeEditPhaseSection
-                    key={phaseType}
-                    position={i + 1}
-                    phaseType={phaseType}
-                    assignments={assignmentsByPhase.get(phaseType) ?? []}
+                    key={phase.id}
+                    label={phaseLabel(brewable.schedule.phases, i)}
+                    phaseId={phase.id}
+                    assignments={assignmentsByPhase.get(phase.id) ?? []}
                     add={add}
                     remove={remove}
                     update={update}

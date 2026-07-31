@@ -1,18 +1,16 @@
 import {UNITS} from "@brewdocs.beer/core";
-import Batch, {Phase} from "@/model/batch";
+import Batch from "@/model/batch";
 import Statuses from "@/model/statuses";
-import {newId} from "@/utils/id";
 
-/** the out-of-the-box BatchSchedule tabs: one per brew-day stage; equipment is derived live from the brewable */
-const phases: Phase[] = [
-    { id: newId(), name: "Mash", tags: ["mash"], milestones: [] },
-    // chilling is just the closing gravity reading, so it rides along with the boil
-    { id: newId(), name: "Boil", tags: ["boil"], milestones: [] },
-    { id: newId(), name: "Ferment", tags: ["ferment"], milestones: [] }
-];
-
-const defaultBatch  = {
-    phases,
+/**
+ * The out-of-the-box batch fields. A **factory**, not a shared const: a module-level
+ * object would be spread into every batch by reference (`{...defaultBatch}` is
+ * shallow), so any in-place mutation of a nested field — the `Object.assign`
+ * style `_updateShopping` already uses — would leak across every batch created in
+ * that session. Brew-day phases are not seeded here at all; they live on the
+ * brewable, which is the plan's source of truth.
+ */
+const defaultBatch = () => ({
     tracker: {},
     batchSize: {
         value: "5gal",
@@ -43,6 +41,6 @@ const defaultBatch  = {
         ibu: "0",
         srm: "0"
     },
-};
+});
 
-export default defaultBatch as Pick<Batch, keyof typeof defaultBatch>;
+export default defaultBatch as () => Pick<Batch, keyof ReturnType<typeof defaultBatch>>;
