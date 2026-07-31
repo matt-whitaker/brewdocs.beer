@@ -50,7 +50,7 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
     const session = useSession();
     const batch = useBatch(batchId);
 
-    const [data, update, updateScalar, , , , , mutate] = useJsonEdit<Batch>(batch, onChange);
+    const [data, update, updateScalar, , add, remove, , mutate] = useJsonEdit<Batch>(batch, onChange);
 
     const updateStatus = useCallback((value: string) => update("status", Number(value)), [update]);
 
@@ -101,14 +101,10 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                 ? data.brewable.schedule.phases.filter(p => p.type === type).flatMap(p => p.equipment)
                 : [];
 
-            // one post-reading per mash/boil brewable phase (ferment gets none in v1)
-            const gravity = type === "mash" || type === "boil"
-                ? data.brewable.schedule.phases
-                    .filter(p => p.type === type)
-                    .map(p => ({ phaseId: p.id!, label: `Post-${type}` }))
-                : [];
+            // config-driven now — a phase's own milestones, not derived from the brewable
+            const milestones = phase.milestones;
 
-            return { phase, index, groups, equipment, gravity };
+            return { phase, index, groups, equipment, milestones };
         });
     }, [data.phases, data.brewable]);
 
@@ -121,15 +117,15 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                 </DataGridRow>
             </DataGrid>
             <PanelSwitcher compact name="schedule" defaultTab={data.phases[0].name}>
-                {panels.map(({ phase, index, groups, equipment, gravity }) => (
+                {panels.map(({ phase, index, groups, equipment, milestones }) => (
                     <PanelSwitcherContent
                         key={phase.name}
                         title={phase.name}
                         label={phaseLabel(phase, index)}
                         // a phase with nothing in it renders as a disabled tab; say why,
                         // or it inherits the switcher's "Not implemented" tooltip
-                        titleAlt={groups.length || equipment.length || gravity.length ? "" : "Nothing scheduled in this step"}>
-                        {groups.length || equipment.length || gravity.length ? (
+                        titleAlt={groups.length || equipment.length || milestones.length ? "" : "Nothing scheduled in this step"}>
+                        {groups.length || equipment.length || milestones.length ? (
                             <div className="pt-2">
                                 {/* what to gather before the phase starts, ahead of the work itself */}
                                 <BatchScheduleEquipment
@@ -161,9 +157,13 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                                 ))}
                                 {/* readings come after the work — the wort's measured as the phase ends */}
                                 <BatchScheduleGravity
-                                    readings={gravity}
+                                    phase={phase}
+                                    phaseIndex={index}
                                     tracker={data.tracker}
-                                    onPatch={patchTracker} />
+                                    onPatch={patchTracker}
+                                    update={update}
+                                    add={add}
+                                    remove={remove} />
                             </div>
                         ) : null}
                     </PanelSwitcherContent>
