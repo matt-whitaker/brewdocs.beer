@@ -6,8 +6,8 @@ iterate on.
 The feature to plan: $ARGUMENTS
 
 Do NOT implement anything and do NOT write code. **Create the issues yourself** with `gh`
-(you have access) — but leave them **unlabeled**: applying the `claude` label is the
-maintainer's alone (see Boundaries). The created issues are drafts to iterate on, not a
+(you have access) — but leave them **unlabeled**: role labels are the
+maintainer's to assign (see Boundaries). The created issues are drafts to iterate on, not a
 final hand-off.
 
 ## 1. Ground yourself in the codebase first
@@ -150,15 +150,14 @@ cadence is already wired for every run.
 After creating them, post the summary in your response: the epic link, the epic's **feature
 branch** name (and the reminder that sub-issue PRs target it, retargeting off `mainline` if
 needed), then each sub-issue's title + link, which are independent vs. blocked and on what, and
-the order to apply the `claude` label. The issues are **unlabeled drafts** — the maintainer reviews and
-iterates, then **starts a sub-issue by applying the `claude` label** (the full feature-work
-turn budget; an `@claude` comment runs on the smaller poke budget and can time out on real
-implementation work).
+the order to work them. The issues are **unlabeled drafts** — the maintainer reviews and iterates,
+then starts one by **labelling it `@claude/implementor` and commenting `@claude`**. Labels only
+mark ownership; the comment is what starts a run.
 
 ## Boundaries
 
-- Create the issues **unlabeled**. Never apply the `claude` label — the maintainer's
-  label-apply is both the review gate and the trigger.
+- Create the issues **unlabeled**. Never apply a `@claude/*` label — assigning a role is the
+  maintainer's review gate.
 - Never implement any of it — issues only, no code, no PR. Cutting the epic's **empty** feature
   branch off `mainline` (step 4.2) is the one expected exception — it's not code; write nothing onto it.
 - Stop once the issues are created, linked, the feature branch is cut, and everything is summarized.

@@ -45,7 +45,7 @@ PROJECT=$(gh project list --owner "$OWNER" --format json \
 gh project item-add "$PROJECT" --owner "$OWNER" --url <issue-or-pr-url>
 ```.
 
-⚠️ Never apply the `claude` label (or any label) — labeling is the maintainer's alone.
+⚠️ Never apply a `@claude/*` label (or any label) — assigning a role is the maintainer's alone.
 
 ## 3. Cut a feature branch linked to the issue
 
@@ -127,6 +127,6 @@ the maintainer that **they** merge (squash only) — never merge your own PR.
 
 - **One well-scoped task, one PR.** If it grows into multiple PRs or needs decomposition, stop
   and switch to `plan-feature`.
-- Create the issue and PR **unlabeled**; never apply the `claude` label.
+- Create the issue and PR **unlabeled**; never apply a `@claude/*` label.
 - Branch → PR. Never commit to or push `mainline`; never merge the PR (the maintainer does).
 - No destructive git. Ask before anything irreversible or outward-facing beyond opening the PR.

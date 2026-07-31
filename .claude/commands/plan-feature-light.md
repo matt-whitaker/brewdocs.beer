@@ -7,7 +7,7 @@ The feature to plan: $ARGUMENTS
 
 Do NOT implement anything. Do NOT produce the final sub-issue breakdown yourself — that's
 the assignee agent's job. **Create the one research/decompose issue** with `gh issue create`
-(unlabeled) — don't apply the `claude` label; that's the maintainer's trigger. The created
+(unlabeled) — don't apply a role label; routing is the maintainer's call. The created
 issue is a draft to iterate on.
 
 ## When to reach for this vs `plan-feature`
@@ -85,9 +85,9 @@ and the *Your task* block.
 > sub-issues, and **create each as its own GitHub issue** (`gh issue create`). **Do not change
 > any code and do not open a pull request** — the created issues are the deliverable.
 >
-> ⚠️ **Do NOT apply the `claude` label — or any label — to the issues you create. Leave them
-> unlabeled.** Labeling is the maintainer's alone: it's their review gate and the trigger that
-> starts an implementation run, so auto-labeling would kick off work they never approved.
+> ⚠️ **Do NOT apply a `@claude/*` label — or any label — to the issues you create. Leave them
+> unlabeled.** A role label says who owns an issue, and that call is the maintainer's review
+> gate; work only starts when they comment `@claude` on it.
 >
 > **Link each new issue as a native GitHub sub-issue of *this* issue** (this issue is the
 > parent) so they show in its Sub-issues list — a `Part of #N` text line is not sufficient. Use
@@ -135,12 +135,12 @@ and the *Your task* block.
 ## 5. Close with a one-liner for the maintainer
 
 After creating it, post the issue link **and the epic's feature-branch name** in your response
-and remind the maintainer: review / iterate, then apply the **`claude` label** to trigger the
-research + decomposition — the label tier gets the full turn budget, while an `@claude` comment
+and remind the maintainer: review / iterate, then label it **`@claude/researcher`** and comment
+**`@claude`** to start the research + decomposition — the label tier gets the full turn budget, while an `@claude` comment
 runs on the smaller poke budget and can time out on real research. The agent's sub-issues will
 target the feature branch, not `mainline`. The agent will then **create the sub-issues
 (unlabeled), link them as native sub-issues of the parent**, and post an index comment; the
-maintainer reviews and applies the `claude` label to whichever ones to start.
+maintainer reviews, then labels and comments on whichever ones to start.
 
 ## Boundaries
 

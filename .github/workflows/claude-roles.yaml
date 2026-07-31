@@ -1,24 +1,26 @@
 name: Claude
 # The history entry names the role that actually ran, so a single "Claude" row is
-# still self-describing. `github.event.label` is null on comment/review events, so
-# those fall through to the mention case.
-run-name: "Claude · ${{ github.event.label.name == '@claude/manager' && 'Manager' || github.event.label.name == '@claude/researcher' && 'Researcher' || github.event.label.name == '@claude/implementor' && 'Implementor' || 'Implementor (@claude)' }} #${{ github.event.issue.number || github.event.pull_request.number }}"
+# still self-describing. Read off the issue's own labels, since the role is whoever
+# owns the issue; PR reviews have no `issue`, so they fall through to Implementor.
+run-name: "Claude · ${{ contains(github.event.issue.labels.*.name, '@claude/manager') && 'Manager' || contains(github.event.issue.labels.*.name, '@claude/researcher') && 'Researcher' || 'Implementor' }} #${{ github.event.issue.number || github.event.pull_request.number }}"
 
-# THREE ROLES, ONE WORKFLOW. Manager / Researcher / Implementor are jobs here, not
-# separate workflow files, purely to keep the Actions history readable: GitHub has no
-# label filter on `on.issues` (only `types`), so a run is always created and the role
-# must be selected by a job-level `if:`. As three files, applying one label created
-# three runs — one real, two skipped — and the skipped ones cluttered the history. As
-# one file it's a single run per event, with the unselected roles skipping *inside* it.
+# THREE ROLES, ONE WORKFLOW. Manager / Researcher / Implementor are jobs here rather
+# than separate workflow files to keep the Actions history readable: the role is picked
+# by a job-level `if:`, so it's one run per comment with the unselected roles skipping
+# inside it, instead of three runs where two are skipped.
 #
-# TRIGGERS (narrowed per role, not a blanket @claude):
-#   @claude/manager      label on an issue  -> Manager     (rough epic -> filled-out epic)
-#   @claude/researcher   label on an issue  -> Researcher  (epic -> sub-issue breakdown)
-#   @claude/implementor  label on an issue  -> Implementor (fresh execution)
-#   @claude mention on an issue/PR comment or PR review -> Implementor (follow-up)
+# ⚠️ LABELS DO NOT TRIGGER ANYTHING. `on.issues` is deliberately not subscribed, so
+# adding or removing a role label produces no workflow run at all — labels are purely
+# a marker of *who owns the issue*, free to change while you think. **An `@claude`
+# comment is the only trigger**, and it routes to whichever role the issue's label
+# names:
+#   issue labelled @claude/manager     + "@claude ..." -> Manager
+#   issue labelled @claude/researcher  + "@claude ..." -> Researcher
+#   issue labelled @claude/implementor + "@claude ..." -> Implementor
+#   issue with no role label, or any PR comment/review -> Implementor
+#
+# So the flow is: label the issue for the role you want, then talk to it.
 on:
-  issues:
-    types: [labeled]
   issue_comment:
     types: [created]
   pull_request_review_comment:
@@ -44,8 +46,10 @@ jobs:
   # same issue (edit + comment) — never code, never sub-issues, never a PR.
   manager:
     if: |
-      github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]' &&
-      github.event_name == 'issues' && github.event.label.name == '@claude/manager'
+      github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]'
+      && github.event_name == 'issue_comment'
+      && contains(github.event.comment.body, '@claude')
+      && contains(github.event.issue.labels.*.name, '@claude/manager')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -64,13 +68,20 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          label_trigger: "@claude/manager"
           track_progress: true
           prompt: |
             You are the **Manager** — the product lead who turns a rough, loosely-defined
             epic into a well-defined one the Researcher and Implementor roles can act on.
-            You were triggered by the `@claude/manager` label on an issue: that issue holds the
-            maintainer's rough epic, and it is your input.
+            You own this issue: it carries the `@claude/manager` label, which means the
+            role is yours until the maintainer hands it off. The issue holds the rough epic,
+            and it is your input.
+
+            ⚠️ You are always triggered by an **`@claude` comment** — labels never start a
+            run, they only say who owns the issue. So read the issue and its comments first
+            and work out where things stand: if the epic is still the maintainer's rough
+            description, shape the whole thing; if you've already filled it in, treat the
+            newest `@claude` comment as the instruction and adjust exactly what it asks
+            rather than rewriting the epic from scratch.
 
             Your deliverable is a **better epic, in this same issue** — NOT code, NOT
             sub-issues, NOT a pull request. Ground lightly in the codebase (see CLAUDE.md
@@ -114,8 +125,10 @@ jobs:
   # the epic. Deliverable is sub-issues + an index comment — never code, never a PR.
   researcher:
     if: |
-      github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]' &&
-      github.event_name == 'issues' && github.event.label.name == '@claude/researcher'
+      github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]'
+      && github.event_name == 'issue_comment'
+      && contains(github.event.comment.body, '@claude')
+      && contains(github.event.issue.labels.*.name, '@claude/researcher')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -134,14 +147,22 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          label_trigger: "@claude/researcher"
           track_progress: true
           prompt: |
             You are the **Researcher** — the product owner who takes a well-defined epic,
             follows its guidance, does the file-by-file research, and breaks it into
-            independently-implementable sub-issues. You were triggered by the `@claude/researcher`
-            label on an issue: that issue is the epic, and its **Research path** is your
-            brief. Read the epic and its comments first.
+            independently-implementable sub-issues. You own this issue: it carries the
+            `@claude/researcher` label, which means the role is yours until the maintainer
+            hands it off. That issue is the epic, and its **Research path** is your brief.
+            Read the epic and its comments first.
+
+            ⚠️ You are always triggered by an **`@claude` comment** — labels never start a
+            run, they only say who owns the issue. So **check what already exists before
+            doing anything** (`gh issue view <epic> --comments` and the epic's sub-issue
+            list): if there are no sub-issues yet, do the research and create them; if there
+            are, treat the newest `@claude` comment as the instruction and answer it or
+            revise/add only the sub-issues it names. Never re-run the whole decomposition or
+            duplicate sub-issues you already created.
 
             Your deliverable is **sub-issues + one index comment — NO code, NO pull
             request.** Follow the epic's Research path to get your bearings (read the exact
@@ -198,8 +219,9 @@ jobs:
             low ordinals silently point at unrelated old PRs.
 
             Do NOT change code or open a PR — the sub-issues are the deliverable. Never
-            apply a label (the `@claude/implementor` label or any other) to anything you create;
-            labeling is the maintainer's trigger. Leave the sub-issues unlabeled for review.
+            apply a label (the `@claude/implementor` label or any other) to anything you create.
+            A role label says who *owns* an issue, and that routing call is the maintainer's —
+            leave the sub-issues unlabeled for review.
 
             Operational notes: dependencies are NOT installed and you don't need them —
             don't run `npm ci`/`install` or the build. Run one command per Bash call
@@ -220,10 +242,12 @@ jobs:
     # posts as github-actions[bot], and a comment quoting "@claude" would re-enter here.
     if: |
       github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]' && (
-        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
         (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
         (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
-        (github.event_name == 'issues' && github.event.label.name == '@claude/implementor')
+        (github.event_name == 'issue_comment'
+          && contains(github.event.comment.body, '@claude')
+          && !contains(github.event.issue.labels.*.name, '@claude/manager')
+          && !contains(github.event.issue.labels.*.name, '@claude/researcher'))
       )
     runs-on: ubuntu-latest
     permissions:
@@ -251,16 +275,19 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          # activates the action on a label-triggered run; @claude mentions on
-          # comments/reviews are handled by the default trigger phrase alongside it
-          label_trigger: "@claude/implementor"
           track_progress: true
           prompt: |
             You are the **Implementor** — the engineer who executes issues and handles
             follow-up engineering (bug fixes, requested changes, merge-conflict
-            resolution). You were triggered either by the `@claude/implementor` label on an issue
-            (fresh execution) or by an `@claude` mention on an issue/PR comment or review
-            (follow-up).
+            resolution). You are always triggered by an **`@claude` mention** — on a PR
+            comment or review, or on an issue that no other role owns (one labelled
+            `@claude/implementor`, or carrying no role label). Labels never start a run.
+
+            ⚠️ An issue's `@claude/*` label says which role owns it, and an `@claude` comment
+            goes to that owner — so an issue labelled `@claude/manager` or
+            `@claude/researcher` is **not yours** and you won't be triggered on it. If you
+            somehow are, the label is the authority: say so in a comment and stop rather
+            than writing code the maintainer didn't route to you.
 
             **Read for context before doing anything.** Your single biggest failure mode
             is a cold run that re-surveys the whole codebase and burns its turn budget
@@ -344,9 +371,10 @@ jobs:
 
             Never merge the PR. The maintainer merges.
 
-            Never apply a trigger label (`@claude/implementor`, `@claude/researcher`, `@claude/manager`) to any
-            issue or PR — including ones you create. Labeling is the maintainer's review
-            gate and handoff control; leave everything you create unlabeled.
+            Never apply a role label (`@claude/implementor`, `@claude/researcher`,
+            `@claude/manager`) to any issue or PR — including ones you create. A role label
+            says who owns an issue, and that handoff is the maintainer's review gate; leave
+            everything you create unlabeled.
           # Allowlist by *family*, not per-subcommand. Deliberately NOT bare `Bash`: this
           # runner carries GH_TOKEN and the Claude OAuth token in env, and arbitrary shell
           # could exfiltrate them. Only write-access actors can trigger a run (see the `if:`
