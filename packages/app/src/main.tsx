@@ -6,6 +6,7 @@ import RootError from "@/component/root-error";
 import {prefetchKbGrains} from "@/state/kbGrains";
 import {prefetchKbHops} from "@/state/kbHops";
 import {prefetchKbRecipes} from "@/state/kbRecipes";
+import {prefetchKbRecipeTemplates} from "@/state/kbRecipeTemplates";
 import {prefetchKbYeasts} from "@/state/kbYeasts";
 import queryClient from "./queryClient";
 import {routeTree} from "./routeTree.gen";
@@ -31,6 +32,7 @@ prefetchKbGrains();
 prefetchKbHops();
 prefetchKbYeasts();
 prefetchKbRecipes();
+prefetchKbRecipeTemplates();
 
 // TODO come back to this
 // no StrictMode: mutation actions are fire-and-forget and must not double-fire
