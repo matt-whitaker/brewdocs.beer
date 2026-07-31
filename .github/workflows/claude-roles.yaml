@@ -284,6 +284,12 @@ jobs:
             pull request against `mainline` yourself — do not stop at pushing a branch and
             returning a PR link.
 
+            ⚠️ **Write no code comments.** See CLAUDE.md's _Code style_. Not explanatory
+            blocks, not `⚠️` notes, not JSDoc — none, unless the issue or a reviewer asks
+            for one. Put the *why* in the PR description or a `CLAUDE.md`, where it's
+            discoverable and maintained. Comment-heavy diffs are a recurring failure mode
+            here: the volume buries what matters and goes stale as soon as the code moves.
+
             Not every trigger is a code change. Some ask only for a written answer — post
             it as a comment and stop; do not invent a code change or open a PR just to
             satisfy the workflow. The task text (issue body, review, comment) is the
