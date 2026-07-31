@@ -7,6 +7,16 @@ const pkg = require("./../package.json");
 const srcDir = path.join(process.cwd(), "data");
 const outDir = path.join(process.cwd(), "dist");
 
+const ENTITY_TYPES = {
+  additives: "kbAdditive",
+  equipment: "kbEquipment",
+  grains: "kbGrain",
+  hops: "kbHop",
+  "recipe-templates": "kbRecipeTemplate",
+  recipes: "kbRecipe",
+  yeasts: "kbYeast"
+};
+
 // Execute the build process
 (() => {
   if (!fs.existsSync(srcDir)) {
@@ -27,6 +37,11 @@ const outDir = path.join(process.cwd(), "dist");
   directories.forEach((dir) => {
     const dirPath = path.join(srcDir, dir);
     const outputFilePath = path.join(outDir, `${dir}.json`);
+    const entityType = ENTITY_TYPES[dir];
+
+    if (!entityType) {
+      console.error(`No ENTITY_TYPES entry for data/${dir} — its items will build without a __type`);
+    }
 
     const files = fs.readdirSync(dirPath)
       .filter(file => file.endsWith(".json"));
@@ -38,6 +53,7 @@ const outDir = path.join(process.cwd(), "dist");
       try {
         const data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
         data.id = path.basename(file, path.extname(file));
+        data.__type = entityType;
         combinedData.push(data);
       } catch (error) {
         console.error(`Error reading JSON from ${filePath}:`, error);

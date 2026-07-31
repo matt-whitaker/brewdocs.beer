@@ -2,6 +2,7 @@ import {Entity, Scalar} from "@brewdocs.beer/core";
 import {KbBrewable} from "./brewable";
 
 export interface KbRecipe extends Entity {
+    __type: "kbRecipe" | "recipe";
     name: string;
     brewer: string;
     description: string;
@@ -25,12 +26,14 @@ export interface KbRecipe extends Entity {
 }
 
 export interface KbRecipeTemplate extends Entity {
+    __type: "kbRecipeTemplate";
     name: string;
     description: string;
     brewable: KbBrewable;
 }
 
 export interface KbGrain extends Entity {
+    __type: "kbGrain";
     name: string;
     lovibond: number;
     origin: string;
@@ -38,6 +41,7 @@ export interface KbGrain extends Entity {
 }
 
 export interface KbYeast extends Entity {
+    __type: "kbYeast";
     name: string;
     temp: [string, string];
     description: string;
@@ -45,6 +49,7 @@ export interface KbYeast extends Entity {
 }
 
 export interface KbHop extends Entity {
+    __type: "kbHop";
     name: string;
     alpha: number;
     origin: string;
@@ -53,6 +58,7 @@ export interface KbHop extends Entity {
 }
 
 export interface KbAdditive extends Entity {
+    __type: "kbAdditive";
     name: string;
     type: string;
     dosage: string;
@@ -61,6 +67,7 @@ export interface KbAdditive extends Entity {
 }
 
 export interface KbEquipment extends Entity {
+    __type: "kbEquipment";
     name: string;
     use: string[];
     notes: string;
