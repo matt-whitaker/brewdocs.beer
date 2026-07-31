@@ -24,6 +24,23 @@ async function brewBatchFromKbRecipe(page: Page, batchName: string) {
     await expect(page).toHaveURL(/\/batch\//);
 }
 
+/**
+ * Let an edit reach IndexedDB before reloading.
+ *
+ * ⚠️ Load-bearing, not a flake patch. Saves are **fire-and-forget**: typed edits
+ * debounce 350ms through `useJsonEdit` before calling `updateBatch`, and even the
+ * "immediate" paths (checkoffs, add-rows) hand off to an async write nothing
+ * awaits. Reloading straight after an edit therefore races the write and reads
+ * back the pre-edit value — which is exactly what happens without this, and what
+ * made the first CI run fail three of these tests.
+ *
+ * The interval is bounded by that known 350ms debounce plus one IndexedDB write,
+ * so this waits for a fixed cost rather than papering over a race.
+ */
+async function settleSave(page: Page) {
+    await page.waitForTimeout(1000);
+}
+
 /** open a batch tab, then one of the Schedule screen's per-phase sub-tabs */
 async function openSchedulePhase(page: Page, phase: string) {
     await page.getByRole("tab", {name: "Schedule", exact: true}).click();
@@ -49,6 +66,7 @@ test("records as-brewed values without overwriting the plan", async ({page}) => 
     await boil.fill("45");
     await boil.blur();
 
+    await settleSave(page);
     await page.reload();
     await openSchedulePhase(page, "2. Boil");
 
@@ -77,6 +95,7 @@ test("keeps equipment and ingredient checkoffs after a reload", async ({page}) =
     await equipment.check();
     await ingredient.check();
 
+    await settleSave(page);
     await page.reload();
     await openSchedulePhase(page, "1. Mash");
 
@@ -97,6 +116,7 @@ test("adds a gravity reading on a phase and persists its value", async ({page}) 
     await reading.fill("1.012");
     await reading.blur();
 
+    await settleSave(page);
     await page.reload();
     await openSchedulePhase(page, "3. Ferment");
 
@@ -125,6 +145,7 @@ test("a second phase of the same type gets its own tab and its own ingredients",
     await page.getByLabel("Ingredient for 4. Boil").selectOption("hop:Cascade");
     await page.getByRole("button", {name: "Add ingredient to 4. Boil"}).click();
 
+    await settleSave(page);
     await page.reload();
     await openSchedulePhase(page, "4. Boil");
 
