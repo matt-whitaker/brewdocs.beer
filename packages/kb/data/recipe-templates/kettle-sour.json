@@ -1,0 +1,45 @@
+{
+  "id": "kettle-sour",
+  "name": "Kettle Sour",
+  "description": "A kettle-souring process: mash, a post-mash pre-full-boil souring rest folded into the boil phase, and ferment — no ingredients assigned.",
+  "brewable": {
+    "schedule": {
+      "phases": [
+        {
+          "type": "mash",
+          "equipment": [
+            { "name": "Mash Tun - 10gal", "use": ["mash"] },
+            { "name": "Stirring Wand", "use": ["mash"] },
+            { "name": "Sparge Vessel - 15gal", "use": ["mash"] },
+            { "name": "Star San", "use": ["clean"] },
+            { "name": "PBW", "use": ["clean"] },
+            { "name": "Digital Hydrometer", "use": ["measure"] },
+            { "name": "Long Thermometer", "use": ["boil", "mash"] },
+            { "name": "Burner and stand", "use": ["mash", "boil"] }
+          ]
+        },
+        {
+          "type": "boil",
+          "equipment": [
+            { "name": "Boil Kettle - 15gal", "use": ["boil", "sour"] },
+            { "name": "pH Meter", "use": ["sour"] },
+            { "name": "Souring Vessel Lid / Cover", "use": ["sour"] },
+            { "name": "Digital Hydrometer", "use": ["measure"] },
+            { "name": "Long Thermometer", "use": ["boil", "mash", "sour"] },
+            { "name": "Large Stirring Spoon", "use": ["boil"] },
+            { "name": "Racking Cane & Hose", "use": ["transfer"] },
+            { "name": "Burner and stand", "use": ["mash", "boil"] }
+          ]
+        },
+        {
+          "type": "ferment",
+          "equipment": [
+            { "name": "Glass Carboy - 7gal", "use": ["secondary"] },
+            { "name": "Scale", "use": ["boil", "starter"] }
+          ]
+        }
+      ]
+    },
+    "assignments": []
+  }
+}

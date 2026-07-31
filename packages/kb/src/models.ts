@@ -24,6 +24,12 @@ export interface KbRecipe extends Entity {
     brewable: KbBrewable;
 }
 
+export interface KbRecipeTemplate extends Entity {
+    name: string;
+    description: string;
+    brewable: KbBrewable;
+}
+
 export interface KbGrain extends Entity {
     name: string;
     lovibond: number;
