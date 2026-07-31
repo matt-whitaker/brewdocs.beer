@@ -3,6 +3,7 @@ import deriveSchedule from "@/actions/deriveSchedule";
 import {putEntry} from "@/actions/tracker";
 import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
+import DataGridInput from "@/component/data-grid/input";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridRow from "@/component/data-grid/row";
 import DataGridSelect from "@/component/data-grid/select";
@@ -40,6 +41,7 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
     const [data, update, , , add, remove, , mutate] = useJsonEdit<Batch>(batch, onChange);
 
     const updateStatus = useCallback((value: string) => update("status", Number(value)), [update]);
+    const updateDate = useCallback((value: string) => update("brewDate", value), [update]);
 
     // tracker writes can't go through useJsonEdit's dot-path (a key like
     // "equipment:<uuid>" isn't addressable that way — see CLAUDE.md's Model
@@ -96,6 +98,14 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                 </DataGridRow>
             </DataGrid>
             <PanelSwitcher compact name="schedule" defaultTab={phaseLabel(data.brewable.schedule.phases, 0)}>
+                <PanelSwitcherContent title="Prep">
+                    <DataGrid className="pt-2">
+                        <DataGridRow>
+                            <DataGridLabel cols={3}>Brewed on</DataGridLabel>
+                            <DataGridInput cols={3} type="date" value={data.brewDate} onChange={updateDate} />
+                        </DataGridRow>
+                    </DataGrid>
+                </PanelSwitcherContent>
                 {panels.map(({ phase, index, groups, equipment, milestones }) => (
                     <PanelSwitcherContent
                         key={phase.id}
