@@ -1,5 +1,4 @@
 import {useCallback, useMemo} from "react";
-import {Scalar} from "@brewdocs.beer/core";
 import deriveSchedule from "@/actions/deriveSchedule";
 import {putEntry} from "@/actions/tracker";
 import DataGrid from "@/component/data-grid";
@@ -20,7 +19,6 @@ import BatchScheduleGravity from "@/screen/batch-schedule/gravity";
 import ScheduleItemRow from "@/screen/batch-schedule/item-row";
 import {useBatch} from "@/state/batches";
 import {saveSession, useSession} from "@/state/session";
-import {get} from "@/utils/func";
 
 const STATUS_OPTIONS = Object.entries(statuses).map(([value, name]) => ({name, value}));
 
@@ -34,18 +32,12 @@ const KIND_LABELS: Record<ScheduleKind, string> = {
 /** within a phase, rows read in the order you'd actually work through them */
 const KIND_ORDER: ScheduleKind[] = ["grains", "hops", "additives", "yeasts"];
 
-/** a schedule path lands on either a Scalar or a plain string (the dates) */
-function valueAt(data: Batch, path: string): string {
-    const node = get(data, path);
-    return typeof node === "string" ? node : (node as Scalar|undefined)?.value ?? "";
-}
-
 export type BatchScheduleProps = { batchId: string; onChange: (batch: Batch) => void; };
 export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps) {
     const session = useSession();
     const batch = useBatch(batchId);
 
-    const [data, update, updateScalar, , add, remove, , mutate] = useJsonEdit<Batch>(batch, onChange);
+    const [data, update, , , add, remove, , mutate] = useJsonEdit<Batch>(batch, onChange);
 
     const updateStatus = useCallback((value: string) => update("status", Number(value)), [update]);
 
@@ -131,13 +123,9 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                                                 key={item.id}
                                                 item={item}
                                                 // the ingredient's live value, never a copy on the item
-                                                value={valueAt(data, item.path)}
-                                                extraValues={item.extra?.map(detail => detail.path ? valueAt(data, detail.path) : "")}
                                                 entry={data.tracker[key({ on: "assignment", id: item.id })]}
                                                 onToggle={toggleTrackerCompleted}
                                                 onPatch={patchTracker}
-                                                update={update}
-                                                updateScalar={updateScalar}
                                             />
                                         ))}
                                     </DataGrid>

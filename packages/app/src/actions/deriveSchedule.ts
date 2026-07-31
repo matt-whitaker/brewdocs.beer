@@ -10,25 +10,22 @@ const KIND_OF: Record<ResourceType, ScheduleKind> = {
 };
 
 /**
- * The write-through path for a row's headline editable value, or "" when the
- * row is a plain checklist entry. Paths are relative to the **batch**, since
- * that's what the schedule screen's `useJsonEdit<Batch>` reads and writes, and
- * they target the assignment in the brewable — the editing source of truth, so
- * an edit here is never a copy that can go stale.
+ * The row's **planned** secondary value: a hop/additive's boil time, a yeast's
+ * pitch temperature. Grains have none — their weight is the whole plan.
  *
- * Grains are a checklist only (their weight is the plan, nothing to record).
- * Hops and additives write their boil timing; yeasts their pitch temperature.
+ * ⚠️ This is the plan, read-only to the brew-day screen. What actually happened
+ * is recorded against the row's tracker entry (`actualDetail`), never written
+ * back over the brewable — editing the plan is Planning's job.
  */
-function pathFor(assignment: Assignment, index: number): string {
-    const base = `brewable.assignments[${index}].resource`;
+function detailFor(assignment: Assignment): ScheduleItem["detail"] {
     switch (assignment.resourceType) {
         case "grain":
-            return "";
+            return undefined;
         case "hop":
         case "additive":
-            return `${base}.boil`;
+            return assignment.resource.boil;
         case "yeast":
-            return `${base}.temp`;
+            return assignment.resource.temp;
     }
 }
 
@@ -67,14 +64,14 @@ function amountFor(assignment: Assignment): ScheduleItem["amount"] {
  * rebuild: the caller memoizes on `brewable`, and that's the whole cache story.
  */
 export default function deriveSchedule(brewable: Brewable): ScheduleItem[] {
-    return (brewable?.assignments ?? []).map((assignment, index) => ({
+    return (brewable?.assignments ?? []).map(assignment => ({
         id: assignment.id!,
         name: assignment.resource.name,
         phaseId: assignment.phaseId,
         kind: KIND_OF[assignment.resourceType],
         note: assignment.resourceType === "hop" ? assignment.resource.alpha.value : undefined,
         amount: amountFor(assignment),
-        path: pathFor(assignment, index),
+        detail: detailFor(assignment),
         extra: extraFor(assignment)
     }));
 }
