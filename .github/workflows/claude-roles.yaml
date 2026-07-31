@@ -44,8 +44,12 @@ jobs:
   # same issue (edit + comment) — never code, never sub-issues, never a PR.
   manager:
     if: |
-      github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]' &&
-      github.event_name == 'issues' && github.event.label.name == '@claude/manager'
+      github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]' && (
+        (github.event_name == 'issues' && github.event.label.name == '@claude/manager') ||
+        (github.event_name == 'issue_comment'
+          && contains(github.event.comment.body, '@claude')
+          && contains(github.event.issue.labels.*.name, '@claude/manager'))
+      )
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -69,8 +73,15 @@ jobs:
           prompt: |
             You are the **Manager** — the product lead who turns a rough, loosely-defined
             epic into a well-defined one the Researcher and Implementor roles can act on.
-            You were triggered by the `@claude/manager` label on an issue: that issue holds the
-            maintainer's rough epic, and it is your input.
+            You own this issue: it carries the `@claude/manager` label, which means the
+            role is yours until the maintainer hands it off. The issue holds the rough epic,
+            and it is your input.
+
+            ⚠️ You were triggered **either** by that label being applied (a fresh pass —
+            shape the whole epic) **or** by an `@claude` comment on the issue you already
+            own (a follow-up — the maintainer is talking to you). On a follow-up, read the
+            issue's comments and treat the newest `@claude` one as the instruction: answer
+            or adjust exactly what it asks, and don't redo the epic from scratch.
 
             Your deliverable is a **better epic, in this same issue** — NOT code, NOT
             sub-issues, NOT a pull request. Ground lightly in the codebase (see CLAUDE.md
@@ -114,8 +125,12 @@ jobs:
   # the epic. Deliverable is sub-issues + an index comment — never code, never a PR.
   researcher:
     if: |
-      github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]' &&
-      github.event_name == 'issues' && github.event.label.name == '@claude/researcher'
+      github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]' && (
+        (github.event_name == 'issues' && github.event.label.name == '@claude/researcher') ||
+        (github.event_name == 'issue_comment'
+          && contains(github.event.comment.body, '@claude')
+          && contains(github.event.issue.labels.*.name, '@claude/researcher'))
+      )
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -139,9 +154,18 @@ jobs:
           prompt: |
             You are the **Researcher** — the product owner who takes a well-defined epic,
             follows its guidance, does the file-by-file research, and breaks it into
-            independently-implementable sub-issues. You were triggered by the `@claude/researcher`
-            label on an issue: that issue is the epic, and its **Research path** is your
-            brief. Read the epic and its comments first.
+            independently-implementable sub-issues. You own this issue: it carries the
+            `@claude/researcher` label, which means the role is yours until the maintainer
+            hands it off. That issue is the epic, and its **Research path** is your brief.
+            Read the epic and its comments first.
+
+            ⚠️ You were triggered **either** by that label being applied (a fresh pass — do
+            the research and create the sub-issues) **or** by an `@claude` comment on the
+            issue you already own (a follow-up — the maintainer is talking to you). On a
+            follow-up, treat the newest `@claude` comment as the instruction: answer the
+            question, or revise/add the specific sub-issues it names. Do **not** re-run the
+            whole decomposition or duplicate sub-issues you already created — check what
+            exists (`gh issue view <epic> --comments` and the epic's sub-issue list) first.
 
             Your deliverable is **sub-issues + one index comment — NO code, NO pull
             request.** Follow the epic's Research path to get your bearings (read the exact
@@ -220,10 +244,13 @@ jobs:
     # posts as github-actions[bot], and a comment quoting "@claude" would re-enter here.
     if: |
       github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]' && (
-        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+        (github.event_name == 'issues' && github.event.label.name == '@claude/implementor') ||
         (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
         (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
-        (github.event_name == 'issues' && github.event.label.name == '@claude/implementor')
+        (github.event_name == 'issue_comment'
+          && contains(github.event.comment.body, '@claude')
+          && !contains(github.event.issue.labels.*.name, '@claude/manager')
+          && !contains(github.event.issue.labels.*.name, '@claude/researcher'))
       )
     runs-on: ubuntu-latest
     permissions:
@@ -258,9 +285,15 @@ jobs:
           prompt: |
             You are the **Implementor** — the engineer who executes issues and handles
             follow-up engineering (bug fixes, requested changes, merge-conflict
-            resolution). You were triggered either by the `@claude/implementor` label on an issue
-            (fresh execution) or by an `@claude` mention on an issue/PR comment or review
-            (follow-up).
+            resolution). You were triggered either by the `@claude/implementor` label on an
+            issue (fresh execution) or by an `@claude` mention on a PR comment/review, or on
+            an issue that isn't owned by another role (follow-up).
+
+            ⚠️ An issue's `@claude/*` label says which role owns it, and an `@claude` comment
+            goes to that owner — so an issue labelled `@claude/manager` or
+            `@claude/researcher` is **not yours** and you won't be triggered on it. If you
+            somehow are, the label is the authority: say so in a comment and stop rather
+            than writing code the maintainer didn't route to you.
 
             **Read for context before doing anything.** Your single biggest failure mode
             is a cold run that re-surveys the whole codebase and burns its turn budget
