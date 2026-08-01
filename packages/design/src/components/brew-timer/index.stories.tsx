@@ -134,7 +134,7 @@ export const Narrow: Story = {
     parameters: {
         docs: {
             description: {
-                story: "Constrained to a 360px-wide phone viewport. Below `sm` the controls drop to their own row — the scope toggle to the left, \"Milestone\" to the right — and the counter steps down a size, so nothing bleeds past the edge."
+                story: "Constrained to a 360px-wide phone viewport. Below `sm` the whole bar steps down together — the counter one type size, every button to `btn-xs`, the card to a tighter padding — and the controls drop to their own row, the scope toggle to the left and \"Milestone\" to the right, so nothing bleeds past the edge."
             }
         }
     },
