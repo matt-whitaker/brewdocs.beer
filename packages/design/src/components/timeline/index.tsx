@@ -17,6 +17,7 @@ export type TimelineProps = PropsWithClass & {
     markers?: TimelineMarker[];
     height?: number;
     markerSize?: number;
+    markerTransitionMs?: number;
     label?: string;
     onMarkerClick?: (marker: TimelineMarkerDetail) => void;
     onMarkerHover?: (marker: TimelineMarkerDetail | null) => void;
@@ -37,6 +38,7 @@ export function Timeline({
     markers = [],
     height = 24,
     markerSize = 8,
+    markerTransitionMs,
     label,
     onMarkerClick,
     onMarkerHover,
@@ -89,7 +91,8 @@ export function Timeline({
                             x={`${detail.percent}%`}
                             y={midY}
                             width={markerSize}
-                            height={markerSize} />
+                            height={markerSize}
+                            style={markerTransitionMs ? {transition: `x ${markerTransitionMs}ms linear`} : undefined} />
                     </g>
                 ))}
             </svg>
