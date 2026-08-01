@@ -87,6 +87,7 @@ export type BatchScheduleReadingProps = {
     unitOptions: {name: string; value: Unit}[];
     headerLabel: string;
     addLabel: string;
+    defaultLabel: string;
 };
 
 /**
@@ -96,18 +97,22 @@ export type BatchScheduleReadingProps = {
  * Renders on every phase tab, including an empty one — the brewer adds the
  * first reading from here.
  */
-export default function BatchScheduleReading({ phase, phaseIndex, tracker, onPatch, update, add, remove, kind, unitOptions, headerLabel, addLabel }: BatchScheduleReadingProps) {
+export default function BatchScheduleReading({ phase, phaseIndex, tracker, onPatch, update, add, remove, kind, unitOptions, headerLabel, addLabel, defaultLabel }: BatchScheduleReadingProps) {
     const defaultUnit = unitOptions[0].value;
 
     const onAdd = useCallback(() => {
-        const milestone: Milestone = { id: newId(), label: "Reading", kind };
+        const milestone: Milestone = { id: newId(), label: defaultLabel, kind };
         add(`brewable.schedule.phases[${phaseIndex}].milestones`, milestone);
-    }, [add, phaseIndex, kind]);
+    }, [add, phaseIndex, kind, defaultLabel]);
+
+    const rows = phase.milestones
+        .map((milestone, row) => ({ milestone, row }))
+        .filter(({ milestone }) => milestone.kind === kind);
 
     return (
         <DataGrid>
             <DataGridHeaderRow collapsible>{headerLabel}</DataGridHeaderRow>
-            {phase.milestones.map((milestone, row) => (
+            {rows.map(({ milestone, row }) => (
                 <Item
                     key={milestone.id}
                     phaseIndex={phaseIndex}

@@ -29,6 +29,14 @@ const GRAVITY_UNIT_OPTIONS = [
     { name: "SG", value: UNITS.SPECIFIC_GRAVITY },
 ];
 
+const VOLUME_UNIT_OPTIONS = [
+    { name: "gal", value: UNITS.GALLONS },
+    { name: "qt", value: UNITS.QUARTS },
+    { name: "pt", value: UNITS.PINTS },
+    { name: "L", value: UNITS.LITERS },
+    { name: "mL", value: UNITS.MILLILITERS },
+];
+
 const KIND_LABELS: Record<ScheduleKind, string> = {
     grains: "Grains",
     hops: "Hops",
@@ -158,7 +166,21 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                                     kind="gravity"
                                     unitOptions={GRAVITY_UNIT_OPTIONS}
                                     headerLabel="Gravity"
-                                    addLabel="Add reading" />
+                                    addLabel="Add reading"
+                                    defaultLabel="Reading" />
+                                <BatchScheduleReading
+                                    phase={phase}
+                                    phaseIndex={index}
+                                    tracker={data.tracker}
+                                    onPatch={patchTracker}
+                                    update={update}
+                                    add={add}
+                                    remove={remove}
+                                    kind="volume"
+                                    unitOptions={VOLUME_UNIT_OPTIONS}
+                                    headerLabel="Volume"
+                                    addLabel="Add volume reading"
+                                    defaultLabel="Volume" />
                             </div>
                         ) : null}
                     </PanelSwitcherContent>
