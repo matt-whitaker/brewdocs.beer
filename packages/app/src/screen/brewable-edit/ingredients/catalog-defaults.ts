@@ -10,6 +10,8 @@ export const PHASE_TYPE_LABELS: Record<PhaseType, string> = {
     mash: "Mash",
     boil: "Boil",
     ferment: "Ferment",
+    carbonation: "Carbonation",
+    conditioning: "Conditioning",
 };
 
 /** subsection order within a phase group */

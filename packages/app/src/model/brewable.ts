@@ -6,7 +6,7 @@ import Yeast from "@/model/yeast";
 import {newId} from "@/utils/id";
 
 /** the brew-day stage a phase or assignment belongs to */
-export type PhaseType = "mash" | "boil" | "ferment";
+export type PhaseType = "mash" | "boil" | "ferment" | "carbonation" | "conditioning";
 /** which element model an Assignment's `resource` narrows to */
 export type ResourceType = "grain" | "hop" | "yeast" | "additive";
 
@@ -67,6 +67,7 @@ export default interface Brewable {
 }
 
 export const PHASE_TYPES: PhaseType[] = ["mash", "boil", "ferment"];
+export const OPTIONAL_PHASE_TYPES: PhaseType[] = ["carbonation", "conditioning"];
 
 /** one empty phase of each type and no assignments — satisfies the "≥1 of each" rule by construction */
 export const defaultBrewable = (): Brewable => ({
@@ -85,6 +86,9 @@ export const canRemovePhase = (schedule: Schedule, index: number): boolean => {
     const target = schedule.phases[index];
     if (!target) {
         return false;
+    }
+    if (!PHASE_TYPES.includes(target.type)) {
+        return true;
     }
     const sameType = schedule.phases.filter(phase => phase.type === target.type);
     return sameType.length > 1;
