@@ -37,6 +37,10 @@ export interface ScheduleItem {
     extra?: ScheduleDetail[];
 }
 
+export interface BatchNotes {
+    notes: string;
+}
+
 export default interface Batch extends Entity {
     name: string;
     brewDate: string;
@@ -52,5 +56,5 @@ export default interface Batch extends Entity {
     shopping: ShoppingItem[];
     tracker: Record<string, TrackerEntry>;
 
-    notes?: string;
+    notes?: BatchNotes;
 }
