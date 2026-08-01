@@ -836,10 +836,17 @@ jobs:
           PROJECTS_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          # ⚠️ NO track_progress here, deliberately. It would force tag mode, which fires
-          # only on one trigger phrase — but the Owner has to run after a comment naming
-          # *another* role, and after a merged PR with no comment at all. Without it the
-          # action runs the prompt directly (agent mode) and our `if:` is the only gate.
+          # ⚠️ No track_progress: the Owner is told to stay quiet on its automatic pass,
+          # and a tracking comment on every run would be noise.
+          #
+          # ⚠️ `@claude/` — the PREFIX, not a whole handle. The action picks its mode from
+          # the *event type*, and `issue_comment` is always tag mode, so it gates on this
+          # phrase no matter what we do; dropping track_progress does not buy agent mode.
+          # The Owner has to fire both when summoned (`@claude/owner`) and on its automatic
+          # pass, where the comment names a *different* role — and every one of those
+          # comments contains `@claude/`. Our `if:` still decides whether the job runs at
+          # all; this only has to stop the action skipping itself once it does.
+          trigger_phrase: "@claude/"
           prompt: |
             You are the **Owner** — the maintainer's backlog agent. You own how work is
             *filed*: issue links, parent/sub-issue relationships, milestones, labels and the
