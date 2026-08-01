@@ -7,6 +7,7 @@ export * from "./components/input-text";
 export * from "./components/input-date";
 export * from "./components/input-select";
 export * from "./components/modal";
+export * from "./components/popover";
 export * from "./components/screen";
 export * from "./components/screen/two-col";
 export * from "./components/search-bar";
