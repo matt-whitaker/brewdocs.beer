@@ -101,3 +101,44 @@ test("logs a quick milestone that lands on the timeline and in the phase's readi
     await openSchedulePhase(page, "1. Mash");
     await expect(page.getByLabel("Reading reading")).toBeVisible();
 });
+
+// A marker's offsetSeconds and the timer's elapsedSeconds must round the same
+// way (both floor), because elapsedSeconds only advances on its 1s
+// setInterval tick — `elapsed` can lag up to just under a second behind real
+// "now" between ticks. A wait-then-assert test can't pin down that gap: it's
+// racing real wall-clock time, and Playwright's own auto-retrying `expect`
+// absorbs a temporary mismatch regardless (a settleSave-style wait would hide
+// it outright). Freezing the page clock mid-gap makes the race deterministic
+// instead: run it to 5.6s (letting the real 1s, 2s, 3s, 4s, 5s ticks fire, so
+// `elapsed` lands on a real production snapshot of 5, not a synthetic one),
+// then log a milestone at that exact frozen instant with no further clock
+// advance — offsetSeconds must already satisfy elapsed on its own.
+test("places a freshly logged milestone marker without waiting for a tick to catch up", async ({page}) => {
+    await page.clock.install();
+    await brewBatchFromKbRecipe(page, "E2E Marker Clock Batch");
+    await page.getByRole("tab", {name: "Brewing", exact: true}).click();
+
+    // pauseAt's target must be in the fake clock's future by the time the
+    // command reaches the browser, or it throws "Cannot fast-forward to the
+    // past" — a fixed lead covers the round-trip
+    await page.clock.pauseAt(Date.now() + 1000);
+    await page.getByRole("button", {name: "Start timer"}).click();
+    await expect(page.getByRole("button", {name: "Pause timer"})).toBeVisible();
+
+    // real (unfaked) settle: the interval that drives elapsedSeconds is
+    // registered by a passive effect after this commit, not within it — give
+    // it a moment to actually register before jumping the frozen clock, or
+    // the jump can start before there's any interval for it to fire
+    await page.waitForTimeout(100);
+    await page.clock.runFor(5600);
+
+    await page.getByRole("button", {name: "Log milestone"}).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole("button", {name: "Confirm"}).click();
+    await expect(dialog).not.toBeVisible();
+
+    // no further clock advance past this point — a marker that only shows up
+    // once the next tick fires would time out here, not eventually pass
+    await expect(page.getByRole("button", {name: /at \d{2}:\d{2}:\d{2}$/})).toBeVisible();
+});
