@@ -345,3 +345,36 @@ test("completing a phase puts a marker on the brew timer's live timeline", async
     await expect(markers).toHaveCount(1);
     await expect(page.getByRole("button", {name: /^1\. Mash at /})).toBeVisible();
 });
+
+/**
+ * DaisyUI's `.tabs` is `flex-wrap: wrap`, so before `flex-nowrap` the compact bar
+ * silently grew a second row at five phases (72px at a 390px viewport) instead of
+ * overflowing. Height is the assertion because that is the actual cost — and a
+ * scrolling bar is only an improvement if a scrolled-away tab still comes back,
+ * hence the second half.
+ */
+test("the phase tab bar stays one row on a phone and keeps every tab reachable", async ({page}) => {
+    await page.setViewportSize({width: 390, height: 844});
+    await brewBatchFromKbRecipe(page, "E2E Tab Scroll Batch");
+
+    for (let i = 0; i < 4; i++) {
+        await page.getByRole("tab", {name: "Planning", exact: true}).click();
+        await page.getByRole("tab", {name: "Phases", exact: true}).click();
+        await page.getByLabel("Phase type to add").selectOption("boil");
+        await page.getByRole("button", {name: "Add phase"}).click();
+        await settleSave(page);
+    }
+
+    await page.getByRole("tab", {name: "Brewing", exact: true}).click();
+
+    const bar = page.locator('[role="tablist"]').last();
+    await expect(bar).toHaveCount(1);
+    expect(await bar.evaluate(el => el.getBoundingClientRect().height)).toBeLessThan(56);
+    expect(await bar.evaluate(el => el.scrollWidth > el.clientWidth)).toBe(true);
+
+    // the last tab starts outside the scroll window; selecting it must bring it back
+    const notes = page.getByRole("tab", {name: "Notes", exact: true});
+    await notes.click();
+    await expect(notes).toHaveAttribute("aria-selected", "true");
+    await expect(notes).toBeInViewport();
+});

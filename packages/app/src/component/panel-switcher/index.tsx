@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import {Children, isValidElement, PropsWithChildren, ReactElement, Suspense} from "react";
+import {Children, isValidElement, PropsWithChildren, ReactElement, Suspense, useEffect, useRef} from "react";
 import {PropsWithClass} from "@brewdocs.beer/core";
 import {PanelSwitcherContentProps} from "@/component/panel-switcher/content";
 import usePanelSwitcher from "@/component/panel-switcher/usePanelSwitcher";
@@ -21,6 +21,15 @@ export type PanelSwitcherProps = PropsWithChildren & Partial<PropsWithClass> & {
  */
 export default function PanelSwitcher({ name, defaultTab, children, className, compact = false }: PanelSwitcherProps) {
     const [active, change, pending] = usePanelSwitcher(name, defaultTab);
+    const tablistRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const list = tablistRef.current;
+        const tab = list?.querySelector<HTMLElement>("[aria-selected=\"true\"]");
+        if (!list || !tab) return;
+
+        list.scrollTo({ left: Math.max(0, tab.offsetLeft - (list.clientWidth - tab.clientWidth) / 2), behavior: "smooth" });
+    }, [active]);
 
     const panels = Children.toArray(children)
         .filter((child): child is ReactElement<PanelSwitcherContentProps> => isValidElement(child));
@@ -36,9 +45,10 @@ export default function PanelSwitcher({ name, defaultTab, children, className, c
     // fit when actions need room on the same row
     const tablist = (
         <div
+            ref={tablistRef}
             role="tablist"
             className={compact
-                ? "tabs tabs-box tabs-sm w-auto"
+                ? "tabs tabs-box tabs-sm w-auto flex-nowrap overflow-x-auto no-scrollbar snap-x snap-proximity"
                 : classNames("tabs tabs-box", actions ? "w-full" : "mx-2 w-auto")}>
             {panels.map(({ props: { title, label, titleAlt, children: content } }) => (
                 <button
@@ -50,7 +60,7 @@ export default function PanelSwitcher({ name, defaultTab, children, className, c
                     title={titleAlt || (!content ? "Not implemented" : "")}
                     onClick={() => change(title)}
                     className={classNames(
-                        compact ? "tab whitespace-nowrap" : "tab whitespace-nowrap lg:px-3 px-2.5",
+                        compact ? "tab whitespace-nowrap snap-start" : "tab whitespace-nowrap lg:px-3 px-2.5",
                         // daisyui v5 styles the active tab neutral and fades inactive tab
                         // text; restore the v4 primary look and full-strength text
                         // (disabled tabs stay dim)
