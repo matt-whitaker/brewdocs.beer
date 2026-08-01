@@ -377,4 +377,11 @@ test("the phase tab bar stays one row on a phone and keeps every tab reachable",
     await notes.click();
     await expect(notes).toHaveAttribute("aria-selected", "true");
     await expect(notes).toBeInViewport();
+
+    // scrolled fully left it must stay there — `.tabs-box`'s 4px padding puts the
+    // first tab's snap edge inside the snapport, and without matching scroll-padding
+    // snapping drags it back to 4 every time
+    await bar.evaluate(el => { el.scrollLeft = 0; });
+    await page.waitForTimeout(600);
+    expect(await bar.evaluate(el => el.scrollLeft)).toBe(0);
 });
