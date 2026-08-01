@@ -93,7 +93,7 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
     }, [mutate]);
 
     const completePhase = useCallback((phaseId: string) => {
-        mutate(d => ({ ...d, tracker: putEntry(d.tracker, { on: "phase", id: phaseId }, { completed: true }) }), true);
+        mutate(d => ({ ...d, tracker: putEntry(d.tracker, { on: "phase", id: phaseId }, { completed: true, date: new Date().toISOString() }) }), true);
     }, [mutate]);
 
     const current = useMemo(
