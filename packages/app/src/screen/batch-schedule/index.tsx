@@ -38,6 +38,10 @@ const VOLUME_UNIT_OPTIONS = [
     { name: "mL", value: UNITS.MILLILITERS },
 ];
 
+const PRESSURE_UNIT_OPTIONS = [
+    { name: "psi", value: UNITS.PSI },
+];
+
 const KIND_LABELS: Record<ScheduleKind, string> = {
     grains: "Grains",
     hops: "Hops",
@@ -183,6 +187,51 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                                     headerLabel="Volume"
                                     addLabel="Add volume reading"
                                     defaultLabel="Volume" />
+                                {phase.type === "carbonation" && (
+                                    <>
+                                        <BatchScheduleReading
+                                            phase={phase}
+                                            phaseIndex={index}
+                                            tracker={data.tracker}
+                                            onPatch={patchTracker}
+                                            update={update}
+                                            add={add}
+                                            remove={remove}
+                                            kind="pressure"
+                                            unitOptions={PRESSURE_UNIT_OPTIONS}
+                                            headerLabel="Pressure"
+                                            addLabel="Add pressure reading"
+                                            defaultLabel="Pressure" />
+                                        <BatchScheduleReading
+                                            phase={phase}
+                                            phaseIndex={index}
+                                            tracker={data.tracker}
+                                            onPatch={patchTracker}
+                                            update={update}
+                                            add={add}
+                                            remove={remove}
+                                            kind="kegDate"
+                                            headerLabel="Keg date"
+                                            addLabel="Add keg date"
+                                            defaultLabel="Keg date"
+                                            dateOnly />
+                                    </>
+                                )}
+                                {phase.type === "conditioning" && (
+                                    <BatchScheduleReading
+                                        phase={phase}
+                                        phaseIndex={index}
+                                        tracker={data.tracker}
+                                        onPatch={patchTracker}
+                                        update={update}
+                                        add={add}
+                                        remove={remove}
+                                        kind="bottleDate"
+                                        headerLabel="Bottle date"
+                                        addLabel="Add bottle date"
+                                        defaultLabel="Bottle date"
+                                        dateOnly />
+                                )}
                             </div>
                         ) : null}
                     </PanelSwitcherContent>

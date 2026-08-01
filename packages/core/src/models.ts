@@ -34,6 +34,7 @@ export const UNITS = {
     SRM: "SRM",
     PH: "pH",
     MINUTES: "min",
+    PSI: "psi",
 } as const;
 export type Unit = typeof UNITS[keyof typeof UNITS];
 
