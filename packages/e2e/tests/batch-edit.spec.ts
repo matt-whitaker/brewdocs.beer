@@ -143,30 +143,56 @@ test("adds a volume reading on a phase and persists its value", async ({page}) =
     await expect(page.getByLabel("Volume reading", {exact: true})).toHaveValue(/5\.5/);
 });
 
-test("gravity and volume readings coexist on the same phase without colliding", async ({page}) => {
+test("adds a temperature reading on a phase and persists its value", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Temperature Batch");
+    await openSchedulePhase(page, "1. Mash");
+
+    await page.getByRole("button", {name: "Add temperature reading"}).click();
+
+    // "Temperature reading" is exact for the same reason as volume: unqualified
+    // it substring-matches the "Add temperature reading" button's own name too
+    const reading = page.getByLabel("Temperature reading", {exact: true});
+    await expect(reading).toBeVisible();
+    await reading.fill("152");
+    await reading.blur();
+
+    await settleSave(page);
+    await page.reload();
+    await openSchedulePhase(page, "1. Mash");
+
+    await expect(page.getByLabel("Temperature reading", {exact: true})).toHaveValue(/152/);
+});
+
+test("gravity, volume and temperature readings coexist on the same phase without colliding", async ({page}) => {
     await brewBatchFromKbRecipe(page, "E2E Coexist Batch");
     await openSchedulePhase(page, "3. Ferment");
 
     await page.getByRole("button", {name: "Add reading"}).click();
     await page.getByRole("button", {name: "Add volume reading"}).click();
+    await page.getByRole("button", {name: "Add temperature reading"}).click();
 
     const gravity = page.getByLabel("Reading reading");
     const volume = page.getByLabel("Volume reading", {exact: true});
+    const temperature = page.getByLabel("Temperature reading", {exact: true});
     await expect(gravity).toBeVisible();
     await expect(volume).toBeVisible();
+    await expect(temperature).toBeVisible();
 
     await gravity.fill("1.050");
     await gravity.blur();
     await volume.fill("6");
     await volume.blur();
+    await temperature.fill("68");
+    await temperature.blur();
 
     await settleSave(page);
     await page.reload();
     await openSchedulePhase(page, "3. Ferment");
 
-    // each grid kept its own row and value — neither write clobbered the other
+    // each grid kept its own row and value — no write clobbered another
     await expect(page.getByLabel("Reading reading")).toHaveValue(/1\.05/);
     await expect(page.getByLabel("Volume reading", {exact: true})).toHaveValue(/6/);
+    await expect(page.getByLabel("Temperature reading", {exact: true})).toHaveValue(/68/);
 });
 
 test("a second phase of the same type gets its own tab and its own ingredients", async ({page}) => {
