@@ -433,9 +433,14 @@ jobs:
                 git commit --allow-empty -m "Start epic #<epic-number>"
                 git push origin <branch>
 
-            That empty marker is the **only** thing any role may push straight to an
-            integration branch. Never push real work there — it lands by merging sub-issue
-            PRs. Return to your own branch afterwards.
+            ⚠️ **Never push feature work straight to an integration branch** — code lands
+            there by merging sub-issue PRs, and a direct push bypasses the review the branch
+            exists to collect. Two housekeeping pushes are fine and expected: that empty
+            marker commit, and merging `mainline` into the branch to keep it current
+            (`git merge origin/mainline`), which is ordinary maintenance and often what
+            resolves a stale or conflicted epic. The line is *whose work it is* — yours goes
+            through a PR; bringing the branch up to date does not. Return to your own branch
+            afterwards.
 
             If the integration PR already exists, leave it alone. Do not retitle it, do not
             update it, and never merge it.
