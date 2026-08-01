@@ -2,6 +2,7 @@ import {Entity, Scalar} from "@brewdocs.beer/core";
 import Brewable, {ResourceType} from "@/model/brewable";
 import Measurements from "@/model/measurements";
 import {RecipeSource} from "@/model/recipe";
+import {TimerEvent} from "@/model/timer";
 import {ResourceActuals, TrackerEntry} from "@/model/tracker";
 
 export type ShoppingTag = "hops"|"grains"|"yeasts"|"additives";
@@ -54,6 +55,7 @@ export default interface Batch extends Entity {
     actuals: Measurements;
     shopping: ShoppingItem[];
     tracker: Record<string, TrackerEntry>;
+    timer?: TimerEvent[];
 
     notes?: BatchNotes;
 }

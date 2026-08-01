@@ -17,6 +17,7 @@ import useJsonEdit from "@/hooks/useJsonEdit";
 import Batch, {ScheduleKind} from "@/model/batch";
 import {phaseLabel} from "@/model/brewable";
 import {key, Ref, TrackerEntry} from "@/model/tracker";
+import BatchScheduleBrewTimer from "@/screen/batch-schedule/brew-timer";
 import BatchScheduleCompletePhase from "@/screen/batch-schedule/complete-phase";
 import BatchScheduleEquipment from "@/screen/batch-schedule/equipment";
 import ScheduleItemRow from "@/screen/batch-schedule/item-row";
@@ -92,7 +93,7 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
     }, [mutate]);
 
     const completePhase = useCallback((phaseId: string) => {
-        mutate(d => ({ ...d, tracker: putEntry(d.tracker, { on: "phase", id: phaseId }, { completed: true }) }), true);
+        mutate(d => ({ ...d, tracker: putEntry(d.tracker, { on: "phase", id: phaseId }, { completed: true, date: new Date().toISOString() }) }), true);
     }, [mutate]);
 
     const current = useMemo(
@@ -129,6 +130,7 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
 
     return (
         <Screen>
+            <BatchScheduleBrewTimer batch={data} mutate={mutate} />
             <PanelSwitcher compact name="schedule" defaultTab={phaseLabel(data.brewable.schedule.phases, 0)}>
                 <PanelSwitcherContent title="Prep">
                     <DataGrid className="pt-2">

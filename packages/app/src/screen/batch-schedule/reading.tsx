@@ -35,6 +35,8 @@ function BatchScheduleReadingItem({ phaseIndex, row, milestone, entry, onPatch, 
     // prev.unit fallback — only a brand-new reading falls back to defaultUnit
     const unit = (entry?.reading?.unit ?? defaultUnit) as Unit;
 
+    const dateValue = entry?.date?.slice(0, 10) ?? "";
+
     const onChangeLabel = useCallback((next: string) => update(`brewable.schedule.phases[${phaseIndex}].milestones[${row}].label`, next), [update, phaseIndex, row]);
     const onRemove = useCallback(() => remove(`brewable.schedule.phases[${phaseIndex}].milestones`, row), [remove, phaseIndex, row]);
 
@@ -55,7 +57,7 @@ function BatchScheduleReadingItem({ phaseIndex, row, milestone, entry, onPatch, 
             <DataGridRow zebra reserveExpand>
                 <DataGridRemoveButton onClick={onRemove} />
                 <DataGridInput label={`${milestone.label} name`} className="ml-6" cols={3} value={milestone.label} onChange={onChangeLabel} />
-                <DataGridInput label={`${milestone.label} date`} cols={3} type="date" value={entry?.date ?? ""} onChange={onChangeDate} />
+                <DataGridInput label={`${milestone.label} date`} cols={3} type="date" value={dateValue} onChange={onChangeDate} />
             </DataGridRow>
         );
     }
@@ -68,7 +70,7 @@ function BatchScheduleReadingItem({ phaseIndex, row, milestone, entry, onPatch, 
                 <DataGrid>
                     <DataGridRow zebra={false}>
                         <DataGridLabel tiny cols={3}>Reading Taken</DataGridLabel>
-                        <DataGridInput label={`${milestone.label} date`} cols={3} type="date" value={entry?.date ?? ""} onChange={onChangeDate} />
+                        <DataGridInput label={`${milestone.label} date`} cols={3} type="date" value={dateValue} onChange={onChangeDate} />
                     </DataGridRow>
                 </DataGrid>
             )}
