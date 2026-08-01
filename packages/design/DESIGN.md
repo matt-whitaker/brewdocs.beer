@@ -49,7 +49,10 @@ Thirteen custom theme colors modeling the [Standard Reference Method](https://en
 
 The numeric suffix is an SRM value (1–50+), not a shade index — Tailwind's `bg-beer-*`/`border-beer-*`/`outline-beer-*` utilities are generated straight from the token names, so `bg-beer-24` means "the swatch for SRM 24," not "24% of some base color." `--color-beer-50` is explicitly the fallback for any SRM at or above the top of the modeled range.
 
-**Real usage** (outside `design`, in `packages/app/src/component/srm-avatar/`): `constants.tsx` maps each SRM breakpoint to its `[bg, border, outline]` class triple, and `index.tsx`'s `findHexClasses` picks the first breakpoint `>=` the batch's computed SRM (falling back to SRM 40 if none match) to render a beer-color swatch. This is the one place today that reads the scale as a *scale* rather than a fixed palette — worth knowing if you're building another component that needs to bucket a continuous value into a swatch.
+**Real usage** (in `packages/design/src/components/srm-avatar/`, with an app-side re-export shim at `packages/app/src/component/srm-avatar/`): `constants.tsx` maps each SRM breakpoint to its `[bg, border, outline]` class triple and exports `findSrmClasses`, which picks the first breakpoint `>=` the batch's computed SRM (falling back to SRM 40 if none match). Two components read it, and they are the only place today that reads the scale as a *scale* rather than a fixed palette — start from `findSrmClasses` if you build a third:
+
+- `SrmAvatar` (`srm-avatar/index.tsx`) — the large standalone swatch, using the `bg` + `outline` classes for its outline ring.
+- `SrmTag` (`srm-tag/index.tsx`) — a small `aria-hidden` inline swatch (`size-3.5`) for a dense data-grid row, using only the `bg` class plus a hairline `border-base-content/20` for legibility against the page background. It normalizes a non-finite `srm` to the lowest breakpoint rather than falling through to the SRM 40 bucket.
 
 **What it's for:** color-coding recipes/batches by their beer color (an amber ale vs. a stout) — visually communicating a KB or app-model `srm` field without a numeric readout.
 
