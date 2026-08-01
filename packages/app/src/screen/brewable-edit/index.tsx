@@ -18,6 +18,8 @@ export type BrewableEditProps = {
     /** panels a host screen injects before/after the brewable panels */
     panelsBefore?: ReactNode;
     panelsAfter?: ReactNode;
+    /** locks the Phases panel's add/remove/reorder controls — set by Batch Planning once a phase is complete */
+    locked?: boolean;
 };
 
 /**
@@ -27,7 +29,7 @@ export type BrewableEditProps = {
  * brewable). Host screens add their own panels via panelsBefore / panelsAfter
  * — e.g. recipe editing passes a "Details" panel as panelsBefore.
  */
-export default function BrewableEdit({ brewable: initialBrewable, onChangeBrewable, name = "brewable.edit", defaultTab = "Ingredients", panelsBefore, panelsAfter }: BrewableEditProps) {
+export default function BrewableEdit({ brewable: initialBrewable, onChangeBrewable, name = "brewable.edit", defaultTab = "Ingredients", panelsBefore, panelsAfter, locked = false }: BrewableEditProps) {
     const [brewable, update, updateScalar, , add, remove, move] = useJsonEdit<Brewable>(initialBrewable, onChangeBrewable);
 
     return (
@@ -40,7 +42,7 @@ export default function BrewableEdit({ brewable: initialBrewable, onChangeBrewab
                 <BrewableEditEquipment brewable={brewable} update={update} add={add} remove={remove} />
             </PanelSwitcherContent>
             <PanelSwitcherContent title="Phases">
-                <BrewableEditPhases brewable={brewable} add={add} remove={remove} move={move} />
+                <BrewableEditPhases brewable={brewable} add={add} remove={remove} move={move} locked={locked} />
             </PanelSwitcherContent>
             {panelsAfter}
         </PanelSwitcher>

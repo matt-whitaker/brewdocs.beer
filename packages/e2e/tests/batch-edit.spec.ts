@@ -270,6 +270,37 @@ test("keeps Water Chemistry scoped to the Mash phase", async ({page}) => {
     await expect(page.getByRole("button", {name: "Water Chemistry"})).toHaveCount(0);
 });
 
+test("completes the Mash phase, advances the current phase, and keeps its water sample", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Complete Phase Batch");
+    await openSchedulePhase(page, "1. Mash");
+
+    await page.getByRole("button", {name: "Add water sample"}).click();
+    await page.getByRole("button", {name: "Show Water Sample parameters"}).click();
+    const calcium = page.getByLabel("Water Sample Calcium");
+    await calcium.fill("60");
+    await calcium.blur();
+    await settleSave(page);
+
+    // the Complete button is immediate (mutate(fn, true)), unlike the debounced
+    // water field above — settle both before reloading
+    await page.getByRole("button", {name: "Complete 1. Mash"}).click();
+    await page.getByRole("dialog").getByRole("button", {name: "Confirm"}).click();
+    await settleSave(page);
+
+    await page.reload();
+    await openSchedulePhase(page, "1. Mash");
+
+    // a completed phase drops its own Complete button but keeps its content —
+    // there's no un-complete control, so this is the only way to see it survived
+    await expect(page.getByRole("button", {name: "Complete 1. Mash"})).toHaveCount(0);
+    await page.getByRole("button", {name: "Show Water Sample parameters"}).click();
+    await expect(page.getByLabel("Water Sample Calcium")).toHaveValue(/60ppm/);
+
+    // progress moved on to the next phase
+    await openSchedulePhase(page, "2. Boil");
+    await expect(page.getByRole("button", {name: "Complete 2. Boil"})).toBeVisible();
+});
+
 test("keeps a batch note after a reload", async ({page}) => {
     await brewBatchFromKbRecipe(page, "E2E Notes Batch");
     // Notes is the Brewing tab strip's last entry, alongside the phase tabs
