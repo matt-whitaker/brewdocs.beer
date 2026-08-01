@@ -17,7 +17,7 @@ export function InputSelect({ data, value, className, onChange, label, allowNull
     const optionalProps = onChange ? { onChange: handleChange } : {};
     return (
         <select aria-label={label ?? void 0} className={classNames("select select-xs", [className])} value={value ?? ""} {...optionalProps}>
-            {allowNull ? <option key="null">-- Select --</option> : null}
+            {allowNull ? <option key="null" value="">-- Select --</option> : null}
             {data.map(((datum, i) => <option key={`${datum.value}-${i}`} value={datum.value || datum.name}>{datum.name}</option>))}
         </select>
     );

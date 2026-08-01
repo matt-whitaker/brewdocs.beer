@@ -4,7 +4,7 @@ import DataGridLabel from "@/component/data-grid/label";
 import DataGridRow from "@/component/data-grid/row";
 import DataGridSelect from "@/component/data-grid/select";
 import {AddFn} from "@/hooks/useJsonEdit";
-import {BrewablePhase, PHASE_TYPES, PhaseType} from "@/model/brewable";
+import {BrewablePhase, OPTIONAL_PHASE_TYPES, PHASE_TYPES, PhaseType} from "@/model/brewable";
 import {newId} from "@/utils/id";
 
 export type RecipeEditPhasesAddRowProps = {
@@ -15,7 +15,7 @@ export type RecipeEditPhasesAddRowProps = {
 // so this never disables an already-used type
 export default function RecipeEditPhasesAddRow({ add }: RecipeEditPhasesAddRowProps) {
     const [type, setType] = useState<PhaseType|null>(null);
-    const options = useMemo(() => PHASE_TYPES.map(value => ({ value, name: `${value[0].toUpperCase()}${value.slice(1)}` })), []);
+    const options = useMemo(() => [...PHASE_TYPES, ...OPTIONAL_PHASE_TYPES].map(value => ({ value, name: `${value[0].toUpperCase()}${value.slice(1)}` })), []);
 
     const addPhase = useCallback(() => {
         if (!type) return;

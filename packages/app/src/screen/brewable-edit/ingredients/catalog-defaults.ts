@@ -10,6 +10,8 @@ export const PHASE_TYPE_LABELS: Record<PhaseType, string> = {
     mash: "Mash",
     boil: "Boil",
     ferment: "Ferment",
+    carbonation: "Carbonation",
+    conditioning: "Conditioning",
 };
 
 /** subsection order within a phase group */
@@ -68,8 +70,17 @@ export function kbYeastToRecipeYeast(kbYeast: KbYeast): Yeast {
     };
 }
 
-/** Default boil time for a freeform additive — there's no kb catalog for additives, so the name is typed rather than picked. */
-export function defaultAdditive(name: string): Additive {
+/** Default boil time or priming-sugar weight for a freeform additive — there's no kb catalog for additives, so the name is typed rather than picked. */
+export function defaultAdditive(name: string, kind: "boil" | "weight"): Additive {
+    if (kind === "weight") {
+        return {
+            name,
+            weight: {
+                value: "1.0oz",
+                unit: UNITS.OUNCES
+            },
+        };
+    }
     return {
         name,
         boil: {

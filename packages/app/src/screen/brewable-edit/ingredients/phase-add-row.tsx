@@ -6,7 +6,7 @@ import DataGridLabel from "@/component/data-grid/label";
 import DataGridRow from "@/component/data-grid/row";
 import DataGridSelect from "@/component/data-grid/select";
 import {AddFn} from "@/hooks/useJsonEdit";
-import {Assignment} from "@/model/brewable";
+import {Assignment, PhaseType} from "@/model/brewable";
 import {defaultAdditive, kbGrainToRecipeGrain, kbHopToRecipeHop, kbYeastToRecipeYeast} from "@/screen/brewable-edit/ingredients/catalog-defaults";
 
 /** dropdown value for the freeform-additive choice — no colon, so it never collides with a `"<type>:<name>"` catalog value */
@@ -24,6 +24,8 @@ export type RecipeEditPhaseAddRowProps = {
     phaseId: string;
     /** the phase's display label, used for the add button's accessible name */
     phaseLabel: string;
+    /** which additive shape a new "Additive…" entry defaults to — weight for Conditioning, boil everywhere else */
+    phaseType: PhaseType;
     add: AddFn;
     /** merged grain/hop/yeast options, each value encoded as `"<resourceType>:<name>"` */
     resourceOptions: { value: string; name: string }[];
@@ -61,7 +63,7 @@ function buildCatalogAssignment(
     }
 }
 
-export default function RecipeEditPhaseAddRow({ phaseId, phaseLabel, add, resourceOptions, kbGrainsIndex, kbHopsIndex, kbYeastsIndex }: RecipeEditPhaseAddRowProps) {
+export default function RecipeEditPhaseAddRow({ phaseId, phaseLabel, phaseType, add, resourceOptions, kbGrainsIndex, kbHopsIndex, kbYeastsIndex }: RecipeEditPhaseAddRowProps) {
     const [value, setValue] = useState<string | null>(null);
     const [additiveName, setAdditiveName] = useState("");
 
@@ -72,7 +74,7 @@ export default function RecipeEditPhaseAddRow({ phaseId, phaseLabel, add, resour
         if (isAdditive) {
             const name = additiveName.trim();
             if (!name) return;
-            add("assignments", { phaseId, resourceType: "additive", slug: name, resource: defaultAdditive(name) });
+            add("assignments", { phaseId, resourceType: "additive", slug: name, resource: defaultAdditive(name, phaseType === "conditioning" ? "weight" : "boil") });
         } else {
             if (!value) return;
             const assignment = buildCatalogAssignment(phaseId, value, kbGrainsIndex, kbHopsIndex, kbYeastsIndex);
@@ -81,7 +83,7 @@ export default function RecipeEditPhaseAddRow({ phaseId, phaseLabel, add, resour
         }
         setValue(null);
         setAdditiveName("");
-    }, [add, phaseId, value, isAdditive, additiveName, kbGrainsIndex, kbHopsIndex, kbYeastsIndex]);
+    }, [add, phaseId, phaseType, value, isAdditive, additiveName, kbGrainsIndex, kbHopsIndex, kbYeastsIndex]);
 
     return (
         <DataGridRow zebra reserveExpand>

@@ -38,9 +38,18 @@ const VOLUME_UNIT_OPTIONS = [
     { name: "mL", value: UNITS.MILLILITERS },
 ];
 
+const PRESSURE_UNIT_OPTIONS = [
+    { name: "psi", value: UNITS.PSI },
+];
+
 const TEMPERATURE_UNIT_OPTIONS = [
     { name: "°F", value: UNITS.FAHRENHEIT },
     { name: "°C", value: UNITS.CELSIUS },
+];
+
+const PACKAGING_OPTIONS = [
+    { name: "Keg", value: "keg" },
+    { name: "Bottle", value: "bottle" },
 ];
 
 const KIND_LABELS: Record<ScheduleKind, string> = {
@@ -62,6 +71,7 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
 
     const updateStatus = useCallback((value: string) => update("status", Number(value)), [update]);
     const updateDate = useCallback((value: string) => update("brewDate", value), [update]);
+    const updatePackaging = useCallback((value: string) => update("packaging", value || undefined), [update]);
     const updateNotes = useCallback((value: string) => update("notes.notes", value), [update]);
 
     // tracker writes can't go through useJsonEdit's dot-path (a key like
@@ -124,6 +134,16 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                         <DataGridRow>
                             <DataGridLabel cols={3}>Brewed on</DataGridLabel>
                             <DataGridInput cols={3} type="date" value={data.brewDate} onChange={updateDate} />
+                        </DataGridRow>
+                        <DataGridRow>
+                            <DataGridLabel cols={3}>Packaging</DataGridLabel>
+                            <DataGridSelect
+                                cols={3}
+                                label="Packaging"
+                                allowNull
+                                data={PACKAGING_OPTIONS}
+                                value={data.packaging ?? null}
+                                onChange={updatePackaging} />
                         </DataGridRow>
                     </DataGrid>
                 </PanelSwitcherContent>
@@ -201,6 +221,51 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                                     headerLabel="Temperature"
                                     addLabel="Add temperature reading"
                                     defaultLabel="Temperature" />
+                                {phase.type === "carbonation" && (
+                                    <>
+                                        <BatchScheduleReading
+                                            phase={phase}
+                                            phaseIndex={index}
+                                            tracker={data.tracker}
+                                            onPatch={patchTracker}
+                                            update={update}
+                                            add={add}
+                                            remove={remove}
+                                            kind="pressure"
+                                            unitOptions={PRESSURE_UNIT_OPTIONS}
+                                            headerLabel="Pressure"
+                                            addLabel="Add pressure reading"
+                                            defaultLabel="Pressure" />
+                                        <BatchScheduleReading
+                                            phase={phase}
+                                            phaseIndex={index}
+                                            tracker={data.tracker}
+                                            onPatch={patchTracker}
+                                            update={update}
+                                            add={add}
+                                            remove={remove}
+                                            kind="kegDate"
+                                            headerLabel="Keg date"
+                                            addLabel="Add keg date"
+                                            defaultLabel="Keg date"
+                                            dateOnly />
+                                    </>
+                                )}
+                                {phase.type === "conditioning" && (
+                                    <BatchScheduleReading
+                                        phase={phase}
+                                        phaseIndex={index}
+                                        tracker={data.tracker}
+                                        onPatch={patchTracker}
+                                        update={update}
+                                        add={add}
+                                        remove={remove}
+                                        kind="bottleDate"
+                                        headerLabel="Bottle date"
+                                        addLabel="Add bottle date"
+                                        defaultLabel="Bottle date"
+                                        dateOnly />
+                                )}
                             </div>
                         ) : null}
                     </PanelSwitcherContent>
