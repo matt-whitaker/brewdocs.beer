@@ -102,6 +102,55 @@ test("logs a quick milestone that lands on the timeline and in the phase's readi
     await expect(page.getByLabel("Reading reading")).toBeVisible();
 });
 
+// Covers the marker overlay's 24px hit target + popover work (#380): each
+// marker gets its own transparent hit box independent of its drawn dot, and
+// only one popover is open at a time. Real wall-clock separation between the
+// two milestones is what the "own popover text" claim needs — with markers at
+// very different offsets, hovering one can't accidentally hit-test the other.
+test("hovering each marker after logging two milestones shows that marker's own popover text", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Marker Popover Batch");
+    await page.getByRole("tab", {name: "Brewing", exact: true}).click();
+
+    await page.getByRole("button", {name: "Start timer"}).click();
+    await page.waitForTimeout(1000);
+
+    // defaults (Gravity kind, "Reading" label) match the first milestone
+    await page.getByRole("button", {name: "Log milestone"}).click();
+    let dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole("button", {name: "Confirm"}).click();
+    await expect(dialog).not.toBeVisible();
+
+    const gravityMarker = page.getByRole("button", {name: /^Reading at \d{2}:\d{2}:\d{2}$/});
+    await expect(gravityMarker).toBeVisible();
+
+    await page.waitForTimeout(4000);
+
+    await page.getByRole("button", {name: "Log milestone"}).click();
+    dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await dialog.getByLabel("Milestone kind").selectOption("volume");
+    await dialog.getByRole("button", {name: "Confirm"}).click();
+    await expect(dialog).not.toBeVisible();
+
+    const volumeMarker = page.getByRole("button", {name: /^Volume at \d{2}:\d{2}:\d{2}$/});
+    await expect(volumeMarker).toBeVisible();
+
+    await gravityMarker.hover();
+    const gravityTooltip = page.getByRole("tooltip");
+    await expect(gravityTooltip).toBeVisible();
+    await expect(gravityTooltip).toContainText("Reading");
+    await expect(gravityTooltip).toContainText("Gravity");
+
+    // switching hover must swap the popover's content, not just its position —
+    // this is the case the overlay's single openMarkerId exists to get right
+    await volumeMarker.hover();
+    const volumeTooltip = page.getByRole("tooltip");
+    await expect(volumeTooltip).toBeVisible();
+    await expect(volumeTooltip).toContainText("Volume");
+    await expect(volumeTooltip).not.toContainText("Gravity");
+});
+
 // A marker's offsetSeconds and the timer's elapsedSeconds must round the same
 // way (both floor), because elapsedSeconds only advances on its 1s
 // setInterval tick — `elapsed` can lag up to just under a second behind real
