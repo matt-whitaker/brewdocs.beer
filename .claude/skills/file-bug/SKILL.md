@@ -1,8 +1,6 @@
 ---
 name: file-bug
 description: Research a bug the maintainer describes, verify what is actually wrong, and file one GitHub issue ready for an Implementor.
-# these all create issues, write code or open PRs — the maintainer decides when
-disable-model-invocation: true
 ---
 
 Research a bug the maintainer describes, **verify what's actually wrong**, and file **one**

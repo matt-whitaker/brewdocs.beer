@@ -1,8 +1,6 @@
 ---
 name: plan-feature
 description: Decompose a feature into an epic issue plus independently-implementable sub-issues, and create them on GitHub, linked and unlabeled.
-# these all create issues, write code or open PRs — the maintainer decides when
-disable-model-invocation: true
 ---
 
 Decompose a feature into a parent (epic) issue and independently-implementable
