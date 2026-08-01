@@ -1,6 +1,7 @@
 import {useCallback, useMemo} from "react";
 import {UNITS} from "@brewdocs.beer/core";
 import {Textarea} from "@brewdocs.beer/design";
+import {currentPhaseIndex} from "@/actions/batchProgress";
 import deriveSchedule from "@/actions/deriveSchedule";
 import {putEntry} from "@/actions/tracker";
 import DataGrid from "@/component/data-grid";
@@ -15,16 +16,14 @@ import Screen from "@/component/screen";
 import useJsonEdit from "@/hooks/useJsonEdit";
 import Batch, {ScheduleKind} from "@/model/batch";
 import {phaseLabel} from "@/model/brewable";
-import {statuses} from "@/model/statuses";
 import {key, Ref, TrackerEntry} from "@/model/tracker";
+import BatchScheduleCompletePhase from "@/screen/batch-schedule/complete-phase";
 import BatchScheduleEquipment from "@/screen/batch-schedule/equipment";
 import ScheduleItemRow from "@/screen/batch-schedule/item-row";
 import BatchScheduleReading from "@/screen/batch-schedule/reading";
 import BatchScheduleWaterReading from "@/screen/batch-schedule/water-reading";
 import {useBatch} from "@/state/batches";
 import {saveSession, useSession} from "@/state/session";
-
-const STATUS_OPTIONS = Object.entries(statuses).map(([value, name]) => ({name, value}));
 
 const GRAVITY_UNIT_OPTIONS = [
     { name: "°P", value: UNITS.PLATO },
@@ -70,7 +69,6 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
 
     const [data, update, , , add, remove, , mutate] = useJsonEdit<Batch>(batch, onChange);
 
-    const updateStatus = useCallback((value: string) => update("status", Number(value)), [update]);
     const updateDate = useCallback((value: string) => update("brewDate", value), [update]);
     const updatePackaging = useCallback((value: string) => update("packaging", value || undefined), [update]);
     const updateNotes = useCallback((value: string) => update("notes.notes", value), [update]);
@@ -92,6 +90,14 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
     const patchTracker = useCallback((ref: Ref, patch: TrackerEntry) => {
         mutate(d => ({ ...d, tracker: putEntry(d.tracker, ref, patch) }));
     }, [mutate]);
+
+    const completePhase = useCallback((phaseId: string) => {
+        mutate(d => ({ ...d, tracker: putEntry(d.tracker, { on: "phase", id: phaseId }, { completed: true }) }), true);
+    }, [mutate]);
+
+    const current = useMemo(
+        () => currentPhaseIndex(data.brewable.schedule.phases, data.tracker),
+        [data.brewable.schedule.phases, data.tracker]);
 
     const panels = useMemo(() => {
         // a pure view of the brewable, like equipment and gravity below — the batch
@@ -123,12 +129,6 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
 
     return (
         <Screen>
-            <DataGrid className="mt-2 mb-2">
-                <DataGridRow>
-                    <DataGridLabel cols={3}>Status</DataGridLabel>
-                    <DataGridSelect cols={3} data={STATUS_OPTIONS} value={String(data.status)} onChange={updateStatus} />
-                </DataGridRow>
-            </DataGrid>
             <PanelSwitcher compact name="schedule" defaultTab={phaseLabel(data.brewable.schedule.phases, 0)}>
                 <PanelSwitcherContent title="Prep">
                     <DataGrid className="pt-2">
@@ -148,142 +148,156 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                         </DataGridRow>
                     </DataGrid>
                 </PanelSwitcherContent>
-                {panels.map(({ phase, index, groups, equipment, milestones }) => (
-                    <PanelSwitcherContent
-                        key={phase.id}
-                        // position-prefixed ("2. Boil"), so repeated phase types stay distinct as tab titles
-                        title={phaseLabel(data.brewable.schedule.phases, index)}
-                        // a phase with nothing in it renders as a disabled tab; say why,
-                        // or it inherits the switcher's "Not implemented" tooltip
-                        titleAlt={groups.length || equipment.length || milestones.length ? "" : "Nothing scheduled in this step"}>
-                        {groups.length || equipment.length || milestones.length ? (
-                            <div className="pt-2">
-                                {/* what to gather before the phase starts, ahead of the work itself */}
-                                <BatchScheduleEquipment
-                                    items={equipment}
-                                    tracker={data.tracker}
-                                    onToggle={toggleEquipment} />
-                                {groups.map(({ label, items }) => (
-                                    <DataGrid key={label}>
-                                        <DataGridHeaderRow
-                                            defaultCollapsed={session?.[`schedule.${phase.id}.${label.toLowerCase()}`] as boolean ?? false}
-                                            onToggle={collapsed => saveSession(`schedule.${phase.id}.${label.toLowerCase()}`, collapsed)}>
-                                            {label}
-                                        </DataGridHeaderRow>
-                                        {items.map(item => (
-                                            <ScheduleItemRow
-                                                key={item.id}
-                                                item={item}
-                                                // the ingredient's live value, never a copy on the item
-                                                entry={data.tracker[key({ on: "assignment", id: item.id })]}
-                                                onToggle={toggleTrackerCompleted}
+                {panels.map(({ phase, index, groups, equipment, milestones }) => {
+                    const hasContent = !!(groups.length || equipment.length || milestones.length);
+                    const isCurrent = index === current;
+                    // position-prefixed ("2. Boil"), so repeated phase types stay distinct as tab titles
+                    const label = phaseLabel(data.brewable.schedule.phases, index);
+
+                    return (
+                        <PanelSwitcherContent
+                            key={phase.id}
+                            title={label}
+                            // a phase with nothing in it and nothing to complete renders as a
+                            // disabled tab; say why, or it inherits the switcher's
+                            // "Not implemented" tooltip
+                            titleAlt={hasContent || isCurrent ? "" : "Nothing scheduled in this step"}>
+                            {hasContent || isCurrent ? (
+                                <div className="pt-2">
+                                    {hasContent ? (
+                                        <>
+                                            {/* what to gather before the phase starts, ahead of the work itself */}
+                                            <BatchScheduleEquipment
+                                                items={equipment}
+                                                tracker={data.tracker}
+                                                onToggle={toggleEquipment} />
+                                            {groups.map(({ label: groupLabel, items }) => (
+                                                <DataGrid key={groupLabel}>
+                                                    <DataGridHeaderRow
+                                                        defaultCollapsed={session?.[`schedule.${phase.id}.${groupLabel.toLowerCase()}`] as boolean ?? false}
+                                                        onToggle={collapsed => saveSession(`schedule.${phase.id}.${groupLabel.toLowerCase()}`, collapsed)}>
+                                                        {groupLabel}
+                                                    </DataGridHeaderRow>
+                                                    {items.map(item => (
+                                                        <ScheduleItemRow
+                                                            key={item.id}
+                                                            item={item}
+                                                            // the ingredient's live value, never a copy on the item
+                                                            entry={data.tracker[key({ on: "assignment", id: item.id })]}
+                                                            onToggle={toggleTrackerCompleted}
+                                                            onPatch={patchTracker}
+                                                        />
+                                                    ))}
+                                                </DataGrid>
+                                            ))}
+                                            {/* readings come after the work — the wort's measured as the phase ends */}
+                                            <BatchScheduleReading
+                                                phase={phase}
+                                                phaseIndex={index}
+                                                tracker={data.tracker}
                                                 onPatch={patchTracker}
-                                            />
-                                        ))}
-                                    </DataGrid>
-                                ))}
-                                {/* readings come after the work — the wort's measured as the phase ends */}
-                                <BatchScheduleReading
-                                    phase={phase}
-                                    phaseIndex={index}
-                                    tracker={data.tracker}
-                                    onPatch={patchTracker}
-                                    update={update}
-                                    add={add}
-                                    remove={remove}
-                                    kind="gravity"
-                                    unitOptions={GRAVITY_UNIT_OPTIONS}
-                                    headerLabel="Gravity"
-                                    addLabel="Add reading"
-                                    defaultLabel="Reading" />
-                                <BatchScheduleReading
-                                    phase={phase}
-                                    phaseIndex={index}
-                                    tracker={data.tracker}
-                                    onPatch={patchTracker}
-                                    update={update}
-                                    add={add}
-                                    remove={remove}
-                                    kind="volume"
-                                    unitOptions={VOLUME_UNIT_OPTIONS}
-                                    headerLabel="Volume"
-                                    addLabel="Add volume reading"
-                                    defaultLabel="Volume" />
-                                <BatchScheduleReading
-                                    phase={phase}
-                                    phaseIndex={index}
-                                    tracker={data.tracker}
-                                    onPatch={patchTracker}
-                                    update={update}
-                                    add={add}
-                                    remove={remove}
-                                    kind="temperature"
-                                    unitOptions={TEMPERATURE_UNIT_OPTIONS}
-                                    headerLabel="Temperature"
-                                    addLabel="Add temperature reading"
-                                    defaultLabel="Temperature" />
-                                {phase.type === "mash" && (
-                                    <BatchScheduleWaterReading
-                                        phase={phase}
-                                        phaseIndex={index}
-                                        tracker={data.tracker}
-                                        onPatch={patchTracker}
-                                        update={update}
-                                        add={add}
-                                        remove={remove}
-                                        headerLabel="Water Chemistry"
-                                        addLabel="Add water sample"
-                                        defaultLabel="Water Sample" />
-                                )}
-                                {phase.type === "carbonation" && (
-                                    <>
-                                        <BatchScheduleReading
-                                            phase={phase}
-                                            phaseIndex={index}
-                                            tracker={data.tracker}
-                                            onPatch={patchTracker}
-                                            update={update}
-                                            add={add}
-                                            remove={remove}
-                                            kind="pressure"
-                                            unitOptions={PRESSURE_UNIT_OPTIONS}
-                                            headerLabel="Pressure"
-                                            addLabel="Add pressure reading"
-                                            defaultLabel="Pressure" />
-                                        <BatchScheduleReading
-                                            phase={phase}
-                                            phaseIndex={index}
-                                            tracker={data.tracker}
-                                            onPatch={patchTracker}
-                                            update={update}
-                                            add={add}
-                                            remove={remove}
-                                            kind="kegDate"
-                                            headerLabel="Keg date"
-                                            addLabel="Add keg date"
-                                            defaultLabel="Keg date"
-                                            dateOnly />
-                                    </>
-                                )}
-                                {phase.type === "conditioning" && (
-                                    <BatchScheduleReading
-                                        phase={phase}
-                                        phaseIndex={index}
-                                        tracker={data.tracker}
-                                        onPatch={patchTracker}
-                                        update={update}
-                                        add={add}
-                                        remove={remove}
-                                        kind="bottleDate"
-                                        headerLabel="Bottle date"
-                                        addLabel="Add bottle date"
-                                        defaultLabel="Bottle date"
-                                        dateOnly />
-                                )}
-                            </div>
-                        ) : null}
-                    </PanelSwitcherContent>
-                ))}
+                                                update={update}
+                                                add={add}
+                                                remove={remove}
+                                                kind="gravity"
+                                                unitOptions={GRAVITY_UNIT_OPTIONS}
+                                                headerLabel="Gravity"
+                                                addLabel="Add reading"
+                                                defaultLabel="Reading" />
+                                            <BatchScheduleReading
+                                                phase={phase}
+                                                phaseIndex={index}
+                                                tracker={data.tracker}
+                                                onPatch={patchTracker}
+                                                update={update}
+                                                add={add}
+                                                remove={remove}
+                                                kind="volume"
+                                                unitOptions={VOLUME_UNIT_OPTIONS}
+                                                headerLabel="Volume"
+                                                addLabel="Add volume reading"
+                                                defaultLabel="Volume" />
+                                            <BatchScheduleReading
+                                                phase={phase}
+                                                phaseIndex={index}
+                                                tracker={data.tracker}
+                                                onPatch={patchTracker}
+                                                update={update}
+                                                add={add}
+                                                remove={remove}
+                                                kind="temperature"
+                                                unitOptions={TEMPERATURE_UNIT_OPTIONS}
+                                                headerLabel="Temperature"
+                                                addLabel="Add temperature reading"
+                                                defaultLabel="Temperature" />
+                                            {phase.type === "mash" && (
+                                                <BatchScheduleWaterReading
+                                                    phase={phase}
+                                                    phaseIndex={index}
+                                                    tracker={data.tracker}
+                                                    onPatch={patchTracker}
+                                                    update={update}
+                                                    add={add}
+                                                    remove={remove}
+                                                    headerLabel="Water Chemistry"
+                                                    addLabel="Add water sample"
+                                                    defaultLabel="Water Sample" />
+                                            )}
+                                            {phase.type === "carbonation" && (
+                                                <>
+                                                    <BatchScheduleReading
+                                                        phase={phase}
+                                                        phaseIndex={index}
+                                                        tracker={data.tracker}
+                                                        onPatch={patchTracker}
+                                                        update={update}
+                                                        add={add}
+                                                        remove={remove}
+                                                        kind="pressure"
+                                                        unitOptions={PRESSURE_UNIT_OPTIONS}
+                                                        headerLabel="Pressure"
+                                                        addLabel="Add pressure reading"
+                                                        defaultLabel="Pressure" />
+                                                    <BatchScheduleReading
+                                                        phase={phase}
+                                                        phaseIndex={index}
+                                                        tracker={data.tracker}
+                                                        onPatch={patchTracker}
+                                                        update={update}
+                                                        add={add}
+                                                        remove={remove}
+                                                        kind="kegDate"
+                                                        headerLabel="Keg date"
+                                                        addLabel="Add keg date"
+                                                        defaultLabel="Keg date"
+                                                        dateOnly />
+                                                </>
+                                            )}
+                                            {phase.type === "conditioning" && (
+                                                <BatchScheduleReading
+                                                    phase={phase}
+                                                    phaseIndex={index}
+                                                    tracker={data.tracker}
+                                                    onPatch={patchTracker}
+                                                    update={update}
+                                                    add={add}
+                                                    remove={remove}
+                                                    kind="bottleDate"
+                                                    headerLabel="Bottle date"
+                                                    addLabel="Add bottle date"
+                                                    defaultLabel="Bottle date"
+                                                    dateOnly />
+                                            )}
+                                        </>
+                                    ) : null}
+                                    {isCurrent ? (
+                                        <BatchScheduleCompletePhase label={label} onConfirm={() => completePhase(phase.id)} />
+                                    ) : null}
+                                </div>
+                            ) : null}
+                        </PanelSwitcherContent>
+                    );
+                })}
                 <PanelSwitcherContent title="Notes">
                     <div className="pt-2">
                         <Textarea

@@ -18,10 +18,18 @@ export default function RecipeListItem({ recipe, source, onDelete }: RecipeListI
             <Link to={to} params={{recipeId: recipe.id}} className="text-left block">
                 <ScreenH2 className="text-lg">{recipe.name}</ScreenH2>
                 <ScreenP className="mb-1">by {recipe.brewer}</ScreenP>
-                <ScreenP>ABV {recipe.targets.abv.value}% | IBUs {recipe.targets.ibu} | O.G. {recipe.targets.og.value} | F.G. {recipe.targets.fg.value}</ScreenP>
+                <ScreenP>ABV {recipe.targets.abv.value} | IBUs {recipe.targets.ibu} | O.G. {recipe.targets.og.value} | F.G. {recipe.targets.fg.value}</ScreenP>
                 <ScreenP className="pt-2">{recipe.description}</ScreenP>
             </Link>
             {onDelete && <ConfirmDeleteButton title={`Delete ${recipe.name}?`} onConfirm={onDelete} />}
+        </li>
+    );
+}
+
+export function RecipeListItemFallback() {
+    return (
+        <li className="odd:bg-base-200 relative">
+            <ScreenP>This recipe can&rsquo;t be displayed.</ScreenP>
         </li>
     );
 }

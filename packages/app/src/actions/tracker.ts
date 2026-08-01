@@ -36,8 +36,9 @@ export function pruneTracker(tracker: Record<string, TrackerEntry>, liveKeys: Se
 /**
  * Every ref-key the current brewable produces: an `assignment` entry per
  * assignment (all schedule rows derive from these — see `deriveSchedule`), an
- * `equipment` entry per phase's equipment, and a `milestone` entry per reading
- * configured on a phase. All three now come off the **brewable**, which is the
+ * `equipment` entry per phase's equipment, a `milestone` entry per reading
+ * configured on a phase, and a `phase` entry per phase (its completion — see
+ * `actions/batchProgress.ts`). They all come off the **brewable**, which is the
  * plan's single source of truth — there's no second phase list to reconcile.
  *
  * Ids are assumed already present: phase and milestone ids are minted at
@@ -53,6 +54,7 @@ export function liveTrackerKeys(brewable: Brewable): Set<string> {
     });
 
     brewable.schedule.phases.forEach(phase => {
+        keys.add(key({on: "phase", id: phase.id}));
         phase.equipment.forEach(item => {
             if (item.id) keys.add(key({on: "equipment", id: item.id}));
         });
