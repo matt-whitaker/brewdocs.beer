@@ -5,7 +5,7 @@ import SearchBar from "@/component/search-bar";
 import Recipe from "@/model/recipe";
 import RecipeListItem from "@/screen/recipe-list/item";
 import {useKbRecipes} from "@/state/kbRecipes";
-import {useRecipes} from "@/state/recipes";
+import {deleteRecipe, useRecipes} from "@/state/recipes";
 import {FilterFn} from "@/utils/func";
 
 
@@ -34,7 +34,12 @@ export default function RecipeList({ source = "all",  filterFn }: RecipeListProp
     }, [recipes, kbRecipes, source, filterFn, query]);
 
     const recipeListItems = useMemo(() => shownRecipes.map(({ recipe, source: recipeSource }, i) => (
-        <RecipeListItem key={i} recipe={recipe} source={recipeSource} />
+        <RecipeListItem
+            key={i}
+            recipe={recipe}
+            source={recipeSource}
+            onDelete={recipeSource === "user" ? () => deleteRecipe(recipe.id) : undefined}
+        />
     )), [shownRecipes]);
 
     return (
