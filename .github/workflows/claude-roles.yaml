@@ -275,11 +275,19 @@ jobs:
               accumulate. Nothing about it belongs in a sub-issue body.
             - Post ONE comment on this epic listing the sub-issues in prerequisite order,
               marking which are parallel vs blocked — a single index to review.
-              ⚠️ **That comment is the Owner's input, so make it parseable.** Give every
-              sub-issue on its own line as `#<number> — <title>`, and state the epic's own
-              number. The Owner reads it to parent each sub-issue to the epic and put them
-              on the epic's milestone; a number it can't find there is work that never gets
-              filed.
+              ⚠️ **End that comment with a machine-readable manifest**, exactly this shape,
+              as the last thing in the comment:
+
+                  <!-- owner-manifest
+                  {"epic": 246, "children": [346, 347]}
+                  -->
+
+              An HTML comment, so it is invisible in the rendered issue. The Owner files the
+              sub-issues from **this**, not from your prose — a script reads it, with no
+              model involved, which is why it has to be exact. `children` is every sub-issue
+              you created, in prerequisite order. Omit it and nothing gets parented or
+              milestoned. Keep the human-readable list above it as well; that is what the
+              maintainer reads.
 
             Carry these standing Out-of-scope items into every sub-issue: don't hand-edit
             generated files (`routeTree.gen.ts`); don't add lodash (use
@@ -754,6 +762,69 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
+      - name: File the epic's sub-issues (deterministic)
+        # The automatic pass runs NO model. Parenting and milestoning are fully determined
+        # once you know (epic, children), and the Researcher now states both in a manifest
+        # rather than leaving them to be recovered from prose. This is why the quiet
+        # majority of Owner passes cost seconds instead of minutes.
+        if: github.event_name == 'issue_comment' && !github.event.issue.pull_request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          ISSUE: ${{ github.event.issue.number }}
+        run: |
+          set -euo pipefail
+
+          manifest=$(gh api "repos/$REPO/issues/$ISSUE/comments" --paginate \
+            --jq '[.[] | select(.body | contains("owner-manifest")) | .body] | last // empty')
+
+          if [ -z "$manifest" ]; then
+            echo "No owner-manifest on #$ISSUE — nothing to file."
+            exit 0
+          fi
+
+          # one line on purpose: a python heredoc indented inside this YAML block would
+          # arrive with its leading spaces intact and die on IndentationError
+          payload=$(printf '%s' "$manifest" | python3 -c 'import sys,re; m=re.search(r"owner-manifest\s*(\{.*?\})\s*-->", sys.stdin.read(), re.S); print(m.group(1) if m else "")')
+
+          if [ -z "$payload" ]; then
+            echo "::warning::#$ISSUE has an owner-manifest marker whose JSON could not be parsed — leaving it alone."
+            exit 0
+          fi
+
+          epic=$(printf '%s' "$payload" | jq -r '.epic')
+          children=$(printf '%s' "$payload" | jq -r '(.children // [])[]')
+
+          if [ -z "$children" ]; then
+            echo "Manifest on #$ISSUE lists no children — nothing to file."
+            exit 0
+          fi
+
+          milestone=$(gh issue view "$epic" --repo "$REPO" --json milestone --jq '.milestone.title // empty')
+          existing=" $(gh api "repos/$REPO/issues/$epic/sub_issues" --jq '[.[].number] | join(" ")' 2>/dev/null || true) "
+
+          for child in $children; do
+            if [ "${existing#* $child }" != "$existing" ]; then
+              echo "#$child already a sub-issue of #$epic"
+            else
+              # ⚠️ this API wants the child's integer REST id, not its issue number
+              cid=$(gh api "repos/$REPO/issues/$child" --jq .id)
+              if gh api --method POST "repos/$REPO/issues/$epic/sub_issues" -F sub_issue_id="$cid" >/dev/null 2>&1; then
+                echo "#$child -> sub-issue of #$epic"
+              else
+                echo "::warning::could not parent #$child to #$epic"
+              fi
+            fi
+
+            if [ -n "$milestone" ]; then
+              if gh issue edit "$child" --repo "$REPO" --milestone "$milestone" >/dev/null 2>&1; then
+                echo "#$child -> milestone $milestone"
+              else
+                echo "::warning::could not set milestone '$milestone' on #$child"
+              fi
+            fi
+          done
+
       - name: File merged work (deterministic)
         if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
         env:
@@ -842,6 +913,12 @@ jobs:
             echo "Issue #$issue -> Done"
           done
       - uses: anthropics/claude-code-action@v1
+        # ⚠️ SUMMONED ONLY. The automatic pass is handled entirely by the scripted steps
+        # above, so it never starts a model — that pass used to cost ~2.5 min of model time
+        # on every single interaction, almost always to conclude there was nothing to do.
+        if: |
+          contains(github.event.comment.body, '@claude/owner')
+          || contains(github.event.review.body, '@claude/owner')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PROJECTS_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
@@ -864,19 +941,15 @@ jobs:
             project board. No other role touches any of that any more; they create issues,
             code and PRs, and leave the filing to you.
 
-            You get here two ways, and they want different things:
+            **You only run when summoned.** The comment that triggered you contains
+            `@claude/owner`, and it is an instruction from the maintainer — read it and do
+            what it asks. There is no automatic pass any more: routine filing (parenting
+            sub-issues to their epic and putting them on its milestone) is done by a script
+            before you start, from the manifest the Researcher leaves on the epic. So don't
+            redo it, and don't assume it was skipped — check before acting.
 
-            - **Summoned** — the comment that triggered you contains `@claude/owner`. Then
-              that comment is an instruction from the maintainer: do what it asks. This is
-              the main way you are used; treat it as the priority.
-            - **Automatically, after another role ran** — no `@claude/owner` in the comment.
-              Then nobody asked you anything: your job is to tidy up after whatever just
-              happened, quietly and briefly. Look at what changed, file it, and stop. If
-              there is nothing to fix, post nothing at all — an empty "all tidy" comment on
-              every single run is noise the maintainer has to read.
-
-            Work out which case you are in before doing anything, by reading the triggering
-            comment.
+            That also means your work is the part a script can't do: what the maintainer
+            asked for, and anything that looks *wrong* rather than merely unfiled.
 
             **If you were summoned, stamp your label:**
 
@@ -888,9 +961,10 @@ jobs:
 
             **What filing means here.** Only do the ones that actually apply:
 
-            - **Parent sub-issues to their epic.** The Researcher creates sub-issues and
-              deliberately does *not* link them; its index comment on the epic lists them as
-              `#<number> — <title>`. Read that comment, then for each child:
+            - **Parent sub-issues to their epic** — normally already done by the script,
+              from the `<!-- owner-manifest ... -->` block on the epic. Do it by hand only
+              when that manifest is missing or wrong (say so if it is, so the Researcher's
+              prompt can be fixed). For each child:
 
                   gh api repos/$GITHUB_REPOSITORY/issues/<child-number> --jq .id
                   gh api --method POST repos/$GITHUB_REPOSITORY/issues/<epic-number>/sub_issues -F sub_issue_id=<that-id>
@@ -898,7 +972,8 @@ jobs:
               ⚠️ That API wants the child's integer REST id, **not** its issue number. If it
               is unavailable, put a `Part of #<epic>` line in the child body instead and say
               so.
-            - **Propagate the epic's milestone to its sub-issues.** Read the epic's with
+            - **Propagate the epic's milestone to its sub-issues** — again, normally the
+              script's job; do it by hand only if it did not happen. Read the epic's with
               `gh issue view <epic> --json milestone --jq '.milestone.title // empty'` and
               apply it with `gh issue edit <child> --milestone "<title>"`. ⚠️ If the epic has
               no milestone, its children get none either — **never invent or create one**.
