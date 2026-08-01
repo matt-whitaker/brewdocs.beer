@@ -790,11 +790,21 @@ jobs:
           done
 
           if [ -z "${PROJECTS_TOKEN:-}" ]; then
-            echo "::warning::PROJECTS_TOKEN is not set — issues closed, but not moved on the board. Add a classic PAT with the 'project' scope (fine-grained tokens cannot reach user-owned Projects v2)."
+            echo "::warning::PROJECTS_TOKEN is not set — issues closed, but not moved on the board. Add a classic PAT with the 'project' AND 'read:org' scopes (fine-grained tokens cannot reach user-owned Projects v2)."
             exit 0
           fi
 
           export GH_TOKEN="$PROJECTS_TOKEN"
+
+          # ⚠️ Preflight, so a token problem warns instead of failing a merged PR.
+          # `gh project` needs **read:org on top of project**, even for a user-owned
+          # project — that is a second gate, separate from the owner-type probe that
+          # `--owner "@me"` handles, and its raw error ("missing required scopes
+          # [read:org read:discussion]") never mentions which secret is at fault.
+          if ! gh project view "$PROJECT_NUMBER" --owner "$PROJECT_OWNER" --format json --jq '.id' >/dev/null 2>&1; then
+            echo "::warning::PROJECTS_TOKEN cannot reach project $PROJECT_NUMBER — issues were closed, but the board was not updated. \`gh project\` requires the 'read:org' scope in addition to 'project', even for a user-owned project."
+            exit 0
+          fi
 
           project_id=$(gh project view "$PROJECT_NUMBER" --owner "$PROJECT_OWNER" --format json --jq '.id')
           status_field=$(gh project field-list "$PROJECT_NUMBER" --owner "$PROJECT_OWNER" --format json \
