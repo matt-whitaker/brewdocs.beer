@@ -35,3 +35,9 @@ export const saveBatch = async (id: string, batch: Batch) => {
     await queryClient.invalidateQueries({queryKey: batchQueryKey(id)});
     await queryClient.invalidateQueries({queryKey: batchesQueryKey()});
 };
+
+export const deleteBatch = async (id: string) => {
+    await batchesStorage.delete(id);
+    await queryClient.invalidateQueries({queryKey: batchQueryKey(id)});
+    await queryClient.invalidateQueries({queryKey: batchesQueryKey()});
+};

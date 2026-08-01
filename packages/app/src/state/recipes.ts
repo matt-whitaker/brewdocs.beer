@@ -38,6 +38,12 @@ export const saveRecipe = async (id: string, recipe: Recipe) => {
     await queryClient.invalidateQueries({queryKey: recipesQueryKey()});
 };
 
+export const deleteRecipe = async (id: string) => {
+    await recipesStorage.delete(id);
+    await queryClient.invalidateQueries({queryKey: recipeQueryKey(id)});
+    await queryClient.invalidateQueries({queryKey: recipesQueryKey()});
+};
+
 // Merge a slice onto the freshest stored recipe — for a screen that owns only
 // part of the recipe (recipe-edit's brewable, the Details panel's other fields).
 // Doing the merge here, against the current stored value, means a sibling panel
