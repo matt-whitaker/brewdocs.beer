@@ -1,24 +1,14 @@
 import classNames from "classnames";
 import {useMemo} from "react";
 import {PropsWithClass} from "@brewdocs.beer/core";
-import {SRM_TO_HEX} from "./constants";
+import {findSrmClasses} from "./constants";
 
 export type SrmAvatarProps = Partial<PropsWithClass> & {
     srm: number;
 };
 
-function findHexClasses(srm: number) {
-    const match = Array.from(SRM_TO_HEX.entries()).find(([key]) => srm <= key);
-
-    if (match) {
-        return match[1];
-    }
-
-    return SRM_TO_HEX.get(40) as [string, string, string];
-}
-
 export function SrmAvatar({ srm, className }: SrmAvatarProps){
-    const [bg,, outline] = useMemo(() => findHexClasses(srm), [srm]);
+    const [bg,, outline] = useMemo(() => findSrmClasses(srm), [srm]);
 
     // 64 wide 112 tall
     return (
