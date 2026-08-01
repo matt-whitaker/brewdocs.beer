@@ -644,8 +644,9 @@ jobs:
   # Projects v2 at any permission level. ⚠️ It must be a **classic** PAT with the `project`
   # scope: fine-grained tokens cannot reach *user-owned* Projects v2 at all (they only cover
   # organization projects), and project #4 belongs to the user. `project` is the only scope
-  # needed — this repo is public, so reading its PR data needs none. Without the secret this
-  # step warns and exits clean, so a merge never fails over bookkeeping.
+  # needed — this repo is public, so reading its PR data needs none, and PROJECT_OWNER is
+  # `@me` so no `read:org` is needed either. Without the secret this step warns and exits
+  # clean, so a merge never fails over bookkeeping.
   manager_pr_merged:
     if: |
       github.event_name == 'pull_request'
@@ -665,7 +666,12 @@ jobs:
           GH_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
           PR: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
-          PROJECT_OWNER: matt-whitaker
+          # ⚠️ `@me`, not the literal login. `gh project` has to work out whether an
+          # --owner is a user or an organization, and that probe needs `read:org` on
+          # the token — which a `project`-scope-only PAT doesn't have, so a literal
+          # login fails with the unhelpful "unknown owner type". `@me` resolves via
+          # the authenticated viewer and skips the probe entirely.
+          PROJECT_OWNER: "@me"
           PROJECT_NUMBER: "4"
         run: |
           set -euo pipefail
