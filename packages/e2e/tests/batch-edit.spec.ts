@@ -318,3 +318,30 @@ test("keeps a batch note after a reload", async ({page}) => {
 
     await expect(page.getByRole("textbox", {name: "Notes"})).toHaveValue("Fermentation smelled great, slightly fruity.");
 });
+
+/**
+ * The brew timer is a *global* view, so a phase completion has to reach it. Two
+ * separate things have to hold for that, and each failed independently while this
+ * was being built: the completion must record **when** it happened
+ * (`TrackerEntry.date`), and the timer's marker derivation must look at phase
+ * entries at all, not only at milestones. Asserting on the rendered marker covers
+ * both — a missing date and an unread entry are indistinguishable from the UI.
+ */
+test("completing a phase puts a marker on the brew timer's live timeline", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Timer Marker Batch");
+    await openSchedulePhase(page, "1. Mash");
+
+    // markers are placed as an offset from the session start, so the timer has to
+    // be running before the completion for one to exist at all
+    await page.getByRole("button", {name: "Start timer"}).click();
+    await settleSave(page);
+
+    const markers = page.getByRole("button", {name: /at \d\d:\d\d:\d\d$/});
+    await expect(markers).toHaveCount(0);
+    await page.getByRole("button", {name: "Complete 1. Mash"}).click();
+    await page.getByRole("dialog").getByRole("button", {name: "Confirm"}).click();
+    await settleSave(page);
+
+    await expect(markers).toHaveCount(1);
+    await expect(page.getByRole("button", {name: /^1\. Mash at /})).toBeVisible();
+});

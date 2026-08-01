@@ -83,18 +83,34 @@ export default function BatchScheduleBrewTimer({ batch, mutate }: BatchScheduleB
         const startedAt = sessionStart ? new Date(sessionStart).getTime() : NaN;
         if (Number.isNaN(startedAt)) return [];
 
-        return phases.flatMap(phase => phase.milestones.flatMap(milestone => {
-            const recorded = batch.tracker[key({ on: "milestone", id: milestone.id })]?.date;
+        const at = (recorded: string | undefined) => {
             const recordedAt = recorded ? new Date(recorded).getTime() : NaN;
-            if (Number.isNaN(recordedAt)) return [];
+            return Number.isNaN(recordedAt) ? null : Math.round((recordedAt - startedAt) / 1000);
+        };
 
-            return [{
-                id: milestone.id,
-                offsetSeconds: Math.round((recordedAt - startedAt) / 1000),
-                label: milestone.label,
-                kind: quickMilestoneKind(milestone.kind)?.name ?? milestone.kind
+        return phases.flatMap((phase, index) => {
+            const milestoneMarkers = phase.milestones.flatMap(milestone => {
+                const offsetSeconds = at(batch.tracker[key({ on: "milestone", id: milestone.id })]?.date);
+                if (offsetSeconds === null) return [];
+
+                return [{
+                    id: milestone.id,
+                    offsetSeconds,
+                    label: milestone.label,
+                    kind: quickMilestoneKind(milestone.kind)?.name ?? milestone.kind
+                }];
+            });
+
+            const completedAt = at(batch.tracker[key({ on: "phase", id: phase.id })]?.date);
+            if (completedAt === null) return milestoneMarkers;
+
+            return [...milestoneMarkers, {
+                id: `phase:${phase.id}`,
+                offsetSeconds: completedAt,
+                label: phaseLabel(phases, index),
+                kind: "Phase complete"
             }];
-        }));
+        });
     }, [sessionStart, phases, batch.tracker]);
 
     return (
