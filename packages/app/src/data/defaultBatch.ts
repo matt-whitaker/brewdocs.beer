@@ -1,6 +1,5 @@
 import {UNITS} from "@brewdocs.beer/core";
 import Batch from "@/model/batch";
-import Statuses from "@/model/statuses";
 
 /**
  * The out-of-the-box batch fields. A **factory**, not a shared const: a module-level
@@ -24,7 +23,6 @@ const defaultBatch = () => ({
         value: "60min",
         unit: UNITS.MINUTES
     },
-    status: Statuses.PREP,
     actuals: {
         og: {
             value: "0.00°P",
