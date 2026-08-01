@@ -1,5 +1,6 @@
-import {useCallback} from "react";
+import {useCallback, useMemo} from "react";
 import {ScreenH3, ScreenP} from "@brewdocs.beer/design";
+import {currentPhaseIndex} from "@/actions/batchProgress";
 import Screen from "@/component/screen";
 import Batch from "@/model/batch";
 import Brewable from "@/model/brewable";
@@ -20,6 +21,7 @@ export default function BatchPlanning({ batchId, onChange }: BatchPlanningProps)
     const recipe = useRecipeResource(batch.recipeSource ?? "kb", batch.recipeId);
 
     const onChangeBrewable = useCallback((brewable: Brewable) => onChange({ brewable }), [onChange]);
+    const locked = useMemo(() => currentPhaseIndex(batch.brewable.schedule.phases, batch.tracker) > 0, [batch.brewable.schedule.phases, batch.tracker]);
 
     return (
         <Screen>
@@ -32,6 +34,7 @@ export default function BatchPlanning({ batchId, onChange }: BatchPlanningProps)
                 onChangeBrewable={onChangeBrewable}
                 name="batch.planning"
                 defaultTab="Ingredients"
+                locked={locked}
             />
         </Screen>
     );
