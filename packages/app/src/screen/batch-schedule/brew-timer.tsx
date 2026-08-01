@@ -85,7 +85,7 @@ export default function BatchScheduleBrewTimer({ batch, mutate }: BatchScheduleB
 
         const at = (recorded: string | undefined) => {
             const recordedAt = recorded ? new Date(recorded).getTime() : NaN;
-            return Number.isNaN(recordedAt) ? null : Math.round((recordedAt - startedAt) / 1000);
+            return Number.isNaN(recordedAt) ? null : Math.floor((recordedAt - startedAt) / 1000);
         };
 
         return phases.flatMap((phase, index) => {
