@@ -82,6 +82,11 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # ⚠️ track_progress forces the action's TAG MODE, which gates on this phrase
+          # independently of our own `if:`. Leave it at the default "@claude" and the
+          # action skips in 0s with a placeholder comment, because "@claude/manager"
+          # is not a match for "@claude".
+          trigger_phrase: "@claude/manager"
           track_progress: true
           prompt: |
             You are the **Manager** — the product lead who turns a rough, loosely-defined
@@ -90,8 +95,8 @@ jobs:
             role is yours until the maintainer hands it off. The issue holds the rough epic,
             and it is your input.
 
-            ⚠️ You are always triggered by an **`@claude` comment** — labels never start a
-            run, they only say who owns the issue. So read the issue and its comments first
+            ⚠️ You are always triggered by someone writing **`@claude/manager`** in a
+            comment — labels never start a run. So read the issue and its comments first
             and work out where things stand: if the epic is still the maintainer's rough
             description, shape the whole thing; if you've already filled it in, treat the
             newest `@claude` comment as the instruction and adjust exactly what it asks
@@ -187,6 +192,11 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # ⚠️ track_progress forces the action's TAG MODE, which gates on this phrase
+          # independently of our own `if:`. Leave it at the default "@claude" and the
+          # action skips in 0s with a placeholder comment, because "@claude/researcher"
+          # is not a match for "@claude".
+          trigger_phrase: "@claude/researcher"
           track_progress: true
           prompt: |
             You are the **Researcher** — the product owner who takes a well-defined epic,
@@ -196,8 +206,8 @@ jobs:
             hands it off. That issue is the epic, and its **Research path** is your brief.
             Read the epic and its comments first.
 
-            ⚠️ You are always triggered by an **`@claude` comment** — labels never start a
-            run, they only say who owns the issue. So **check what already exists before
+            ⚠️ You are always triggered by someone writing **`@claude/researcher`** in a
+            comment — labels never start a run. So **check what already exists before
             doing anything** (`gh issue view <epic> --comments` and the epic's sub-issue
             list): if there are no sub-issues yet, do the research and create them; if there
             are, treat the newest `@claude` comment as the instruction and answer it or
@@ -345,13 +355,18 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # ⚠️ track_progress forces the action's TAG MODE, which gates on this phrase
+          # independently of our own `if:`. Leave it at the default "@claude" and the
+          # action skips in 0s with a placeholder comment, because "@claude/implementor"
+          # is not a match for "@claude".
+          trigger_phrase: "@claude/implementor"
           track_progress: true
           prompt: |
             You are the **Implementor** — the engineer who executes issues and handles
             follow-up engineering (bug fixes, requested changes, merge-conflict
-            resolution). You are always triggered by an **`@claude` mention** — on a PR
-            comment or review, or on an issue that no other role owns (one labelled
-            `@claude/implementor`, or carrying no role label). Labels never start a run.
+            resolution). You are triggered by someone writing **`@claude/implementor`** in a
+            comment or review, on an issue or a PR. Labels never start a run — they only
+            record which roles have already been here.
 
             ⚠️ An issue's `@claude/*` label says which role owns it, and an `@claude` comment
             goes to that owner — so an issue labelled `@claude/manager` or
@@ -594,12 +609,17 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # ⚠️ track_progress forces the action's TAG MODE, which gates on this phrase
+          # independently of our own `if:`. Leave it at the default "@claude" and the
+          # action skips in 0s with a placeholder comment, because "@claude/tester"
+          # is not a match for "@claude".
+          trigger_phrase: "@claude/tester"
           track_progress: true
           prompt: |
             You are the **Tester** — you own `packages/e2e`, the Playwright suite that
-            drives the real app in a browser. You are triggered by an **`@claude` mention**
-            on an issue or PR labelled `@claude/tester`. Labels never start a run on their
-            own.
+            drives the real app in a browser. You are triggered by someone writing
+            **`@claude/tester`** in a comment, on an issue or a PR. Labels never start a run
+            — they only record which roles have already been here.
 
             Read `packages/e2e/CLAUDE.md` first — it is short and it is the spec for how
             this suite works. The repo-root `CLAUDE.md` covers branch/PR/commit conventions.
@@ -806,7 +826,10 @@ jobs:
           PROJECTS_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          track_progress: true
+          # ⚠️ NO track_progress here, deliberately. It would force tag mode, which fires
+          # only on one trigger phrase — but the Owner has to run after a comment naming
+          # *another* role, and after a merged PR with no comment at all. Without it the
+          # action runs the prompt directly (agent mode) and our `if:` is the only gate.
           prompt: |
             You are the **Owner** — the maintainer's backlog agent. You own how work is
             *filed*: issue links, parent/sub-issue relationships, milestones, labels and the
