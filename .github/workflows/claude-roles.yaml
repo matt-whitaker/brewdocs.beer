@@ -436,6 +436,17 @@ jobs:
             and stays open until the feature is done. Leave it ready for review, not a draft
             — the maintainer reviews it as it fills up, and merges it.
 
+            ⚠️ **Exactly ONE closing keyword in that body: the epic's.** This PR targets
+            `mainline`, the default branch, so *every* closing keyword in it is live — and
+            listing the sub-PRs it collects is the natural thing to write:
+
+                - #356 — Popover primitive · closes #341     ← WRONG, closes the sub-issue
+
+            That links the sub-issue to the **epic's** PR and closes it out from under its
+            own PR. It has already happened once. When you list sub-PRs, refer to their
+            issues with a bare number or "for #341" — never `closes`/`fixes`/`resolves`,
+            in prose, in a table, or in a bullet. Each sub-issue is closed by its own PR.
+
             ⚠️ If you are the very first sub-issue, the branch has no commits of its own yet
             (yours are still in an open PR *into* it), and GitHub refuses with **"No commits
             between mainline and <branch>"**. That is expected, not an error to debug. Give
@@ -897,6 +908,15 @@ jobs:
               `Closes #<issue>` in its body, and GitHub ignores it because the PR targets an
               epic branch rather than the default branch. Comment on that issue naming the
               PR, so a human reading the issue can find the work.
+            - ⚠️ **Check that an epic's integration PR closes only its epic.** That PR
+              targets `mainline`, so every closing keyword in it is live, and a sub-PR index
+              written as "· closes #341" silently attaches the sub-issue to the *epic's* PR:
+
+                  gh pr view <pr> --json closingIssuesReferences
+
+              If anything other than the epic shows up, edit the body to neuter the stray
+              keyword ("closes #341" → "for #341") and say what you changed. A sub-issue is
+              closed by its own PR, never by the epic's.
             - **Keep the board honest.** Issues on project #4 should reflect reality: work
               that has merged belongs in Done. Project commands need the other token —
               prefix them, e.g.
