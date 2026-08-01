@@ -3,8 +3,9 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
+    "build-kb": "npm --prefix ../kb run build",
     "link-kb": "mkdir -p public && ln -sfn ../../kb/dist public/kb",
-    "predev": "npm run link-kb",
+    "predev": "npm run build-kb && npm run link-kb",
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "lint": "eslint .",
