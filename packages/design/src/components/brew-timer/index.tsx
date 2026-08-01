@@ -42,19 +42,21 @@ export function BrewTimer({
 
     return (
         <div className={classNames("rounded-box border border-base-300 bg-base-100 p-3 flex flex-col gap-3", [className])}>
-            <div className="flex items-center gap-3">
-                <button
-                    type="button"
-                    className="btn btn-circle btn-primary btn-sm"
-                    aria-label={isRunning ? "Pause timer" : "Start timer"}
-                    aria-pressed={isRunning}
-                    onClick={onPlayPause}>
-                    {isRunning ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
-                </button>
-                <span role="timer" aria-label="Elapsed time" className="font-mono text-2xl tabular-nums">
-                    {formatElapsed(elapsedSeconds)}
-                </span>
-                <div className="ml-auto flex items-center gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+                <div className="flex items-center gap-3">
+                    <button
+                        type="button"
+                        className="btn btn-circle btn-primary btn-sm"
+                        aria-label={isRunning ? "Pause timer" : "Start timer"}
+                        aria-pressed={isRunning}
+                        onClick={onPlayPause}>
+                        {isRunning ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+                    </button>
+                    <span role="timer" aria-label="Elapsed time" className="font-mono text-lg sm:text-2xl tabular-nums">
+                        {formatElapsed(elapsedSeconds)}
+                    </span>
+                </div>
+                <div className="flex flex-wrap items-center justify-between gap-2 sm:ml-auto sm:justify-end">
                     <div className="join" role="group" aria-label="Timer scope">
                         <button type="button" className="btn btn-xs join-item btn-active" aria-pressed={true}>Global</button>
                         <button type="button" className="btn btn-xs join-item" title="Coming soon" disabled>Phase</button>

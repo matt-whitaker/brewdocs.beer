@@ -128,6 +128,23 @@ export const Markers: Story = {
     }
 };
 
+export const Narrow: Story = {
+    name: "Narrow (mobile width)",
+    args: {isRunning: true, elapsedSeconds: 5460},
+    parameters: {
+        docs: {
+            description: {
+                story: "Constrained to a 360px-wide phone viewport. Below `sm` the controls drop to their own row — the scope toggle to the left, \"Milestone\" to the right — and the counter steps down a size, so nothing bleeds past the edge."
+            }
+        }
+    },
+    render: args => (
+        <div className="w-[360px] max-w-full border border-base-300 border-dashed p-2">
+            <BrewTimer {...args} />
+        </div>
+    )
+};
+
 function QuickMilestoneDemo() {
     const [logged, setLogged] = useState<string[]>([]);
 
