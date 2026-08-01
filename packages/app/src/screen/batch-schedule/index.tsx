@@ -42,6 +42,11 @@ const PRESSURE_UNIT_OPTIONS = [
     { name: "psi", value: UNITS.PSI },
 ];
 
+const TEMPERATURE_UNIT_OPTIONS = [
+    { name: "°F", value: UNITS.FAHRENHEIT },
+    { name: "°C", value: UNITS.CELSIUS },
+];
+
 const PACKAGING_OPTIONS = [
     { name: "Keg", value: "keg" },
     { name: "Bottle", value: "bottle" },
@@ -203,6 +208,19 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                                     headerLabel="Volume"
                                     addLabel="Add volume reading"
                                     defaultLabel="Volume" />
+                                <BatchScheduleReading
+                                    phase={phase}
+                                    phaseIndex={index}
+                                    tracker={data.tracker}
+                                    onPatch={patchTracker}
+                                    update={update}
+                                    add={add}
+                                    remove={remove}
+                                    kind="temperature"
+                                    unitOptions={TEMPERATURE_UNIT_OPTIONS}
+                                    headerLabel="Temperature"
+                                    addLabel="Add temperature reading"
+                                    defaultLabel="Temperature" />
                                 {phase.type === "carbonation" && (
                                     <>
                                         <BatchScheduleReading
