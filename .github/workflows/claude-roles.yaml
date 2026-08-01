@@ -567,7 +567,7 @@ jobs:
           # actor gate). 80-turn budget: each run is a cold container that re-orients before
           # making the change — the prompt's read-for-context note is the real cost control.
           claude_args: |
-            --model sonnet
+            --model opus
             --allowedTools "Edit,Write,Bash(git:*),Bash(gh:*),Bash(npm:*)"
             --max-turns 80
 
