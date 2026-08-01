@@ -1,8 +1,6 @@
 ---
 name: plan-feature-light
 description: Sketch a feature's proposal and research path, and file it as one GitHub issue for a Researcher agent to decompose in-repo.
-# these all create issues, write code or open PRs — the maintainer decides when
-disable-model-invocation: true
 ---
 
 Sketch a feature's big-picture proposal and — the part that matters most — a **research
