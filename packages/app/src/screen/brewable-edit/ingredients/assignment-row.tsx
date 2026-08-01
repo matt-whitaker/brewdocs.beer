@@ -120,24 +120,38 @@ function RecipeEditAssignmentRow({ row, assignment, remove, update, updateScalar
                     </DataGrid>
                 );
             }
-            case "additive":
-                return (
+            case "additive": {
+                const {weight} = assignment.resource;
+                return weight ? (
+                    <DataGrid>
+                        <DataGridRow>
+                            <DataGridLabel tiny className="ml-6">Weight</DataGridLabel>
+                            <DataGridInput
+                                colStart={3}
+                                value={weight.value}
+                                onChange={onChangeWeightValue}
+                                onBlur={onBlurWeight}
+                            />
+                        </DataGridRow>
+                    </DataGrid>
+                ) : (
                     <DataGrid>
                         <DataGridRow>
                             <DataGridLabel tiny className="ml-6">Boil</DataGridLabel>
                             <DataGridInput
                                 colStart={3}
-                                value={assignment.resource.boil.value}
+                                value={assignment.resource.boil?.value ?? ""}
                                 onChange={onChangeBoilValue}
                                 onBlur={onBlurBoil}
                             />
                         </DataGridRow>
                     </DataGrid>
                 );
+            }
             case "grain":
                 return undefined;
         }
-    }, [assignment, row, onChangeAlphaValue, onBlurAlpha, onChangeBoilValue, onBlurBoil, onChangeAttnValue, onBlurAttn, onChangeTempValue, onBlurTemp, onToggleStarter]);
+    }, [assignment, row, onChangeAlphaValue, onBlurAlpha, onChangeBoilValue, onBlurBoil, onChangeWeightValue, onBlurWeight, onChangeAttnValue, onBlurAttn, onChangeTempValue, onBlurTemp, onToggleStarter]);
 
     return (
         <DataGridRow zebra label="assignment details" expandContent={expandContent}>
