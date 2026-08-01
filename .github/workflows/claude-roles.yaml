@@ -2,7 +2,7 @@ name: Claude
 # The history entry names the role that actually ran, so a single "Claude" row is
 # still self-describing. Read off the issue's own labels, since the role is whoever
 # owns the issue; PR reviews have no `issue`, so they fall through to Implementor.
-run-name: "Claude · ${{ github.event_name == 'pull_request' && 'PR housekeeping' || contains(github.event.issue.labels.*.name, '@claude/manager') && 'Manager' || contains(github.event.issue.labels.*.name, '@claude/researcher') && 'Researcher' || contains(github.event.issue.labels.*.name, '@claude/tester') && 'Tester' || 'Implementor' }} #${{ github.event.issue.number || github.event.pull_request.number }}"
+run-name: "Claude · ${{ github.event_name == 'pull_request' && 'PR housekeeping' || contains(github.event.issue.labels.*.name, '@claude/tester') && 'Tester' || (!github.event.issue.pull_request && contains(github.event.issue.labels.*.name, '@claude/manager')) && 'Manager' || (!github.event.issue.pull_request && contains(github.event.issue.labels.*.name, '@claude/researcher')) && 'Researcher' || 'Implementor' }} #${{ github.event.issue.number || github.event.pull_request.number }}"
 
 # FOUR ROLES, ONE WORKFLOW. Manager / Researcher / Implementor / Tester are jobs here
 # rather than separate workflow files to keep the Actions history readable: the role is
@@ -61,6 +61,7 @@ jobs:
       github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]'
       && github.event_name == 'issue_comment'
       && contains(github.event.comment.body, '@claude')
+      && !github.event.issue.pull_request
       && contains(github.event.issue.labels.*.name, '@claude/manager')
     runs-on: ubuntu-latest
     permissions:
@@ -161,6 +162,7 @@ jobs:
       github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]'
       && github.event_name == 'issue_comment'
       && contains(github.event.comment.body, '@claude')
+      && !github.event.issue.pull_request
       && contains(github.event.issue.labels.*.name, '@claude/researcher')
     runs-on: ubuntu-latest
     permissions:
@@ -314,9 +316,10 @@ jobs:
           && !contains(github.event.pull_request.labels.*.name, '@claude/tester')) ||
         (github.event_name == 'issue_comment'
           && contains(github.event.comment.body, '@claude')
-          && !contains(github.event.issue.labels.*.name, '@claude/manager')
-          && !contains(github.event.issue.labels.*.name, '@claude/researcher')
-          && !contains(github.event.issue.labels.*.name, '@claude/tester'))
+          && !contains(github.event.issue.labels.*.name, '@claude/tester')
+          && (github.event.issue.pull_request
+            || (!contains(github.event.issue.labels.*.name, '@claude/manager')
+              && !contains(github.event.issue.labels.*.name, '@claude/researcher'))))
       )
     runs-on: ubuntu-latest
     permissions:
