@@ -1,3 +1,10 @@
+---
+name: implement-feature
+description: Take a single well-scoped task end to end: research it, file a tracking issue, cut a branch, implement, and open a PR.
+# these all create issues, write code or open PRs — the maintainer decides when
+disable-model-invocation: true
+---
+
 Take a single, well-scoped task end to end: research it, file a tracking issue with a short
 plan, cut a feature branch **linked to that issue**, implement it, verify the gate, commit, push,
 and open a PR that closes the issue — then add both to the BrewDocs project. Stops **before**
