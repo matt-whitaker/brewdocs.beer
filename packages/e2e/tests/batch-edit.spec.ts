@@ -231,6 +231,45 @@ test("a second phase of the same type gets its own tab and its own ingredients",
     await expect(page.getByLabel("Cascade weight")).toHaveCount(0);
 });
 
+test("adds a water sample on the Mash phase and persists bundled parameters", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Water Batch");
+    await openSchedulePhase(page, "1. Mash");
+
+    await page.getByRole("button", {name: "Add water sample"}).click();
+    await page.getByRole("button", {name: "Show Water Sample parameters"}).click();
+
+    // recording Sulfate must not clobber Calcium recorded a moment earlier —
+    // the one-level-deep merge putEntry gives TrackerEntry.water
+    const calcium = page.getByLabel("Water Sample Calcium");
+    await calcium.fill("50");
+    await calcium.blur();
+
+    const sulfate = page.getByLabel("Water Sample Sulfate");
+    await sulfate.fill("100");
+    await sulfate.blur();
+
+    await settleSave(page);
+    await page.reload();
+    await openSchedulePhase(page, "1. Mash");
+    await page.getByRole("button", {name: "Show Water Sample parameters"}).click();
+
+    await expect(page.getByLabel("Water Sample Calcium")).toHaveValue(/50ppm/);
+    await expect(page.getByLabel("Water Sample Sulfate")).toHaveValue(/100ppm/);
+});
+
+test("keeps Water Chemistry scoped to the Mash phase", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Water Gating Batch");
+
+    await openSchedulePhase(page, "1. Mash");
+    await expect(page.getByRole("button", {name: "Water Chemistry"})).toBeVisible();
+
+    await openSchedulePhase(page, "2. Boil");
+    await expect(page.getByRole("button", {name: "Water Chemistry"})).toHaveCount(0);
+
+    await openSchedulePhase(page, "3. Ferment");
+    await expect(page.getByRole("button", {name: "Water Chemistry"})).toHaveCount(0);
+});
+
 test("keeps a batch note after a reload", async ({page}) => {
     await brewBatchFromKbRecipe(page, "E2E Notes Batch");
     // Notes is the Brewing tab strip's last entry, alongside the phase tabs
