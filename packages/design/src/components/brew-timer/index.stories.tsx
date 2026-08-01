@@ -25,6 +25,14 @@ const MARKERS: BrewTimerMarker[] = [
     {id: "flame-out", offsetSeconds: 9000, label: "Flame out", kind: "temperature"}
 ];
 
+const CROWDED_MARKERS: BrewTimerMarker[] = [
+    {id: "boil-start", offsetSeconds: 5400, label: "Boil start", kind: "temperature"},
+    {id: "hop-60", offsetSeconds: 5406, label: "Bittering hops", kind: "note"},
+    {id: "whirlfloc", offsetSeconds: 5412, label: "Whirlfloc", kind: "note"},
+    {id: "hop-15", offsetSeconds: 5418, label: "Flavour hops", kind: "note"},
+    {id: "flame-out", offsetSeconds: 5424, label: "Flame out", kind: "temperature"}
+];
+
 const meta: Meta<typeof BrewTimer> = {
     title: "Data/BrewTimer",
     component: BrewTimer,
@@ -70,9 +78,9 @@ const TICK_MS = 1000;
 const SECONDS_PER_TICK = 60;
 const MAX_SECONDS = 10800;
 
-function TickingDemo() {
+function TickingDemo({markers = MARKERS, startSeconds = 1200}: {markers?: BrewTimerMarker[]; startSeconds?: number}) {
     const [isRunning, setIsRunning] = useState(true);
-    const [elapsedSeconds, setElapsedSeconds] = useState(1200);
+    const [elapsedSeconds, setElapsedSeconds] = useState(startSeconds);
 
     useEffect(() => {
         if (!isRunning) {
@@ -90,7 +98,7 @@ function TickingDemo() {
             <BrewTimer
                 isRunning={isRunning}
                 elapsedSeconds={elapsedSeconds}
-                markers={MARKERS}
+                markers={markers}
                 markerTransitionMs={TICK_MS}
                 milestoneKindOptions={MILESTONE_KIND_OPTIONS}
                 phaseOptions={PHASE_OPTIONS}
@@ -126,6 +134,30 @@ export const Markers: Story = {
             }
         }
     }
+};
+
+export const Crowded: Story = {
+    name: "Crowded markers (overlapping hit targets)",
+    args: {isRunning: false, elapsedSeconds: 5424, markers: CROWDED_MARKERS},
+    parameters: {
+        docs: {
+            description: {
+                story: "Five markers six seconds apart, so their 24×24 hit targets overlap heavily while the visible dots stay 10px. Hovering anywhere in the cluster opens exactly one popover — the later marker wins, because hit targets stack in ascending offset order and the open one is raised above the rest. Sweeping left to right walks the cluster one popover at a time."
+            }
+        }
+    }
+};
+
+export const CrowdedTicking: Story = {
+    name: "Crowded markers, running",
+    parameters: {
+        docs: {
+            description: {
+                story: "The same cluster on a running clock, where the markers are also drifting left every tick. The popover holds for 150ms after the pointer leaves, so a marker sliding out from under a stationary cursor no longer dismisses its own popover mid-read."
+            }
+        }
+    },
+    render: () => <TickingDemo markers={CROWDED_MARKERS} startSeconds={5424} />
 };
 
 export const Narrow: Story = {
