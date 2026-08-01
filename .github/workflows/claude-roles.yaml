@@ -383,12 +383,32 @@ jobs:
             the pull request yourself — do not stop at pushing a branch and returning a PR
             link.
 
-            ⚠️ **Target the issue's stated base branch.** If the issue names a **Base
-            branch** (sub-issues of an epic do — they land on the epic's integration branch,
-            not `mainline`), branch off *that* and open the PR against it:
-            `gh pr create --base <branch> --head <your-branch>`. Only default to `mainline`
-            when the issue names no base branch. Getting this wrong bypasses the epic branch
-            and scatters a feature across unrelated PRs.
+            ⚠️ **Cut your branch FROM the issue's stated base branch.** If the issue names a
+            **Base branch** (sub-issues of an epic do — they land on the epic's integration
+            branch, not `mainline`), it governs two separate things, and getting only the
+            second one right is the common failure:
+
+            1. **Where your branch starts.** The workflow checks out **`mainline`**, so you
+               begin on the wrong branch every time. Move off it explicitly, before you
+               write any code — one command per Bash call:
+
+                   git fetch origin <base-branch>
+                   git checkout -B <your-branch> origin/<base-branch>
+
+            2. **Where the PR points**: `gh pr create --base <branch> --head <your-branch>`.
+
+            Do (2) without (1) and the PR *looks* right while its branch was cut from
+            `mainline`, so the diff carries every mainline change made since the epic branch
+            was cut — other epics' features included. Only default to `mainline` when the
+            issue names no base branch.
+
+            ⚠️ **Check your own diff before you open the PR.** Run:
+
+                git log --oneline origin/<base-branch>..HEAD
+
+            It must list **only your own commits**. If it shows commits you didn't write,
+            you branched from the wrong place — re-cut from `origin/<base-branch>` and
+            reapply your work rather than opening the PR anyway.
 
             ⚠️ **Then open the epic's integration PR if nobody has yet.** Whichever
             Implementor gets there first opens it, so it exists from the start of the epic

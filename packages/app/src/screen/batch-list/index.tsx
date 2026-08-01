@@ -1,12 +1,10 @@
-import {Link} from "@tanstack/react-router";
 import {useCallback, useMemo, useState} from "react";
-import {ScreenH2, ScreenP} from "@brewdocs.beer/design";
 import Screen from "@/component/screen";
 import SearchBar from "@/component/search-bar";
 import useIndexBy from "@/hooks/useIndexBy";
 import Batch from "@/model/batch";
-import {statuses} from "@/model/statuses";
-import {useBatches} from "@/state/batches";
+import BatchListItem from "@/screen/batch-list/item";
+import {deleteBatch, useBatches} from "@/state/batches";
 import {useKbRecipes} from "@/state/kbRecipes";
 import {useRecipes} from "@/state/recipes";
 
@@ -32,14 +30,13 @@ export default function BatchList({ filter }: BatchListProps) {
     }, [batches, recipeFor, query]);
 
     const batchList = useMemo(() => shownBatches.map((batch) => (
-        <li key={batch.id} className="odd:bg-base-200">
-            <Link to="/batch/$batchId" params={{batchId: batch.id}} className="text-left block">
-                <ScreenH2 className="text-lg">{recipeFor(batch)?.name || ""}</ScreenH2>
-                <ScreenP>{batch.name || ""}</ScreenP>
-                <ScreenP>by {batch.brewer || recipeFor(batch)?.brewer || ""}</ScreenP>
-                <ScreenP>Status: {statuses[batch.status]}</ScreenP>
-            </Link>
-        </li>
+        <BatchListItem
+            key={batch.id}
+            batch={batch}
+            recipeName={recipeFor(batch)?.name || ""}
+            brewer={batch.brewer || recipeFor(batch)?.brewer || ""}
+            onDelete={() => deleteBatch(batch.id)}
+        />
     )), [shownBatches, recipeFor]);
     return (
         <Screen>
