@@ -48,7 +48,7 @@ export default function PanelSwitcher({ name, defaultTab, children, className, c
             ref={tablistRef}
             role="tablist"
             className={compact
-                ? "tabs tabs-box tabs-sm w-auto flex-nowrap overflow-x-auto no-scrollbar snap-x snap-proximity"
+                ? "tabs tabs-box tabs-sm w-auto flex-nowrap overflow-x-auto no-scrollbar snap-x snap-proximity scroll-px-1"
                 : classNames("tabs tabs-box", actions ? "w-full" : "mx-2 w-auto")}>
             {panels.map(({ props: { title, label, titleAlt, children: content } }) => (
                 <button
