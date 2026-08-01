@@ -37,6 +37,10 @@ export type ResourceActuals = Partial<Omit<Grain & Hop & Yeast & Additive, "name
 /** the `ResourceActuals` fields holding a `Scalar` — the ones a schedule column can edit (`starter` is a boolean) */
 export type ResourceScalarField = Exclude<keyof ResourceActuals, "starter">;
 
+export type WaterParameter = "ph" | "calcium" | "magnesium" | "sodium" | "sulfate" | "chloride" | "bicarbonate";
+
+export type WaterReadings = Partial<Record<WaterParameter, Scalar>>;
+
 export type TrackerEntry = {
     completed?: boolean;
     /**
@@ -48,6 +52,7 @@ export type TrackerEntry = {
     resource?: ResourceActuals;
     /** milestone — the gravity value read (a milestone has no resource to mirror) */
     reading?: Scalar;
+    water?: WaterReadings;
 };
 
 export const key = (ref: Ref): string => {

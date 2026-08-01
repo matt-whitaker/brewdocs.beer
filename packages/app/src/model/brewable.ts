@@ -11,7 +11,7 @@ export type PhaseType = "mash" | "boil" | "ferment" | "carbonation" | "condition
 export type ResourceType = "grain" | "hop" | "yeast" | "additive";
 
 /** the kind of reading a phase's milestone captures */
-export type MilestoneKind = "gravity" | "volume" | "temperature" | "pressure" | "kegDate" | "bottleDate";
+export type MilestoneKind = "gravity" | "volume" | "temperature" | "pressure" | "kegDate" | "bottleDate" | "water";
 
 /**
  * A reading the brewer plans to take during a phase — *plan* config, not the
