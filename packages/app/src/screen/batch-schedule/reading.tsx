@@ -1,5 +1,5 @@
 import {memo, useCallback} from "react";
-import {Unit, UNITS} from "@brewdocs.beer/core";
+import {Unit} from "@brewdocs.beer/core";
 import DataGrid from "@/component/data-grid";
 import DataGridAddButton from "@/component/data-grid/add-button";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
@@ -9,19 +9,14 @@ import DataGridRemoveButton from "@/component/data-grid/remove-button";
 import DataGridRow from "@/component/data-grid/row";
 import DataGridSelect from "@/component/data-grid/select";
 import {AddFn, RemoveFn, UpdateFn} from "@/hooks/useJsonEdit";
-import {BrewablePhase, Milestone} from "@/model/brewable";
+import {BrewablePhase, Milestone, MilestoneKind} from "@/model/brewable";
 import {key, Ref, TrackerEntry} from "@/model/tracker";
 import {scalarFromNumberWithUnit} from "@/utils/formatting";
 import {newId} from "@/utils/id";
 
-const READING_UNIT_OPTIONS = [
-    { name: "°P", value: UNITS.PLATO },
-    { name: "SG", value: UNITS.SPECIFIC_GRAVITY },
-];
-
 const refOf = (milestoneId: string): Ref => ({ on: "milestone", id: milestoneId });
 
-type BatchScheduleGravityItemProps = {
+type BatchScheduleReadingItemProps = {
     phaseIndex: number;
     row: number;
     milestone: Milestone;
@@ -29,12 +24,14 @@ type BatchScheduleGravityItemProps = {
     onPatch: (ref: Ref, patch: TrackerEntry) => void;
     update: UpdateFn;
     remove: RemoveFn;
+    unitOptions: {name: string; value: Unit}[];
+    defaultUnit: Unit;
 };
 
-function BatchScheduleGravityItem({ phaseIndex, row, milestone, entry, onPatch, update, remove }: BatchScheduleGravityItemProps) {
+function BatchScheduleReadingItem({ phaseIndex, row, milestone, entry, onPatch, update, remove, unitOptions, defaultUnit }: BatchScheduleReadingItemProps) {
     // reading unit defaults to the entry's own existing unit, like updateScalar's
-    // prev.unit fallback — only a brand-new reading falls back to Plato
-    const unit = entry?.reading?.unit ?? UNITS.PLATO;
+    // prev.unit fallback — only a brand-new reading falls back to defaultUnit
+    const unit = entry?.reading?.unit ?? defaultUnit;
 
     const onChangeLabel = useCallback((next: string) => update(`brewable.schedule.phases[${phaseIndex}].milestones[${row}].label`, next), [update, phaseIndex, row]);
     const onRemove = useCallback(() => remove(`brewable.schedule.phases[${phaseIndex}].milestones`, row), [remove, phaseIndex, row]);
@@ -68,7 +65,7 @@ function BatchScheduleGravityItem({ phaseIndex, row, milestone, entry, onPatch, 
         >
             <DataGridRemoveButton onClick={onRemove} />
             <DataGridInput label={`${milestone.label} name`} className="ml-6" cols={3} value={milestone.label} onChange={onChangeLabel} />
-            <DataGridSelect cols={1} data={READING_UNIT_OPTIONS} value={unit} onChange={onChangeUnit} />
+            <DataGridSelect cols={1} data={unitOptions} value={unit} onChange={onChangeUnit} />
             <DataGridInput label={`${milestone.label} reading`} colStart={3} value={entry?.reading?.value ?? ""} onChange={onChangeReading} onBlur={onBlurReading} />
         </DataGridRow>
     );
@@ -76,9 +73,9 @@ function BatchScheduleGravityItem({ phaseIndex, row, milestone, entry, onPatch, 
 
 // props are primitives plus a stable onPatch/update/remove, so editing one
 // reading doesn't re-render the rest — same reasoning as the equipment list
-const Item = memo(BatchScheduleGravityItem);
+const Item = memo(BatchScheduleReadingItem);
 
-export type BatchScheduleGravityProps = {
+export type BatchScheduleReadingProps = {
     phase: BrewablePhase;
     phaseIndex: number;
     tracker: Record<string, TrackerEntry>;
@@ -86,23 +83,30 @@ export type BatchScheduleGravityProps = {
     update: UpdateFn;
     add: AddFn;
     remove: RemoveFn;
+    kind: MilestoneKind;
+    unitOptions: {name: string; value: Unit}[];
+    headerLabel: string;
+    addLabel: string;
 };
 
 /**
- * Editable gravity readings for a phase, one row per `phase.milestones[]`
- * entry, each keyed to a `{on:"milestone", id}` entry in
- * `batch.tracker`. Its own DataGrid so the collapse rule scopes to these
- * rows, like Equipment. Renders on every phase tab, including an empty one —
- * the brewer adds the first reading from here.
+ * Editable readings for a phase, one row per `phase.milestones[]` entry of
+ * `kind`, each keyed to a `{on:"milestone", id}` entry in `batch.tracker`.
+ * Its own DataGrid so the collapse rule scopes to these rows, like Equipment.
+ * Renders on every phase tab, including an empty one — the brewer adds the
+ * first reading from here.
  */
-export default function BatchScheduleGravity({ phase, phaseIndex, tracker, onPatch, update, add, remove }: BatchScheduleGravityProps) {
+export default function BatchScheduleReading({ phase, phaseIndex, tracker, onPatch, update, add, remove, kind, unitOptions, headerLabel, addLabel }: BatchScheduleReadingProps) {
+    const defaultUnit = unitOptions[0].value;
+
     const onAdd = useCallback(() => {
-        add(`brewable.schedule.phases[${phaseIndex}].milestones`, { id: newId(), label: "Reading", kind: "gravity" });
-    }, [add, phaseIndex]);
+        const milestone: Milestone = { id: newId(), label: "Reading", kind };
+        add(`brewable.schedule.phases[${phaseIndex}].milestones`, milestone);
+    }, [add, phaseIndex, kind]);
 
     return (
         <DataGrid>
-            <DataGridHeaderRow collapsible>Gravity</DataGridHeaderRow>
+            <DataGridHeaderRow collapsible>{headerLabel}</DataGridHeaderRow>
             {phase.milestones.map((milestone, row) => (
                 <Item
                     key={milestone.id}
@@ -112,11 +116,13 @@ export default function BatchScheduleGravity({ phase, phaseIndex, tracker, onPat
                     entry={tracker[key(refOf(milestone.id))]}
                     onPatch={onPatch}
                     update={update}
-                    remove={remove} />
+                    remove={remove}
+                    unitOptions={unitOptions}
+                    defaultUnit={defaultUnit} />
             ))}
             <DataGridRow zebra reserveExpand>
-                <DataGridAddButton label="Add reading" onClick={onAdd} />
-                <DataGridLabel className="ml-6" cols={4}>Add reading</DataGridLabel>
+                <DataGridAddButton label={addLabel} onClick={onAdd} />
+                <DataGridLabel className="ml-6" cols={4}>{addLabel}</DataGridLabel>
             </DataGridRow>
         </DataGrid>
     );
