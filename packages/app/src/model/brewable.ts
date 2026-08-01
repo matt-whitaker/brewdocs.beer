@@ -10,8 +10,8 @@ export type PhaseType = "mash" | "boil" | "ferment";
 /** which element model an Assignment's `resource` narrows to */
 export type ResourceType = "grain" | "hop" | "yeast" | "additive";
 
-/** the kind of reading a phase's milestone captures — only gravity today */
-export type MilestoneKind = "gravity";
+/** the kind of reading a phase's milestone captures */
+export type MilestoneKind = "gravity" | "volume";
 
 /**
  * A reading the brewer plans to take during a phase — *plan* config, not the

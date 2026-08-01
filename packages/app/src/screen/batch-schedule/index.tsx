@@ -1,4 +1,5 @@
 import {useCallback, useMemo} from "react";
+import {UNITS} from "@brewdocs.beer/core";
 import deriveSchedule from "@/actions/deriveSchedule";
 import {putEntry} from "@/actions/tracker";
 import DataGrid from "@/component/data-grid";
@@ -16,12 +17,25 @@ import {phaseLabel} from "@/model/brewable";
 import {statuses} from "@/model/statuses";
 import {key, Ref, TrackerEntry} from "@/model/tracker";
 import BatchScheduleEquipment from "@/screen/batch-schedule/equipment";
-import BatchScheduleGravity from "@/screen/batch-schedule/gravity";
 import ScheduleItemRow from "@/screen/batch-schedule/item-row";
+import BatchScheduleReading from "@/screen/batch-schedule/reading";
 import {useBatch} from "@/state/batches";
 import {saveSession, useSession} from "@/state/session";
 
 const STATUS_OPTIONS = Object.entries(statuses).map(([value, name]) => ({name, value}));
+
+const GRAVITY_UNIT_OPTIONS = [
+    { name: "°P", value: UNITS.PLATO },
+    { name: "SG", value: UNITS.SPECIFIC_GRAVITY },
+];
+
+const VOLUME_UNIT_OPTIONS = [
+    { name: "gal", value: UNITS.GALLONS },
+    { name: "qt", value: UNITS.QUARTS },
+    { name: "pt", value: UNITS.PINTS },
+    { name: "L", value: UNITS.LITERS },
+    { name: "mL", value: UNITS.MILLILITERS },
+];
 
 const KIND_LABELS: Record<ScheduleKind, string> = {
     grains: "Grains",
@@ -141,14 +155,32 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                                     </DataGrid>
                                 ))}
                                 {/* readings come after the work — the wort's measured as the phase ends */}
-                                <BatchScheduleGravity
+                                <BatchScheduleReading
                                     phase={phase}
                                     phaseIndex={index}
                                     tracker={data.tracker}
                                     onPatch={patchTracker}
                                     update={update}
                                     add={add}
-                                    remove={remove} />
+                                    remove={remove}
+                                    kind="gravity"
+                                    unitOptions={GRAVITY_UNIT_OPTIONS}
+                                    headerLabel="Gravity"
+                                    addLabel="Add reading"
+                                    defaultLabel="Reading" />
+                                <BatchScheduleReading
+                                    phase={phase}
+                                    phaseIndex={index}
+                                    tracker={data.tracker}
+                                    onPatch={patchTracker}
+                                    update={update}
+                                    add={add}
+                                    remove={remove}
+                                    kind="volume"
+                                    unitOptions={VOLUME_UNIT_OPTIONS}
+                                    headerLabel="Volume"
+                                    addLabel="Add volume reading"
+                                    defaultLabel="Volume" />
                             </div>
                         ) : null}
                     </PanelSwitcherContent>
