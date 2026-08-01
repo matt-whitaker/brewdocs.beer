@@ -42,6 +42,11 @@ const PRESSURE_UNIT_OPTIONS = [
     { name: "psi", value: UNITS.PSI },
 ];
 
+const PACKAGING_OPTIONS = [
+    { name: "Keg", value: "keg" },
+    { name: "Bottle", value: "bottle" },
+];
+
 const KIND_LABELS: Record<ScheduleKind, string> = {
     grains: "Grains",
     hops: "Hops",
@@ -61,6 +66,7 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
 
     const updateStatus = useCallback((value: string) => update("status", Number(value)), [update]);
     const updateDate = useCallback((value: string) => update("brewDate", value), [update]);
+    const updatePackaging = useCallback((value: string) => update("packaging", value || undefined), [update]);
     const updateNotes = useCallback((value: string) => update("notes.notes", value), [update]);
 
     // tracker writes can't go through useJsonEdit's dot-path (a key like
@@ -123,6 +129,16 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                         <DataGridRow>
                             <DataGridLabel cols={3}>Brewed on</DataGridLabel>
                             <DataGridInput cols={3} type="date" value={data.brewDate} onChange={updateDate} />
+                        </DataGridRow>
+                        <DataGridRow>
+                            <DataGridLabel cols={3}>Packaging</DataGridLabel>
+                            <DataGridSelect
+                                cols={3}
+                                label="Packaging"
+                                allowNull
+                                data={PACKAGING_OPTIONS}
+                                value={data.packaging ?? null}
+                                onChange={updatePackaging} />
                         </DataGridRow>
                     </DataGrid>
                 </PanelSwitcherContent>

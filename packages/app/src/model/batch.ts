@@ -44,6 +44,7 @@ export interface BatchNotes {
 export default interface Batch extends Entity {
     name: string;
     brewDate: string;
+    packaging?: "keg" | "bottle";
     recipeId: string;
     recipeSource?: RecipeSource;
     status: Statuses;
