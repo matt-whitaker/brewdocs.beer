@@ -138,6 +138,7 @@ useKbX() → IndexedDB hit? return it
 - ⚠️ Some DaisyUI behaviors are compound selectors keyed to **literal class names** (e.g. `.collapse`'s arrow needs the literal `collapse-arrow`) — applying them only via responsive variants (`max-lg:collapse-arrow`) silently breaks them.
 - ⚠️ Don't add a `tabIndex` to a `.collapse` element — it force-opens via `:focus-within` in v5.
 **Gotchas.** Tailwind utilities override DaisyUI component styles (cascade layers), so `checked:bg-primary` etc. on components is the intended customization mechanism.
+- ⚠️ `.no-scrollbar` (unlayered, bottom of `styles.css`) hides a scrollbar without hiding the overflow — Tailwind ships no utility for it. It exists for the **compact** PanelSwitcher tab bar, which is a single scrolling row: a visible horizontal scrollbar inside a 40px bar costs more than it explains. ⚠️ DaisyUI's `.tabs` is `flex-wrap: wrap`, so that bar *wrapped* rather than overflowing until `flex-nowrap` was added — measured at 390px, it went to two rows and 72px at five phases. The scroll only works with all three together (`flex-nowrap` + `overflow-x-auto` + `.no-scrollbar`), and PanelSwitcher's effect centring the active tab is what keeps a scrolled-away tab reachable.
 **Example.** The unlayered `--radius-selector` override at the bottom of `styles.css`. `packages/www/src/styles/global.css` is the minimal working example of the shared-tokens stack; `packages/app/src/styles.css` is the maximal one (adds its own app-only tokens on top).
 
 ## kb serving during dev/build
