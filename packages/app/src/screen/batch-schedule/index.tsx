@@ -1,5 +1,4 @@
 import {useCallback, useMemo} from "react";
-import {UNITS} from "@brewdocs.beer/core";
 import {Textarea} from "@brewdocs.beer/design";
 import {currentPhaseIndex} from "@/actions/batchProgress";
 import deriveSchedule from "@/actions/deriveSchedule";
@@ -22,31 +21,10 @@ import BatchScheduleCompletePhase from "@/screen/batch-schedule/complete-phase";
 import BatchScheduleEquipment from "@/screen/batch-schedule/equipment";
 import ScheduleItemRow from "@/screen/batch-schedule/item-row";
 import BatchScheduleReading from "@/screen/batch-schedule/reading";
+import {readingKindsForPhase} from "@/screen/batch-schedule/reading-kinds";
 import BatchScheduleWaterReading from "@/screen/batch-schedule/water-reading";
 import {useBatch} from "@/state/batches";
 import {saveSession, useSession} from "@/state/session";
-
-const GRAVITY_UNIT_OPTIONS = [
-    { name: "°P", value: UNITS.PLATO },
-    { name: "SG", value: UNITS.SPECIFIC_GRAVITY },
-];
-
-const VOLUME_UNIT_OPTIONS = [
-    { name: "gal", value: UNITS.GALLONS },
-    { name: "qt", value: UNITS.QUARTS },
-    { name: "pt", value: UNITS.PINTS },
-    { name: "L", value: UNITS.LITERS },
-    { name: "mL", value: UNITS.MILLILITERS },
-];
-
-const PRESSURE_UNIT_OPTIONS = [
-    { name: "psi", value: UNITS.PSI },
-];
-
-const TEMPERATURE_UNIT_OPTIONS = [
-    { name: "°F", value: UNITS.FAHRENHEIT },
-    { name: "°C", value: UNITS.CELSIUS },
-];
 
 const PACKAGING_OPTIONS = [
     { name: "Keg", value: "keg" },
@@ -196,61 +174,10 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                                                 </DataGrid>
                                             ))}
                                             {/* readings come after the work — the wort's measured as the phase ends */}
-                                            <BatchScheduleReading
-                                                phase={phase}
-                                                phaseIndex={index}
-                                                tracker={data.tracker}
-                                                onPatch={patchTracker}
-                                                update={update}
-                                                add={add}
-                                                remove={remove}
-                                                kind="gravity"
-                                                unitOptions={GRAVITY_UNIT_OPTIONS}
-                                                headerLabel="Gravity"
-                                                addLabel="Add reading"
-                                                defaultLabel="Reading" />
-                                            <BatchScheduleReading
-                                                phase={phase}
-                                                phaseIndex={index}
-                                                tracker={data.tracker}
-                                                onPatch={patchTracker}
-                                                update={update}
-                                                add={add}
-                                                remove={remove}
-                                                kind="volume"
-                                                unitOptions={VOLUME_UNIT_OPTIONS}
-                                                headerLabel="Volume"
-                                                addLabel="Add volume reading"
-                                                defaultLabel="Volume" />
-                                            <BatchScheduleReading
-                                                phase={phase}
-                                                phaseIndex={index}
-                                                tracker={data.tracker}
-                                                onPatch={patchTracker}
-                                                update={update}
-                                                add={add}
-                                                remove={remove}
-                                                kind="temperature"
-                                                unitOptions={TEMPERATURE_UNIT_OPTIONS}
-                                                headerLabel="Temperature"
-                                                addLabel="Add temperature reading"
-                                                defaultLabel="Temperature" />
-                                            {phase.type === "mash" && (
-                                                <BatchScheduleWaterReading
-                                                    phase={phase}
-                                                    phaseIndex={index}
-                                                    tracker={data.tracker}
-                                                    onPatch={patchTracker}
-                                                    update={update}
-                                                    add={add}
-                                                    remove={remove}
-                                                    headerLabel="Water Chemistry"
-                                                    addLabel="Add water sample"
-                                                    defaultLabel="Water Sample" />
-                                            )}
-                                            {phase.type === "carbonation" && (
-                                                <>
-                                                    <BatchScheduleReading
+                                            {readingKindsForPhase(phase.type).map(({ kind, primary, headerLabel, addLabel, defaultLabel, unitOptions }) => (
+                                                primary === "waterParameter" ? (
+                                                    <BatchScheduleWaterReading
+                                                        key={kind}
                                                         phase={phase}
                                                         phaseIndex={index}
                                                         tracker={data.tracker}
@@ -258,12 +185,12 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                                                         update={update}
                                                         add={add}
                                                         remove={remove}
-                                                        kind="pressure"
-                                                        unitOptions={PRESSURE_UNIT_OPTIONS}
-                                                        headerLabel="Pressure"
-                                                        addLabel="Add pressure reading"
-                                                        defaultLabel="Pressure" />
+                                                        headerLabel={headerLabel}
+                                                        addLabel={addLabel}
+                                                        defaultLabel={defaultLabel} />
+                                                ) : (
                                                     <BatchScheduleReading
+                                                        key={kind}
                                                         phase={phase}
                                                         phaseIndex={index}
                                                         tracker={data.tracker}
@@ -271,28 +198,14 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                                                         update={update}
                                                         add={add}
                                                         remove={remove}
-                                                        kind="kegDate"
-                                                        headerLabel="Keg date"
-                                                        addLabel="Add keg date"
-                                                        defaultLabel="Keg date"
-                                                        dateOnly />
-                                                </>
-                                            )}
-                                            {phase.type === "conditioning" && (
-                                                <BatchScheduleReading
-                                                    phase={phase}
-                                                    phaseIndex={index}
-                                                    tracker={data.tracker}
-                                                    onPatch={patchTracker}
-                                                    update={update}
-                                                    add={add}
-                                                    remove={remove}
-                                                    kind="bottleDate"
-                                                    headerLabel="Bottle date"
-                                                    addLabel="Add bottle date"
-                                                    defaultLabel="Bottle date"
-                                                    dateOnly />
-                                            )}
+                                                        kind={kind}
+                                                        unitOptions={unitOptions}
+                                                        headerLabel={headerLabel}
+                                                        addLabel={addLabel}
+                                                        defaultLabel={defaultLabel}
+                                                        dateOnly={primary === "date"} />
+                                                )
+                                            ))}
                                         </>
                                     ) : null}
                                 </div>
