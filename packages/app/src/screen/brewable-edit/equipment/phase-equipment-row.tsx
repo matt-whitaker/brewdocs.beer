@@ -21,7 +21,10 @@ export type RecipeEditPhaseEquipmentRowProps = {
 };
 
 function RecipeEditPhaseEquipmentRow({ phase, row, item, remove, update, equipment, equipmentIndex }: RecipeEditPhaseEquipmentRowProps) {
-    const equipmentOptions = useMemo(() => equipment.map((({ name }) => ({ value: name, name }))), [equipment]);
+    const equipmentOptions = useMemo(() => {
+        const options = equipment.map((({ name }) => ({ value: name, name })));
+        return equipmentIndex.has(item.name) ? options : [{ value: item.name, name: item.name }, ...options];
+    }, [equipment, equipmentIndex, item.name]);
     const path = `schedule.phases[${phase}].equipment`;
 
     // free-text draft for the use[] field, committed to the array on blur —
@@ -32,9 +35,11 @@ function RecipeEditPhaseEquipmentRow({ phase, row, item, remove, update, equipme
 
     const onRemoveItem = useCallback(() => remove(path, row), [remove, path, row]);
     const onChangeItem = useCallback((value: string) => {
-        const catalogItem = equipmentIndex.get(value)!;
-        update(`${path}[${row}]`, { name: catalogItem.name, use: catalogItem.use, count: catalogItem.count });
-    }, [update, path, row, equipmentIndex]);
+        const catalogItem = equipmentIndex.get(value);
+        update(`${path}[${row}]`, catalogItem
+            ? { name: catalogItem.name, use: catalogItem.use, count: catalogItem.count }
+            : { name: value, use: item.use, count: item.count });
+    }, [update, path, row, equipmentIndex, item.use, item.count]);
     const onBlurUse = useCallback((value: string) => update(`${path}[${row}].use`, value.split(",").map(s => s.trim()).filter(Boolean)), [update, path, row]);
     const onChangeCount = useCallback((value: string) => {
         const trimmed = value.trim();

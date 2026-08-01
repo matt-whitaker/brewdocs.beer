@@ -4,6 +4,7 @@ import Recipe from "@/model/recipe";
 
 export default function defaultRecipe(brewable: Brewable = defaultBrewable()): Omit<Recipe, "id"> {
     return {
+        __type: "recipe",
         name: "",
         brewer: "",
         type: "",

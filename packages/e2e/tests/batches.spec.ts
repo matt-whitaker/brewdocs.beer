@@ -1,5 +1,4 @@
 import { expect, test } from "@playwright/test";
-import { activeTabName } from "./helpers";
 
 const TABS = ["Ready", "Brewing", "Fermenting", "Complete"];
 
@@ -32,5 +31,4 @@ test("clicking a tab moves aria-selected off the previously active tab", async (
     await page.getByRole("tab", { name: "Brewing" }).click();
     await expect(page.getByRole("tab", { name: "Brewing" })).toHaveAttribute("aria-selected", "true");
     await expect(page.getByRole("tab", { name: "Ready" })).toHaveAttribute("aria-selected", "false");
-    expect(await activeTabName(page)).toBe("Brewing");
 });

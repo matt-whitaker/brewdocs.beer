@@ -43,7 +43,7 @@ async function settleSave(page: Page) {
 
 /** open a batch tab, then one of the Schedule screen's per-phase sub-tabs */
 async function openSchedulePhase(page: Page, phase: string) {
-    await page.getByRole("tab", {name: "Schedule", exact: true}).click();
+    await page.getByRole("tab", {name: "Brewing", exact: true}).click();
     await page.getByRole("tab", {name: phase, exact: true}).click();
     await expect(page.getByRole("tab", {name: phase, exact: true})).toHaveAttribute("aria-selected", "true");
 }
@@ -132,8 +132,8 @@ test("a second phase of the same type gets its own tab and its own ingredients",
     await page.getByLabel("Phase type to add").selectOption("boil");
     await page.getByRole("button", {name: "Add phase"}).click();
 
-    // it becomes its own Schedule tab — never merged into the existing Boil
-    await page.getByRole("tab", {name: "Schedule", exact: true}).click();
+    // it becomes its own Brewing tab — never merged into the existing Boil
+    await page.getByRole("tab", {name: "Brewing", exact: true}).click();
     const secondBoil = page.getByRole("tab", {name: "4. Boil", exact: true});
     await expect(secondBoil).toBeVisible();
     // ...and starts empty, so the switcher renders it as a disabled tab

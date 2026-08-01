@@ -29,12 +29,12 @@ test("brewing a KB recipe creates a batch and lands on the Planning tab", async 
     await expect(page.getByRole("tab", {name: "Phases"})).toBeVisible();
 });
 
-test("switches between the Planning/Shopping/Schedule/Summary tabs", async ({page}) => {
+test("switches between the Planning/Shopping/Brewing/Summary tabs", async ({page}) => {
     await brewBatchFromKbRecipe(page, "E2E Tab Switch Batch");
 
     const planningTab = page.getByRole("tab", {name: "Planning", exact: true});
     const shoppingTab = page.getByRole("tab", {name: "Shopping", exact: true});
-    const scheduleTab = page.getByRole("tab", {name: "Schedule", exact: true});
+    const scheduleTab = page.getByRole("tab", {name: "Brewing", exact: true});
     const summaryTab = page.getByRole("tab", {name: "Summary", exact: true});
 
     await expect(planningTab).toHaveAttribute("aria-selected", "true");
@@ -51,7 +51,7 @@ test("switches between the Planning/Shopping/Schedule/Summary tabs", async ({pag
     await expect(scheduleTab).toHaveAttribute("aria-selected", "true");
     await expect(shoppingTab).toHaveAttribute("aria-selected", "false");
     await expect(page.getByText("Status", {exact: true})).toBeVisible();
-    // Schedule's phase sub-tabs (numbered by position, e.g. "1. Mash")
+    // Brewing's phase sub-tabs (numbered by position, e.g. "1. Mash")
     await expect(page.getByRole("tab", {name: "1. Mash"})).toBeVisible();
     await expect(page.getByRole("tab", {name: "2. Boil"})).toBeVisible();
     await expect(page.getByRole("tab", {name: "3. Ferment"})).toBeVisible();

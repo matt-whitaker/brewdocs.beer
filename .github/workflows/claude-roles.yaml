@@ -2,12 +2,12 @@ name: Claude
 # The history entry names the role that actually ran, so a single "Claude" row is
 # still self-describing. Read off the issue's own labels, since the role is whoever
 # owns the issue; PR reviews have no `issue`, so they fall through to Implementor.
-run-name: "Claude · ${{ contains(github.event.issue.labels.*.name, '@claude/manager') && 'Manager' || contains(github.event.issue.labels.*.name, '@claude/researcher') && 'Researcher' || 'Implementor' }} #${{ github.event.issue.number || github.event.pull_request.number }}"
+run-name: "Claude · ${{ github.event_name == 'pull_request' && 'PR housekeeping' || contains(github.event.issue.labels.*.name, '@claude/manager') && 'Manager' || contains(github.event.issue.labels.*.name, '@claude/researcher') && 'Researcher' || contains(github.event.issue.labels.*.name, '@claude/tester') && 'Tester' || 'Implementor' }} #${{ github.event.issue.number || github.event.pull_request.number }}"
 
-# THREE ROLES, ONE WORKFLOW. Manager / Researcher / Implementor are jobs here rather
-# than separate workflow files to keep the Actions history readable: the role is picked
-# by a job-level `if:`, so it's one run per comment with the unselected roles skipping
-# inside it, instead of three runs where two are skipped.
+# FOUR ROLES, ONE WORKFLOW. Manager / Researcher / Implementor / Tester are jobs here
+# rather than separate workflow files to keep the Actions history readable: the role is
+# picked by a job-level `if:`, so it's one run per comment with the unselected roles
+# skipping inside it, instead of four runs where three are skipped.
 #
 # ⚠️ LABELS DO NOT TRIGGER ANYTHING. `on.issues` is deliberately not subscribed, so
 # adding or removing a role label produces no workflow run at all — labels are purely
@@ -17,9 +17,18 @@ run-name: "Claude · ${{ contains(github.event.issue.labels.*.name, '@claude/man
 #   issue labelled @claude/manager     + "@claude ..." -> Manager
 #   issue labelled @claude/researcher  + "@claude ..." -> Researcher
 #   issue labelled @claude/implementor + "@claude ..." -> Implementor
+#   issue/PR labelled @claude/tester   + "@claude ..." -> Tester
 #   issue with no role label, or any PR comment/review -> Implementor
 #
 # So the flow is: label the issue for the role you want, then talk to it.
+#
+# ⚠️ The tester label is checked on **PRs too**, not just issues. `issue_comment` fires
+# for pull requests as well (the PR arrives as `github.event.issue`), so labelling a PR
+# `@claude/tester` routes its follow-up comments to the Tester instead of the
+# Implementor — which is what you want on a PR that is only test changes.
+#
+# The one non-comment trigger is `pull_request: closed`, which drives the Manager's
+# housekeeping job (see manager_pr_merged at the bottom). It runs no model.
 on:
   issue_comment:
     types: [created]
@@ -29,6 +38,9 @@ on:
   # github.event.review.body, not github.event.comment.body
   pull_request_review:
     types: [submitted]
+  # merge housekeeping only — no model runs on this event
+  pull_request:
+    types: [closed]
 
 # one Claude run at a time per issue/PR, across all roles. Queue rather than cancel:
 # killing a run midway can leave a half-pushed branch and no PR.
@@ -222,31 +234,28 @@ jobs:
               from the epic's **Integration branch** section (the Manager cut it). Each
               sub-issue body needs a **Base branch** line of its own:
 
-                  > **Base branch: `<branch>`.** Branch off it and open your PR **against
-                  > `<branch>`**, not `mainline`, so the feature lands together. Rebase onto
-                  > it if earlier sub-issues have merged since.
+                  > **Base branch: `<branch>`** — the integration branch for epic
+                  > #<epic-number>. Branch off it and open your PR **against `<branch>`**,
+                  > not `mainline`, so the feature lands together. Rebase onto it if earlier
+                  > sub-issues have merged since.
 
               A worker only ever sees its own issue, so an epic-level mention doesn't reach
               it — omit this and the sub-issue PRs go straight at `mainline` and the epic
               branch is silently bypassed. If the epic names no branch, say so in your index
               comment and stop rather than guessing a name.
+              ⚠️ **Name the epic number in that line, every time.** The Implementor opens the
+              epic's integration PR the first time it finds one missing, and it needs the
+              number to write `Closes #<epic>`. It only ever sees the sub-issue.
             - **Link each new issue as a native sub-issue of this epic**: get the child's
               integer id with `gh api repos/<owner>/<repo>/issues/<child-number> --jq .id`,
               then `gh api --method POST repos/<owner>/<repo>/issues/<this-epic-number>/sub_issues -F sub_issue_id=<that-id>`.
               The API wants the integer REST id, not the issue number (`<owner>/<repo>` is
               `$GITHUB_REPOSITORY`). If the sub-issues API is unavailable, fall back to a
               `Part of #<epic-number>` line in each body.
-            - ⚠️ **The last sub-issue also opens the epic's PR.** Whichever sub-issue is
-              last in prerequisite order gets one extra acceptance-criteria line:
-
-                  - [ ] After opening this sub-issue's own PR into `<branch>`, open the
-                        **integration PR** from `<branch>` → `mainline` if one isn't already
-                        open (`gh pr list --head <branch> --base mainline` to check), titled
-                        for the epic and with `Closes #<epic-number>` in the body. That PR is
-                        how the whole feature reaches `mainline`; the maintainer merges it.
-
-              Without this, every sub-issue merges into the branch and the feature stalls
-              there with nothing proposing it to `mainline`.
+            - Don't give any sub-issue the job of opening the epic's integration PR. The
+              Implementor now opens it on the **first** run that finds it missing, so it
+              exists from the start of the epic and the maintainer can watch the feature
+              accumulate. Nothing about it belongs in a sub-issue body.
             - Post ONE comment on this epic listing the sub-issues (with links) in
               prerequisite order, marking which are parallel vs blocked — a single index
               to review.
@@ -286,12 +295,17 @@ jobs:
     # posts as github-actions[bot], and a comment quoting "@claude" would re-enter here.
     if: |
       github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]' && (
-        (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
-        (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
+        (github.event_name == 'pull_request_review_comment'
+          && contains(github.event.comment.body, '@claude')
+          && !contains(github.event.pull_request.labels.*.name, '@claude/tester')) ||
+        (github.event_name == 'pull_request_review'
+          && contains(github.event.review.body, '@claude')
+          && !contains(github.event.pull_request.labels.*.name, '@claude/tester')) ||
         (github.event_name == 'issue_comment'
           && contains(github.event.comment.body, '@claude')
           && !contains(github.event.issue.labels.*.name, '@claude/manager')
-          && !contains(github.event.issue.labels.*.name, '@claude/researcher'))
+          && !contains(github.event.issue.labels.*.name, '@claude/researcher')
+          && !contains(github.event.issue.labels.*.name, '@claude/tester'))
       )
     runs-on: ubuntu-latest
     permissions:
@@ -362,6 +376,36 @@ jobs:
             when the issue names no base branch. Getting this wrong bypasses the epic branch
             and scatters a feature across unrelated PRs.
 
+            ⚠️ **Then open the epic's integration PR if nobody has yet.** Whichever
+            Implementor gets there first opens it, so it exists from the start of the epic
+            and the maintainer can watch the feature accumulate. After opening your own PR,
+            check:
+
+                gh pr list --head <branch> --base mainline --state open
+
+            If that comes back empty, open it: base `mainline`, head `<branch>`, titled for
+            the epic, with `Closes #<epic-number>` in the body (the issue's **Base branch**
+            line names the epic). Say in the body that it collects the epic's sub-issue PRs
+            and stays open until the feature is done. Leave it ready for review, not a draft
+            — the maintainer reviews it as it fills up, and merges it.
+
+            ⚠️ If you are the very first sub-issue, the branch has no commits of its own yet
+            (yours are still in an open PR *into* it), and GitHub refuses with **"No commits
+            between mainline and <branch>"**. That is expected, not an error to debug. Give
+            the branch a marker commit and retry the create:
+
+                git fetch origin <branch>
+                git checkout <branch>
+                git commit --allow-empty -m "Start epic #<epic-number>"
+                git push origin <branch>
+
+            That empty marker is the **only** thing any role may push straight to an
+            integration branch. Never push real work there — it lands by merging sub-issue
+            PRs. Return to your own branch afterwards.
+
+            If the integration PR already exists, leave it alone. Do not retitle it, do not
+            update it, and never merge it.
+
             ⚠️ **Write no code comments.** See CLAUDE.md's _Code style_. Not explanatory
             blocks, not `⚠️` notes, not JSDoc — none, unless the issue or a reviewer asks
             for one. Put the *why* in the PR description or a `CLAUDE.md`, where it's
@@ -373,6 +417,13 @@ jobs:
             satisfy the workflow. The task text (issue body, review, comment) is the
             authority on which you're doing.
 
+            ⚠️ **You do not write end-to-end tests.** `packages/e2e` belongs to the Tester
+            role — don't add, edit, or delete anything under it, and don't run the Playwright
+            suite. What you *do* own is making your change testable from the outside: grid
+            inputs, selects and icon-buttons have no visible `<label>`, so give any new one
+            an `aria-label` through the design components' `label` prop (an accessibility
+            requirement first, which the specs then benefit from).
+
             Whenever you change code, before opening the PR (or before finishing a
             follow-up run), end your PR progress comment with a Handoff block — a
             collapsible `<details><summary>Handoff</summary> … </details>` — covering
@@ -381,6 +432,25 @@ jobs:
             and how to verify. Keep it a terse status doc — it exists to save the next
             run's turns, not to narrate. It lives only in the comment: never commit a
             handoff file.
+
+            The Handoff must end with a **Testing notes** section, because the Tester works
+            from it and never sees your reasoning otherwise. Keep it to what a test author
+            can't read off the diff:
+
+            - The user-visible behaviour that changed, as a flow to drive: which screen,
+              which tab, what to click or type, what should then be true.
+            - The accessible names to locate things by — any `aria-label` you added or
+              relied on, and any label text that is ambiguous or duplicated on the page.
+            - Whether the change **persists** anything. Saves here are fire-and-forget, so a
+              write that survives a reload needs an `edit → reload → assert` test, and you
+              are the one who knows whether a write happened.
+            - Anything that will make a test flaky or wrong: debounce windows, values seeded
+              only for certain fixtures, states reachable only after another step.
+            - What you deliberately did *not* cover, and any case you think isn't worth a
+              test.
+
+            If your change needs no test, say that and why — an explicit "no test needed"
+            is a useful answer, a silent omission isn't.
 
             A denied tool call is settled. The permission layer is policy, not a syntax
             problem, so rewording or re-quoting the same operation will be denied
@@ -435,3 +505,203 @@ jobs:
             --model sonnet
             --allowedTools "Edit,Write,Bash(git:*),Bash(gh:*),Bash(npm:*)"
             --max-turns 80
+
+  # ── Tester ─────────────────────────────────────────────────────────────────────
+  # Owns packages/e2e. The Implementor ships behaviour and writes Testing notes into its
+  # PR Handoff; the Tester turns those notes into Playwright specs. Split out because the
+  # two jobs pull in opposite directions — an engineer finishing a feature writes the test
+  # that passes, and the failure mode this repo actually has (a save that throws inside a
+  # fire-and-forget call while lint/tsc/build stay green) is only caught by a test written
+  # to distrust the change.
+  tester:
+    if: |
+      github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]' && (
+        (github.event_name == 'pull_request_review_comment'
+          && contains(github.event.comment.body, '@claude')
+          && contains(github.event.pull_request.labels.*.name, '@claude/tester')) ||
+        (github.event_name == 'pull_request_review'
+          && contains(github.event.review.body, '@claude')
+          && contains(github.event.pull_request.labels.*.name, '@claude/tester')) ||
+        (github.event_name == 'issue_comment'
+          && contains(github.event.comment.body, '@claude')
+          && contains(github.event.issue.labels.*.name, '@claude/tester'))
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      # Browser install as a workflow step, not a Claude turn. Without it the Tester can
+      # write specs but never run them, and an unrun test is worse than no test.
+      - run: npx playwright install --with-deps chromium
+      - uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          track_progress: true
+          prompt: |
+            You are the **Tester** — you own `packages/e2e`, the Playwright suite that
+            drives the real app in a browser. You are triggered by an **`@claude` mention**
+            on an issue or PR labelled `@claude/tester`. Labels never start a run on their
+            own.
+
+            Read `packages/e2e/CLAUDE.md` first — it is short and it is the spec for how
+            this suite works. The repo-root `CLAUDE.md` covers branch/PR/commit conventions.
+
+            **Where your work comes from.** Usually a merged or open Implementor PR whose
+            Handoff comment ends with a **Testing notes** section — that is written for you.
+            Start there:
+
+            - **From an issue**: `gh issue view <number> --comments`. If it names a PR, read
+              that PR's Handoff too.
+            - **From a PR**: `gh pr view <number> --comments`, read the Handoff's Testing
+              notes, then `git diff mainline...HEAD` for what actually changed.
+
+            If the Testing notes are missing or too thin to work from, say so plainly in a
+            comment and test what you can read off the diff — don't stall waiting, and don't
+            invent behaviour the app doesn't have.
+
+            **What a good test looks like here.** The nav specs prove screens *render*. The
+            gap that has actually shipped bugs is whether they *save*: two silent write-loss
+            bugs passed lint, tsc and build because the write threw inside a fire-and-forget
+            call and nothing reloaded to notice. So:
+
+            - Anything that persists gets an **`edit → reload → assert`** test. Asserting on
+              the value still in the DOM after an edit proves nothing.
+            - ⚠️ Reloading straight after an edit **races the save**. Use the existing
+              `settleSave(page)` helper in `tests/batch-edit.spec.ts`; the wait is bounded by
+              the known 350ms `useJsonEdit` debounce plus one IndexedDB write, not a guess.
+            - Prefer `getByRole` / `getByLabel` over custom helpers. `tests/helpers.ts` only
+              grows when a query genuinely has no accessible-role or text equivalent.
+            - Grid controls carry `aria-label`s for this reason — use them. If a control you
+              need has no accessible name, that is an accessibility gap in the app: say so in
+              your PR and, if it is a one-line `label` prop on a design component, fix it.
+              Anything larger, flag it for the Implementor rather than reworking the screen.
+            - Each test gets a fresh browser context, so tests must not depend on each other
+              or on leftover state.
+
+            **Run what you write.** The browsers are already installed. Run the suite with
+            `npm run test:e2e -w packages/e2e` — Playwright starts the app dev server itself.
+            A spec you did not run is not done. If a new test fails, first work out whether
+            it caught a real bug or is just wrong: a genuine failure is a finding, and you
+            should report it (comment on the PR/issue, and describe it in yours) rather than
+            weakening the test until it passes. Never delete or `test.skip` an existing test
+            to get green — if an existing test now fails, that is the headline of your report.
+
+            Open a PR with your specs, following the root CLAUDE.md's Contributing section.
+            ⚠️ **Target the issue's stated Base branch** if it names one, else `mainline`.
+
+            ⚠️ **Stay inside `packages/e2e`.** You do not fix app code — a failing test is a
+            report, not an invitation to change `packages/app`. The one exception is adding
+            a missing `aria-label` via a design component's existing `label` prop.
+
+            ⚠️ **Write no code comments in app or design code.** Inside `packages/e2e`, a
+            spec may carry a short block comment when it records *why* a test is shaped the
+            way it is (the existing `settleSave` note is the model) — that is the one place
+            in this repo where a comment earns its keep, because the shape of a test is not
+            self-evident from the test. Keep it to what a future reader would otherwise get
+            wrong; do not narrate what each line does.
+
+            Dependencies and browsers are already installed — do not run `npm ci`,
+            `npm install`, or `npx playwright install`.
+
+            A denied tool call is settled — note it and move on; rewording will be denied
+            identically. Run one command per Bash call (chaining with `&&`/`;` trips the
+            permission check). Use Read/Edit/Write for file contents rather than shelling out.
+
+            Keep your task checklist to 3-5 coarse, outcome-level items — each one costs a
+            turn to narrate back.
+
+            Never merge a PR, and never apply a role label to anything you create — that
+            handoff is the maintainer's.
+          claude_args: |
+            --model sonnet
+            --allowedTools "Edit,Write,Bash(git:*),Bash(gh:*),Bash(npm:*),Bash(npx:*)"
+            --max-turns 80
+
+  # ── Manager · merge housekeeping ───────────────────────────────────────────────
+  # When a PR carrying any @claude/* label merges, move the issue(s) it closes to Done on
+  # the project board.
+  #
+  # ⚠️ NO MODEL RUNS HERE, deliberately. "Find the linked issue, set one field" is a fully
+  # determined API call — handing it to Claude would cost a turn budget and add a way for
+  # it to go wrong, to do a job a dozen lines of `gh` does exactly. It sits in this file,
+  # under the Manager banner, because it is the Manager's bookkeeping.
+  #
+  # ⚠️ REQUIRES A `PROJECTS_TOKEN` SECRET. The built-in GITHUB_TOKEN cannot write to
+  # Projects v2 at any permission level. ⚠️ It must be a **classic** PAT with the `project`
+  # scope: fine-grained tokens cannot reach *user-owned* Projects v2 at all (they only cover
+  # organization projects), and project #4 belongs to the user. `project` is the only scope
+  # needed — this repo is public, so reading its PR data needs none. Without the secret this
+  # step warns and exits clean, so a merge never fails over bookkeeping.
+  manager_pr_merged:
+    if: |
+      github.event_name == 'pull_request'
+      && github.event.pull_request.merged == true
+      && (contains(github.event.pull_request.labels.*.name, '@claude/manager')
+        || contains(github.event.pull_request.labels.*.name, '@claude/researcher')
+        || contains(github.event.pull_request.labels.*.name, '@claude/implementor')
+        || contains(github.event.pull_request.labels.*.name, '@claude/tester'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: read
+    steps:
+      - name: Move the PR's linked issues to Done
+        env:
+          GH_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          PROJECT_OWNER: matt-whitaker
+          PROJECT_NUMBER: "4"
+        run: |
+          set -euo pipefail
+
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "::warning::PROJECTS_TOKEN is not set — skipping. GITHUB_TOKEN cannot write to Projects v2; add a classic PAT with the 'project' scope as the PROJECTS_TOKEN secret (fine-grained tokens cannot reach user-owned Projects v2)."
+            exit 0
+          fi
+
+          issues=$(gh pr view "$PR" --repo "$REPO" --json closingIssuesReferences --jq '.closingIssuesReferences[].number')
+          if [ -z "$issues" ]; then
+            echo "PR #$PR closes no issue — nothing to move."
+            exit 0
+          fi
+
+          project_id=$(gh project view "$PROJECT_NUMBER" --owner "$PROJECT_OWNER" --format json --jq '.id')
+          status_field=$(gh project field-list "$PROJECT_NUMBER" --owner "$PROJECT_OWNER" --format json \
+            --jq '.fields[] | select(.name == "Status")')
+          field_id=$(echo "$status_field" | jq -r '.id')
+          done_id=$(echo "$status_field" | jq -r '(.options // [])[] | select(.name == "Done") | .id')
+
+          if [ -z "$done_id" ] || [ "$done_id" = "null" ]; then
+            echo "::warning::Project $PROJECT_NUMBER has no Status option named 'Done' — skipping."
+            exit 0
+          fi
+
+          items=$(gh project item-list "$PROJECT_NUMBER" --owner "$PROJECT_OWNER" --format json --limit 500)
+
+          for issue in $issues; do
+            item_id=$(echo "$items" | jq -r --argjson n "$issue" \
+              'first(.items[] | select(.content.type == "Issue" and .content.number == $n) | .id) // empty')
+            if [ -z "$item_id" ]; then
+              echo "::warning::Issue #$issue is not on project $PROJECT_NUMBER — skipping."
+              continue
+            fi
+            gh project item-edit --id "$item_id" --project-id "$project_id" \
+              --field-id "$field_id" --single-select-option-id "$done_id"
+            echo "Issue #$issue -> Done"
+          done
