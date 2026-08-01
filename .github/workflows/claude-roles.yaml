@@ -274,6 +274,9 @@ jobs:
               exists from the start of the epic and the maintainer can watch the feature
               accumulate. Nothing about it belongs in a sub-issue body.
             - Post ONE comment on this epic listing the sub-issues in prerequisite order,
+              **ending with the manifest above** — on a follow-up run this comment can be
+              short (what changed, plus the full manifest); it does not have to restate the
+              whole decomposition.
               marking which are parallel vs blocked — a single index to review.
               ⚠️ **End that comment with a machine-readable manifest**, exactly this shape,
               as the last thing in the comment:
@@ -284,10 +287,18 @@ jobs:
 
               An HTML comment, so it is invisible in the rendered issue. The Owner files the
               sub-issues from **this**, not from your prose — a script reads it, with no
-              model involved, which is why it has to be exact. `children` is every sub-issue
-              you created, in prerequisite order. Omit it and nothing gets parented or
-              milestoned. Keep the human-readable list above it as well; that is what the
-              maintainer reads.
+              model involved, which is why it has to be exact. Keep the human-readable list
+              above it as well; that is what the maintainer reads.
+
+              ⚠️ **This is an obligation on EVERY run, not just the first.** `children` must
+              list **every** sub-issue of this epic — the ones you created just now *and*
+              any from earlier runs — because the script acts on the newest manifest alone
+              and does not accumulate. So on a follow-up, even one that only adds a single
+              sub-issue or answers a question, post a fresh manifest carrying the full set
+              before you finish. Reread the epic's existing sub-issues if you need to
+              rebuild the list. Skipping this is what leaves sub-issues unparented and off
+              the milestone, and it has already happened: #376 and #377 sat unfiled because
+              a follow-up run posted an index comment with no manifest.
 
             Carry these standing Out-of-scope items into every sub-issue: don't hand-edit
             generated files (`routeTree.gen.ts`); don't add lodash (use
@@ -919,9 +930,14 @@ jobs:
         if: |
           contains(github.event.comment.body, '@claude/owner')
           || contains(github.event.review.body, '@claude/owner')
+        # ⚠️ PROJECTS_TOKEN is deliberately NOT in this step's env. Secret masking covers
+        # *logs* only, and a model holding `Bash(gh:*)` can run
+        # `gh issue comment N --body "$PROJECTS_TOKEN"` — that passes the allowlist and
+        # publishes the value unredacted, where masking does not reach. The PAT is
+        # long-lived and reaches every project the maintainer owns, so it stays in the
+        # scripted steps above, which are not model-controlled.
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PROJECTS_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # ⚠️ No track_progress: the Owner is told to stay quiet on its automatic pass,
@@ -992,13 +1008,14 @@ jobs:
               If anything other than the epic shows up, edit the body to neuter the stray
               keyword ("closes #341" → "for #341") and say what you changed. A sub-issue is
               closed by its own PR, never by the epic's.
-            - **Keep the board honest.** Issues on project #4 should reflect reality: work
-              that has merged belongs in Done. Project commands need the other token —
-              prefix them, e.g.
-              `GH_TOKEN="$PROJECTS_TOKEN" gh project item-list 4 --owner "@me" --format json`.
-              ⚠️ Use `--owner "@me"`, never the literal login: `gh project` otherwise probes
-              whether the owner is a user or an org, needs `read:org` that this token does
-              not have, and fails with a bare "unknown owner type".
+            - ⚠️ **You cannot change the project board, by design.** The token that reaches
+              it is deliberately kept out of your environment — it is long-lived and covers
+              every project the maintainer owns, and a role that can run `gh` could publish
+              it in a comment, where log masking does not reach. Board changes happen in the
+              scripted steps that run before you, on merge. If something on the board looks
+              wrong, **say so in your comment** and leave it; don't attempt a `gh project`
+              call and don't report the refusal as a failure — this is the intended
+              boundary, not a missing permission.
             - **Prune role labels when asked.** `@claude/<role>` labels are a record of which
               roles have *run*, and the maintainer clears them as a check-off. Remove them
               only when the maintainer asks you to — they are their read of what has

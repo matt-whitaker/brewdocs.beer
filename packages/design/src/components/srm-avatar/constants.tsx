@@ -13,3 +13,13 @@ export const SRM_TO_HEX = new Map<number, [string, string, string]>([
     [40, ["bg-beer-40", "border-beer-40", "outline-beer-40"]],  // Deep Brown
     [50, ["bg-beer-50", "border-beer-50", "outline-beer-50"]],  // Black (fallback value)
 ]);
+
+export function findSrmClasses(srm: number): [string, string, string] {
+    const match = Array.from(SRM_TO_HEX.entries()).find(([key]) => srm <= key);
+
+    if (match) {
+        return match[1];
+    }
+
+    return SRM_TO_HEX.get(40) as [string, string, string];
+}
