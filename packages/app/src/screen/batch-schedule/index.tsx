@@ -20,6 +20,7 @@ import {key, Ref, TrackerEntry} from "@/model/tracker";
 import BatchScheduleEquipment from "@/screen/batch-schedule/equipment";
 import ScheduleItemRow from "@/screen/batch-schedule/item-row";
 import BatchScheduleReading from "@/screen/batch-schedule/reading";
+import BatchScheduleWaterReading from "@/screen/batch-schedule/water-reading";
 import {useBatch} from "@/state/batches";
 import {saveSession, useSession} from "@/state/session";
 
@@ -221,6 +222,19 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                                     headerLabel="Temperature"
                                     addLabel="Add temperature reading"
                                     defaultLabel="Temperature" />
+                                {phase.type === "mash" && (
+                                    <BatchScheduleWaterReading
+                                        phase={phase}
+                                        phaseIndex={index}
+                                        tracker={data.tracker}
+                                        onPatch={patchTracker}
+                                        update={update}
+                                        add={add}
+                                        remove={remove}
+                                        headerLabel="Water Chemistry"
+                                        addLabel="Add water sample"
+                                        defaultLabel="Water Sample" />
+                                )}
                                 {phase.type === "carbonation" && (
                                     <>
                                         <BatchScheduleReading
