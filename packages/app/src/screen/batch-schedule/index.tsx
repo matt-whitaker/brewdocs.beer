@@ -38,6 +38,11 @@ const VOLUME_UNIT_OPTIONS = [
     { name: "mL", value: UNITS.MILLILITERS },
 ];
 
+const TEMPERATURE_UNIT_OPTIONS = [
+    { name: "°F", value: UNITS.FAHRENHEIT },
+    { name: "°C", value: UNITS.CELSIUS },
+];
+
 const KIND_LABELS: Record<ScheduleKind, string> = {
     grains: "Grains",
     hops: "Hops",
@@ -183,6 +188,19 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                                     headerLabel="Volume"
                                     addLabel="Add volume reading"
                                     defaultLabel="Volume" />
+                                <BatchScheduleReading
+                                    phase={phase}
+                                    phaseIndex={index}
+                                    tracker={data.tracker}
+                                    onPatch={patchTracker}
+                                    update={update}
+                                    add={add}
+                                    remove={remove}
+                                    kind="temperature"
+                                    unitOptions={TEMPERATURE_UNIT_OPTIONS}
+                                    headerLabel="Temperature"
+                                    addLabel="Add temperature reading"
+                                    defaultLabel="Temperature" />
                             </div>
                         ) : null}
                     </PanelSwitcherContent>
