@@ -88,3 +88,43 @@ test("creating an empty recipe brings no template equipment", async ({ page }) =
     await page.getByRole("tab", { name: "Equipment", exact: true }).click();
     await expect(page.getByRole("combobox")).toHaveCount(3);
 });
+
+test("kb recipes show no delete affordance", async ({ page }) => {
+    await page.goto("/recipes");
+
+    const row = page.getByRole("listitem").filter({ hasText: "Anchor Steam Beer Clone" });
+    await expect(row).toBeVisible();
+    await expect(row.getByRole("button")).toHaveCount(0);
+});
+
+// delete is fire-and-forget (ConfirmDeleteButton's onConfirm isn't awaited),
+// so a reload needs the same bounded wait batch-edit.spec.ts's settleSave uses
+// for a debounced save — here for the delete's own storage write + invalidation.
+async function settleSave(page: Page) {
+    await page.waitForTimeout(1000);
+}
+
+test("deleting a user recipe removes it from the list and it stays gone after reload", async ({ page }) => {
+    await createRecipeFromTemplate(page, "E2E Delete Recipe", "Empty");
+
+    await page.goto("/recipes");
+    await page.getByRole("tab", { name: "My Recipes" }).click();
+    const row = page.getByRole("listitem").filter({ hasText: "E2E Delete Recipe" });
+    await expect(row).toBeVisible();
+
+    await row.getByRole("button").click();
+    // opening the confirm modal must not have triggered the row's own Link
+    await expect(page).not.toHaveURL(/\/recipe\//);
+
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole("heading", { name: "Delete E2E Delete Recipe?" })).toBeVisible();
+
+    await dialog.getByRole("button", { name: "Confirm" }).click();
+    await expect(row).not.toBeVisible();
+
+    await settleSave(page);
+    await page.reload();
+    await page.getByRole("tab", { name: "My Recipes" }).click();
+    await expect(page.getByText("E2E Delete Recipe")).not.toBeVisible();
+});
