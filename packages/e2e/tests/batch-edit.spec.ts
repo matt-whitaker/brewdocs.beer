@@ -158,3 +158,21 @@ test("a second phase of the same type gets its own tab and its own ingredients",
     await expect(page.getByLabel("Northern Brewer weight")).toHaveCount(3);
     await expect(page.getByLabel("Cascade weight")).toHaveCount(0);
 });
+
+test("keeps a batch note after a reload", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Notes Batch");
+    // Notes is the Brewing tab strip's last entry, alongside the phase tabs
+    await openSchedulePhase(page, "Notes");
+
+    // the tab and the textarea share the accessible name "Notes"; role disambiguates
+    const notes = page.getByRole("textbox", {name: "Notes"});
+    await expect(notes).toHaveValue("");
+    await notes.fill("Fermentation smelled great, slightly fruity.");
+    await notes.blur();
+
+    await settleSave(page);
+    await page.reload();
+    await openSchedulePhase(page, "Notes");
+
+    await expect(page.getByRole("textbox", {name: "Notes"})).toHaveValue("Fermentation smelled great, slightly fruity.");
+});
