@@ -5,7 +5,6 @@ import {CreateBatchState} from "@/component/create-batch-form/useCreateBatchForm
 import defaultBatch from "@/data/defaultBatch";
 import Batch from "@/model/batch";
 import Recipe, {RecipeSource} from "@/model/recipe";
-import Statuses from "@/model/statuses";
 import {saveBatch} from "@/state/batches";
 import batchesStorage from "@/storage/batches";
 import {kbBrewableToBrewable} from "@/transform/kbBrewableToBrewable";
@@ -21,7 +20,6 @@ export default async function createBatch(recipe: Recipe | KbRecipe, source: Rec
     const batch: Partial<Batch> = {
         ...defaultBatch(),
         id,
-        status: Statuses.PREP,
         recipeId: recipe.id,
         recipeSource: source,
         brewable,
