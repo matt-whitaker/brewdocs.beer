@@ -166,6 +166,9 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                             titleAlt={hasContent || isCurrent ? "" : "Nothing scheduled in this step"}>
                             {hasContent || isCurrent ? (
                                 <div className="pt-2">
+                                    {isCurrent ? (
+                                        <BatchScheduleCompletePhase label={label} onConfirm={() => completePhase(phase.id)} />
+                                    ) : null}
                                     {hasContent ? (
                                         <>
                                             {/* what to gather before the phase starts, ahead of the work itself */}
@@ -291,9 +294,6 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                                                     dateOnly />
                                             )}
                                         </>
-                                    ) : null}
-                                    {isCurrent ? (
-                                        <BatchScheduleCompletePhase label={label} onConfirm={() => completePhase(phase.id)} />
                                     ) : null}
                                 </div>
                             ) : null}
