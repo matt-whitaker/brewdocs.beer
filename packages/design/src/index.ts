@@ -13,3 +13,4 @@ export * from "./components/search-bar";
 export * from "./components/srm-avatar";
 export * from "./components/status-badge";
 export * from "./components/svg";
+export * from "./components/textarea";

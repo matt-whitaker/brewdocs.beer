@@ -1,5 +1,6 @@
 import {useCallback, useMemo} from "react";
 import {UNITS} from "@brewdocs.beer/core";
+import {Textarea} from "@brewdocs.beer/design";
 import deriveSchedule from "@/actions/deriveSchedule";
 import {putEntry} from "@/actions/tracker";
 import DataGrid from "@/component/data-grid";
@@ -56,6 +57,7 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
 
     const updateStatus = useCallback((value: string) => update("status", Number(value)), [update]);
     const updateDate = useCallback((value: string) => update("brewDate", value), [update]);
+    const updateNotes = useCallback((value: string) => update("notes.notes", value), [update]);
 
     // tracker writes can't go through useJsonEdit's dot-path (a key like
     // "equipment:<uuid>" isn't addressable that way — see CLAUDE.md's Model
@@ -185,6 +187,15 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                         ) : null}
                     </PanelSwitcherContent>
                 ))}
+                <PanelSwitcherContent title="Notes">
+                    <div className="pt-2">
+                        <Textarea
+                            label="Notes"
+                            value={data.notes?.notes ?? ""}
+                            onChange={updateNotes}
+                            onBlur={updateNotes} />
+                    </div>
+                </PanelSwitcherContent>
             </PanelSwitcher>
         </Screen>
     );
