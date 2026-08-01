@@ -12,7 +12,7 @@ export default function BatchScheduleCompletePhase({ label, onConfirm }: BatchSc
     const [modalRef, toggle] = useModal();
 
     return (
-        <div className="flex justify-end py-3">
+        <div className="flex justify-end pt-1 pb-3">
             <button
                 type="button"
                 aria-label={`Complete ${label}`}
