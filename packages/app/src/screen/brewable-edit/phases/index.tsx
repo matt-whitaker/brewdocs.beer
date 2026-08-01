@@ -14,12 +14,14 @@ export type BrewableEditPhasesProps = {
     add: AddFn;
     remove: RemoveFn;
     move: MoveFn;
+    /** true once the batch has progressed — the plan stays visible but not editable */
+    locked?: boolean;
 };
 
 // A brewable panel: lists the schedule's phases as entries — nothing more than
 // add a phase, remove one, and reorder them. Equipment lives on its own panel.
 // Dot-paths are relative to the brewable.
-export default function BrewableEditPhases({ brewable, add, remove, move }: BrewableEditPhasesProps) {
+export default function BrewableEditPhases({ brewable, add, remove, move, locked = false }: BrewableEditPhasesProps) {
     const session = useSession();
     const phases = brewable.schedule.phases;
     const schedule: Schedule = useMemo(() => ({ phases }), [phases]);
@@ -33,9 +35,10 @@ export default function BrewableEditPhases({ brewable, add, remove, move }: Brew
             label={phaseLabel(phases, i)}
             removable={canRemovePhase(schedule, i)}
             count={phases.length}
+            locked={locked}
             remove={remove}
             move={move} />
-    )), [phases, schedule, remove, move]);
+    )), [phases, schedule, locked, remove, move]);
 
     return (
         <DataGrid>
@@ -46,7 +49,7 @@ export default function BrewableEditPhases({ brewable, add, remove, move }: Brew
                 Phases
             </DataGridHeaderRow>
             {rows}
-            <RecipeEditPhasesAddRow add={add} />
+            <RecipeEditPhasesAddRow add={add} locked={locked} />
         </DataGrid>
     );
 }
