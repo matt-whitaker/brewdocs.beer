@@ -24,14 +24,16 @@ type BatchScheduleReadingItemProps = {
     onPatch: (ref: Ref, patch: TrackerEntry) => void;
     update: UpdateFn;
     remove: RemoveFn;
-    unitOptions: {name: string; value: Unit}[];
-    defaultUnit: Unit;
+    unitOptions?: {name: string; value: Unit}[];
+    defaultUnit?: Unit;
+    /** date-only kinds (kegDate/bottleDate) skip the reading/unit inputs and use only `TrackerEntry.date` */
+    dateOnly?: boolean;
 };
 
-function BatchScheduleReadingItem({ phaseIndex, row, milestone, entry, onPatch, update, remove, unitOptions, defaultUnit }: BatchScheduleReadingItemProps) {
+function BatchScheduleReadingItem({ phaseIndex, row, milestone, entry, onPatch, update, remove, unitOptions, defaultUnit, dateOnly = false }: BatchScheduleReadingItemProps) {
     // reading unit defaults to the entry's own existing unit, like updateScalar's
     // prev.unit fallback — only a brand-new reading falls back to defaultUnit
-    const unit = entry?.reading?.unit ?? defaultUnit;
+    const unit = (entry?.reading?.unit ?? defaultUnit) as Unit;
 
     const onChangeLabel = useCallback((next: string) => update(`brewable.schedule.phases[${phaseIndex}].milestones[${row}].label`, next), [update, phaseIndex, row]);
     const onRemove = useCallback(() => remove(`brewable.schedule.phases[${phaseIndex}].milestones`, row), [remove, phaseIndex, row]);
@@ -46,8 +48,17 @@ function BatchScheduleReadingItem({ phaseIndex, row, milestone, entry, onPatch, 
         const value = entry?.reading?.value;
         onPatch(refOf(milestone.id), { reading: value ? scalarFromNumberWithUnit(value, next as Unit, true) : { value: "", unit: next as Unit } });
     }, [onPatch, milestone.id, entry?.reading?.value]);
-    // exact date taken matters less than the reading, so it rides behind the expander
     const onChangeDate = useCallback((next: string) => onPatch(refOf(milestone.id), { date: next }), [onPatch, milestone.id]);
+
+    if (dateOnly) {
+        return (
+            <DataGridRow zebra reserveExpand>
+                <DataGridRemoveButton onClick={onRemove} />
+                <DataGridInput label={`${milestone.label} name`} className="ml-6" cols={3} value={milestone.label} onChange={onChangeLabel} />
+                <DataGridInput label={`${milestone.label} date`} cols={3} type="date" value={entry?.date ?? ""} onChange={onChangeDate} />
+            </DataGridRow>
+        );
+    }
 
     return (
         <DataGridRow
@@ -65,7 +76,7 @@ function BatchScheduleReadingItem({ phaseIndex, row, milestone, entry, onPatch, 
         >
             <DataGridRemoveButton onClick={onRemove} />
             <DataGridInput label={`${milestone.label} name`} className="ml-6" cols={3} value={milestone.label} onChange={onChangeLabel} />
-            <DataGridSelect cols={1} data={unitOptions} value={unit} onChange={onChangeUnit} />
+            <DataGridSelect cols={1} data={unitOptions ?? []} value={unit} onChange={onChangeUnit} />
             <DataGridInput label={`${milestone.label} reading`} colStart={3} value={entry?.reading?.value ?? ""} onChange={onChangeReading} onBlur={onBlurReading} />
         </DataGridRow>
     );
@@ -84,10 +95,12 @@ export type BatchScheduleReadingProps = {
     add: AddFn;
     remove: RemoveFn;
     kind: MilestoneKind;
-    unitOptions: {name: string; value: Unit}[];
+    unitOptions?: {name: string; value: Unit}[];
     headerLabel: string;
     addLabel: string;
     defaultLabel: string;
+    /** date-only kinds (kegDate/bottleDate) skip the reading/unit inputs and use only `TrackerEntry.date` */
+    dateOnly?: boolean;
 };
 
 /**
@@ -97,8 +110,8 @@ export type BatchScheduleReadingProps = {
  * Renders on every phase tab, including an empty one — the brewer adds the
  * first reading from here.
  */
-export default function BatchScheduleReading({ phase, phaseIndex, tracker, onPatch, update, add, remove, kind, unitOptions, headerLabel, addLabel, defaultLabel }: BatchScheduleReadingProps) {
-    const defaultUnit = unitOptions[0].value;
+export default function BatchScheduleReading({ phase, phaseIndex, tracker, onPatch, update, add, remove, kind, unitOptions, headerLabel, addLabel, defaultLabel, dateOnly = false }: BatchScheduleReadingProps) {
+    const defaultUnit = unitOptions?.[0].value;
 
     const onAdd = useCallback(() => {
         const milestone: Milestone = { id: newId(), label: defaultLabel, kind };
@@ -123,7 +136,8 @@ export default function BatchScheduleReading({ phase, phaseIndex, tracker, onPat
                     update={update}
                     remove={remove}
                     unitOptions={unitOptions}
-                    defaultUnit={defaultUnit} />
+                    defaultUnit={defaultUnit}
+                    dateOnly={dateOnly} />
             ))}
             <DataGridRow zebra reserveExpand>
                 <DataGridAddButton label={addLabel} onClick={onAdd} />
