@@ -20,6 +20,10 @@ export function putEntry(tracker: Record<string, TrackerEntry>, ref: Ref, patch:
         merged.resource = {...previous?.resource, ...patch.resource};
     }
 
+    if (patch.water || previous?.water) {
+        merged.water = {...previous?.water, ...patch.water};
+    }
+
     return setIn(tracker, k, merged);
 }
 

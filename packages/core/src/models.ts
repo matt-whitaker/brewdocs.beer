@@ -35,6 +35,7 @@ export const UNITS = {
     PH: "pH",
     MINUTES: "min",
     PSI: "psi",
+    PARTS_PER_MILLION: "ppm",
 } as const;
 export type Unit = typeof UNITS[keyof typeof UNITS];
 
