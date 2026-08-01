@@ -5,10 +5,10 @@ import Hop from "@/model/hop";
 import Yeast from "@/model/yeast";
 
 /**
- * What a tracker entry is attached to. All three kinds are `{on, id}` because all
- * three point at a **stable per-instance uuid** — an assignment, a phase's
- * equipment item, or a phase's milestone. None needs its parent phase in the key:
- * the uuid is unique on its own, and encoding a *relationship* inside an
+ * What a tracker entry is attached to. Every kind is `{on, id}` because they all
+ * point at a **stable per-instance uuid** — an assignment, a phase's equipment
+ * item, a phase's milestone, or the phase itself. None needs its parent phase in
+ * the key: the uuid is unique on its own, and encoding a *relationship* inside an
  * *identity* would orphan the entry if the item ever moved between phases.
  *
  * (The milestone ref used to carry a `phaseId`, back when a milestone had no id
@@ -19,7 +19,8 @@ import Yeast from "@/model/yeast";
 export type Ref =
     | { on: "assignment"; id: string }
     | { on: "equipment"; id: string }
-    | { on: "milestone"; id: string };
+    | { on: "milestone"; id: string }
+    | { on: "phase"; id: string };
 
 /**
  * The as-brewed counterpart of an assignment's `resource`, keyed by the **same
@@ -58,5 +59,7 @@ export const key = (ref: Ref): string => {
             return `equipment:${ref.id}`;
         case "milestone":
             return `milestone:${ref.id}`;
+        case "phase":
+            return `phase:${ref.id}`;
     }
 };
