@@ -24,7 +24,7 @@ export default function ConfirmDeleteButton({ title, onConfirm, className }: Con
             </button>
             <Modal ref={modalRef}>
                 <ModalScreen title={title} onConfirm={onConfirm}>
-                    <ScreenP>This can&apos;t be undone.</ScreenP>
+                    <ScreenP>This can't be undone.</ScreenP>
                 </ModalScreen>
             </Modal>
         </>
