@@ -52,6 +52,7 @@ export default function BrewableEditIngredients({ brewable, update, updateScalar
                     key={phase.id}
                     label={phaseLabel(brewable.schedule.phases, i)}
                     phaseId={phase.id}
+                    phaseType={phase.type}
                     assignments={assignmentsByPhase.get(phase.id) ?? []}
                     add={add}
                     remove={remove}

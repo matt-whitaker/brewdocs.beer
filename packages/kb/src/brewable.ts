@@ -44,7 +44,7 @@ export interface KbAssignment {
         | { name: string; weight: Scalar }                                              // grain
         | { name: string; weight: Scalar; alpha: Scalar; boil: Scalar; phase?: string } // hop
         | { name: string; avg_attn: Scalar; temp: Scalar; starter: boolean }            // yeast
-        | { name: string; boil: Scalar };                                               // additive
+        | { name: string; boil?: Scalar; weight?: Scalar };                             // additive
 }
 
 /** primitives-only supertype of app `Brewable` — see model/brewable.ts there */

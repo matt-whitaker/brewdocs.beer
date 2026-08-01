@@ -25,7 +25,7 @@ const refOf = (id: string): Ref => ({ on: "assignment", id });
 const COLUMNS: Record<ResourceType, ResourceScalarField[]> = {
     grain: ["weight"],
     hop: ["weight", "boil"],
-    additive: ["boil"],
+    additive: ["weight", "boil"],
     yeast: ["temp"]
 };
 
@@ -112,7 +112,11 @@ function BatchScheduleItemRow({ item, entry, onToggle, onPatch }: BatchScheduleI
     // the yeast row's pitch date lives on this same assignment's tracker entry
     const onChangePitchDate = useCallback((next: string) => patch({ date: next }), [patch]);
 
-    const columns = COLUMNS[item.resourceType];
+    // an additive carries only whichever field its shape actually has (priming
+    // sugar's weight or a boil-phase additive's boil time); the other resource
+    // types always carry every field COLUMNS lists for them, so this filter is a
+    // no-op there
+    const columns = COLUMNS[item.resourceType].filter(field => item.resource[field] !== undefined);
 
     // one note per field that came in off-plan, so the intent is never lost
     const drifts = columns

@@ -4,7 +4,7 @@ import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
 import DataGridSubheaderRow from "@/component/data-grid/subheader-row";
 import {AddFn, RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
-import {Assignment} from "@/model/brewable";
+import {Assignment, PhaseType} from "@/model/brewable";
 import RecipeEditAssignmentRow from "@/screen/brewable-edit/ingredients/assignment-row";
 import {RESOURCE_TYPES, RESOURCE_TYPE_LABELS} from "@/screen/brewable-edit/ingredients/catalog-defaults";
 import RecipeEditPhaseAddRow from "@/screen/brewable-edit/ingredients/phase-add-row";
@@ -18,6 +18,8 @@ export type RecipeEditPhaseSectionProps = {
     label: string;
     /** the BrewablePhase.id this section edits; new assignments point at it */
     phaseId: string;
+    /** the phase's type, passed down to the add-row so a new additive defaults to the right shape */
+    phaseType: PhaseType;
     assignments: AssignmentWithIndex[];
     add: AddFn;
     remove: RemoveFn;
@@ -30,7 +32,7 @@ export type RecipeEditPhaseSectionProps = {
 };
 
 export default function RecipeEditPhaseSection({
-    label, phaseId, assignments, add, remove, update, updateScalar, resourceOptions, kbGrainsIndex, kbHopsIndex, kbYeastsIndex,
+    label, phaseId, phaseType, assignments, add, remove, update, updateScalar, resourceOptions, kbGrainsIndex, kbHopsIndex, kbYeastsIndex,
 }: RecipeEditPhaseSectionProps) {
     const sessionKey = `recipe-edit.brewable.phase.${phaseId}`;
     const session = useSession();
@@ -72,6 +74,7 @@ export default function RecipeEditPhaseSection({
             <RecipeEditPhaseAddRow
                 phaseId={phaseId}
                 phaseLabel={label}
+                phaseType={phaseType}
                 add={add}
                 resourceOptions={resourceOptions}
                 kbGrainsIndex={kbGrainsIndex}
