@@ -71,6 +71,27 @@ export const NoMarkers: Story = {
     args: {markers: []}
 };
 
+export const Crowded: Story = {
+    name: "Closely-spaced markers",
+    args: {
+        durationSeconds: 5424,
+        markers: [
+            {id: "boil-start", offsetSeconds: 5400, label: "Boil start"},
+            {id: "hop-60", offsetSeconds: 5406, label: "Bittering hops"},
+            {id: "whirlfloc", offsetSeconds: 5412, label: "Whirlfloc"},
+            {id: "hop-15", offsetSeconds: 5418, label: "Flavour hops"},
+            {id: "flame-out", offsetSeconds: 5424, label: "Flame out"}
+        ]
+    },
+    parameters: {
+        docs: {
+            description: {
+                story: "Markers seconds apart bunch into the right-hand end of the line, which is what a long-running brew day does to every early marker. `Timeline` draws them at `markerSize` and lets them overlap; resolving which one a pointer means is the overlay's job, not the line's — see `BrewTimer`'s \"Crowded markers\" story."
+            }
+        }
+    }
+};
+
 function HoverDemo() {
     const [hovered, setHovered] = useState<TimelineMarkerDetail | null>(null);
     const [clicked, setClicked] = useState<TimelineMarkerDetail | null>(null);

@@ -9,6 +9,7 @@ export type PopoverProps = PropsWithChildren & PropsWithClass & {
     placement?: PopoverPlacement;
     label?: string;
     open?: boolean;
+    closeDelayMs?: number;
     onOpenChange?: (open: boolean) => void;
 };
 
@@ -19,20 +20,30 @@ const PLACEMENT_CLASSES: Record<PopoverPlacement, string> = {
     right: "left-full top-1/2 -translate-y-1/2 ml-2"
 };
 
-export function Popover({ trigger, children, placement = "top", label, open, onOpenChange, className }: PopoverProps) {
+export function Popover({ trigger, children, placement = "top", label, open, closeDelayMs = 0, onOpenChange, className }: PopoverProps) {
     const id = useId();
     const containerRef = useRef<HTMLDivElement>(null);
     const touchedRef = useRef(false);
+    const closeTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
     const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
 
     const isOpen = open ?? uncontrolledOpen;
 
+    const cancelScheduledClose = useCallback(() => {
+        if (closeTimerRef.current === undefined) return;
+        clearTimeout(closeTimerRef.current);
+        closeTimerRef.current = undefined;
+    }, []);
+
+    useEffect(() => cancelScheduledClose, [cancelScheduledClose]);
+
     const setOpen = useCallback((next: boolean) => {
+        cancelScheduledClose();
         if (open === undefined) {
             setUncontrolledOpen(next);
         }
         onOpenChange?.(next);
-    }, [open, onOpenChange]);
+    }, [open, onOpenChange, cancelScheduledClose]);
 
     useEffect(() => {
         if (!isOpen) return;
@@ -58,8 +69,13 @@ export function Popover({ trigger, children, placement = "top", label, open, onO
 
     const onMouseLeave = useCallback(() => {
         if (touchedRef.current) return;
-        setOpen(false);
-    }, [setOpen]);
+        if (!closeDelayMs) {
+            setOpen(false);
+            return;
+        }
+        cancelScheduledClose();
+        closeTimerRef.current = setTimeout(() => setOpen(false), closeDelayMs);
+    }, [closeDelayMs, setOpen, cancelScheduledClose]);
 
     const onTouchStart = useCallback(() => {
         touchedRef.current = true;
