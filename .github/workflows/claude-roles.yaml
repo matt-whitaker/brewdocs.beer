@@ -380,6 +380,17 @@ jobs:
           REPO: ${{ github.repository }}
           NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
         run: .github/agent-bin/stamp-role-label.sh
+      - name: Move the issue to In Progress
+        env:
+          # ⚠️ PROJECTS_TOKEN is safe here and only here: step env is per-step, so the
+          # model step below cannot read it. See the Owner post-mortem in CLAUDE.md.
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PROJECTS_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
+          REPO: ${{ github.repository }}
+          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
+          PROJECT_OWNER: "@me"
+          PROJECT_NUMBER: "4"
+        run: .github/agent-bin/set-issue-in-progress.sh
       - uses: anthropics/claude-code-action@v1
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -671,6 +682,17 @@ jobs:
           REPO: ${{ github.repository }}
           NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
         run: .github/agent-bin/stamp-role-label.sh
+      - name: Move the issue to In Progress
+        env:
+          # ⚠️ PROJECTS_TOKEN is safe here and only here: step env is per-step, so the
+          # model step below cannot read it. See the Owner post-mortem in CLAUDE.md.
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PROJECTS_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
+          REPO: ${{ github.repository }}
+          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
+          PROJECT_OWNER: "@me"
+          PROJECT_NUMBER: "4"
+        run: .github/agent-bin/set-issue-in-progress.sh
       - uses: anthropics/claude-code-action@v1
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
