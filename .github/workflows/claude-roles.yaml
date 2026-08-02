@@ -51,6 +51,15 @@ run-name: >-
 # These used to be prompt instructions, and a model could skip them — the label trail is
 # worthless if a run can forget to stamp it. They cost no turns and cannot be forgotten.
 #
+# ⚠️ EVERY JOB COPIES THEM TO $RUNNER_TEMP AND RUNS THEM FROM THERE. The workflow YAML
+# always comes from the default branch; a `run:` path does NOT — it reads the working
+# tree, which the model has by then switched to a feature or epic branch. A branch cut
+# before a hook landed does not carry it, so the post-hooks died with exit 127 on an epic
+# branch holding three of the six scripts. While they were inline `run: |` blocks their
+# bodies travelled with the YAML and were immune; moving them to files traded that for
+# readability. The stash step runs while the tree is still the default branch, so the copy
+# is current by construction, and it sits outside the repo so nothing can commit it.
+#
 # ⚠️ PROJECTS_TOKEN appears in `close-merged-work.sh` and `set-issue-in-progress.sh`, and
 # nowhere else. It is a long-lived classic PAT covering every project the maintainer owns,
 # and secret masking covers logs only — not an API payload a model could write — so it
@@ -100,6 +109,11 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Stash the agent hooks
+        run: |
+          mkdir -p "$RUNNER_TEMP/agent-bin"
+          cp .github/agent-bin/*.sh "$RUNNER_TEMP/agent-bin/"
+          chmod +x "$RUNNER_TEMP/agent-bin"/*.sh
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -110,7 +124,7 @@ jobs:
           ROLE: manager
           REPO: ${{ github.repository }}
           NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
-        run: .github/agent-bin/stamp-role-label.sh
+        run: "$RUNNER_TEMP/agent-bin/stamp-role-label.sh"
       - uses: anthropics/claude-code-action@v1
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -208,6 +222,11 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Stash the agent hooks
+        run: |
+          mkdir -p "$RUNNER_TEMP/agent-bin"
+          cp .github/agent-bin/*.sh "$RUNNER_TEMP/agent-bin/"
+          chmod +x "$RUNNER_TEMP/agent-bin"/*.sh
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -218,7 +237,7 @@ jobs:
           ROLE: researcher
           REPO: ${{ github.repository }}
           NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
-        run: .github/agent-bin/stamp-role-label.sh
+        run: "$RUNNER_TEMP/agent-bin/stamp-role-label.sh"
       - uses: anthropics/claude-code-action@v1
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -344,7 +363,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           ISSUE: ${{ github.event.issue.number }}
-        run: .github/agent-bin/file-sub-issues.sh
+        run: "$RUNNER_TEMP/agent-bin/file-sub-issues.sh"
 
   # ── Implementor ────────────────────────────────────────────────────────────────
   # The main engineer. Executes issues and handles follow-up engineering (bug fixes,
@@ -377,6 +396,11 @@ jobs:
         with:
           # full history so it can branch from and diff against mainline
           fetch-depth: 0
+      - name: Stash the agent hooks
+        run: |
+          mkdir -p "$RUNNER_TEMP/agent-bin"
+          cp .github/agent-bin/*.sh "$RUNNER_TEMP/agent-bin/"
+          chmod +x "$RUNNER_TEMP/agent-bin"/*.sh
       # Install as workflow steps, not from inside the run: this costs Claude zero turns,
       # and without it `tsc` resolves to the runner image's global TypeScript (a different
       # major) and fails on config this repo pins as valid.
@@ -391,7 +415,7 @@ jobs:
           ROLE: implementor
           REPO: ${{ github.repository }}
           NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
-        run: .github/agent-bin/stamp-role-label.sh
+        run: "$RUNNER_TEMP/agent-bin/stamp-role-label.sh"
       - name: Move the issue to In Progress
         env:
           # ⚠️ PROJECTS_TOKEN is safe here and only here: step env is per-step, so the
@@ -402,7 +426,7 @@ jobs:
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
           PROJECT_OWNER: "@me"
           PROJECT_NUMBER: "4"
-        run: .github/agent-bin/set-issue-in-progress.sh
+        run: "$RUNNER_TEMP/agent-bin/set-issue-in-progress.sh"
       - uses: anthropics/claude-code-action@v1
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -615,7 +639,7 @@ jobs:
           ROLE: implementor
           REPO: ${{ github.repository }}
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
-        run: .github/agent-bin/finish-pr.sh
+        run: "$RUNNER_TEMP/agent-bin/finish-pr.sh"
       - name: Open the epic integration PR
         if: always()
         env:
@@ -623,7 +647,7 @@ jobs:
           ROLE: implementor
           REPO: ${{ github.repository }}
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
-        run: .github/agent-bin/open-integration-pr.sh
+        run: "$RUNNER_TEMP/agent-bin/open-integration-pr.sh"
 
   # ── Tester ─────────────────────────────────────────────────────────────────────
   # Owns packages/e2e. The Implementor ships behaviour and writes Testing notes into its
@@ -662,6 +686,11 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Stash the agent hooks
+        run: |
+          mkdir -p "$RUNNER_TEMP/agent-bin"
+          cp .github/agent-bin/*.sh "$RUNNER_TEMP/agent-bin/"
+          chmod +x "$RUNNER_TEMP/agent-bin"/*.sh
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -676,7 +705,7 @@ jobs:
           ROLE: tester
           REPO: ${{ github.repository }}
           NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
-        run: .github/agent-bin/stamp-role-label.sh
+        run: "$RUNNER_TEMP/agent-bin/stamp-role-label.sh"
       - name: Move the issue to In Progress
         env:
           # ⚠️ PROJECTS_TOKEN is safe here and only here: step env is per-step, so the
@@ -687,7 +716,7 @@ jobs:
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
           PROJECT_OWNER: "@me"
           PROJECT_NUMBER: "4"
-        run: .github/agent-bin/set-issue-in-progress.sh
+        run: "$RUNNER_TEMP/agent-bin/set-issue-in-progress.sh"
       - uses: anthropics/claude-code-action@v1
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -835,7 +864,7 @@ jobs:
           ROLE: tester
           REPO: ${{ github.repository }}
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
-        run: .github/agent-bin/finish-pr.sh
+        run: "$RUNNER_TEMP/agent-bin/finish-pr.sh"
 
   # ── Writer ─────────────────────────────────────────────────────────────────────
   # The tech writer. Owns documentation: every CLAUDE.md, the agent instruction files
@@ -873,13 +902,18 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Stash the agent hooks
+        run: |
+          mkdir -p "$RUNNER_TEMP/agent-bin"
+          cp .github/agent-bin/*.sh "$RUNNER_TEMP/agent-bin/"
+          chmod +x "$RUNNER_TEMP/agent-bin"/*.sh
       - name: Stamp the role label
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ROLE: writer
           REPO: ${{ github.repository }}
           NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
-        run: .github/agent-bin/stamp-role-label.sh
+        run: "$RUNNER_TEMP/agent-bin/stamp-role-label.sh"
       - uses: anthropics/claude-code-action@v1
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -978,7 +1012,7 @@ jobs:
           ROLE: writer
           REPO: ${{ github.repository }}
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
-        run: .github/agent-bin/finish-pr.sh
+        run: "$RUNNER_TEMP/agent-bin/finish-pr.sh"
 
   # ── Security ───────────────────────────────────────────────────────────────────
   # Reviews what just landed on mainline and files issues for what it finds. Runs on
@@ -1079,6 +1113,11 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v4
+      - name: Stash the agent hooks
+        run: |
+          mkdir -p "$RUNNER_TEMP/agent-bin"
+          cp .github/agent-bin/*.sh "$RUNNER_TEMP/agent-bin/"
+          chmod +x "$RUNNER_TEMP/agent-bin"/*.sh
       - name: Close and file the PR's issues
         env:
           # Two tokens on purpose. GITHUB_TOKEN reads the PR and closes issues;
@@ -1090,4 +1129,4 @@ jobs:
           REPO: ${{ github.repository }}
           PROJECT_OWNER: "@me"
           PROJECT_NUMBER: "4"
-        run: .github/agent-bin/close-merged-work.sh
+        run: "$RUNNER_TEMP/agent-bin/close-merged-work.sh"
