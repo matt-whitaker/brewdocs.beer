@@ -213,8 +213,13 @@ jobs:
         run: |
           f="$RUNNER_TEMP/claude-execution-output.json"
           [ -f "$f" ] || exit 0
+          drop() { echo "::warning::$1 — dropping the transcript"; rm -f "$f" "$f.tmp"; exit 0; }
+          [ -n "${TOKEN:-}" ] || drop "no token to redact against"
           b64=$(printf 'x-access-token:%s' "$TOKEN" | base64 | tr -d '\n')
-          sed -e "s|$TOKEN|***REDACTED***|g" -e "s|$b64|***REDACTED***|g" "$f" > "$f.tmp"
+          raw=$(printf '%s' "$TOKEN" | base64 | tr -d '\n')
+          sed -e "s|$TOKEN|***REDACTED***|g" -e "s|$b64|***REDACTED***|g" \
+              -e "s|$raw|***REDACTED***|g" "$f" > "$f.tmp" || drop "redaction failed"
+          grep -qF "$TOKEN" "$f.tmp" && drop "token survived redaction"
           mv "$f.tmp" "$f"
       - name: Upload the execution transcript
         if: failure()
@@ -402,8 +407,13 @@ jobs:
         run: |
           f="$RUNNER_TEMP/claude-execution-output.json"
           [ -f "$f" ] || exit 0
+          drop() { echo "::warning::$1 — dropping the transcript"; rm -f "$f" "$f.tmp"; exit 0; }
+          [ -n "${TOKEN:-}" ] || drop "no token to redact against"
           b64=$(printf 'x-access-token:%s' "$TOKEN" | base64 | tr -d '\n')
-          sed -e "s|$TOKEN|***REDACTED***|g" -e "s|$b64|***REDACTED***|g" "$f" > "$f.tmp"
+          raw=$(printf '%s' "$TOKEN" | base64 | tr -d '\n')
+          sed -e "s|$TOKEN|***REDACTED***|g" -e "s|$b64|***REDACTED***|g" \
+              -e "s|$raw|***REDACTED***|g" "$f" > "$f.tmp" || drop "redaction failed"
+          grep -qF "$TOKEN" "$f.tmp" && drop "token survived redaction"
           mv "$f.tmp" "$f"
       - name: Upload the execution transcript
         if: failure()
@@ -708,8 +718,13 @@ jobs:
         run: |
           f="$RUNNER_TEMP/claude-execution-output.json"
           [ -f "$f" ] || exit 0
+          drop() { echo "::warning::$1 — dropping the transcript"; rm -f "$f" "$f.tmp"; exit 0; }
+          [ -n "${TOKEN:-}" ] || drop "no token to redact against"
           b64=$(printf 'x-access-token:%s' "$TOKEN" | base64 | tr -d '\n')
-          sed -e "s|$TOKEN|***REDACTED***|g" -e "s|$b64|***REDACTED***|g" "$f" > "$f.tmp"
+          raw=$(printf '%s' "$TOKEN" | base64 | tr -d '\n')
+          sed -e "s|$TOKEN|***REDACTED***|g" -e "s|$b64|***REDACTED***|g" \
+              -e "s|$raw|***REDACTED***|g" "$f" > "$f.tmp" || drop "redaction failed"
+          grep -qF "$TOKEN" "$f.tmp" && drop "token survived redaction"
           mv "$f.tmp" "$f"
       - name: Upload the execution transcript
         if: failure()
@@ -935,8 +950,13 @@ jobs:
         run: |
           f="$RUNNER_TEMP/claude-execution-output.json"
           [ -f "$f" ] || exit 0
+          drop() { echo "::warning::$1 — dropping the transcript"; rm -f "$f" "$f.tmp"; exit 0; }
+          [ -n "${TOKEN:-}" ] || drop "no token to redact against"
           b64=$(printf 'x-access-token:%s' "$TOKEN" | base64 | tr -d '\n')
-          sed -e "s|$TOKEN|***REDACTED***|g" -e "s|$b64|***REDACTED***|g" "$f" > "$f.tmp"
+          raw=$(printf '%s' "$TOKEN" | base64 | tr -d '\n')
+          sed -e "s|$TOKEN|***REDACTED***|g" -e "s|$b64|***REDACTED***|g" \
+              -e "s|$raw|***REDACTED***|g" "$f" > "$f.tmp" || drop "redaction failed"
+          grep -qF "$TOKEN" "$f.tmp" && drop "token survived redaction"
           mv "$f.tmp" "$f"
       - name: Upload the execution transcript
         if: failure()
@@ -1094,8 +1114,13 @@ jobs:
         run: |
           f="$RUNNER_TEMP/claude-execution-output.json"
           [ -f "$f" ] || exit 0
+          drop() { echo "::warning::$1 — dropping the transcript"; rm -f "$f" "$f.tmp"; exit 0; }
+          [ -n "${TOKEN:-}" ] || drop "no token to redact against"
           b64=$(printf 'x-access-token:%s' "$TOKEN" | base64 | tr -d '\n')
-          sed -e "s|$TOKEN|***REDACTED***|g" -e "s|$b64|***REDACTED***|g" "$f" > "$f.tmp"
+          raw=$(printf '%s' "$TOKEN" | base64 | tr -d '\n')
+          sed -e "s|$TOKEN|***REDACTED***|g" -e "s|$b64|***REDACTED***|g" \
+              -e "s|$raw|***REDACTED***|g" "$f" > "$f.tmp" || drop "redaction failed"
+          grep -qF "$TOKEN" "$f.tmp" && drop "token survived redaction"
           mv "$f.tmp" "$f"
       - name: Upload the execution transcript
         if: failure()
@@ -1196,8 +1221,13 @@ jobs:
         run: |
           f="$RUNNER_TEMP/claude-execution-output.json"
           [ -f "$f" ] || exit 0
+          drop() { echo "::warning::$1 — dropping the transcript"; rm -f "$f" "$f.tmp"; exit 0; }
+          [ -n "${TOKEN:-}" ] || drop "no token to redact against"
           b64=$(printf 'x-access-token:%s' "$TOKEN" | base64 | tr -d '\n')
-          sed -e "s|$TOKEN|***REDACTED***|g" -e "s|$b64|***REDACTED***|g" "$f" > "$f.tmp"
+          raw=$(printf '%s' "$TOKEN" | base64 | tr -d '\n')
+          sed -e "s|$TOKEN|***REDACTED***|g" -e "s|$b64|***REDACTED***|g" \
+              -e "s|$raw|***REDACTED***|g" "$f" > "$f.tmp" || drop "redaction failed"
+          grep -qF "$TOKEN" "$f.tmp" && drop "token survived redaction"
           mv "$f.tmp" "$f"
       - name: Upload the execution transcript
         if: failure()
