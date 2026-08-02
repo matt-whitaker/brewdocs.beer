@@ -1,5 +1,5 @@
-import {memo, useCallback} from "react";
-import {Scalar, Unit, UNITS} from "@brewdocs.beer/core";
+import {memo, useCallback, useState} from "react";
+import {Scalar} from "@brewdocs.beer/core";
 import DataGrid from "@/component/data-grid";
 import DataGridAddButton from "@/component/data-grid/add-button";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
@@ -9,23 +9,13 @@ import DataGridRemoveButton from "@/component/data-grid/remove-button";
 import DataGridRow from "@/component/data-grid/row";
 import {AddFn, RemoveFn, UpdateFn} from "@/hooks/useJsonEdit";
 import {BrewablePhase, Milestone} from "@/model/brewable";
-import {key, Ref, TrackerEntry, WaterParameter, WaterReadings} from "@/model/tracker";
+import {key, Ref, TrackerEntry, WaterReadings} from "@/model/tracker";
+import {WATER_PARAMETERS, WaterParameterConfig} from "@/screen/batch-schedule/reading-kinds";
 import {scalarFromNumberWithUnit} from "@/utils/formatting";
 import {newId} from "@/utils/id";
 
 const refOf = (milestoneId: string): Ref => ({ on: "milestone", id: milestoneId });
 
-type WaterParameterConfig = { key: WaterParameter; label: string; unit: Unit };
-
-const WATER_PARAMETERS: WaterParameterConfig[] = [
-    { key: "ph", label: "pH", unit: UNITS.PH },
-    { key: "calcium", label: "Calcium", unit: UNITS.PARTS_PER_MILLION },
-    { key: "magnesium", label: "Magnesium", unit: UNITS.PARTS_PER_MILLION },
-    { key: "sodium", label: "Sodium", unit: UNITS.PARTS_PER_MILLION },
-    { key: "sulfate", label: "Sulfate", unit: UNITS.PARTS_PER_MILLION },
-    { key: "chloride", label: "Chloride", unit: UNITS.PARTS_PER_MILLION },
-    { key: "bicarbonate", label: "Bicarbonate", unit: UNITS.PARTS_PER_MILLION },
-];
 
 type BatchScheduleWaterFieldProps = {
     milestoneId: string;
@@ -111,10 +101,13 @@ export type BatchScheduleWaterReadingProps = {
 };
 
 export default function BatchScheduleWaterReading({ phase, phaseIndex, tracker, onPatch, update, add, remove, headerLabel, addLabel, defaultLabel }: BatchScheduleWaterReadingProps) {
+    const [draftName, setDraftName] = useState("");
+
     const onAdd = useCallback(() => {
-        const milestone: Milestone = { id: newId(), label: defaultLabel, kind: "water" };
+        const milestone: Milestone = { id: newId(), label: draftName.trim() || defaultLabel, kind: "water" };
         add(`brewable.schedule.phases[${phaseIndex}].milestones`, milestone);
-    }, [add, phaseIndex, defaultLabel]);
+        setDraftName("");
+    }, [add, phaseIndex, defaultLabel, draftName]);
 
     const rows = phase.milestones
         .map((milestone, row) => ({ milestone, row }))
@@ -136,7 +129,13 @@ export default function BatchScheduleWaterReading({ phase, phaseIndex, tracker, 
             ))}
             <DataGridRow zebra reserveExpand>
                 <DataGridAddButton label={addLabel} onClick={onAdd} />
-                <DataGridLabel className="ml-6" cols={4}>{addLabel}</DataGridLabel>
+                <DataGridInput
+                    label={`${headerLabel} name to add`}
+                    className="ml-6"
+                    cols={4}
+                    value={draftName}
+                    onChange={setDraftName}
+                    placeholder={defaultLabel} />
             </DataGridRow>
         </DataGrid>
     );

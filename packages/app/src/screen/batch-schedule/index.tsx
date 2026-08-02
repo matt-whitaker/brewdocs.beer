@@ -196,14 +196,14 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                                                         tracker={data.tracker}
                                                         onPatch={patchTracker}
                                                         update={update}
-                                                        add={add}
+                                                        mutate={mutate}
                                                         remove={remove}
                                                         kind={kind}
+                                                        primary={primary}
                                                         unitOptions={unitOptions}
                                                         headerLabel={headerLabel}
                                                         addLabel={addLabel}
-                                                        defaultLabel={defaultLabel}
-                                                        dateOnly={primary === "date"} />
+                                                        defaultLabel={defaultLabel} />
                                                 )
                                             ))}
                                         </>
