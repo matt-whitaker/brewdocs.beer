@@ -1,5 +1,23 @@
 name: Claude
-run-name: "Claude · ${{ github.event_name == 'pull_request' && 'merge hooks' || contains(github.event.comment.body || github.event.review.body, '@claude/manager') && 'Manager' || contains(github.event.comment.body || github.event.review.body, '@claude/researcher') && 'Researcher' || contains(github.event.comment.body || github.event.review.body, '@claude/tester') && 'Tester' || contains(github.event.comment.body || github.event.review.body, '@claude/writer') && 'Writer' || 'Implementor' }} #${{ github.event.issue.number || github.event.pull_request.number }}"
+# ⚠️ A ternary chain because `run-name` has no variables and no `needs` context — this
+# shape is the only one available. `>-` folds the newlines to spaces, and YAML parses
+# before expressions evaluate, so it is one line by the time it runs. There is no
+# substring function in GitHub expressions, so a long title cannot be truncated here.
+#
+# ⚠️ EVERY CONTINUATION LINE SITS AT THE SAME INDENT as `Claude ·`. A folded scalar keeps
+# a *more*-indented line literal, newline and all — indenting the `||` arms to line them
+# up reads better and silently leaves real newlines inside the expression.
+run-name: >-
+  Claude ·
+  ${{ github.event_name == 'pull_request'
+  && (github.event.pull_request.merged && 'Post-merge' || 'PR closed')
+  || contains(github.event.comment.body || github.event.review.body, '@claude/manager') && 'Manager'
+  || contains(github.event.comment.body || github.event.review.body, '@claude/researcher') && 'Researcher'
+  || contains(github.event.comment.body || github.event.review.body, '@claude/tester') && 'Tester'
+  || contains(github.event.comment.body || github.event.review.body, '@claude/writer') && 'Writer'
+  || 'Implementor' }}
+  · #${{ github.event.issue.number || github.event.pull_request.number }}
+  ${{ github.event.issue.title || github.event.pull_request.title }}
 
 # SIX ROLES, ONE WORKFLOW. Manager / Researcher / Implementor / Tester / Writer are jobs
 # here rather than separate files to keep the Actions history readable: the role is picked
@@ -17,18 +35,27 @@ run-name: "Claude · ${{ github.event_name == 'pull_request' && 'merge hooks' ||
 # ⚠️ A BARE "@claude" DOES NOTHING, deliberately, so a half-typed handle cannot start the
 # wrong agent. Labels trigger nothing either — `on.issues` is not subscribed.
 #
+# ⚠️ TESTER AND WRITER ALSO START WITHOUT A HANDLE. They `needs:` the Implementor and run
+# on the PR it opened, so a handle is not the only route any more. See their `if:` blocks.
+#
 # ⚠️ BACKLOG WORK IS SCRIPTED, NOT PROMPTED. Every role carries hard-coded hooks around
 # its model step, in `.github/agent-bin/`:
 #
-#   pre   every role   stamp-role-label.sh    stamps @claude/<role> on the issue or PR
-#   post  researcher   file-sub-issues.sh     parents + milestones from the epic's manifest
-#   merge (no role)    close-merged-work.sh   closes the PR's issues, files them on the board
+#   pre   every role      stamp-role-label.sh      stamps @claude/<role> on the issue or PR
+#   pre   impl + tester   set-issue-in-progress.sh moves the issue to In Progress on the board
+#   post  researcher      file-sub-issues.sh       parents + milestones the epic's sub-issues
+#   post  impl/test/write finish-pr.sh             labels the PR, appends `Closes #<issue>`
+#   post  implementor     open-integration-pr.sh   opens the epic's integration PR if missing
+#   merge (no role)       close-merged-work.sh     closes the PR's issues, files them on the board
 #
 # These used to be prompt instructions, and a model could skip them — the label trail is
 # worthless if a run can forget to stamp it. They cost no turns and cannot be forgotten.
-# `close-merged-work.sh` is also the only place PROJECTS_TOKEN appears: it is a long-lived
-# classic PAT covering every project the maintainer owns, and secret masking covers logs
-# only, so it stays out of any environment a prompt can read.
+#
+# ⚠️ PROJECTS_TOKEN appears in `close-merged-work.sh` and `set-issue-in-progress.sh`, and
+# nowhere else. It is a long-lived classic PAT covering every project the maintainer owns,
+# and secret masking covers logs only — not an API payload a model could write — so it
+# stays out of any environment a prompt can read. Step env is per-step, which is what makes
+# these two safe: the model step in the same job cannot see it.
 on:
   issue_comment:
     types: [created]
