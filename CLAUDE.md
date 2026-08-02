@@ -246,6 +246,24 @@ keyword — its own — since it does target `mainline`; a sub-PR index written 
 role whose output the maintainer must review line by line. Manager 40 turns, Writer 60,
 Security 40, the rest 80. Implementor and Tester run `npm ci` as a step; nobody else builds.
 
+**Allowlists union, they don't replace.** A role's `claude_args --allowedTools` is merged with
+the action's own base set, not substituted for it — `mergedAllowedTools = [...new Set([...
+extraArgsAllowedTools, ...directAllowedTools])]` in `anthropics/claude-code-action`,
+`base-action/src/parse-sdk-options.ts`. So every role also has the base grant:
+
+```
+Glob, Grep, LS, Read, mcp__github_comment__update_claude_comment,
+Bash(git add:*), Bash(git commit:*), Bash(git rm:*), Bash(git-push.sh:*)
+```
+
+- This is why `implementor` and `tester` still read files despite neither listing `Read`.
+- What is granted is the union of the two lists and **nothing else** — every other binary
+  (`python3`, `node`, `mkdir`, `mv`, `cp`, `cat`, `chmod`, `sed`) is denied, as is any
+  `&&`-chained command. That is the usual source of a run's permission denials.
+- ⚠️ Denials cost turns. A Tester run hit its 80-turn cap with 11 of them and produced no PR.
+- ⚠️ Widen a role's list only against a denial you have actually seen. The transcript that
+  would show them is not retained (issue #431, parked), so until it is, a denial is a guess.
+
 ⚠️ Keep task checklists to 3–5 outcome-level items. The action narrates each one back to the
 PR, so a 10-item list spends most of the budget before any code is written.
 ⚠️ `trigger_phrase` must match the handle per job. `track_progress: true` forces the action's
