@@ -15,13 +15,13 @@ export type BrewTimerProps = PropsWithClass & {
     elapsedSeconds: number;
     markers?: BrewTimerMarker[];
     milestoneKindOptions: InputSelectOption[];
-    phaseOptions: InputSelectOption[];
+    currentPhaseLabel?: string;
     height?: number;
     markerSize?: number;
     markerTransitionMs?: number;
     label?: string;
     onPlayPause: () => void;
-    onQuickMilestone: (kind: string, phaseId: string) => void;
+    onQuickMilestone: (kind: string) => void;
 };
 
 export function BrewTimer({
@@ -29,7 +29,7 @@ export function BrewTimer({
     elapsedSeconds,
     markers = [],
     milestoneKindOptions,
-    phaseOptions,
+    currentPhaseLabel,
     height = 24,
     markerSize = 10,
     markerTransitionMs,
@@ -85,7 +85,7 @@ export function BrewTimer({
             <QuickMilestoneModal
                 ref={modalRef}
                 kindOptions={milestoneKindOptions}
-                phaseOptions={phaseOptions}
+                currentPhaseLabel={currentPhaseLabel}
                 onSubmit={onQuickMilestone} />
         </div>
     );

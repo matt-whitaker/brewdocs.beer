@@ -9,12 +9,7 @@ const MILESTONE_KIND_OPTIONS = [
     {name: "Note", value: "note"}
 ];
 
-const PHASE_OPTIONS = [
-    {name: "Mash", value: "phase-mash"},
-    {name: "Boil", value: "phase-boil"},
-    {name: "Fermentation", value: "phase-fermentation"},
-    {name: "Conditioning", value: "phase-conditioning"}
-];
+const CURRENT_PHASE_LABEL = "2. Boil";
 
 const MARKERS: BrewTimerMarker[] = [
     {id: "mash-in", offsetSeconds: 0, label: "Mash in", kind: "temperature"},
@@ -49,12 +44,12 @@ const meta: Meta<typeof BrewTimer> = {
         elapsedSeconds: 0,
         markers: MARKERS,
         milestoneKindOptions: MILESTONE_KIND_OPTIONS,
-        phaseOptions: PHASE_OPTIONS
+        currentPhaseLabel: CURRENT_PHASE_LABEL
     },
     parameters: {
         docs: {
             description: {
-                component: "The brew-day timer shell. It is fully controlled and holds no timer state of its own — `elapsedSeconds` and `isRunning` come from the consumer, which owns the ticking and any persistence. Reading markers are drawn by `Timeline` and given a `Popover` hit target apiece, since a `Popover` renders a `<div>` and cannot live inside the `<svg>`. The quick-reading button opens a `Modal` asking for a kind and a phase — quick-add always asks for the phase, because nothing yet signals the current one. The Global/Phase scope toggle is present for shape only; Phase is disabled until phases are automated. The public word is \"Reading\"; the model behind it is still a `Milestone`, which is why the props and handlers say `milestone`."
+                component: "The brew-day timer shell. It is fully controlled and holds no timer state of its own — `elapsedSeconds` and `isRunning` come from the consumer, which owns the ticking and any persistence. Reading markers are drawn by `Timeline` and given a `Popover` hit target apiece, since a `Popover` renders a `<div>` and cannot live inside the `<svg>`. The quick-reading button opens a `Modal` asking for a kind only — the consumer decides which phase the reading lands on and names it through `currentPhaseLabel`, which the modal states back to the brewer. The Global/Phase scope toggle is present for shape only; Phase is disabled until phases are automated. The public word is \"Reading\"; the model behind it is still a `Milestone`, which is why the props and handlers say `milestone`."
             }
         }
     }
@@ -101,9 +96,9 @@ function TickingDemo({markers = MARKERS, startSeconds = 1200}: {markers?: BrewTi
                 markers={markers}
                 markerTransitionMs={TICK_MS}
                 milestoneKindOptions={MILESTONE_KIND_OPTIONS}
-                phaseOptions={PHASE_OPTIONS}
+                currentPhaseLabel={CURRENT_PHASE_LABEL}
                 onPlayPause={() => setIsRunning(running => !running)}
-                onQuickMilestone={(kind, phaseId) => window.console.log("quick milestone", kind, phaseId)} />
+                onQuickMilestone={kind => window.console.log("quick milestone", kind)} />
             <p className="text-sm">
                 The story owns the clock — one story-minute a second. Play/pause stops the interval; the markers slide
                 left as each one&apos;s share of the elapsed span shrinks, and hovering or tapping one opens its popover.
@@ -187,9 +182,9 @@ function QuickMilestoneDemo() {
                 elapsedSeconds={5460}
                 markers={MARKERS}
                 milestoneKindOptions={MILESTONE_KIND_OPTIONS}
-                phaseOptions={PHASE_OPTIONS}
+                currentPhaseLabel={CURRENT_PHASE_LABEL}
                 onPlayPause={() => undefined}
-                onQuickMilestone={(kind, phaseId) => setLogged(current => [...current, `${kind} · ${phaseId}`])} />
+                onQuickMilestone={kind => setLogged(current => [...current, `${kind} · ${CURRENT_PHASE_LABEL}`])} />
             <ul className="text-sm list-disc pl-5">
                 {logged.map((entry, i) => <li key={`${entry}-${i}`}>{entry}</li>)}
             </ul>
@@ -202,7 +197,7 @@ export const QuickMilestone: Story = {
     parameters: {
         docs: {
             description: {
-                story: "\"Reading\" opens the modal, which defaults to the first kind and the first phase. Confirm calls `onQuickMilestone(kind, phaseId)` and the modal closes natively — `ModalFooter` submits a `method=\"dialog\"` form. Submissions are listed below the timer."
+                story: "\"Reading\" opens the modal, which defaults to the first kind and states the phase it will record against. Confirm calls `onQuickMilestone(kind)` and the modal closes natively — `ModalFooter` submits a `method=\"dialog\"` form. Submissions are listed below the timer."
             }
         }
     },

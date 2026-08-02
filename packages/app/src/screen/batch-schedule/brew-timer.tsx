@@ -1,11 +1,12 @@
 import {useCallback, useMemo} from "react";
 import {BrewTimer, BrewTimerMarker} from "@brewdocs.beer/design";
+import {currentPhaseIndex} from "@/actions/batchProgress";
 import {isRunning} from "@/actions/brewTimer";
 import {putEntry} from "@/actions/tracker";
 import useElapsedSeconds from "@/hooks/useElapsedSeconds";
 import {MutateFn} from "@/hooks/useJsonEdit";
 import Batch from "@/model/batch";
-import {Milestone, MilestoneKind, PhaseType, phaseLabel} from "@/model/brewable";
+import {BrewablePhase, Milestone, MilestoneKind, PhaseType, phaseLabel} from "@/model/brewable";
 import {TimerEventType} from "@/model/timer";
 import {key} from "@/model/tracker";
 import {newId} from "@/utils/id";
@@ -30,6 +31,9 @@ const QUICK_MILESTONE_KINDS: QuickMilestoneKind[] = [
 
 const quickMilestoneKind = (kind: string) => QUICK_MILESTONE_KINDS.find(candidate => candidate.kind === kind);
 
+const readingPhaseIndex = (phases: BrewablePhase[], tracker: Batch["tracker"]) =>
+    Math.min(currentPhaseIndex(phases, tracker), phases.length - 1);
+
 export type BatchScheduleBrewTimerProps = {
     batch: Batch;
     mutate: MutateFn<Batch>;
@@ -47,12 +51,12 @@ export default function BatchScheduleBrewTimer({ batch, mutate }: BatchScheduleB
         }, true);
     }, [mutate]);
 
-    const onQuickMilestone = useCallback((kind: string, phaseId: string) => {
+    const onQuickMilestone = useCallback((kind: string) => {
         const spec = quickMilestoneKind(kind);
         if (!spec) return;
 
         mutate(draft => {
-            const index = draft.brewable.schedule.phases.findIndex(phase => phase.id === phaseId);
+            const index = readingPhaseIndex(draft.brewable.schedule.phases, draft.tracker);
             if (index < 0) return draft;
 
             const milestone: Milestone = { id: newId(), label: spec.defaultLabel, kind: spec.kind };
@@ -73,9 +77,10 @@ export default function BatchScheduleBrewTimer({ batch, mutate }: BatchScheduleB
             .map(({ kind, name }) => ({ name, value: kind })),
         [phases]);
 
-    const phaseOptions = useMemo(
-        () => phases.map((phase, index) => ({ name: phaseLabel(phases, index), value: phase.id })),
-        [phases]);
+    const currentPhaseLabel = useMemo(() => {
+        const index = readingPhaseIndex(phases, batch.tracker);
+        return index < 0 ? undefined : phaseLabel(phases, index);
+    }, [phases, batch.tracker]);
 
     const sessionStart = batch.timer?.find(({ type }) => type === "start")?.date;
 
@@ -121,7 +126,7 @@ export default function BatchScheduleBrewTimer({ batch, mutate }: BatchScheduleB
             markers={markers}
             markerTransitionMs={TICK_MS}
             milestoneKindOptions={milestoneKindOptions}
-            phaseOptions={phaseOptions}
+            currentPhaseLabel={currentPhaseLabel}
             onPlayPause={onPlayPause}
             onQuickMilestone={onQuickMilestone} />
     );

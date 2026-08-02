@@ -4,8 +4,8 @@ import {Modal, ModalScreen} from "@/components/modal";
 
 export type QuickMilestoneModalProps = {
     kindOptions: InputSelectOption[];
-    phaseOptions: InputSelectOption[];
-    onSubmit: (kind: string, phaseId: string) => void;
+    currentPhaseLabel?: string;
+    onSubmit: (kind: string) => void;
 };
 
 function firstValue(options: InputSelectOption[]) {
@@ -14,18 +14,15 @@ function firstValue(options: InputSelectOption[]) {
 }
 
 export const QuickMilestoneModal = forwardRef<HTMLDialogElement, QuickMilestoneModalProps>(
-    ({ kindOptions, phaseOptions, onSubmit }, ref) => {
+    ({ kindOptions, currentPhaseLabel, onSubmit }, ref) => {
         const [kind, setKind] = useState<string | null>(null);
-        const [phaseId, setPhaseId] = useState<string | null>(null);
 
         const selectedKind = kind ?? firstValue(kindOptions);
-        const selectedPhaseId = phaseId ?? firstValue(phaseOptions);
 
         const confirm = useCallback(() => {
-            onSubmit(selectedKind, selectedPhaseId);
+            onSubmit(selectedKind);
             setKind(null);
-            setPhaseId(null);
-        }, [onSubmit, selectedKind, selectedPhaseId]);
+        }, [onSubmit, selectedKind]);
 
         return (
             <Modal ref={ref}>
@@ -40,15 +37,9 @@ export const QuickMilestoneModal = forwardRef<HTMLDialogElement, QuickMilestoneM
                                 value={selectedKind}
                                 onChange={setKind} />
                         </div>
-                        <div className="grid gap-1">
-                            <span className="text-sm font-bold">Phase</span>
-                            <InputSelect
-                                label="Reading phase"
-                                className="w-full"
-                                data={phaseOptions}
-                                value={selectedPhaseId}
-                                onChange={setPhaseId} />
-                        </div>
+                        {currentPhaseLabel
+                            ? <p className="text-sm">Recording on <span className="font-bold">{currentPhaseLabel}</span></p>
+                            : null}
                     </div>
                 </ModalScreen>
             </Modal>
