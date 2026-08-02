@@ -15,11 +15,12 @@ export type DataGridAddRowProps<T extends { name: string }> = {
     expandContent?: ReactNode;
     /** accessible label for the expand toggle, e.g. "hop options" */
     label?: string;
+    addLabel: string;
 
     reserveExpand?: boolean;
 };
 
-export function DataGridAddRow<T extends { name: string }>({ data, value, onChange, add, expandContent, label, reserveExpand = false }: DataGridAddRowProps<T>) {
+export function DataGridAddRow<T extends { name: string }>({ data, value, onChange, add, expandContent, label, addLabel, reserveExpand = false }: DataGridAddRowProps<T>) {
     const options = useMemo(() => data.map(({ name }) => ({ value: name, name })), [data]);
     const onClick = useCallback(() => {
         if (value) {
@@ -29,7 +30,7 @@ export function DataGridAddRow<T extends { name: string }>({ data, value, onChan
 
     return (
         <DataGridRow zebra expandContent={expandContent} label={label} reserveExpand={reserveExpand}>
-            <DataGridAddButton onClick={onClick} />
+            <DataGridAddButton label={addLabel} onClick={onClick} />
             <DataGridLabel className="ml-6">
                 <DataGridSelect
                     allowNull

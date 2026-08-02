@@ -31,7 +31,7 @@ export default function BatchListItem({ batch, recipeName, brewer, onDelete }: B
                 <ScreenP>by {brewer}</ScreenP>
                 <ScreenP>Status: {status}</ScreenP>
             </Link>
-            <ConfirmDeleteButton title={`Delete ${batch.name}?`} onConfirm={onDelete} />
+            <ConfirmDeleteButton label={`Delete ${batch.name}`} title={`Delete ${batch.name}?`} onConfirm={onDelete} />
         </li>
     );
 }

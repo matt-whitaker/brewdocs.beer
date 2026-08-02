@@ -79,7 +79,7 @@ function BatchScheduleWaterReadingItem({ phaseIndex, row, milestone, entry, onPa
             )}
             reserveExpand
         >
-            <DataGridRemoveButton onClick={onRemove} />
+            <DataGridRemoveButton label={`Remove ${milestone.label || "water sample"}`} onClick={onRemove} />
             <DataGridInput label={`${milestone.label} name`} className="ml-6" cols={3} value={milestone.label} onChange={onChangeLabel} />
         </DataGridRow>
     );
