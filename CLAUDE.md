@@ -144,12 +144,20 @@ model step.
 
 - `stamp-role-label.sh` — pre, every role. Stamps `@claude/<role>` on the issue or PR.
 - `file-sub-issues.sh` — post, Researcher. Parents and milestones from the epic's manifest.
+- `set-issue-in-progress.sh` — pre, Implementor and Tester. Moves the triggering issue to
+  **In Progress** on project #4, so the board reflects reality when work starts rather than
+  only when it merges. Skips a closed issue, so a re-run never resurrects finished work.
+- `finish-pr.sh` — post, Implementor / Tester / Writer. Labels the PR the run opened with
+  its role, and appends `Closes #<issue>` if the model didn't write one.
+- `open-integration-pr.sh` — post, Implementor. Opens the epic's integration PR when the
+  base branch has none, marker commit included. Reads the branch and epic number out of the
+  sub-issue's *Base branch* line.
 - `close-merged-work.sh` — on merge. Closes the PR's issues and files them on the board.
 
 ⚠️ These were prompt instructions until a model skipped them. A label trail is worthless if
 a run can forget to stamp it, and the merge hook is the only backlog behaviour that worked
 on its first attempt — everything model-driven took three.
-⚠️ `close-merged-work.sh` is the only place `PROJECTS_TOKEN` appears. It is a long-lived
+⚠️ `PROJECTS_TOKEN` appears only in `close-merged-work.sh` and `set-issue-in-progress.sh`, both scripted steps. Step env is per-step, so a model step in the same job cannot read it. It is a long-lived
 classic PAT (`project` + `read:org`) covering every project the maintainer owns, secret
 masking covers logs only, and a role holding `Bash(gh:*)` could publish it in a comment.
 
@@ -159,8 +167,12 @@ read as "these agents have been here". The maintainer clears them as a check-off
 - `stamp-role-label.sh` stamps the issue or PR that **triggered** the run.
 - A role that **opens** a PR labels it itself (`gh pr create --label "@claude/<role>"`) — the
   triggering stamp cannot reach a PR that did not exist yet.
-- ⚠️ Two carve-outs from "create things unlabeled": a role labels the PR it opens, and
-  Security labels the issues it files. Nothing else, and never someone else's.
+- ⚠️ Two carve-outs from "create things unlabeled": a role's PR is labelled by
+  `finish-pr.sh`, and Security labels the issues it files. Nothing else, and never
+  someone else's.
+- ⚠️ `Closes #<issue>` stays a prompt instruction *and* a hook. The model writing it puts
+  the link where a human reads it; the hook is the net, because a missing keyword loses the
+  close and the board move with nothing to signal it.
 
 **Documentation belongs to the Writer.** Implementor and Tester change no `CLAUDE.md`. They
 optionally end their handoff with a fenced `json` block of **docs candidates** —
