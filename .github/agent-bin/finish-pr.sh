@@ -31,13 +31,6 @@ if [ -z "$pr" ]; then
     exit 0
 fi
 
-# Published so the Tester and Writer can chain off this run and be pointed at the PR it
-# produced. Left unwritten on the early exit above, so an Implementor run that opened no
-# PR yields an empty output and starts neither. Guarded for use outside Actions.
-if [ -n "${GITHUB_OUTPUT:-}" ]; then
-    echo "pr=$pr" >> "$GITHUB_OUTPUT"
-fi
-
 if gh pr edit "$pr" --repo "$REPO" --add-label "@claude/$ROLE" >/dev/null 2>&1; then
     echo "PR #$pr -> @claude/$ROLE"
 else

@@ -139,31 +139,17 @@ history.
 ⚠️ Manager and Researcher require `!github.event.issue.pull_request` — `issue_comment` fires
 for PRs too, and without the guard a PR comment started a role written for an epic issue.
 
-**Tester and Writer also run on their own, chained off the Implementor.** An Implementor run
-started *from an issue* that opens a PR is followed by a Tester and then a Writer, both pointed
-at that PR. Their handles still work by hand; the chain is a fourth way in, not a replacement.
-
-- The Implementor publishes the PR number as a job output (`finish-pr.sh` → `$GITHUB_OUTPUT`),
-  and the two jobs `needs:` it. Same workflow run, so no new credential is involved.
-- Writer waits on Tester as well, so one run sees both roles' docs candidates instead of two
-  racing on the same `CLAUDE.md`.
-- Chaining is narrowed to `issue_comment` **not** on a PR. Implementors re-run constantly from
-  review feedback, and without that guard each re-run opened another duplicate spec and docs PR.
-- An Implementor that opens no PR yields an empty output and starts neither.
-
-⚠️ **A comment cannot chain the roles**, which is why this is `needs:` and not a hook. GitHub
-refuses to start a run from an event created with `GITHUB_TOKEN`, and the `if:` guards exclude
-`github-actions[bot]` besides. Posting `@claude/tester` from a hook is silently inert; making it
-work would need a new `repo`-scoped PAT in reach of a step.
-⚠️ **`!cancelled()` in the Tester's and Writer's `if:` is load-bearing.** With `needs:`, a
-*skipped* upstream job skips its dependents, and GitHub applies an implicit "all needs
-succeeded" gate; a status-check function overrides both. Drop it and a hand-typed
-`@claude/tester` can never run again — the Implementor skips, so the Tester skips.
-⚠️ **Their `trigger_phrase` is `"@claude/"`, not their own handle.** `track_progress: true`
-forces tag mode, which gates on that phrase independently of the `if:` — and a chained run's
-triggering comment says `@claude/implementor`. With the narrower phrase the step skips in `0s`
-and posts a placeholder comment, the same failure that kept the retired Owner role from ever
-running. The `if:` is what routes, so the wider phrase cannot start the wrong role.
+⚠️ Every role is started by hand. **Tester and Writer briefly chained off the Implementor via
+`needs:` and it was reverted** — the job graph left them queued behind every run, and a role
+that skips after waiting reports as cancelled, so the history filled with cancelled jobs. If
+it is ever retried, the constraint that shaped it still holds: a comment cannot chain the
+roles, because GitHub refuses to start a run from an event created with `GITHUB_TOKEN` and the
+`if:` guards exclude `github-actions[bot]` besides. `needs:` within the one workflow was the
+only route without a new `repo`-scoped PAT in reach of a step — and `needs:` is what produced
+the noise. Cost the chain carried, for whoever revisits it: `!cancelled()` in both `if:` blocks
+(without it a skipped Implementor skips them, so a hand-typed handle could never run), and
+`trigger_phrase: "@claude/"` (tag mode gates on the phrase independently of the `if:`, and a
+chained run's comment says `@claude/implementor`).
 ⚠️ Workflow changes to any of this **cannot be tested before merge**: `issue_comment` always
 runs the workflow from the default branch, so a PR branch's version is never the one that fires.
 
