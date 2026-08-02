@@ -1,12 +1,35 @@
 /**
+ * A column of `DataGridRow`'s six-column grid. `colStart` and `cols` are both
+ * expressed in these, and a `colStart` is the **real** grid column — column 4
+ * is column 4, not "the 4th value column".
+ */
+export type GridColumn = 1 | 2 | 3 | 4 | 5 | 6;
+
+/**
+ * Narrow a computed column to a `GridColumn`, clamping to the grid.
+ *
+ * For positions derived at runtime (a `.map()` laying out a variable set of
+ * value cells) — a literal type can't be inferred there, and the alternative
+ * is a cast, which is what let an out-of-range column reach the DOM as a
+ * missing class in the first place.
+ */
+export function gridColumn(n: number): GridColumn {
+    return Math.min(6, Math.max(1, Math.round(n))) as GridColumn;
+}
+
+/**
  * Column spans a row child can claim, indexed by `cols - 1`. Written out in
  * full because tailwind only generates classes it can see literally — a
  * `col-span-${n}` template would compile to nothing.
  */
 export const COL_SPANS = ["col-span-1", "col-span-2", "col-span-3", "col-span-4", "col-span-5", "col-span-6"];
 
-/** Column-start positions for a value cell, indexed by `colStart - 1` (same literal-class reason as COL_SPANS). */
-export const VALUE_COL_STARTS = ["col-start-4", "col-start-5", "col-start-6"];
+/**
+ * Column-start positions, indexed by `colStart - 1` (same literal-class reason
+ * as COL_SPANS). Covers all six columns: a partial list is what made an
+ * out-of-range `colStart` resolve to `undefined` and drop the class silently.
+ */
+export const COL_STARTS = ["col-start-1", "col-start-2", "col-start-3", "col-start-4", "col-start-5", "col-start-6"];
 
 /**
  * Shared by DataGridHeaderRow's collapse toggle and DataGridRow's expand toggle

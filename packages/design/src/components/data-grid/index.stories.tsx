@@ -103,3 +103,41 @@ export const Grains: Story = {
     name: "Grains grid (header + rows + add/remove)",
     render: () => <GrainsGrid />
 };
+
+/**
+ * The column model, made visible.
+ *
+ * A row is a six-column grid. `colStart` is the **real** grid column, and any
+ * child may take one — `DataGridInput` defaults to column 4 (the value side),
+ * `DataGridLabel` and `DataGridSelect` flow unless given one.
+ *
+ * ⚠️ Mixing placed and flowing children is what to look at here. A flowing
+ * child fills the first cell its placed siblings left free, which is rarely the
+ * cell you pictured: give every child in a row a `colStart`, or none of them.
+ */
+export const Columns: Story = {
+    render: () => (
+        <DataGrid>
+            <DataGridHeaderRow>Column placement</DataGridHeaderRow>
+
+            <DataGridRow zebra>
+                <DataGridLabel cols={3}>label, flowing (cols 1–3)</DataGridLabel>
+                <DataGridInput label="default" value="col 4" onChange={() => {}} />
+            </DataGridRow>
+
+            <DataGridRow zebra>
+                <DataGridInput label="name" colStart={1} cols={3} value="name at 1–3" onChange={() => {}} />
+                <DataGridSelect colStart={4} cols={1} data={[{name: "°P"}, {name: "SG"}]} value="°P" onChange={() => {}} />
+                <DataGridInput label="value" colStart={5} cols={2} value="value at 5–6" onChange={() => {}} />
+            </DataGridRow>
+
+            <DataGridRow zebra>
+                <DataGridLabel cols={2}>every column</DataGridLabel>
+                <DataGridInput label="c3" colStart={3} value="3" onChange={() => {}} />
+                <DataGridInput label="c4" colStart={4} value="4" onChange={() => {}} />
+                <DataGridInput label="c5" colStart={5} value="5" onChange={() => {}} />
+                <DataGridInput label="c6" colStart={6} value="6" onChange={() => {}} />
+            </DataGridRow>
+        </DataGrid>
+    )
+};

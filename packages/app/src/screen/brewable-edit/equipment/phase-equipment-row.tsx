@@ -58,13 +58,13 @@ function RecipeEditPhaseEquipmentRow({ phase, row, phaseLabel, item, remove, upd
                 />
             </DataGridLabel>
             <DataGridInput
-                colStart={2}
+                colStart={5}
                 value={useText}
                 onChange={setUseText}
                 onBlur={onBlurUse}
             />
             <DataGridInput
-                colStart={3}
+                colStart={6}
                 value={item.count?.toString() ?? ""}
                 onChange={onChangeCount}
             />

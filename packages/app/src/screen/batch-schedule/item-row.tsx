@@ -6,6 +6,7 @@ import DataGridInput from "@/component/data-grid/input";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridLabelNote from "@/component/data-grid/label-note";
 import DataGridRow from "@/component/data-grid/row";
+import {GridColumn, gridColumn} from "@/component/data-grid/styles";
 import {ScheduleDetail, ScheduleItem} from "@/model/batch";
 import {ResourceType} from "@/model/brewable";
 import {Ref, ResourceScalarField, TrackerEntry} from "@/model/tracker";
@@ -33,7 +34,7 @@ type ScheduleValueCellProps = {
     /** the row's resource name, so the control has an accessible name ("Northern Brewer weight") */
     name: string;
     field: ResourceScalarField;
-    colStart: number;
+    colStart: GridColumn;
     planned?: Scalar;
     actual?: Scalar;
     /** patches this row's tracker entry — already bound to the row's ref */
@@ -160,7 +161,7 @@ function BatchScheduleItemRow({ item, entry, onToggle, onPatch }: BatchScheduleI
                     key={field}
                     name={item.name}
                     field={field}
-                    colStart={i + 2}
+                    colStart={gridColumn(i + 5)}
                     planned={item.resource[field]}
                     actual={entry?.resource?.[field]}
                     onPatch={patch}
