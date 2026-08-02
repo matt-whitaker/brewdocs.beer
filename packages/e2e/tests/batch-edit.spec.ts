@@ -385,3 +385,54 @@ test("the phase tab bar stays one row on a phone and keeps every tab reachable",
     await page.waitForTimeout(600);
     expect(await bar.evaluate(el => el.scrollLeft)).toBe(0);
 });
+
+/**
+ * Creating a reading writes two things — the Milestone on the brewable and its value
+ * in the tracker — and `useJsonEdit` assigns `stateRef.current` during render, not in
+ * the setter. Two successive calls therefore read the same stale draft and the second
+ * overwrites the first, so this has to be one `mutate`. Asserting after a reload is
+ * what catches that: on screen the lost write looks identical to a saved one.
+ */
+test("creates a reading with its name and value in one action", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Reading Create Batch");
+    await openSchedulePhase(page, "1. Mash");
+
+    await page.getByLabel("Gravity name to add").fill("Pre-boil");
+    await page.getByLabel("Gravity value to add").fill("1.048");
+    await page.getByRole("button", {name: "Add reading"}).click();
+    await settleSave(page);
+
+    await page.reload();
+    await openSchedulePhase(page, "1. Mash");
+
+    await expect(page.getByLabel("Pre-boil name")).toHaveValue("Pre-boil");
+    await expect(page.getByLabel("Pre-boil reading")).toHaveValue(/1\.048/);
+});
+
+test("quick reading records against the current phase, and offers water parameters", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Quick Reading Batch");
+    await openSchedulePhase(page, "1. Mash");
+    await page.getByRole("button", {name: "Start timer"}).click();
+    await settleSave(page);
+
+    await page.getByRole("button", {name: "Log reading"}).click();
+    const modal = page.getByRole("dialog");
+
+    // no phase picker — the current phase is stated instead
+    await expect(modal.getByText("Recording on 1. Mash")).toBeVisible();
+    await expect(modal.getByLabel("Reading phase")).toHaveCount(0);
+
+    // water is the one kind whose value belongs to a chosen parameter
+    await modal.getByLabel("Reading kind").selectOption("water");
+    await expect(modal.getByLabel("Reading measurement")).toBeVisible();
+    await modal.getByLabel("Reading measurement").selectOption({label: "Calcium"});
+    await modal.getByLabel("Reading value").fill("60");
+    await modal.getByRole("button", {name: "Confirm"}).click();
+    await settleSave(page);
+
+    await page.reload();
+    await openSchedulePhase(page, "1. Mash");
+
+    await page.getByRole("button", {name: "Show Water Sample parameters"}).click();
+    await expect(page.getByLabel("Water Sample Calcium")).toHaveValue(/60/);
+});
