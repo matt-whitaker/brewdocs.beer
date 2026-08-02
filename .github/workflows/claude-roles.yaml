@@ -1,34 +1,34 @@
 name: Claude
-# The history entry names the role that actually ran. Read off the triggering comment,
-# since that is what routes now.
-run-name: "Claude · ${{ github.event_name == 'pull_request' && 'Owner · merge' || contains(github.event.comment.body || github.event.review.body, '@claude/manager') && 'Manager' || contains(github.event.comment.body || github.event.review.body, '@claude/researcher') && 'Researcher' || contains(github.event.comment.body || github.event.review.body, '@claude/tester') && 'Tester' || contains(github.event.comment.body || github.event.review.body, '@claude/implementor') && 'Implementor' || 'Owner' }} #${{ github.event.issue.number || github.event.pull_request.number }}"
+run-name: "Claude · ${{ github.event_name == 'pull_request' && 'merge hooks' || contains(github.event.comment.body || github.event.review.body, '@claude/manager') && 'Manager' || contains(github.event.comment.body || github.event.review.body, '@claude/researcher') && 'Researcher' || contains(github.event.comment.body || github.event.review.body, '@claude/tester') && 'Tester' || contains(github.event.comment.body || github.event.review.body, '@claude/writer') && 'Writer' || 'Implementor' }} #${{ github.event.issue.number || github.event.pull_request.number }}"
 
-# FIVE ROLES, ONE WORKFLOW. Manager / Researcher / Implementor / Tester / Owner are jobs
+# SIX ROLES, ONE WORKFLOW. Manager / Researcher / Implementor / Tester / Writer are jobs
 # here rather than separate files to keep the Actions history readable: the role is picked
 # by a job-level `if:`, so it is one run per comment with the unselected roles skipping
-# inside it.
+# inside it. Security is the sixth and runs on merge, not on a comment.
 #
-# ⚠️ THE HANDLE IN THE COMMENT ROUTES. Not labels — labels no longer trigger or route
-# anything at all. You start a role by naming it:
+# ⚠️ THE HANDLE IN THE COMMENT ROUTES. Not labels.
 #
 #   "@claude/manager ..."      -> Manager      (issues only — it shapes an epic)
 #   "@claude/researcher ..."   -> Researcher   (issues only — it decomposes an epic)
 #   "@claude/implementor ..."  -> Implementor  (issue or PR)
 #   "@claude/tester ..."       -> Tester       (issue or PR)
-#   "@claude/owner ..."        -> Owner        (issue or PR)
+#   "@claude/writer ..."       -> Writer       (issue or PR)
 #
-# ⚠️ A BARE "@claude" DOES NOTHING. It is not a fallback to any role — that is deliberate,
-# so a half-typed handle can never start the wrong agent. Name the role you want.
+# ⚠️ A BARE "@claude" DOES NOTHING, deliberately, so a half-typed handle cannot start the
+# wrong agent. Labels trigger nothing either — `on.issues` is not subscribed.
 #
-# ⚠️ LABELS ARE NOW A RECORD, NOT A ROUTE. Each role stamps its own `@claude/<role>` label
-# on the issue or PR as it starts, so the labels read as "these agents have run here". The
-# maintainer clears them as a check-off; only the Owner ever removes one, and only on
-# request.
+# ⚠️ BACKLOG WORK IS SCRIPTED, NOT PROMPTED. Every role carries hard-coded hooks around
+# its model step, in `.github/agent-bin/`:
 #
-# The Owner is the exception to one-role-per-event: it also runs AFTER whichever role a
-# comment started (via `needs` + `always()`), and after a merged PR. It is the backlog
-# agent — links, parents, milestones, board. It is not a blanket trigger: if no role ran
-# and nothing merged, the Owner does not run either.
+#   pre   every role   stamp-role-label.sh    stamps @claude/<role> on the issue or PR
+#   post  researcher   file-sub-issues.sh     parents + milestones from the epic's manifest
+#   merge (no role)    close-merged-work.sh   closes the PR's issues, files them on the board
+#
+# These used to be prompt instructions, and a model could skip them — the label trail is
+# worthless if a run can forget to stamp it. They cost no turns and cannot be forgotten.
+# `close-merged-work.sh` is also the only place PROJECTS_TOKEN appears: it is a long-lived
+# classic PAT covering every project the maintainer owns, and secret masking covers logs
+# only, so it stays out of any environment a prompt can read.
 on:
   issue_comment:
     types: [created]
@@ -77,6 +77,13 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       # No `npm ci`: the Manager reads code to shape the epic, it doesn't build.
+      - name: Stamp the role label
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ROLE: manager
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
+        run: .github/agent-bin/stamp-role-label.sh
       - uses: anthropics/claude-code-action@v1
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -142,15 +149,6 @@ jobs:
             and Implementor's job once the maintainer hands off by relabelling the issue
             `@claude/researcher` and commenting.
 
-            **Stamp your label first.** Before anything else, add your own role label to
-            the issue or PR that triggered you:
-
-                gh api repos/$GITHUB_REPOSITORY/issues/<number>/labels -f "labels[]=@claude/manager"
-
-            That endpoint works for pull requests too. Labels no longer route anything —
-            they are a record of which roles have run, which the maintainer clears as a
-            check-off. Add **only your own**, never another role's, and never remove one:
-            pruning is the Owner's job.
 
             Operational notes: dependencies are NOT installed and you don't need them —
             don't run `npm ci`/`npm install` or the build. Run one command per Bash call
@@ -187,6 +185,13 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       # No `npm ci`: the Researcher reads code and files issues, it doesn't build.
+      - name: Stamp the role label
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ROLE: researcher
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
+        run: .github/agent-bin/stamp-role-label.sh
       - uses: anthropics/claude-code-action@v1
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -263,12 +268,12 @@ jobs:
               ⚠️ **Name the epic number in that line, every time.** The Implementor opens the
               epic's integration PR the first time it finds one missing, and it needs the
               number to write `Closes #<epic>`. It only ever sees the sub-issue.
-            - ⚠️ **Don't link, parent, or milestone anything — that is the Owner's job.**
+            - ⚠️ **Don't link, parent, or milestone anything — a script does it.**
               You create the issues and nothing else about the backlog: no `sub_issues` API
-              calls, no `--milestone`, no project edits. The **Owner** runs straight after
-              you and does all of it, and it works from your index comment (below), so that
-              comment is the handoff, not a summary. Doing it yourself duplicates work and
-              causes the two of you to fight over the same fields.
+              calls, no `--milestone`, no project edits. A post-hook runs the moment you
+              finish and does all of it from the manifest you leave (below), so that
+              manifest is the handoff, not a decoration. Doing it yourself duplicates work
+              and makes the two of you fight over the same fields.
             - Don't give any sub-issue the job of opening the epic's integration PR. The
               Implementor now opens it on the **first** run that finds it missing, so it
               exists from the start of the epic and the maintainer can watch the feature
@@ -285,7 +290,7 @@ jobs:
                   {"epic": 246, "children": [346, 347]}
                   -->
 
-              An HTML comment, so it is invisible in the rendered issue. The Owner files the
+              An HTML comment, so it is invisible in the rendered issue. The post-hook files the
               sub-issues from **this**, not from your prose — a script reads it, with no
               model involved, which is why it has to be exact. Keep the human-readable list
               above it as well; that is what the maintainer reads.
@@ -315,15 +320,6 @@ jobs:
             them **unlabeled**; a role label is a record of a role having *run*, so it never
             belongs on an issue you just created.
 
-            **Stamp your label first.** Before anything else, add your own role label to
-            the issue or PR that triggered you:
-
-                gh api repos/$GITHUB_REPOSITORY/issues/<number>/labels -f "labels[]=@claude/researcher"
-
-            That endpoint works for pull requests too. Labels no longer route anything —
-            they are a record of which roles have run, which the maintainer clears as a
-            check-off. Add **only your own**, never another role's, and never remove one:
-            pruning is the Owner's job.
 
             Operational notes: dependencies are NOT installed and you don't need them —
             don't run `npm ci`/`install` or the build. Run one command per Bash call
@@ -333,6 +329,14 @@ jobs:
             --model sonnet
             --allowedTools "Read,Edit,Write,Bash(gh:*),Bash(git:*)"
             --max-turns 80
+
+      - name: File the epic's sub-issues
+        if: always() && github.event_name == 'issue_comment' && !github.event.issue.pull_request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          ISSUE: ${{ github.event.issue.number }}
+        run: .github/agent-bin/file-sub-issues.sh
 
   # ── Implementor ────────────────────────────────────────────────────────────────
   # The main engineer. Executes issues and handles follow-up engineering (bug fixes,
@@ -369,6 +373,13 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
       - run: npm ci
+      - name: Stamp the role label
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ROLE: implementor
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
+        run: .github/agent-bin/stamp-role-label.sh
       - uses: anthropics/claude-code-action@v1
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -534,6 +545,16 @@ jobs:
             If your change needs no test, say that and why — an explicit "no test needed"
             is a useful answer, a silent omission isn't.
 
+            End the Handoff with a **Docs notes** section as well, for the **Writer**. You no
+            longer edit `CLAUDE.md`; you say what it should record and why:
+
+            - The invariant a future reader would otherwise break, and what breaks.
+            - Anything that surprised you or cost you time — a gotcha nobody wrote down is
+              one everybody rediscovers.
+            - Which `CLAUDE.md` it belongs in, if you know.
+            - "Nothing to document" is a valid answer. Say it rather than leaving the
+              section off.
+
             A denied tool call is settled. The permission layer is policy, not a syntax
             problem, so rewording or re-quoting the same operation will be denied
             identically — you are spending turns to learn nothing. Note what you couldn't
@@ -566,13 +587,14 @@ jobs:
             epic**. That one line is the whole of your backlog obligation, and it matters
             more than it looks: GitHub only acts on closing keywords when a PR targets the
             **default** branch, and yours targets the epic's integration branch, so GitHub
-            ignores it entirely. The **Owner** parses it out of your body to close the
+            ignores it entirely. The merge hook parses it out of your body to close the
             issue, link it, and file it on the board. Get the number wrong and the work is
             filed against the wrong issue.
 
             ⚠️ **Do no other backlog management.** Don't comment on the issue, don't set a
-            milestone, don't touch parents, sub-issues or the project board — the Owner runs
-            straight after you and owns all of it. Your deliverable is code and a PR.
+            milestone, don't touch parents, sub-issues or the project board — scripted hooks
+            own all of it. ⚠️ **Don't edit any `CLAUDE.md` either** — documentation belongs to
+            the **Writer**. Your deliverable is code and a PR.
 
             Keep your task checklist to at most 3-5 coarse, outcome-level items ("Add the
             version field to the models", not one line per file). Group related edits under
@@ -582,15 +604,6 @@ jobs:
 
             Never merge the PR. The maintainer merges.
 
-            **Stamp your label first.** Before anything else, add your own role label to
-            the issue or PR that triggered you:
-
-                gh api repos/$GITHUB_REPOSITORY/issues/<number>/labels -f "labels[]=@claude/implementor"
-
-            That endpoint works for pull requests too. Labels no longer route anything —
-            they are a record of which roles have run, which the maintainer clears as a
-            check-off. Add **only your own**, never another role's, and never remove one:
-            pruning is the Owner's job.
           # Allowlist by *family*, not per-subcommand. Deliberately NOT bare `Bash`: this
           # runner carries GH_TOKEN and the Claude OAuth token in env, and arbitrary shell
           # could exfiltrate them. Only write-access actors can trigger a run (see the `if:`
@@ -634,6 +647,13 @@ jobs:
       # Browser install as a workflow step, not a Claude turn. Without it the Tester can
       # write specs but never run them, and an unrun test is worse than no test.
       - run: npx playwright install --with-deps chromium
+      - name: Stamp the role label
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ROLE: tester
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
+        run: .github/agent-bin/stamp-role-label.sh
       - uses: anthropics/claude-code-action@v1
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -719,321 +739,213 @@ jobs:
             turn to narrate back.
 
             Never merge a PR. Leave anything you create unlabeled, and do no backlog
-            management — no linking, milestones or project edits; the Owner owns that.
+            management — no linking, milestones or project edits; scripted hooks own that.
+            ⚠️ **Don't edit any `CLAUDE.md`** — documentation belongs to the **Writer**.
 
-            **Stamp your label first.** Before anything else, add your own role label to
-            the issue or PR that triggered you:
-
-                gh api repos/$GITHUB_REPOSITORY/issues/<number>/labels -f "labels[]=@claude/tester"
-
-            That endpoint works for pull requests too. Labels no longer route anything —
-            they are a record of which roles have run, which the maintainer clears as a
-            check-off. Add **only your own**, never another role's, and never remove one:
-            pruning is the Owner's job.
           claude_args: |
             --model sonnet
             --allowedTools "Edit,Write,Bash(git:*),Bash(gh:*),Bash(npm:*),Bash(npx:*)"
             --max-turns 80
 
-  # ── Owner ──────────────────────────────────────────────────────────────────────
-  # The backlog agent. Two ways in:
-  #   • summoned directly with "@claude/owner ..." to do backlog work you ask for
-  #   • automatically AFTER whichever role a comment started (needs + always()), and
-  #     after a merged PR — so every run leaves the backlog tidy without being asked
-  # It is not a blanket trigger: no role ran and no merge happened means no Owner.
+  # ── Writer ─────────────────────────────────────────────────────────────────────
+  # The tech writer. Owns documentation: every CLAUDE.md, the agent instruction files
+  # under .claude/skills, and anything else whose job is to explain rather than run.
   #
-  # ⚠️ It runs LAST on purpose. The whole point is to file work that already exists —
-  # link the PR the Implementor just opened, parent the sub-issues the Researcher just
-  # created. Running alongside them would race work that isn't there yet.
-  #
-  # ⚠️ The deterministic part stays a SCRIPT, not a model turn. "Parse the closing
-  # keyword, close the issue, set one field" is fully determined, and it is what the
-  # merged-PR path depends on — so it runs as its own step before Claude starts, and
-  # Claude handles only the judgment work (parenting, milestones, reconciling, pruning).
-  owner:
-    needs: [manager, researcher, implementor, tester]
+  # ⚠️ Split out because CLAUDE.md was the single biggest source of merge conflicts —
+  # every role edited it, so two branches touching the same package collided on prose
+  # neither of them was really working on. Implementor and Tester now report what needs
+  # documenting in their handoff and change no docs themselves.
+  writer:
     if: |
-      always()
-      && github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]'
-      && (
-        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude/owner')) ||
-        (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude/owner')) ||
-        (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude/owner')) ||
-        needs.manager.result != 'skipped' ||
-        needs.researcher.result != 'skipped' ||
-        needs.implementor.result != 'skipped' ||
-        needs.tester.result != 'skipped' ||
-        (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+      github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]' && (
+        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude/writer')) ||
+        (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude/writer')) ||
+        (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude/writer'))
       )
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      issues: write
+      contents: write
       pull-requests: write
+      issues: write
       id-token: write
     steps:
       - uses: actions/checkout@v4
-      - name: File the epic's sub-issues (deterministic)
-        # The automatic pass runs NO model. Parenting and milestoning are fully determined
-        # once you know (epic, children), and the Researcher now states both in a manifest
-        # rather than leaving them to be recovered from prose. This is why the quiet
-        # majority of Owner passes cost seconds instead of minutes.
-        if: github.event_name == 'issue_comment' && !github.event.issue.pull_request
+        with:
+          fetch-depth: 0
+      - name: Stamp the role label
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ROLE: writer
           REPO: ${{ github.repository }}
-          ISSUE: ${{ github.event.issue.number }}
-        run: |
-          set -euo pipefail
-
-          manifest=$(gh api "repos/$REPO/issues/$ISSUE/comments" --paginate \
-            --jq '[.[] | select(.body | contains("owner-manifest")) | .body] | last // empty')
-
-          if [ -z "$manifest" ]; then
-            echo "No owner-manifest on #$ISSUE — nothing to file."
-            exit 0
-          fi
-
-          # one line on purpose: a python heredoc indented inside this YAML block would
-          # arrive with its leading spaces intact and die on IndentationError
-          payload=$(printf '%s' "$manifest" | python3 -c 'import sys,re; m=re.search(r"owner-manifest\s*(\{.*?\})\s*-->", sys.stdin.read(), re.S); print(m.group(1) if m else "")')
-
-          if [ -z "$payload" ]; then
-            echo "::warning::#$ISSUE has an owner-manifest marker whose JSON could not be parsed — leaving it alone."
-            exit 0
-          fi
-
-          epic=$(printf '%s' "$payload" | jq -r '.epic')
-          children=$(printf '%s' "$payload" | jq -r '(.children // [])[]')
-
-          if [ -z "$children" ]; then
-            echo "Manifest on #$ISSUE lists no children — nothing to file."
-            exit 0
-          fi
-
-          milestone=$(gh issue view "$epic" --repo "$REPO" --json milestone --jq '.milestone.title // empty')
-          existing=" $(gh api "repos/$REPO/issues/$epic/sub_issues" --jq '[.[].number] | join(" ")' 2>/dev/null || true) "
-
-          for child in $children; do
-            if [ "${existing#* $child }" != "$existing" ]; then
-              echo "#$child already a sub-issue of #$epic"
-            else
-              # ⚠️ this API wants the child's integer REST id, not its issue number
-              cid=$(gh api "repos/$REPO/issues/$child" --jq .id)
-              if gh api --method POST "repos/$REPO/issues/$epic/sub_issues" -F sub_issue_id="$cid" >/dev/null 2>&1; then
-                echo "#$child -> sub-issue of #$epic"
-              else
-                echo "::warning::could not parent #$child to #$epic"
-              fi
-            fi
-
-            if [ -n "$milestone" ]; then
-              if gh issue edit "$child" --repo "$REPO" --milestone "$milestone" >/dev/null 2>&1; then
-                echo "#$child -> milestone $milestone"
-              else
-                echo "::warning::could not set milestone '$milestone' on #$child"
-              fi
-            fi
-          done
-
-      - name: File merged work (deterministic)
-        if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
-        env:
-          # Two tokens on purpose. The built-in GITHUB_TOKEN reads the PR and closes
-          # issues; PROJECTS_TOKEN is a classic PAT that exists only because it can
-          # reach user-owned Projects v2. Keeping them separate means that PAT needs
-          # the `project` scope and nothing else — no `repo`, no write on this repo.
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PROJECTS_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
-          PR: ${{ github.event.pull_request.number }}
-          REPO: ${{ github.repository }}
-          # `@me`, not the literal login: `gh project` otherwise probes whether the
-          # owner is a user or an org, which needs `read:org` that a project-only PAT
-          # lacks, and fails with a bare "unknown owner type".
-          PROJECT_OWNER: "@me"
-          PROJECT_NUMBER: "4"
-        run: |
-          set -euo pipefail
-
-          issues=$(gh pr view "$PR" --repo "$REPO" --json closingIssuesReferences \
-            --jq '.closingIssuesReferences[].number')
-
-          # ⚠️ GitHub only acts on closing keywords when a PR targets the DEFAULT
-          # branch. Every sub-issue PR goes into an epic branch instead, so its
-          # "Closes #N" is inert and closingIssuesReferences comes back empty — the
-          # intent is in the body, GitHub just never linked it. Parse it ourselves.
-          if [ -z "$issues" ]; then
-            issues=$(gh pr view "$PR" --repo "$REPO" --json body --jq \
-              '[.body // "" | scan("(?i)(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\\s+#([0-9]+)")[]] | unique | .[]')
-            if [ -n "$issues" ]; then
-              echo "No linked issues (non-default base); parsed from the body:" $issues
-            fi
-          fi
-
-          if [ -z "$issues" ]; then
-            echo "PR #$PR closes no issue — nothing to do."
-            exit 0
-          fi
-
-          for issue in $issues; do
-            if [ "$(gh issue view "$issue" --repo "$REPO" --json state --jq '.state')" = "OPEN" ]; then
-              gh issue close "$issue" --repo "$REPO" --comment "Completed by #${PR}."
-              echo "Issue #$issue -> closed"
-            fi
-          done
-
-          if [ -z "${PROJECTS_TOKEN:-}" ]; then
-            echo "::warning::PROJECTS_TOKEN is not set — issues closed, but not moved on the board. Add a classic PAT with the 'project' AND 'read:org' scopes (fine-grained tokens cannot reach user-owned Projects v2)."
-            exit 0
-          fi
-
-          export GH_TOKEN="$PROJECTS_TOKEN"
-
-          # ⚠️ Preflight, so a token problem warns instead of failing a merged PR.
-          # `gh project` needs **read:org on top of project**, even for a user-owned
-          # project — that is a second gate, separate from the owner-type probe that
-          # `--owner "@me"` handles, and its raw error ("missing required scopes
-          # [read:org read:discussion]") never mentions which secret is at fault.
-          if ! gh project view "$PROJECT_NUMBER" --owner "$PROJECT_OWNER" --format json --jq '.id' >/dev/null 2>&1; then
-            echo "::warning::PROJECTS_TOKEN cannot reach project $PROJECT_NUMBER — issues were closed, but the board was not updated. \`gh project\` requires the 'read:org' scope in addition to 'project', even for a user-owned project."
-            exit 0
-          fi
-
-          project_id=$(gh project view "$PROJECT_NUMBER" --owner "$PROJECT_OWNER" --format json --jq '.id')
-          status_field=$(gh project field-list "$PROJECT_NUMBER" --owner "$PROJECT_OWNER" --format json \
-            --jq '.fields[] | select(.name == "Status")')
-          field_id=$(echo "$status_field" | jq -r '.id')
-          done_id=$(echo "$status_field" | jq -r '(.options // [])[] | select(.name == "Done") | .id')
-
-          if [ -z "$done_id" ] || [ "$done_id" = "null" ]; then
-            echo "::warning::Project $PROJECT_NUMBER has no Status option named 'Done' — skipping the board update."
-            exit 0
-          fi
-
-          items=$(gh project item-list "$PROJECT_NUMBER" --owner "$PROJECT_OWNER" --format json --limit 500)
-
-          for issue in $issues; do
-            item_id=$(echo "$items" | jq -r --argjson n "$issue" \
-              'first(.items[] | select(.content.type == "Issue" and .content.number == $n) | .id) // empty')
-            if [ -z "$item_id" ]; then
-              echo "::warning::Issue #$issue is not on project $PROJECT_NUMBER — skipping."
-              continue
-            fi
-            gh project item-edit --id "$item_id" --project-id "$project_id" \
-              --field-id "$field_id" --single-select-option-id "$done_id"
-            echo "Issue #$issue -> Done"
-          done
+          NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
+        run: .github/agent-bin/stamp-role-label.sh
       - uses: anthropics/claude-code-action@v1
-        # ⚠️ SUMMONED ONLY. The automatic pass is handled entirely by the scripted steps
-        # above, so it never starts a model — that pass used to cost ~2.5 min of model time
-        # on every single interaction, almost always to conclude there was nothing to do.
-        if: |
-          contains(github.event.comment.body, '@claude/owner')
-          || contains(github.event.review.body, '@claude/owner')
-        # ⚠️ PROJECTS_TOKEN is deliberately NOT in this step's env. Secret masking covers
-        # *logs* only, and a model holding `Bash(gh:*)` can run
-        # `gh issue comment N --body "$PROJECTS_TOKEN"` — that passes the allowlist and
-        # publishes the value unredacted, where masking does not reach. The PAT is
-        # long-lived and reaches every project the maintainer owns, so it stays in the
-        # scripted steps above, which are not model-controlled.
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          # ⚠️ No track_progress: the Owner is told to stay quiet on its automatic pass,
-          # and a tracking comment on every run would be noise.
-          #
-          # ⚠️ `@claude/` — the PREFIX, not a whole handle. The action picks its mode from
-          # the *event type*, and `issue_comment` is always tag mode, so it gates on this
-          # phrase no matter what we do; dropping track_progress does not buy agent mode.
-          # The Owner has to fire both when summoned (`@claude/owner`) and on its automatic
-          # pass, where the comment names a *different* role — and every one of those
-          # comments contains `@claude/`. Our `if:` still decides whether the job runs at
-          # all; this only has to stop the action skipping itself once it does.
-          trigger_phrase: "@claude/"
+          track_progress: true
+          trigger_phrase: "@claude/writer"
           prompt: |
-            You are the **Owner** — the maintainer's backlog agent. You own how work is
-            *filed*: issue links, parent/sub-issue relationships, milestones, labels and the
-            project board. No other role touches any of that any more; they create issues,
-            code and PRs, and leave the filing to you.
+            You are the **Writer** — the technical writer. You own the repo's documentation:
+            every `CLAUDE.md`, the agent instruction files under `.claude/skills/`, and any
+            other file whose job is to explain rather than to run. No other role edits them.
 
-            **You only run when summoned.** The comment that triggered you contains
-            `@claude/owner`, and it is an instruction from the maintainer — read it and do
-            what it asks. There is no automatic pass any more: routine filing (parenting
-            sub-issues to their epic and putting them on its milestone) is done by a script
-            before you start, from the manifest the Researcher leaves on the epic. So don't
-            redo it, and don't assume it was skipped — check before acting.
+            You are triggered by someone writing **`@claude/writer`** in a comment, on an
+            issue or a PR. Read that comment first: it is the instruction.
 
-            That also means your work is the part a script can't do: what the maintainer
-            asked for, and anything that looks *wrong* rather than merely unfiled.
+            **Where your work comes from.** Usually an Implementor or Tester PR whose handoff
+            ends with **Docs notes** — what they learned that a future reader would otherwise
+            rediscover. Start there (`gh pr view <number> --comments`), then read the diff
+            for what actually changed. If the notes are thin, say so and document what you
+            can verify from the code; don't invent rationale nobody stated.
 
-            **If you were summoned, stamp your label:**
+            ⚠️ **Write only what is true of the code as it stands.** Every path, symbol and
+            behaviour you describe must be one you have opened and checked. A confident
+            sentence about a function that moved is worse than no sentence — it is believed
+            and not re-checked.
 
-                gh api repos/$GITHUB_REPOSITORY/issues/<number>/labels -f "labels[]=@claude/owner"
+            **House style — these files are read under pressure, mid-task.**
 
-            Only when summoned. On the automatic tidy pass you run after almost everything,
-            so stamping there would put your label on every issue and PR in the repo and
-            tell the maintainer nothing.
+            - **Tight.** Cut every word that does not change what a reader would do. Prefer
+              the shortest phrasing that stays precise; do not pad to sound thorough.
+            - ⚠️ **Lists go on multiple lines, one item per line.** Never grow a paragraph by
+              appending another clause to it. This is both a readability rule and a merge
+              rule: a paragraph everyone appends to conflicts on every parallel branch, and
+              `packages/design/CLAUDE.md`'s Surface field collided in **four consecutive**
+              epic merges before it was split into one bullet per component.
+            - **A new thing gets a new line**, never an extension of an existing one.
+            - Keep the ⚠️ marker for what is genuinely easy to get wrong — it loses its force
+              if everything carries one.
+            - Say *why*, not *what*. The code already says what.
 
-            **What filing means here.** Only do the ones that actually apply:
+            The repo-root `CLAUDE.md` explains the _Legend_ of field labels every package
+            file follows; keep to it.
 
-            - **Parent sub-issues to their epic** — normally already done by the script,
-              from the `<!-- owner-manifest ... -->` block on the epic. Do it by hand only
-              when that manifest is missing or wrong (say so if it is, so the Researcher's
-              prompt can be fixed). For each child:
+            Follow the Contributing section for branch naming, commits and the PR template.
+            Open a PR — ⚠️ against the issue's stated **Base branch** if it names one, else
+            `mainline`.
 
-                  gh api repos/$GITHUB_REPOSITORY/issues/<child-number> --jq .id
-                  gh api --method POST repos/$GITHUB_REPOSITORY/issues/<epic-number>/sub_issues -F sub_issue_id=<that-id>
+            ⚠️ **Documentation only.** You do not change application code, tests, or
+            workflows. If documenting something reveals a bug, say so in a comment and leave
+            it — that is a finding for the maintainer to route, not yours to fix.
 
-              ⚠️ That API wants the child's integer REST id, **not** its issue number. If it
-              is unavailable, put a `Part of #<epic>` line in the child body instead and say
-              so.
-            - **Propagate the epic's milestone to its sub-issues** — again, normally the
-              script's job; do it by hand only if it did not happen. Read the epic's with
-              `gh issue view <epic> --json milestone --jq '.milestone.title // empty'` and
-              apply it with `gh issue edit <child> --milestone "<title>"`. ⚠️ If the epic has
-              no milestone, its children get none either — **never invent or create one**.
-              Which milestone work belongs to is the maintainer's call, and a guessed one
-              silently misreports release scope.
-            - **Link a PR to the issue it finishes.** An Implementor PR carries
-              `Closes #<issue>` in its body, and GitHub ignores it because the PR targets an
-              epic branch rather than the default branch. Comment on that issue naming the
-              PR, so a human reading the issue can find the work.
-            - ⚠️ **Check that an epic's integration PR closes only its epic.** That PR
-              targets `mainline`, so every closing keyword in it is live, and a sub-PR index
-              written as "· closes #341" silently attaches the sub-issue to the *epic's* PR:
+            Dependencies are NOT installed and you do not need them — never run
+            `npm ci`/`install` or a build. Run one command per Bash call (chaining trips the
+            permission check). A denied tool call is settled — note it and move on. Use
+            Read/Edit/Write for file contents rather than shelling out.
 
-                  gh pr view <pr> --json closingIssuesReferences
-
-              If anything other than the epic shows up, edit the body to neuter the stray
-              keyword ("closes #341" → "for #341") and say what you changed. A sub-issue is
-              closed by its own PR, never by the epic's.
-            - ⚠️ **You cannot change the project board, by design.** The token that reaches
-              it is deliberately kept out of your environment — it is long-lived and covers
-              every project the maintainer owns, and a role that can run `gh` could publish
-              it in a comment, where log masking does not reach. Board changes happen in the
-              scripted steps that run before you, on merge. If something on the board looks
-              wrong, **say so in your comment** and leave it; don't attempt a `gh project`
-              call and don't report the refusal as a failure — this is the intended
-              boundary, not a missing permission.
-            - **Prune role labels when asked.** `@claude/<role>` labels are a record of which
-              roles have *run*, and the maintainer clears them as a check-off. Remove them
-              only when the maintainer asks you to — they are their read of what has
-              happened, so clearing them unasked destroys information.
-
-            **Boundaries.** You never write application code, never open a code PR, and never
-            merge anything. You never close an issue whose work has not actually landed —
-            a merged PR is evidence, an open one is not. You do not create milestones or
-            projects. If something looks wrong rather than merely unfiled — a PR closing an
-            issue that another PR already closed, a sub-issue on a different epic's
-            milestone — say so in a comment and leave it; the maintainer decides.
-
-            Operational notes: dependencies are NOT installed and you do not need them —
-            never run `npm ci`/`install` or a build. Run one command per Bash call (chaining
-            with `&&`/`;` trips the permission check). A denied tool call is settled — note
-            it and move on. Keep any comment you post short; you run after most other roles,
-            so verbosity here is multiplied across every run.
+            Keep your task checklist to 3-5 coarse items. Never merge a PR.
           claude_args: |
             --model sonnet
-            --allowedTools "Read,Bash(gh:*)"
+            --allowedTools "Read,Edit,Write,Bash(git:*),Bash(gh:*)"
+            --max-turns 60
+
+  # ── Security ───────────────────────────────────────────────────────────────────
+  # Reviews what just landed on mainline and files issues for what it finds. Runs on
+  # merge rather than on the PR, deliberately: a review that blocks a merge gets
+  # argued with, a review that files an issue gets triaged.
+  #
+  # ⚠️ It opens issues and nothing else — no code, no PRs, no merges.
+  security:
+    if: |
+      github.event_name == 'pull_request'
+      && github.event.pull_request.merged == true
+      && github.event.pull_request.base.ref == 'mainline'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            You are the **Security** reviewer. A pull request just merged into `mainline`.
+            Review **what it changed** and file an issue for anything genuinely unsafe.
+
+            Start with the diff — `gh pr diff ${{ github.event.pull_request.number }}` — and
+            read the files it touches. Review the change, not the whole repo.
+
+            **What matters here.** This is an offline-first PWA with no backend of its own
+            and no user accounts, so weight findings accordingly:
+
+            - **Secrets and tokens** — anything committed, logged, or placed where a model or
+              a comment could echo it. A workflow that puts a long-lived credential within
+              reach of a prompt is a real finding; the built-in `GITHUB_TOKEN` scoped to one
+              run is not.
+            - **Workflow and supply chain** — a permission widened past what a job needs, an
+              allowlist loosened to a wildcard, an unpinned or newly-added action, a script
+              that interpolates untrusted input into a shell command.
+            - **Injection reaching the DOM** — `dangerouslySetInnerHTML`, `eval`, building
+              markup from stored or fetched strings.
+            - **Stored data** — anything that widens what leaves the device, or writes
+              somewhere a user cannot clear.
+
+            ⚠️ **File only what you can point at.** Every issue names the file, the line, and
+            what an attacker actually does with it. If you cannot describe the exploit
+            concretely, it is not a finding — say the review was clean instead.
+
+            ⚠️ **A clean review posts nothing.** No issue, no comment. This runs on every
+            merge to `mainline`, so a routine "no problems found" note would be noise on
+            every single one.
+
+            When you do file, use `gh issue create` — **unlabeled** — with the
+            `.github/ISSUE_TEMPLATE/claude-task.yml` headings, one issue per finding, and
+            `Base branch: mainline`. Say plainly in the Summary which PR introduced it and
+            how severe it is; a maintainer triaging a queue needs that first.
+
+            Then add each to the project:
+            `gh project item-add 4 --owner "@me" --url <issue-url>`.
+
+            Do not change code, open a PR, or comment on the merged PR. Dependencies are NOT
+            installed — never run `npm ci`/`install` or a build. Run one command per Bash
+            call. A denied tool call is settled — note it and move on.
+          claude_args: |
+            --model sonnet
+            --allowedTools "Read,Bash(git:*),Bash(gh:*)"
             --max-turns 40
+
+  # ── Merge housekeeping ─────────────────────────────────────────────────────────
+  # Closes the issues a merged PR finished and files them on the board.
+  #
+  # ⚠️ NO MODEL. "Parse the closing keyword, close the issue, set one field" is fully
+  # determined, and this is the only backlog behaviour that has worked from its first
+  # run — everything model-driven took three attempts. It is also why PROJECTS_TOKEN
+  # lives here and nowhere a prompt can reach it.
+  merge_housekeeping:
+    if: |
+      github.event_name == 'pull_request'
+      && github.event.pull_request.merged == true
+      && (contains(github.event.pull_request.labels.*.name, '@claude/manager')
+        || contains(github.event.pull_request.labels.*.name, '@claude/researcher')
+        || contains(github.event.pull_request.labels.*.name, '@claude/implementor')
+        || contains(github.event.pull_request.labels.*.name, '@claude/tester')
+        || contains(github.event.pull_request.labels.*.name, '@claude/writer')
+        || github.event.pull_request.user.type == 'Bot')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Close and file the PR's issues
+        env:
+          # Two tokens on purpose. GITHUB_TOKEN reads the PR and closes issues;
+          # PROJECTS_TOKEN is a classic PAT that exists only because it can reach
+          # user-owned Projects v2, and needs `project` + `read:org` and nothing else.
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PROJECTS_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          PROJECT_OWNER: "@me"
+          PROJECT_NUMBER: "4"
+        run: .github/agent-bin/close-merged-work.sh

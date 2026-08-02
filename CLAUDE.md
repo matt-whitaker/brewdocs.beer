@@ -115,31 +115,90 @@ Guidance for human contributors **and** for the `@claude` GitHub integration.
 - ⚠️ Renaming files under `packages/kb/data/**` changes derived ids — a breaking change (see `packages/kb/CLAUDE.md`); call it out in the PR.
 - Prefer surfacing follow-ups over silently expanding scope; note orphaned/dead code you leave rather than deleting adjacent things unasked.
 
-### The Claude GitHub roles (Manager / Researcher / Implementor / Tester / Owner)
-- **One workflow, `.github/workflows/claude-roles.yaml`, with five role jobs**, each narrowly triggered. The old single do-everything `claude.yaml` is **retired & disabled** — kept for reference but subscribes to nothing but `workflow_dispatch`, and its job `if:` matches no dispatch context, so it never runs.
-- ⚠️ **The handle in the comment routes. Labels do not.** You start a role by naming it — `@claude/manager`, `@claude/researcher`, `@claude/implementor`, `@claude/tester`, `@claude/owner`. A **bare `@claude` does nothing at all**, deliberately: a half-typed handle can never start the wrong agent. `on.issues` is still not subscribed, so labels trigger nothing either.
-- ⚠️ **`trigger_phrase` must match the handle, per job.** `track_progress: true` forces the action's own **tag mode**, which gates on `trigger_phrase` (default `@claude`) *independently of our `if:`*. `@claude/implementor` is not a match for `@claude`, so the job fired, the action skipped itself in `0s`, and it posted a placeholder *"I'll analyze this and get back to you"* — twice. Each tag-mode role therefore sets `trigger_phrase` to its own handle. ⚠️ The **Owner's phrase is the prefix `@claude/`**, not a whole handle, because it must fire both when summoned *and* on its automatic pass — where the comment names a **different** role. Every role-triggering comment contains `@claude/`, so the prefix covers both. The action picks its mode from the **event type** (`issue_comment` is always tag mode), so there is no way to opt out of the phrase gate; omitting `track_progress` does *not* buy agent mode, which is a trap I fell into — the Owner ran, reported success, and skipped itself in `0s` for its first several passes. Our `if:` still decides whether the job runs; the phrase only stops the action no-opping once it does.
-- ⚠️ **Labels are now a record of what has run**, not a route. Each role stamps its own `@claude/<role>` label on the issue or PR as it starts (`gh api repos/{owner}/{repo}/issues/<n>/labels`, which works for PRs too), so the labels read as "these agents have been here". The maintainer clears them as a check-off. A role adds **only its own** and never removes any; only the **Owner** prunes, and only when asked. All five labels must exist in the repo.
-  - **`manager` job** — shapes a rough epic into a filled-out one (Goal / Proposal / Constraints / Research path / Codebase map / **Integration branch**) by editing the issue body + a summary comment, **and cuts the epic's integration branch** (`<issue#>-<kebab-summary>`, empty, off `mainline`). No code, no sub-issues, no PR. `sonnet`, 40 turns, `issues: write` + `contents: write` — ⚠️ write *only* to push that empty branch; its prompt forbids committing to it.
-  - **`researcher` job** — the product owner: follows a well-defined epic's Research path, then creates **unlabeled** sub-issues (self-contained, `claude-task.yml` headings) and posts one index comment. ⚠️ It **propagates the epic's integration branch into every sub-issue** as a *Base branch* line naming the epic number. ⚠️ It does **not** link, parent or milestone anything — that is the Owner's, and its **index comment is the handoff**, so each sub-issue must appear there as `#<number> — <title>` or the Owner can't file it. `sonnet`, 80 turns, no `npm ci`.
-  - **`implementor` job** — the main engineer. Reads the issue + comments (or, on a PR, the description + comments + any Handoff), then changes code and opens a PR — ⚠️ **cut from** the issue's stated *Base branch*, not merely aimed at it (see below), else `mainline`. It also opens the epic's integration PR the first time it finds one missing. ⚠️ It writes **no e2e tests** (the Tester's) and does **no backlog management** beyond putting `Closes #<issue>` in the PR body — that line is the Owner's input. **`opus`**, 80 turns, write access to contents/PRs/issues (+ `actions: read` for a red **Verify**). ⚠️ It is the only role on `opus` — it is the one that writes code the maintainer has to review, and the failure mode the other roles have (a wasted run) is cheaper than the one it has (a plausible-looking wrong change). The others stay on `sonnet`.
-  - **`tester` job** — owns `packages/e2e`: turns an Implementor's *Testing notes* into Playwright specs, **runs them**, and opens a PR. Split from the Implementor because the two pull in opposite directions — an engineer finishing a feature writes the test that passes, and this repo's actual failure mode (a save that throws inside a fire-and-forget call while lint/tsc/build stay green) is only caught by a test written to distrust the change. ⚠️ It stays inside `packages/e2e`; a failing test is a *report*, not licence to edit `packages/app` (sole exception: adding a missing `aria-label` via a design component's `label` prop). `sonnet`, 80 turns; runs `npm ci` **and** `npx playwright install --with-deps chromium` as workflow steps so it can run what it writes.
-  - **`owner` job** — the backlog agent, and the only role that is **additive**: it runs when summoned with `@claude/owner`, **and automatically after** whichever role a comment started (`needs:` + `always()`), **and** after a merged PR. ⚠️ **The automatic pass runs no model.** Two scripted steps do the routine filing — parenting sub-issues to their epic and propagating its milestone (driven by the Researcher's manifest), and closing/board-filing a merged PR's issues. The model step is gated to `@claude/owner`, i.e. only when you actually ask for something. `sonnet`, 40 turns, `Read` + `Bash(gh:*)` only.
-- ⚠️ **Why the Owner runs last, not alongside.** Its whole job is to file work that already exists — link the PR the Implementor *just* opened, parent the sub-issues the Researcher *just* created. Running it in parallel would race work that isn't there yet. It is also not a blanket trigger: no role ran and nothing merged means no Owner.
-- ⚠️ **The Researcher hands off a manifest, not prose.** Its index comment on the epic ends with an HTML comment — `<!-- owner-manifest {"epic": 246, "children": [346, 347]} -->` — invisible in the rendered issue, and the *only* thing the filing script reads. The human-readable list above it is for the maintainer. Without the manifest, nothing gets parented or milestoned. ⚠️ It is an obligation on **every** Researcher run, not just the first — the script acts on the **newest** manifest alone and does not accumulate, so a follow-up must repost the **full** child list. #376/#377 sat unfiled because a follow-up posted an index comment without one. This exists because the relationship is a fact the Researcher already knows; writing it as English forced a model downstream to recover it, which cost ~2.5 min of model time on **every** interaction, almost always to conclude there was nothing to do.
-- ⚠️ **The Owner's deterministic half stays a script.** "Parse the closing keyword, close the issue, set one field" is fully determined, so it runs as its own step *before* Claude starts; the model handles only judgment work (parenting, milestones, reconciling, pruning). That step needs a **`PROJECTS_TOKEN`** secret — a **classic** PAT with the **`project` *and* `read:org`** scopes. Fine-grained tokens cannot reach *user-owned* Projects v2 at all (project #4 is user-owned), and ⚠️ `gh project` demands `read:org` even for a user-owned project — a **second gate**, separate from the owner-type probe that `--owner "@me"` handles. Its raw error (*"missing required scopes [read:org read:discussion]"*) names neither the secret nor the command, so the step preflights project access and warns rather than failing a merged PR. (`read:discussion` is listed by `gh` but not actually needed — `project` + `read:org` is enough.) It uses **two tokens**: the built-in `GITHUB_TOKEN` (`issues: write`) reads the PR and closes issues, `PROJECTS_TOKEN` touches only the board. ⚠️ **`PROJECTS_TOKEN` is never in the model step's env.** Secret masking covers *logs* only, and a role holding `Bash(gh:*)` can run `gh issue comment N --body "$PROJECTS_TOKEN"` — that passes the allowlist and publishes the value where masking doesn't reach. The PAT is long-lived and spans every project the maintainer owns, so board mutations are **script-only**; a summoned Owner reports what should change and doesn't attempt it. ⚠️ Project commands must pass `--owner "@me"`; the literal login makes `gh project` probe user-vs-org, which needs `read:org` and fails with a bare *"unknown owner type"*.
-- ⚠️ **An epic's integration PR must carry exactly ONE closing keyword — the epic's.** It targets `mainline`, so *every* keyword in it is live, and the natural way to index the sub-PRs it collects (`- #356 — Popover primitive · closes #341`) silently attaches the **sub-issue** to the **epic's** PR and would close it out from under its own PR. Seen live on #357. Sub-PRs are listed with a bare number or "for #341"; each sub-issue is closed by its own PR. The Implementor is told this at the point it opens the PR, and the Owner re-checks `closingIssuesReferences` and neuters strays.
-- ⚠️ **GitHub ignores closing keywords unless the PR targets the default branch.** Every sub-issue PR targets an epic branch instead, so its `Closes #N` is inert and `closingIssuesReferences` comes back empty. The Owner falls back to parsing the keyword out of the PR body — that is the only reason sub-issues get closed or filed at all.
-- ⚠️ **Manager and Researcher are issue-only.** Both work on an epic *issue*, so their `if:` requires `!github.event.issue.pull_request` — `issue_comment` fires for pull requests too, and the payload puts the PR in `github.event.issue`. Naming them on a PR does nothing.
-- ⚠️ **Why one workflow, not five files.** The role is chosen by a job-level `if:`, so as separate files every comment would create one real run and four skipped ones, cluttering the Actions history. As one file it is a **single run per comment**, with the unselected roles skipping *inside* it, and a dynamic `run-name` keeps that row self-describing.
-- **One epic → one branch → one PR to `mainline`.** The Manager cuts `<issue#>-<kebab-summary>` off `mainline` and records it in the epic; the Researcher stamps it onto every sub-issue as a *Base branch* line naming the epic; each Implementor branches off it and PRs **into** it. **Whichever Implementor first finds no integration PR opens it** (branch → `mainline`, `Closes #<epic>`), so it exists from the start and fills up as sub-issues merge.
-  - ⚠️ **A *Base branch* governs two things, and only naming the PR's base is the trap.** The workflow checks the runner out on **`mainline`**, so an Implementor that runs `gh pr create --base <epic-branch>` without first `git checkout -B <branch> origin/<epic-branch>` produces a PR that looks correct but whose branch was cut from `mainline` — the diff then carries every mainline change since the epic branch was cut, other epics' features included. Seen live: PR #330's parent commit was mainline's #313 merge, and its 12-file diff hauled in the whole recipe/batch delete feature. The prompt spells out the fetch/checkout and makes the Implementor verify `git log origin/<base>..HEAD` shows only its own commits.
-  - ⚠️ **The first integration PR needs a marker commit.** The Manager cuts the branch empty, so at the first Implementor's run it is identical to `mainline` and GitHub refuses the PR with *"No commits between mainline and \<branch\>"*. The Implementor pushes a single `--allow-empty` commit and retries.
-  - ⚠️ **What may be pushed straight to an integration branch** is housekeeping only: that empty marker, and merging `mainline` in to keep the branch current. **Feature work never** goes there directly; it lands by merging sub-issue PRs, which is the review the branch exists to collect.
-  - ⚠️ **A side benefit: e2e coverage starts on day one.** `functional-test.yaml` only runs on PRs **to `mainline`**, so sub-issue PRs into an epic branch never run Playwright. With the integration PR open from the start, the suite runs against the accumulating feature the whole way through.
-  - ⚠️ **`pull_request` events run the workflow from the PR's *base* branch.** A sub-PR merging into an epic branch therefore runs whatever version of this file that branch was cut with — so workflow fixes don't reach in-flight epics until `mainline` is merged into them.
-- ⚠️ **Keep the task checklist coarse — 3–5 outcome-level items** ("Add the version field to the models", not one line per file). The action narrates every checklist item back to the PR, so each item costs a turn; a 10-item list spends most of the budget before any code is written. This is the single biggest budget consumer.
-- **Deps are pre-installed (Implementor and Tester); the Implementor builds before opening the PR.** Their prompts tell them *not* to run `npm ci`/`install`. (An earlier config with no `npm ci` step made the Implementor chase a phantom TS-version error for eleven turns; that's also why the prompt says a denied tool call is settled — don't re-quote and retry — and hands it the `$`-in-filename escape directly.) Manager, Researcher and Owner don't build, so they skip `npm ci`.
-- ⚠️ **Verify on a bot-opened PR waits for approval.** A PR opened with `GITHUB_TOKEN` creates `pull_request` runs that require a maintainer to click *Approve and run* — the check isn't broken, it's held.
-- ⚠️ **The actor guard** (`github.actor != 'claude[bot]' && != 'github-actions[bot]'`) stops the `track_progress` comment from re-triggering the workflow.
-- **House rules.** Never push to a deploy branch — open a PR. May open PRs, push to feature branches, comment; may **not** merge its own PR, edit `.github/workflows/**` or secrets, or run destructive git. Pass the gate before proposing a PR. Proceed on clearly-scoped tasks; ask when a change is ambiguous, irreversible, or outward-facing.
+### The Claude GitHub roles
+
+Six roles, one workflow (`.github/workflows/claude-roles.yaml`), so a comment makes one run
+with the unselected roles skipping inside it rather than five skipped runs cluttering the
+history.
+
+**Routing.** The handle in the comment picks the role. Labels route nothing.
+
+- `@claude/manager` — issues only. Shapes a rough epic and cuts its integration branch.
+- `@claude/researcher` — issues only. Decomposes an epic into sub-issues.
+- `@claude/implementor` — issue or PR. Writes the code and opens the PR.
+- `@claude/tester` — issue or PR. Owns `packages/e2e`.
+- `@claude/writer` — issue or PR. Owns every `CLAUDE.md` and `.claude/skills/`.
+- **Security** — no handle. Runs on merge to `mainline` and files issues.
+
+⚠️ All five `@claude/*` labels must exist in the repo or the stamp hook warns and skips.
+`@claude/owner` is retired and can be deleted.
+
+⚠️ A bare `@claude` does nothing, so a half-typed handle cannot start the wrong agent.
+⚠️ Manager and Researcher require `!github.event.issue.pull_request` — `issue_comment` fires
+for PRs too, and without the guard a PR comment started a role written for an epic issue.
+
+**Backlog work is scripted, never prompted.** Hooks in `.github/agent-bin/` run around each
+model step.
+
+- `stamp-role-label.sh` — pre, every role. Stamps `@claude/<role>` on the issue or PR.
+- `file-sub-issues.sh` — post, Researcher. Parents and milestones from the epic's manifest.
+- `close-merged-work.sh` — on merge. Closes the PR's issues and files them on the board.
+
+⚠️ These were prompt instructions until a model skipped them. A label trail is worthless if
+a run can forget to stamp it, and the merge hook is the only backlog behaviour that worked
+on its first attempt — everything model-driven took three.
+⚠️ `close-merged-work.sh` is the only place `PROJECTS_TOKEN` appears. It is a long-lived
+classic PAT (`project` + `read:org`) covering every project the maintainer owns, secret
+masking covers logs only, and a role holding `Bash(gh:*)` could publish it in a comment.
+
+**Labels are a record, not a route.** Each role stamps its own as it starts, so the labels
+read as "these agents have been here". The maintainer clears them as a check-off.
+
+**Documentation belongs to the Writer.** Implementor and Tester change no `CLAUDE.md`; they
+end their handoff with **Docs notes** saying what should be recorded and why. ⚠️ This exists
+because `CLAUDE.md` was the biggest single source of merge conflicts — every role edited it,
+so parallel branches collided on prose neither was really working on.
+
+**Testing belongs to the Tester.** The Implementor writes no e2e specs and leaves
+**Testing notes** instead. An engineer finishing a feature writes the test that passes; this repo's
+actual failure mode — a save that throws inside a fire-and-forget call while lint, tsc and
+build stay green — is only caught by a test written to distrust the change.
+
+**One epic → one branch → one PR to `mainline`.**
+
+- Manager cuts `<issue#>-<kebab-summary>` off `mainline`, empty, and records it in the epic.
+- Researcher stamps it onto every sub-issue as a *Base branch* line naming the epic.
+- Each Implementor branches off it and PRs into it.
+- Whichever Implementor first finds no integration PR opens it, so it fills up as sub-issues
+  merge instead of appearing whole at the end.
+
+⚠️ A *Base branch* governs two things and naming only the PR's base is the trap. The runner
+checks out `mainline`, so `gh pr create --base <epic>` without `git checkout -B <branch>
+origin/<epic>` yields a PR that looks right but was cut from `mainline` — its diff then
+carries every mainline change since, other epics' features included. Seen on PR #330.
+⚠️ The first integration PR needs an `--allow-empty` marker commit; the branch is identical
+to `mainline` and GitHub refuses a PR with no commits between.
+⚠️ Only housekeeping may be pushed straight to an integration branch — that marker, and
+merging `mainline` in. Feature work lands by merging sub-issue PRs.
+⚠️ `pull_request` events run the workflow from the PR's **base** branch, so workflow fixes do
+not reach in-flight epics until `mainline` is merged into them.
+⚠️ GitHub ignores closing keywords unless the PR targets the default branch, so a sub-issue
+PR's `Closes #N` is inert and `closingIssuesReferences` is empty. The merge hook parses the
+keyword out of the body instead. The epic's integration PR must carry **exactly one** closing
+keyword — its own — since it does target `mainline`; a sub-PR index written as
+`· closes #341` silently attaches that sub-issue to the epic's PR.
+
+**Budgets.** `sonnet` throughout except the Implementor, which runs `opus` — it is the only
+role whose output the maintainer must review line by line. Manager 40 turns, Writer 60,
+Security 40, the rest 80. Implementor and Tester run `npm ci` as a step; nobody else builds.
+
+⚠️ Keep task checklists to 3–5 outcome-level items. The action narrates each one back to the
+PR, so a 10-item list spends most of the budget before any code is written.
+⚠️ `trigger_phrase` must match the handle per job. `track_progress: true` forces the action's
+own tag mode, which gates on that phrase independently of our `if:` — leave it at the default
+`@claude` and the job fires, the action skips in `0s`, and it posts a placeholder comment.
+⚠️ Verify on a bot-opened PR waits for a maintainer to click *Approve and run*.
+
+**House rules.** Never push to a deploy branch. May open PRs, push to feature branches and
+comment; may not merge, edit `.github/workflows/**` or secrets, or run destructive git. Pass
+the gate before proposing a PR. Ask when a change is ambiguous, irreversible or outward-facing.
