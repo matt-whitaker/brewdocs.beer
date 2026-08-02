@@ -33,12 +33,10 @@ export abstract class Forage<T> {
     }
 
     async save(id: string, item: T): Promise<T> {
-        console.log(`Saving ${this._name}#${id}`, item);
         return await this._forage.setItem(this.buildKey(id), item);
     }
 
     async delete(id: string): Promise<void>{
-        console.log(`Deleting ${this._name}#${id}`);
         return await this._forage.removeItem(this.buildKey(id));
     }
 
