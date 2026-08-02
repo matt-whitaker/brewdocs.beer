@@ -1,5 +1,6 @@
 import {Unit, UNITS} from "@brewdocs.beer/core";
 import {MilestoneKind, PhaseType} from "@/model/brewable";
+import {WaterParameter} from "@/model/tracker";
 
 export type ReadingPrimary = "reading" | "date" | "waterParameter";
 
@@ -97,3 +98,15 @@ export const READING_KINDS: ReadingKindConfig[] = [
 
 export const readingKindsForPhase = (type: PhaseType): ReadingKindConfig[] =>
     READING_KINDS.filter(({ phaseTypes }) => !phaseTypes || phaseTypes.includes(type));
+
+export type WaterParameterConfig = { key: WaterParameter; label: string; unit: Unit };
+
+export const WATER_PARAMETERS: WaterParameterConfig[] = [
+    { key: "ph", label: "pH", unit: UNITS.PH },
+    { key: "calcium", label: "Calcium", unit: UNITS.PARTS_PER_MILLION },
+    { key: "magnesium", label: "Magnesium", unit: UNITS.PARTS_PER_MILLION },
+    { key: "sodium", label: "Sodium", unit: UNITS.PARTS_PER_MILLION },
+    { key: "sulfate", label: "Sulfate", unit: UNITS.PARTS_PER_MILLION },
+    { key: "chloride", label: "Chloride", unit: UNITS.PARTS_PER_MILLION },
+    { key: "bicarbonate", label: "Bicarbonate", unit: UNITS.PARTS_PER_MILLION },
+];

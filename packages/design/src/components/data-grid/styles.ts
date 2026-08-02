@@ -21,3 +21,5 @@ export const VALUE_COL_STARTS = ["col-start-4", "col-start-5", "col-start-6"];
  */
 export const CHEVRON = "btn btn-xs btn-ghost btn-square shrink-0";
 export const CHEVRON_ICON = "w-4 transition-transform";
+
+export const ROW_ICON_BUTTON = "btn btn-xs btn-ghost p-0 m-0 absolute left-1.5 top-1 lg:top-2";

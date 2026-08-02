@@ -1,5 +1,6 @@
-import {memo, useCallback} from "react";
+import {memo, useCallback, useState} from "react";
 import {Unit} from "@brewdocs.beer/core";
+import {putEntry} from "@/actions/tracker";
 import DataGrid from "@/component/data-grid";
 import DataGridAddButton from "@/component/data-grid/add-button";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
@@ -8,9 +9,11 @@ import DataGridLabel from "@/component/data-grid/label";
 import DataGridRemoveButton from "@/component/data-grid/remove-button";
 import DataGridRow from "@/component/data-grid/row";
 import DataGridSelect from "@/component/data-grid/select";
-import {AddFn, RemoveFn, UpdateFn} from "@/hooks/useJsonEdit";
+import {MutateFn, RemoveFn, UpdateFn} from "@/hooks/useJsonEdit";
+import Batch from "@/model/batch";
 import {BrewablePhase, Milestone, MilestoneKind} from "@/model/brewable";
 import {key, Ref, TrackerEntry} from "@/model/tracker";
+import {ReadingPrimary} from "@/screen/batch-schedule/reading-kinds";
 import {scalarFromNumberWithUnit} from "@/utils/formatting";
 import {newId} from "@/utils/id";
 
@@ -95,15 +98,14 @@ export type BatchScheduleReadingProps = {
     tracker: Record<string, TrackerEntry>;
     onPatch: (ref: Ref, patch: TrackerEntry) => void;
     update: UpdateFn;
-    add: AddFn;
+    mutate: MutateFn<Batch>;
     remove: RemoveFn;
     kind: MilestoneKind;
+    primary: ReadingPrimary;
     unitOptions?: {name: string; value: Unit}[];
     headerLabel: string;
     addLabel: string;
     defaultLabel: string;
-    /** date-only kinds (kegDate/bottleDate) skip the reading/unit inputs and use only `TrackerEntry.date` */
-    dateOnly?: boolean;
 };
 
 /**
@@ -113,13 +115,37 @@ export type BatchScheduleReadingProps = {
  * Renders on every phase tab, including an empty one — the brewer adds the
  * first reading from here.
  */
-export default function BatchScheduleReading({ phase, phaseIndex, tracker, onPatch, update, add, remove, kind, unitOptions, headerLabel, addLabel, defaultLabel, dateOnly = false }: BatchScheduleReadingProps) {
+export default function BatchScheduleReading({ phase, phaseIndex, tracker, onPatch, update, mutate, remove, kind, primary, unitOptions, headerLabel, addLabel, defaultLabel }: BatchScheduleReadingProps) {
     const defaultUnit = unitOptions?.[0].value;
+    const dateOnly = primary === "date";
+
+    const [draftName, setDraftName] = useState("");
+    const [draftValue, setDraftValue] = useState("");
 
     const onAdd = useCallback(() => {
-        const milestone: Milestone = { id: newId(), label: defaultLabel, kind };
-        add(`brewable.schedule.phases[${phaseIndex}].milestones`, milestone);
-    }, [add, phaseIndex, kind, defaultLabel]);
+        const id = newId();
+        const milestone: Milestone = { id, label: draftName.trim() || defaultLabel, kind };
+        const value = draftValue.trim();
+        const entry: TrackerEntry | null = !value
+            ? null
+            : dateOnly
+                ? { date: value }
+                : { reading: scalarFromNumberWithUnit(value, defaultUnit as Unit) };
+
+        mutate(draft => {
+            const phases = draft.brewable.schedule.phases.map((candidate, i) =>
+                i === phaseIndex ? { ...candidate, milestones: [...candidate.milestones, milestone] } : candidate);
+
+            return {
+                ...draft,
+                brewable: { ...draft.brewable, schedule: { ...draft.brewable.schedule, phases } },
+                tracker: entry ? putEntry(draft.tracker, refOf(id), entry) : draft.tracker
+            };
+        }, true);
+
+        setDraftName("");
+        setDraftValue("");
+    }, [mutate, phaseIndex, kind, defaultLabel, draftName, draftValue, dateOnly, defaultUnit]);
 
     const rows = phase.milestones
         .map((milestone, row) => ({ milestone, row }))
@@ -144,7 +170,20 @@ export default function BatchScheduleReading({ phase, phaseIndex, tracker, onPat
             ))}
             <DataGridRow zebra reserveExpand>
                 <DataGridAddButton label={addLabel} onClick={onAdd} />
-                <DataGridLabel className="ml-6" cols={4}>{addLabel}</DataGridLabel>
+                <DataGridInput
+                    label={`${headerLabel} name to add`}
+                    className="ml-6"
+                    cols={3}
+                    value={draftName}
+                    onChange={setDraftName}
+                    placeholder={defaultLabel} />
+                <DataGridInput
+                    label={`${headerLabel} ${dateOnly ? "date" : "value"} to add`}
+                    colStart={dateOnly ? 4 : 3}
+                    cols={dateOnly ? 3 : undefined}
+                    type={dateOnly ? "date" : undefined}
+                    value={draftValue}
+                    onChange={setDraftValue} />
             </DataGridRow>
         </DataGrid>
     );

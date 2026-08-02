@@ -9,13 +9,6 @@ const MILESTONE_KIND_OPTIONS = [
     {name: "Note", value: "note"}
 ];
 
-const PHASE_OPTIONS = [
-    {name: "Mash", value: "phase-mash"},
-    {name: "Boil", value: "phase-boil"},
-    {name: "Fermentation", value: "phase-fermentation"},
-    {name: "Conditioning", value: "phase-conditioning"}
-];
-
 const MARKERS: BrewTimerMarker[] = [
     {id: "mash-in", offsetSeconds: 0, label: "Mash in", kind: "temperature"},
     {id: "first-runnings", offsetSeconds: 2400, label: "First runnings", kind: "gravity"},
@@ -49,12 +42,12 @@ const meta: Meta<typeof BrewTimer> = {
         elapsedSeconds: 0,
         markers: MARKERS,
         milestoneKindOptions: MILESTONE_KIND_OPTIONS,
-        phaseOptions: PHASE_OPTIONS
+        phaseLabel: "2. Boil"
     },
     parameters: {
         docs: {
             description: {
-                component: "The brew-day timer shell. It is fully controlled and holds no timer state of its own — `elapsedSeconds` and `isRunning` come from the consumer, which owns the ticking and any persistence. Milestone markers are drawn by `Timeline` and given a `Popover` hit target apiece, since a `Popover` renders a `<div>` and cannot live inside the `<svg>`. The quick-milestone button opens a `Modal` asking for a kind and a phase — quick-add always asks for the phase, because nothing yet signals the current one. The Global/Phase scope toggle is present for shape only; Phase is disabled until phases are automated."
+                component: "The brew-day timer shell. It is fully controlled and holds no timer state of its own — `elapsedSeconds` and `isRunning` come from the consumer, which owns the ticking and any persistence. Reading markers are drawn by `Timeline` and given a `Popover` hit target apiece, since a `Popover` renders a `<div>` and cannot live inside the `<svg>`. The quick-reading button opens a `Modal` asking for a kind and a phase — quick-add always asks for the phase, because nothing yet signals the current one. The Global/Phase scope toggle is present for shape only; Phase is disabled until phases are automated. The public word is \"Reading\"; the model behind it is still a `Milestone`, which is why the props and handlers say `milestone`."
             }
         }
     }
@@ -101,9 +94,9 @@ function TickingDemo({markers = MARKERS, startSeconds = 1200}: {markers?: BrewTi
                 markers={markers}
                 markerTransitionMs={TICK_MS}
                 milestoneKindOptions={MILESTONE_KIND_OPTIONS}
-                phaseOptions={PHASE_OPTIONS}
+                phaseLabel="2. Boil"
                 onPlayPause={() => setIsRunning(running => !running)}
-                onQuickMilestone={(kind, phaseId) => window.console.log("quick milestone", kind, phaseId)} />
+                onQuickMilestone={(kind, value) => window.console.log("quick reading", kind, value)} />
             <p className="text-sm">
                 The story owns the clock — one story-minute a second. Play/pause stops the interval; the markers slide
                 left as each one&apos;s share of the elapsed span shrinks, and hovering or tapping one opens its popover.
@@ -166,7 +159,7 @@ export const Narrow: Story = {
     parameters: {
         docs: {
             description: {
-                story: "Constrained to a 360px-wide phone viewport. Below `sm` the whole bar steps down together — the counter one type size, every button to `btn-xs`, the card to a tighter padding — and the controls drop to their own row, the scope toggle to the left and \"Milestone\" to the right, so nothing bleeds past the edge."
+                story: "Constrained to a 360px-wide phone viewport. Below `sm` the whole bar steps down together — the counter one type size, every button to `btn-xs`, the card to a tighter padding — and the controls drop to their own row, the scope toggle to the left and \"Reading\" to the right, so nothing bleeds past the edge."
             }
         }
     },
@@ -187,9 +180,9 @@ function QuickMilestoneDemo() {
                 elapsedSeconds={5460}
                 markers={MARKERS}
                 milestoneKindOptions={MILESTONE_KIND_OPTIONS}
-                phaseOptions={PHASE_OPTIONS}
+                phaseLabel="2. Boil"
                 onPlayPause={() => undefined}
-                onQuickMilestone={(kind, phaseId) => setLogged(current => [...current, `${kind} · ${phaseId}`])} />
+                onQuickMilestone={(kind, value) => setLogged(current => [...current, `${kind} · ${value}`])} />
             <ul className="text-sm list-disc pl-5">
                 {logged.map((entry, i) => <li key={`${entry}-${i}`}>{entry}</li>)}
             </ul>
@@ -198,11 +191,11 @@ function QuickMilestoneDemo() {
 }
 
 export const QuickMilestone: Story = {
-    name: "Quick-milestone modal flow",
+    name: "Quick-reading modal flow",
     parameters: {
         docs: {
             description: {
-                story: "\"Milestone\" opens the modal, which defaults to the first kind and the first phase. Confirm calls `onQuickMilestone(kind, phaseId)` and the modal closes natively — `ModalFooter` submits a `method=\"dialog\"` form. Submissions are listed below the timer."
+                story: "\"Reading\" opens the modal, which defaults to the first kind and records against the current phase — the consumer resolves it and passes `phaseLabel`, so the modal never asks. Confirm calls `onQuickMilestone(kind, value, parameter?)` and the modal closes natively — `ModalFooter` submits a `method=\"dialog\"` form. Submissions are listed below the timer."
             }
         }
     },
