@@ -1,4 +1,4 @@
-import { expect, Page, test } from "@playwright/test";
+import { expect, Locator, Page, test } from "@playwright/test";
 
 test("recipes page defaults to the All tab, listing the kb catalog", async ({ page }) => {
     await page.goto("/recipes");
@@ -127,4 +127,66 @@ test("deleting a user recipe removes it from the list and it stays gone after re
     await page.reload();
     await page.getByRole("tab", { name: "My Recipes" }).click();
     await expect(page.getByText("E2E Delete Recipe")).not.toBeVisible();
+});
+
+test("a user recipe's detail page is reached from the list and renders its stored values", async ({ page }) => {
+    await createRecipeFromTemplate(page, "E2E Overview Recipe", "Empty");
+    await page.getByLabel("Brewer").fill("E2E Overview Brewer");
+    await settleSave(page);
+
+    await page.goto("/recipes");
+    await page.getByRole("tab", { name: "My Recipes" }).click();
+    const row = page.getByRole("listitem").filter({ hasText: "E2E Overview Recipe" });
+    await row.getByRole("heading", { name: "E2E Overview Recipe" }).click();
+
+    await expect(page).toHaveURL(/\/recipe\/[^/]+$/);
+    await expect(page.getByRole("heading", { name: "E2E Overview Recipe" })).toBeVisible();
+    await expect(page.getByText("By E2E Overview Brewer")).toBeVisible();
+    await expect(page.getByText("ABV 0.0% | IBUs 0 | O.G. 0.00°P | F.G. 0.00°P")).toBeVisible();
+
+    await expect(page.getByRole("button", { name: "Brew" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Edit" })).toBeVisible();
+});
+
+// recipe names are also echoed into the (normally hidden) delete-confirm
+// dialog's heading, so a bare getByText/getByRole("heading") is ambiguous —
+// scope to the list row, as the delete tests above already do
+function recipeRow(page: Page, name: string): Locator {
+    return page.getByRole("listitem").filter({ hasText: name });
+}
+
+test("search filters the All tab to matching recipes and clearing restores the full list", async ({ page }) => {
+    await createRecipeFromTemplate(page, "E2E Search All Tab", "Empty");
+
+    await page.goto("/recipes");
+    await expect(recipeRow(page, "Anchor Steam Beer Clone")).toBeVisible();
+    await expect(recipeRow(page, "E2E Search All Tab")).toBeVisible();
+
+    const search = page.getByLabel("Search recipes");
+    await search.fill("Anchor");
+    await expect(recipeRow(page, "Anchor Steam Beer Clone")).toBeVisible();
+    await expect(recipeRow(page, "E2E Search All Tab")).not.toBeVisible();
+
+    await search.fill("");
+    await expect(recipeRow(page, "Anchor Steam Beer Clone")).toBeVisible();
+    await expect(recipeRow(page, "E2E Search All Tab")).toBeVisible();
+});
+
+test("search filters the My Recipes tab to matching recipes and clearing restores the full list", async ({ page }) => {
+    await createRecipeFromTemplate(page, "E2E Search Mine Alpha", "Empty");
+    await createRecipeFromTemplate(page, "E2E Search Mine Beta", "Empty");
+
+    await page.goto("/recipes");
+    await page.getByRole("tab", { name: "My Recipes" }).click();
+    await expect(recipeRow(page, "E2E Search Mine Alpha")).toBeVisible();
+    await expect(recipeRow(page, "E2E Search Mine Beta")).toBeVisible();
+
+    const search = page.getByLabel("Search recipes");
+    await search.fill("Alpha");
+    await expect(recipeRow(page, "E2E Search Mine Alpha")).toBeVisible();
+    await expect(recipeRow(page, "E2E Search Mine Beta")).not.toBeVisible();
+
+    await search.fill("");
+    await expect(recipeRow(page, "E2E Search Mine Alpha")).toBeVisible();
+    await expect(recipeRow(page, "E2E Search Mine Beta")).toBeVisible();
 });

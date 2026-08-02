@@ -7,13 +7,16 @@ export type SearchBarProps = PropsWithClass
     & {
         value: string;
         placeholder?: string;
+        /** accessible name, when no visible <label> is associated — rendered as aria-label */
+        label?: string;
     };
 
-export function SearchBar({ value, onChange, placeholder = "Search…", className }: SearchBarProps) {
+export function SearchBar({ value, onChange, placeholder = "Search…", label, className }: SearchBarProps) {
     return <InputText
         value={value}
         size="medium"
         onChange={onChange}
         placeholder={placeholder}
+        label={label}
         className={classNames("w-full", className)} />;
 }
