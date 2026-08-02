@@ -1,13 +1,11 @@
 import {useCallback, useMemo} from "react";
 import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
-import DataGridLabel from "@/component/data-grid/label";
-import DataGridRow from "@/component/data-grid/row";
-import DataGridSelect from "@/component/data-grid/select";
 import Screen from "@/component/screen";
 import useJsonEdit from "@/hooks/useJsonEdit";
 import Batch, {ShoppingItem, ShoppingTag} from "@/model/batch";
 import ShoppingItemRow from "@/screen/batch-shopping/item-row";
+import BatchShoppingSort from "@/screen/batch-shopping/sort-control";
 import {useBatch} from "@/state/batches";
 import {saveSession, useSession} from "@/state/session";
 
@@ -103,17 +101,11 @@ export default function BatchShopping({ batchId, onChange }: BatchShoppingProps)
 
     return (
         <Screen>
-            <DataGrid className="mt-2">
-                <DataGridRow className="border-b-1 pb-2 border-base-200">
-                    <DataGridLabel cols={3}>Sort by</DataGridLabel>
-                    <DataGridSelect
-                        cols={3}
-                        value={sort}
-                        data={SORT_OPTIONS}
-                        onChange={onChangeSort}
-                    />
-                </DataGridRow>
-            </DataGrid>
+            <BatchShoppingSort
+                value={sort}
+                options={SORT_OPTIONS}
+                onChange={onChangeSort}
+            />
             {shoppingGroups}
         </Screen>
     );
