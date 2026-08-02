@@ -7,8 +7,8 @@ type NamedResourceAssignment = { resourceType: string; resource: { name: string 
  * (a kb recipe's own, unnarrowed), since both carry `{resourceType, resource:
  * {name}}` — and `Organics` only ever renders the names.
  */
-export function organicNames(assignments: NamedResourceAssignment[]): { hops: { name: string }[]; grains: { name: string }[]; yeasts: { name: string }[] } {
+export function organicNames(assignments: NamedResourceAssignment[]): { hops: { name: string }[]; grains: { name: string }[]; yeasts: { name: string }[]; additives: { name: string }[] } {
     const namesOf = (resourceType: string) =>
         assignments.filter(a => a.resourceType === resourceType).map(({ resource }) => ({ name: resource.name }));
-    return { hops: namesOf("hop"), grains: namesOf("grain"), yeasts: namesOf("yeast") };
+    return { hops: namesOf("hop"), grains: namesOf("grain"), yeasts: namesOf("yeast"), additives: namesOf("additive") };
 }
