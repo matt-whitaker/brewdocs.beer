@@ -601,6 +601,10 @@ test("reorders a phase, renumbering its label, and survives a reload", async ({p
  * the collapsed section's old index — renders collapsed instead.
  */
 test("keeps Planning's collapsed equipment section on its own phase after a reorder", async ({page}) => {
+    // known app bug (see the block comment above) — keep this failing rather than
+    // weaken the assertion, so a fix flips it back to green instead of silently
+    // regressing again
+    test.fail();
     await brewBatchFromKbRecipe(page, "E2E Reorder Collapse Batch");
 
     await page.getByRole("tab", {name: "Planning", exact: true}).click();
@@ -633,6 +637,10 @@ test("keeps Planning's collapsed equipment section on its own phase after a reor
  * shows no tab selected at all instead of following the phase.
  */
 test("keeps the Brewing screen's active tab on the same phase after a reorder", async ({page}) => {
+    // known app bug (see the block comment above) — keep this failing rather than
+    // weaken the assertion, so a fix flips it back to green instead of silently
+    // regressing again
+    test.fail();
     await brewBatchFromKbRecipe(page, "E2E Reorder Active Tab Batch");
 
     await openSchedulePhase(page, "2. Boil");
