@@ -47,7 +47,7 @@ const meta: Meta<typeof BrewTimer> = {
     parameters: {
         docs: {
             description: {
-                component: "The brew-day timer shell. It is fully controlled and holds no timer state of its own — `elapsedSeconds` and `isRunning` come from the consumer, which owns the ticking and any persistence. Milestone markers are drawn by `Timeline` and given a `Popover` hit target apiece, since a `Popover` renders a `<div>` and cannot live inside the `<svg>`. The quick-milestone button opens a `Modal` asking for a kind and a phase — quick-add always asks for the phase, because nothing yet signals the current one. The Global/Phase scope toggle is present for shape only; Phase is disabled until phases are automated."
+                component: "The brew-day timer shell. It is fully controlled and holds no timer state of its own — `elapsedSeconds` and `isRunning` come from the consumer, which owns the ticking and any persistence. Reading markers are drawn by `Timeline` and given a `Popover` hit target apiece, since a `Popover` renders a `<div>` and cannot live inside the `<svg>`. The quick-reading button opens a `Modal` asking for a kind and a phase — quick-add always asks for the phase, because nothing yet signals the current one. The Global/Phase scope toggle is present for shape only; Phase is disabled until phases are automated. The public word is \"Reading\"; the model behind it is still a `Milestone`, which is why the props and handlers say `milestone`."
             }
         }
     }
@@ -159,7 +159,7 @@ export const Narrow: Story = {
     parameters: {
         docs: {
             description: {
-                story: "Constrained to a 360px-wide phone viewport. Below `sm` the whole bar steps down together — the counter one type size, every button to `btn-xs`, the card to a tighter padding — and the controls drop to their own row, the scope toggle to the left and \"Milestone\" to the right, so nothing bleeds past the edge."
+                story: "Constrained to a 360px-wide phone viewport. Below `sm` the whole bar steps down together — the counter one type size, every button to `btn-xs`, the card to a tighter padding — and the controls drop to their own row, the scope toggle to the left and \"Reading\" to the right, so nothing bleeds past the edge."
             }
         }
     },
@@ -191,7 +191,7 @@ function QuickMilestoneDemo() {
 }
 
 export const QuickMilestone: Story = {
-    name: "Quick-milestone modal flow",
+    name: "Quick-reading modal flow",
     parameters: {
         docs: {
             description: {
