@@ -1,5 +1,6 @@
 import {memo, useCallback} from "react";
 import {Scalar} from "@brewdocs.beer/core";
+import {DataGridValueColStart} from "@brewdocs.beer/design";
 import DataGrid from "@/component/data-grid";
 import DataGridCheckbox from "@/component/data-grid/checkbox";
 import DataGridInput from "@/component/data-grid/input";
@@ -33,7 +34,7 @@ type ScheduleValueCellProps = {
     /** the row's resource name, so the control has an accessible name ("Northern Brewer weight") */
     name: string;
     field: ResourceScalarField;
-    colStart: number;
+    colStart: DataGridValueColStart;
     planned?: Scalar;
     actual?: Scalar;
     /** patches this row's tracker entry — already bound to the row's ref */
@@ -160,7 +161,7 @@ function BatchScheduleItemRow({ item, entry, onToggle, onPatch }: BatchScheduleI
                     key={field}
                     name={item.name}
                     field={field}
-                    colStart={i + 2}
+                    colStart={i === 0 ? 2 : 3}
                     planned={item.resource[field]}
                     actual={entry?.resource?.[field]}
                     onPatch={patch}

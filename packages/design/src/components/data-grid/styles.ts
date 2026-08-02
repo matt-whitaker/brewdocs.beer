@@ -5,8 +5,15 @@
  */
 export const COL_SPANS = ["col-span-1", "col-span-2", "col-span-3", "col-span-4", "col-span-5", "col-span-6"];
 
-/** Column-start positions for a value cell, indexed by `colStart - 1` (same literal-class reason as COL_SPANS). */
-export const VALUE_COL_STARTS = ["col-start-4", "col-start-5", "col-start-6"];
+/** Which of the row's three value columns a value cell pins to — 1 is the leftmost value column, not grid column 1. */
+export type DataGridValueColStart = 1 | 2 | 3;
+
+/** Column-start position per value column (same literal-class reason as COL_SPANS). Total, so an out-of-range start can't resolve to `undefined`. */
+export const VALUE_COL_STARTS: Record<DataGridValueColStart, string> = {
+    1: "col-start-4",
+    2: "col-start-5",
+    3: "col-start-6"
+};
 
 /**
  * Shared by DataGridHeaderRow's collapse toggle and DataGridRow's expand toggle

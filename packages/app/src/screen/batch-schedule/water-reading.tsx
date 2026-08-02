@@ -80,7 +80,7 @@ function BatchScheduleWaterReadingItem({ phaseIndex, row, milestone, entry, onPa
             reserveExpand
         >
             <DataGridRemoveButton label={`Remove ${milestone.label || "water sample"}`} onClick={onRemove} />
-            <DataGridInput label={`${milestone.label} name`} className="ml-6" cols={3} value={milestone.label} onChange={onChangeLabel} />
+            <DataGridInput side="label" label={`${milestone.label} name`} className="ml-6" cols={4} value={milestone.label} onChange={onChangeLabel} />
         </DataGridRow>
     );
 }
@@ -130,6 +130,7 @@ export default function BatchScheduleWaterReading({ phase, phaseIndex, tracker, 
             <DataGridRow zebra reserveExpand>
                 <DataGridAddButton label={addLabel} onClick={onAdd} />
                 <DataGridInput
+                    side="label"
                     label={`${headerLabel} name to add`}
                     className="ml-6"
                     cols={4}
