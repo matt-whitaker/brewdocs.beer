@@ -59,4 +59,6 @@ test("shows the recipe's target vitals, a fresh batch's zeroed actuals, and the 
     await expect(page.getByText("German Pils")).toBeVisible();
     await expect(page.getByText("Northern Brewer")).toBeVisible();
     await expect(page.getByText("Wyeast 2112")).toBeVisible();
+    await expect(page.getByText("Yeast Nutrients")).toBeVisible();
+    await expect(page.getByText("Irish Moss")).toBeVisible();
 });

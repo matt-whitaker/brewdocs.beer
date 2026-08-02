@@ -8,6 +8,8 @@ test("Overview is the default active tab and shows recipe content", async ({ pag
     await expect(page.getByRole("tab", { name: "Overview" })).toHaveAttribute("aria-selected", "true");
     await expect(page.getByText("Northern Brewer")).toBeVisible();
     await expect(page.getByText("German Pils")).toBeVisible();
+    await expect(page.getByText("Yeast Nutrients")).toBeVisible();
+    await expect(page.getByText("Irish Moss")).toBeVisible();
 });
 
 test("Batches tab activates on click", async ({ page }) => {
