@@ -21,7 +21,7 @@ export default function RecipeListItem({ recipe, source, onDelete }: RecipeListI
                 <ScreenP>ABV {recipe.targets.abv.value} | IBUs {recipe.targets.ibu} | O.G. {recipe.targets.og.value} | F.G. {recipe.targets.fg.value}</ScreenP>
                 <ScreenP className="pt-2">{recipe.description}</ScreenP>
             </Link>
-            {onDelete && <ConfirmDeleteButton title={`Delete ${recipe.name}?`} onConfirm={onDelete} />}
+            {onDelete && <ConfirmDeleteButton label={`Delete ${recipe.name}`} title={`Delete ${recipe.name}?`} onConfirm={onDelete} />}
         </li>
     );
 }

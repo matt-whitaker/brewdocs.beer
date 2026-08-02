@@ -32,12 +32,13 @@ export default function RecipeEditEquipmentPhaseSection({ phase, label, items, a
             key={`equipment-${phase}-${item.name}-${i}`}
             phase={phase}
             row={i}
+            phaseLabel={label}
             item={item}
             remove={remove}
             update={update}
             equipment={catalog}
             equipmentIndex={catalogIndex} />
-    )), [items, phase, remove, update, catalog, catalogIndex]);
+    )), [items, phase, label, remove, update, catalog, catalogIndex]);
 
     return (
         <DataGrid>
@@ -48,7 +49,7 @@ export default function RecipeEditEquipmentPhaseSection({ phase, label, items, a
                 {label}
             </DataGridHeaderRow>
             {rows}
-            <RecipeEditPhaseEquipmentAddRow phase={phase} add={add} equipment={catalog} equipmentIndex={catalogIndex} />
+            <RecipeEditPhaseEquipmentAddRow phase={phase} phaseLabel={label} add={add} equipment={catalog} equipmentIndex={catalogIndex} />
         </DataGrid>
     );
 }

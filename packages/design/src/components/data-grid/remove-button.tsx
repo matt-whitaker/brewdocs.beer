@@ -3,7 +3,7 @@ import {MouseEventHandler} from "react";
 import {PropsWithClass, PropsWithOnClick} from "@brewdocs.beer/core";
 import {Minus} from "@/components/svg";
 
-export function DataGridRemoveButton({ className, onClick, label, title, disabled }: PropsWithClass & PropsWithOnClick & { /** accessible name — the button renders only a − icon */ label?: string, title?: string, disabled?: boolean }) {
+export function DataGridRemoveButton({ className, onClick, label, title, disabled }: PropsWithClass & PropsWithOnClick & { label: string, title?: string, disabled?: boolean }) {
     return (
         <button
             aria-label={label}

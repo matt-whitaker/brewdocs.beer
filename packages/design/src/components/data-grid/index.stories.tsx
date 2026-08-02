@@ -74,7 +74,7 @@ function GrainsGrid() {
             {grains.map((grain, row) => (
                 <DataGridRow key={grain.name} zebra>
                     <DataGridLabel className="ml-6">
-                        <DataGridRemoveButton onClick={() => onRemove(row)} />
+                        <DataGridRemoveButton label={`Remove ${grain.name}`} onClick={() => onRemove(row)} />
                         <DataGridSelect
                             data={CATALOG}
                             value={grain.name}
@@ -93,6 +93,7 @@ function GrainsGrid() {
                 value={pending}
                 onChange={setPending}
                 add={onAdd}
+                addLabel="Add grain"
             />
         </DataGrid>
     );

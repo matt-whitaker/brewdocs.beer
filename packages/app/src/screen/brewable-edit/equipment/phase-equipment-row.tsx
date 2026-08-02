@@ -13,6 +13,7 @@ export type RecipeEditPhaseEquipmentRowProps = {
     phase: number;
     /** index into that phase's equipment */
     row: number;
+    phaseLabel: string;
     item: BrewablePhase["equipment"][number];
     remove: RemoveFn;
     update: UpdateFn;
@@ -20,7 +21,7 @@ export type RecipeEditPhaseEquipmentRowProps = {
     equipmentIndex: Map<string, Equipment>;
 };
 
-function RecipeEditPhaseEquipmentRow({ phase, row, item, remove, update, equipment, equipmentIndex }: RecipeEditPhaseEquipmentRowProps) {
+function RecipeEditPhaseEquipmentRow({ phase, row, phaseLabel, item, remove, update, equipment, equipmentIndex }: RecipeEditPhaseEquipmentRowProps) {
     const equipmentOptions = useMemo(() => {
         const options = equipment.map((({ name }) => ({ value: name, name })));
         return equipmentIndex.has(item.name) ? options : [{ value: item.name, name: item.name }, ...options];
@@ -49,7 +50,7 @@ function RecipeEditPhaseEquipmentRow({ phase, row, item, remove, update, equipme
     return (
         <DataGridRow zebra={false}>
             <DataGridLabel className="ml-6">
-                <DataGridRemoveButton onClick={onRemoveItem} />
+                <DataGridRemoveButton label={`Remove ${item.name} from ${phaseLabel}`} onClick={onRemoveItem} />
                 <DataGridSelect
                     data={equipmentOptions}
                     value={item.name}
