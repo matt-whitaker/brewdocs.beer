@@ -199,6 +199,33 @@ jobs:
             --model sonnet
             --allowedTools "Read,Edit,Write,Bash(gh:*),Bash(git:*)"
             --max-turns 40
+      # ⚠️ Redact before upload. Artifact BYTES ARE NOT MASKED — the `***` substitution
+      # applies to log output only. GH_TOKEN is in every model step's env and every role
+      # holds Bash(gh:*), so `gh auth token` prints it straight into a tool result, and
+      # `git config --list` exposes the checkout action's http.extraheader, which is
+      # base64 of `x-access-token:<token>`. Both forms are scrubbed.
+      # ⚠️ Best-effort: this removes the token forms we know of, not anything else a model
+      # may have echoed. retention-days stays at the 1-day floor for that reason.
+      - name: Redact the execution transcript
+        if: failure()
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          f="$RUNNER_TEMP/claude-execution-output.json"
+          [ -f "$f" ] || exit 0
+          b64=$(printf 'x-access-token:%s' "$TOKEN" | base64 | tr -d '\n')
+          sed -e "s|$TOKEN|***REDACTED***|g" -e "s|$b64|***REDACTED***|g" "$f" > "$f.tmp"
+          mv "$f.tmp" "$f"
+      - name: Upload the execution transcript
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: claude-execution-${{ github.job }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/claude-execution-output.json
+          # a job can fail BEFORE the model step writes the file (the exit-127 hook
+          # failures did); a missing-file error on top of the real one is noise
+          if-no-files-found: ignore
+          retention-days: 1
 
   # ── Researcher ─────────────────────────────────────────────────────────────────
   # The product owner. Takes a well-defined epic, follows its Research path, does the
@@ -361,6 +388,33 @@ jobs:
           REPO: ${{ github.repository }}
           ISSUE: ${{ github.event.issue.number }}
         run: "$RUNNER_TEMP/agent-bin/file-sub-issues.sh"
+      # ⚠️ Redact before upload. Artifact BYTES ARE NOT MASKED — the `***` substitution
+      # applies to log output only. GH_TOKEN is in every model step's env and every role
+      # holds Bash(gh:*), so `gh auth token` prints it straight into a tool result, and
+      # `git config --list` exposes the checkout action's http.extraheader, which is
+      # base64 of `x-access-token:<token>`. Both forms are scrubbed.
+      # ⚠️ Best-effort: this removes the token forms we know of, not anything else a model
+      # may have echoed. retention-days stays at the 1-day floor for that reason.
+      - name: Redact the execution transcript
+        if: failure()
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          f="$RUNNER_TEMP/claude-execution-output.json"
+          [ -f "$f" ] || exit 0
+          b64=$(printf 'x-access-token:%s' "$TOKEN" | base64 | tr -d '\n')
+          sed -e "s|$TOKEN|***REDACTED***|g" -e "s|$b64|***REDACTED***|g" "$f" > "$f.tmp"
+          mv "$f.tmp" "$f"
+      - name: Upload the execution transcript
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: claude-execution-${{ github.job }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/claude-execution-output.json
+          # a job can fail BEFORE the model step writes the file (the exit-127 hook
+          # failures did); a missing-file error on top of the real one is noise
+          if-no-files-found: ignore
+          retention-days: 1
 
   # ── Implementor ────────────────────────────────────────────────────────────────
   # The main engineer. Executes issues and handles follow-up engineering (bug fixes,
@@ -640,6 +694,33 @@ jobs:
           REPO: ${{ github.repository }}
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
         run: "$RUNNER_TEMP/agent-bin/open-integration-pr.sh"
+      # ⚠️ Redact before upload. Artifact BYTES ARE NOT MASKED — the `***` substitution
+      # applies to log output only. GH_TOKEN is in every model step's env and every role
+      # holds Bash(gh:*), so `gh auth token` prints it straight into a tool result, and
+      # `git config --list` exposes the checkout action's http.extraheader, which is
+      # base64 of `x-access-token:<token>`. Both forms are scrubbed.
+      # ⚠️ Best-effort: this removes the token forms we know of, not anything else a model
+      # may have echoed. retention-days stays at the 1-day floor for that reason.
+      - name: Redact the execution transcript
+        if: failure()
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          f="$RUNNER_TEMP/claude-execution-output.json"
+          [ -f "$f" ] || exit 0
+          b64=$(printf 'x-access-token:%s' "$TOKEN" | base64 | tr -d '\n')
+          sed -e "s|$TOKEN|***REDACTED***|g" -e "s|$b64|***REDACTED***|g" "$f" > "$f.tmp"
+          mv "$f.tmp" "$f"
+      - name: Upload the execution transcript
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: claude-execution-${{ github.job }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/claude-execution-output.json
+          # a job can fail BEFORE the model step writes the file (the exit-127 hook
+          # failures did); a missing-file error on top of the real one is noise
+          if-no-files-found: ignore
+          retention-days: 1
 
   # ── Tester ─────────────────────────────────────────────────────────────────────
   # Owns packages/e2e. The Implementor ships behaviour and writes Testing notes into its
@@ -840,6 +921,33 @@ jobs:
           REPO: ${{ github.repository }}
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
         run: "$RUNNER_TEMP/agent-bin/finish-pr.sh"
+      # ⚠️ Redact before upload. Artifact BYTES ARE NOT MASKED — the `***` substitution
+      # applies to log output only. GH_TOKEN is in every model step's env and every role
+      # holds Bash(gh:*), so `gh auth token` prints it straight into a tool result, and
+      # `git config --list` exposes the checkout action's http.extraheader, which is
+      # base64 of `x-access-token:<token>`. Both forms are scrubbed.
+      # ⚠️ Best-effort: this removes the token forms we know of, not anything else a model
+      # may have echoed. retention-days stays at the 1-day floor for that reason.
+      - name: Redact the execution transcript
+        if: failure()
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          f="$RUNNER_TEMP/claude-execution-output.json"
+          [ -f "$f" ] || exit 0
+          b64=$(printf 'x-access-token:%s' "$TOKEN" | base64 | tr -d '\n')
+          sed -e "s|$TOKEN|***REDACTED***|g" -e "s|$b64|***REDACTED***|g" "$f" > "$f.tmp"
+          mv "$f.tmp" "$f"
+      - name: Upload the execution transcript
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: claude-execution-${{ github.job }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/claude-execution-output.json
+          # a job can fail BEFORE the model step writes the file (the exit-127 hook
+          # failures did); a missing-file error on top of the real one is noise
+          if-no-files-found: ignore
+          retention-days: 1
 
   # ── Writer ─────────────────────────────────────────────────────────────────────
   # The tech writer. Owns documentation: every CLAUDE.md, the agent instruction files
@@ -972,6 +1080,33 @@ jobs:
           REPO: ${{ github.repository }}
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
         run: "$RUNNER_TEMP/agent-bin/finish-pr.sh"
+      # ⚠️ Redact before upload. Artifact BYTES ARE NOT MASKED — the `***` substitution
+      # applies to log output only. GH_TOKEN is in every model step's env and every role
+      # holds Bash(gh:*), so `gh auth token` prints it straight into a tool result, and
+      # `git config --list` exposes the checkout action's http.extraheader, which is
+      # base64 of `x-access-token:<token>`. Both forms are scrubbed.
+      # ⚠️ Best-effort: this removes the token forms we know of, not anything else a model
+      # may have echoed. retention-days stays at the 1-day floor for that reason.
+      - name: Redact the execution transcript
+        if: failure()
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          f="$RUNNER_TEMP/claude-execution-output.json"
+          [ -f "$f" ] || exit 0
+          b64=$(printf 'x-access-token:%s' "$TOKEN" | base64 | tr -d '\n')
+          sed -e "s|$TOKEN|***REDACTED***|g" -e "s|$b64|***REDACTED***|g" "$f" > "$f.tmp"
+          mv "$f.tmp" "$f"
+      - name: Upload the execution transcript
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: claude-execution-${{ github.job }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/claude-execution-output.json
+          # a job can fail BEFORE the model step writes the file (the exit-127 hook
+          # failures did); a missing-file error on top of the real one is noise
+          if-no-files-found: ignore
+          retention-days: 1
 
   # ── Security ───────────────────────────────────────────────────────────────────
   # Reviews what just landed on mainline and files issues for what it finds. Runs on
@@ -1047,6 +1182,33 @@ jobs:
             --model sonnet
             --allowedTools "Read,Bash(git:*),Bash(gh:*)"
             --max-turns 40
+      # ⚠️ Redact before upload. Artifact BYTES ARE NOT MASKED — the `***` substitution
+      # applies to log output only. GH_TOKEN is in every model step's env and every role
+      # holds Bash(gh:*), so `gh auth token` prints it straight into a tool result, and
+      # `git config --list` exposes the checkout action's http.extraheader, which is
+      # base64 of `x-access-token:<token>`. Both forms are scrubbed.
+      # ⚠️ Best-effort: this removes the token forms we know of, not anything else a model
+      # may have echoed. retention-days stays at the 1-day floor for that reason.
+      - name: Redact the execution transcript
+        if: failure()
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          f="$RUNNER_TEMP/claude-execution-output.json"
+          [ -f "$f" ] || exit 0
+          b64=$(printf 'x-access-token:%s' "$TOKEN" | base64 | tr -d '\n')
+          sed -e "s|$TOKEN|***REDACTED***|g" -e "s|$b64|***REDACTED***|g" "$f" > "$f.tmp"
+          mv "$f.tmp" "$f"
+      - name: Upload the execution transcript
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: claude-execution-${{ github.job }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/claude-execution-output.json
+          # a job can fail BEFORE the model step writes the file (the exit-127 hook
+          # failures did); a missing-file error on top of the real one is noise
+          if-no-files-found: ignore
+          retention-days: 1
 
   # ── Merge housekeeping ─────────────────────────────────────────────────────────
   # Closes the issues a merged PR finished and files them on the board.
