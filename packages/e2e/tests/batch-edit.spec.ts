@@ -409,6 +409,72 @@ test("creates a reading with its name and value in one action", async ({page}) =
     await expect(page.getByLabel("Pre-boil reading")).toHaveValue(/1\.048/);
 });
 
+// #444: DataGridInput always pinned itself to a value column (col-start-4/5/6),
+// so using it for a row's *name* field put the name on top of the value field
+// instead of to its left. getComputedStyle(el).gridColumn reports Tailwind's
+// literal grid-column value ("span 3 / span 3" for an auto-flowing col-span-3,
+// "5 / span 2" for col-start-5 col-span-2) — an exact, viewport-independent
+// check that a name field auto-flows from column 1 and a value field pins to
+// its own column, rather than both landing on column 4-6.
+test("lays out a reading row's name, unit and value fields without overlap", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Reading Layout Batch");
+    await openSchedulePhase(page, "1. Mash");
+
+    const addName = page.getByLabel("Gravity name to add");
+    const addValue = page.getByLabel("Gravity value to add");
+    await expect(addName).toBeVisible();
+
+    expect(await addName.evaluate(el => getComputedStyle(el).gridColumn)).toBe("span 3 / span 3");
+    expect(await addValue.evaluate(el => getComputedStyle(el).gridColumn)).toBe("5 / span 2");
+
+    const addNameBox = (await addName.boundingBox())!;
+    const addValueBox = (await addValue.boundingBox())!;
+    expect(addNameBox.x + addNameBox.width).toBeLessThanOrEqual(addValueBox.x);
+
+    await page.getByRole("button", {name: "Add reading"}).click();
+
+    const name = page.getByLabel("Reading name");
+    const unit = page.getByLabel("Reading unit");
+    const reading = page.getByLabel("Reading reading");
+    await expect(name).toBeVisible();
+
+    expect(await name.evaluate(el => getComputedStyle(el).gridColumn)).toBe("span 3 / span 3");
+    expect(await unit.evaluate(el => getComputedStyle(el).gridColumn)).toBe("span 1 / span 1");
+    expect(await reading.evaluate(el => getComputedStyle(el).gridColumn)).toBe("5 / span 2");
+
+    const nameBox = (await name.boundingBox())!;
+    const unitBox = (await unit.boundingBox())!;
+    const readingBox = (await reading.boundingBox())!;
+
+    // all three sit on one line, left to right, with no overlap — the pre-fix
+    // layout put the unit select at x=0 under the remove button (auto-placed
+    // into the only free cell once the name wrongly claimed columns 4-6) and
+    // overlapped the name and value fields by 65px
+    expect(Math.abs(nameBox.y - unitBox.y)).toBeLessThan(4);
+    expect(Math.abs(nameBox.y - readingBox.y)).toBeLessThan(4);
+    expect(nameBox.x + nameBox.width).toBeLessThanOrEqual(unitBox.x);
+    expect(unitBox.x + unitBox.width).toBeLessThanOrEqual(readingBox.x);
+});
+
+// water's name field is the widest (cols=4, no value column of its own — the
+// per-parameter grid lives behind the row's expander) but it shared the same
+// bug: reading.tsx and item-row.tsx both defaulted colStart to the value side,
+// so this only proves the name field, not just the value field, needed the fix.
+test("lays out the Water Chemistry name field flush left instead of pinned to a value column", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Water Layout Batch");
+    await openSchedulePhase(page, "1. Mash");
+
+    const addName = page.getByLabel("Water Chemistry name to add");
+    await expect(addName).toBeVisible();
+    expect(await addName.evaluate(el => getComputedStyle(el).gridColumn)).toBe("span 4 / span 4");
+
+    await page.getByRole("button", {name: "Add water sample"}).click();
+
+    const name = page.getByLabel("Water Sample name");
+    await expect(name).toBeVisible();
+    expect(await name.evaluate(el => getComputedStyle(el).gridColumn)).toBe("span 4 / span 4");
+});
+
 test("quick reading records against the current phase, and offers water parameters", async ({page}) => {
     await brewBatchFromKbRecipe(page, "E2E Quick Reading Batch");
     await openSchedulePhase(page, "1. Mash");
