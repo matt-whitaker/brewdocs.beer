@@ -191,3 +191,46 @@ test("places a freshly logged milestone marker without waiting for a tick to cat
     // once the next tick fires would time out here, not eventually pass
     await expect(page.getByRole("button", {name: /at \d{2}:\d{2}:\d{2}$/})).toBeVisible();
 });
+
+// #422: elapsedSeconds used to sum only the *running* intervals of Batch.timer, so
+// a paused counter fell behind the wall-clock basis the markers use, and anything
+// logged during a pause could sit past elapsedSeconds indefinitely — catching up
+// required as much *additional running time after resume* as the pause itself
+// lasted. That's what the pause below is long relative to: a fixed implementation
+// clears the tight post-resume assertion window immediately (it jumps straight to
+// the true wall-clock offset), while a regressed one would need the whole pause
+// length in further running time to get there, which the window doesn't allow.
+// (page.clock isn't used here — freezing time across two consecutive immediate
+// writes races this app's query invalidation/refetch and reverts the optimistic
+// UI update within milliseconds, unrelated to the bug under test.)
+test("keeps a milestone logged during a long pause on the timeline once resumed", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Timer Pause Marker Batch");
+    await page.getByRole("tab", {name: "Brewing", exact: true}).click();
+
+    await page.getByRole("button", {name: "Start timer"}).click();
+    await page.waitForTimeout(1000);
+    await page.getByRole("button", {name: "Pause timer"}).click();
+    await expect(page.getByRole("button", {name: "Start timer"})).toBeVisible();
+
+    const frozenValue = await page.getByRole("timer", {name: "Elapsed time"}).textContent();
+
+    // a pause much longer than the running time before it
+    await page.waitForTimeout(6000);
+
+    await page.getByRole("button", {name: "Log reading"}).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole("button", {name: "Confirm"}).click();
+    await expect(dialog).not.toBeVisible();
+
+    const marker = page.getByRole("button", {name: /^Reading at \d{2}:\d{2}:\d{2}$/});
+    // still paused: the milestone's wall-clock offset is past the frozen counter,
+    // so the marker must not show yet, and the counter itself stays frozen
+    await expect(marker).toHaveCount(0);
+    await expect(page.getByRole("timer", {name: "Elapsed time"})).toHaveText(frozenValue ?? "");
+
+    await page.getByRole("button", {name: "Start timer"}).click();
+    // resuming alone must jump the counter to the true wall-clock offset and reveal
+    // the marker — well inside the 6s pause a regressed implementation would need
+    await expect(marker).toBeVisible({timeout: 2500});
+});
