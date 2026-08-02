@@ -156,6 +156,12 @@ masking covers logs only, and a role holding `Bash(gh:*)` could publish it in a 
 **Labels are a record, not a route.** Each role stamps its own as it starts, so the labels
 read as "these agents have been here". The maintainer clears them as a check-off.
 
+- `stamp-role-label.sh` stamps the issue or PR that **triggered** the run.
+- A role that **opens** a PR labels it itself (`gh pr create --label "@claude/<role>"`) — the
+  triggering stamp cannot reach a PR that did not exist yet.
+- ⚠️ Two carve-outs from "create things unlabeled": a role labels the PR it opens, and
+  Security labels the issues it files. Nothing else, and never someone else's.
+
 **Documentation belongs to the Writer.** Implementor and Tester change no `CLAUDE.md`. They
 optionally end their handoff with a fenced `json` block of **docs candidates** —
 `{"docsCandidates": [{"file", "note", "why"}]}` — and the Writer decides what earns a place.
