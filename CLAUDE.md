@@ -128,9 +128,11 @@ history.
 - `@claude/implementor` — issue or PR. Writes the code and opens the PR.
 - `@claude/tester` — issue or PR. Owns `packages/e2e`.
 - `@claude/writer` — issue or PR. Owns every `CLAUDE.md` and `.claude/skills/`.
-- **Security** — no handle. Runs on merge to `mainline` and files issues.
+- **Security** — no handle. Runs on merge to `mainline` and files issues, labelled
+  `@claude/security`. ⚠️ The one exception to "create issues unlabeled": it marks
+  provenance so a finding stands out in a queue.
 
-⚠️ All five `@claude/*` labels must exist in the repo or the stamp hook warns and skips.
+⚠️ All six `@claude/*` labels must exist in the repo or the stamp hook warns and skips.
 `@claude/owner` is retired and can be deleted.
 
 ⚠️ A bare `@claude` does nothing, so a half-typed handle cannot start the wrong agent.
@@ -154,10 +156,16 @@ masking covers logs only, and a role holding `Bash(gh:*)` could publish it in a 
 **Labels are a record, not a route.** Each role stamps its own as it starts, so the labels
 read as "these agents have been here". The maintainer clears them as a check-off.
 
-**Documentation belongs to the Writer.** Implementor and Tester change no `CLAUDE.md`; they
-end their handoff with **Docs notes** saying what should be recorded and why. ⚠️ This exists
-because `CLAUDE.md` was the biggest single source of merge conflicts — every role edited it,
-so parallel branches collided on prose neither was really working on.
+**Documentation belongs to the Writer.** Implementor and Tester change no `CLAUDE.md`. They
+optionally end their handoff with a fenced `json` block of **docs candidates** —
+`{"docsCandidates": [{"file", "note", "why"}]}` — and the Writer decides what earns a place.
+
+- ⚠️ A candidate is a proposal, not an order. The files only stay useful if the Writer says
+  no to what restates the diff or goes stale within a release.
+- ⚠️ Omit the block when nothing cost you time. A dutiful list trains the Writer to skim.
+- `why` is the field that decides it — a note without a real cost behind it usually isn't one.
+- This exists because `CLAUDE.md` was the biggest single source of merge conflicts: every
+  role edited it, so parallel branches collided on prose neither was really working on.
 
 **Testing belongs to the Tester.** The Implementor writes no e2e specs and leaves
 **Testing notes** instead. An engineer finishing a feature writes the test that passes; this repo's

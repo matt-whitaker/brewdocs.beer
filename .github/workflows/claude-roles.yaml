@@ -545,15 +545,26 @@ jobs:
             If your change needs no test, say that and why — an explicit "no test needed"
             is a useful answer, a silent omission isn't.
 
-            End the Handoff with a **Docs notes** section as well, for the **Writer**. You no
-            longer edit `CLAUDE.md`; you say what it should record and why:
+            **Docs candidates — optional, and only when there is something.** You no longer
+            edit `CLAUDE.md`; the **Writer** does. When you learn something a future reader
+            would otherwise rediscover, end the Handoff with a fenced `json` block so the
+            Writer can pick it up without reading your whole PR:
 
-            - The invariant a future reader would otherwise break, and what breaks.
-            - Anything that surprised you or cost you time — a gotcha nobody wrote down is
-              one everybody rediscovers.
-            - Which `CLAUDE.md` it belongs in, if you know.
-            - "Nothing to document" is a valid answer. Say it rather than leaving the
-              section off.
+                ```json
+                {"docsCandidates": [
+                  {"file": "packages/app/CLAUDE.md",
+                   "note": "creating a reading must be one mutate() — stateRef is assigned during render",
+                   "why": "two editor calls read the same stale draft; the second silently discards the first"}
+                ]}
+                ```
+
+            `file` is a hint — omit it if you're unsure. `why` is the part that earns its
+            place; a note without one is usually restating the diff.
+
+            ⚠️ **You are proposing, not deciding.** The Writer judges whether each candidate
+            is worth documenting and may reject it. So raise anything that genuinely cost
+            you time, and **omit the block entirely** when nothing did — an empty or
+            dutiful list is worse than none, because it trains the Writer to skim.
 
             A denied tool call is settled. The permission layer is policy, not a syntax
             problem, so rewording or re-quoting the same operation will be denied
@@ -740,7 +751,22 @@ jobs:
 
             Never merge a PR. Leave anything you create unlabeled, and do no backlog
             management — no linking, milestones or project edits; scripted hooks own that.
-            ⚠️ **Don't edit any `CLAUDE.md`** — documentation belongs to the **Writer**.
+
+            ⚠️ **Don't edit any `CLAUDE.md`** — documentation belongs to the **Writer**. When
+            you learn something a future spec author would otherwise rediscover — a settle
+            hazard, a locator that looks right and isn't — end your PR comment with a fenced
+            `json` block of candidates for it:
+
+                ```json
+                {"docsCandidates": [
+                  {"file": "packages/e2e/CLAUDE.md",
+                   "note": "asserting tab state needs a retrying locator assertion",
+                   "why": "the tab switch is deferred through useTransition, so a one-shot read races it"}
+                ]}
+                ```
+
+            Optional. Omit it when nothing cost you time — the Writer decides what is worth
+            documenting, and a dutiful list trains it to skim.
 
           claude_args: |
             --model sonnet
@@ -795,10 +821,27 @@ jobs:
             issue or a PR. Read that comment first: it is the instruction.
 
             **Where your work comes from.** Usually an Implementor or Tester PR whose handoff
-            ends with **Docs notes** — what they learned that a future reader would otherwise
-            rediscover. Start there (`gh pr view <number> --comments`), then read the diff
-            for what actually changed. If the notes are thin, say so and document what you
-            can verify from the code; don't invent rationale nobody stated.
+            ends with a fenced `json` block of **docs candidates**:
+
+                ```json
+                {"docsCandidates": [
+                  {"file": "packages/app/CLAUDE.md", "note": "…", "why": "…"}
+                ]}
+                ```
+
+            Start there — `gh pr view <number> --comments` — then read the diff for what
+            actually changed. The block is optional and often absent; when it is, work from
+            the diff and the comment's prose instead.
+
+            ⚠️ **A candidate is a proposal, not an order.** Judging what deserves a place is
+            your job, and the files only stay useful if you say no. Reject anything that
+            restates the diff, that a reader would infer from a good name, or that will be
+            stale within a release — and say so briefly in the PR so the proposer learns the
+            line. `why` is the field that decides it: a candidate without a real cost behind
+            it usually isn't one.
+
+            If nothing survives that filter, say so and open no PR. A run that documents
+            nothing is a correct outcome.
 
             ⚠️ **Write only what is true of the code as it stands.** Every path, symbol and
             behaviour you describe must be one you have opened and checked. A confident
@@ -897,9 +940,12 @@ jobs:
             merge to `mainline`, so a routine "no problems found" note would be noise on
             every single one.
 
-            When you do file, use `gh issue create` — **unlabeled** — with the
+            When you do file, use `gh issue create --label "@claude/security"` — with the
             `.github/ISSUE_TEMPLATE/claude-task.yml` headings, one issue per finding, and
-            `Base branch: mainline`. Say plainly in the Summary which PR introduced it and
+            `Base branch: mainline`. ⚠️ That label is the one exception to the repo's
+            "create issues unlabeled" rule: it marks provenance, so a security finding is
+            distinguishable in a queue from ordinary work. Apply it to issues **you file**
+            and to nothing else — never to an existing issue or a PR. Say plainly in the Summary which PR introduced it and
             how severe it is; a maintainer triaging a queue needs that first.
 
             Then add each to the project:
