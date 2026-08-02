@@ -1012,7 +1012,16 @@ jobs:
             - **Secrets and tokens** — anything committed, logged, or placed where a model or
               a comment could echo it. A workflow that puts a long-lived credential within
               reach of a prompt is a real finding; the built-in `GITHUB_TOKEN` scoped to one
-              run is not.
+              run is not. ⚠️ Secret masking covers **log output only** — a secret written
+              into an uploaded artifact, a committed file or an API payload is published
+              verbatim, `***` notwithstanding.
+            - **Guards that fail open** — a control counts only if its failure stops what it
+              protects. Trace the failure path, not the happy path: when the redact /
+              validate / sanitise step dies, does the upload / write / send still happen?
+              ⚠️ In a workflow `if: always()` and `if: failure()` evaluate the **job**
+              status, not the previous step's, so a guard exiting non-zero does not stop the
+              step after it. This shipped once — a redaction step that died left the raw
+              file in place for the upload step to publish.
             - **Workflow and supply chain** — a permission widened past what a job needs, an
               allowlist loosened to a wildcard, an unpinned or newly-added action, a script
               that interpolates untrusted input into a shell command.
