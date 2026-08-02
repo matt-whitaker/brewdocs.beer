@@ -147,6 +147,11 @@ model step.
 - `set-issue-in-progress.sh` — pre, Implementor and Tester. Moves the triggering issue to
   **In Progress** on project #4, so the board reflects reality when work starts rather than
   only when it merges. Skips a closed issue, so a re-run never resurrects finished work.
+- `finish-pr.sh` — post, Implementor / Tester / Writer. Labels the PR the run opened with
+  its role, and appends `Closes #<issue>` if the model didn't write one.
+- `open-integration-pr.sh` — post, Implementor. Opens the epic's integration PR when the
+  base branch has none, marker commit included. Reads the branch and epic number out of the
+  sub-issue's *Base branch* line.
 - `close-merged-work.sh` — on merge. Closes the PR's issues and files them on the board.
 
 ⚠️ These were prompt instructions until a model skipped them. A label trail is worthless if
@@ -162,8 +167,12 @@ read as "these agents have been here". The maintainer clears them as a check-off
 - `stamp-role-label.sh` stamps the issue or PR that **triggered** the run.
 - A role that **opens** a PR labels it itself (`gh pr create --label "@claude/<role>"`) — the
   triggering stamp cannot reach a PR that did not exist yet.
-- ⚠️ Two carve-outs from "create things unlabeled": a role labels the PR it opens, and
-  Security labels the issues it files. Nothing else, and never someone else's.
+- ⚠️ Two carve-outs from "create things unlabeled": a role's PR is labelled by
+  `finish-pr.sh`, and Security labels the issues it files. Nothing else, and never
+  someone else's.
+- ⚠️ `Closes #<issue>` stays a prompt instruction *and* a hook. The model writing it puts
+  the link where a human reads it; the hook is the net, because a missing keyword loses the
+  close and the board move with nothing to signal it.
 
 **Documentation belongs to the Writer.** Implementor and Tester change no `CLAUDE.md`. They
 optionally end their handoff with a fenced `json` block of **docs candidates** —

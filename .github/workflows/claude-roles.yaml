@@ -437,11 +437,6 @@ jobs:
             the pull request yourself — do not stop at pushing a branch and returning a PR
             link.
 
-            ⚠️ **Label the PR `@claude/implementor`** — `gh pr create --label "@claude/implementor"`.
-            This is the exception to the repo's "leave things unlabeled" rule: a PR carries
-            the label of the role that opened it, which is how the merge hook recognises its
-            own work. Label the PR **you open** and nothing else — never an existing PR, and
-            never an issue.
 
             ⚠️ **Cut your branch FROM the issue's stated base branch.** If the issue names a
             **Base branch** (sub-issues of an epic do — they land on the epic's integration
@@ -470,51 +465,9 @@ jobs:
             you branched from the wrong place — re-cut from `origin/<base-branch>` and
             reapply your work rather than opening the PR anyway.
 
-            ⚠️ **Then open the epic's integration PR if nobody has yet.** Whichever
-            Implementor gets there first opens it, so it exists from the start of the epic
-            and the maintainer can watch the feature accumulate. After opening your own PR,
-            check:
-
-                gh pr list --head <branch> --base mainline --state open
-
-            If that comes back empty, open it: base `mainline`, head `<branch>`, titled for
-            the epic, with `Closes #<epic-number>` in the body (the issue's **Base branch**
-            line names the epic). Say in the body that it collects the epic's sub-issue PRs
-            and stays open until the feature is done. Leave it ready for review, not a draft
-            — the maintainer reviews it as it fills up, and merges it.
-
-            ⚠️ **Exactly ONE closing keyword in that body: the epic's.** This PR targets
-            `mainline`, the default branch, so *every* closing keyword in it is live — and
-            listing the sub-PRs it collects is the natural thing to write:
-
-                - #356 — Popover primitive · closes #341     ← WRONG, closes the sub-issue
-
-            That links the sub-issue to the **epic's** PR and closes it out from under its
-            own PR. It has already happened once. When you list sub-PRs, refer to their
-            issues with a bare number or "for #341" — never `closes`/`fixes`/`resolves`,
-            in prose, in a table, or in a bullet. Each sub-issue is closed by its own PR.
-
-            ⚠️ If you are the very first sub-issue, the branch has no commits of its own yet
-            (yours are still in an open PR *into* it), and GitHub refuses with **"No commits
-            between mainline and <branch>"**. That is expected, not an error to debug. Give
-            the branch a marker commit and retry the create:
-
-                git fetch origin <branch>
-                git checkout <branch>
-                git commit --allow-empty -m "Start epic #<epic-number>"
-                git push origin <branch>
-
-            ⚠️ **Never push feature work straight to an integration branch** — code lands
-            there by merging sub-issue PRs, and a direct push bypasses the review the branch
-            exists to collect. Two housekeeping pushes are fine and expected: that empty
-            marker commit, and merging `mainline` into the branch to keep it current
-            (`git merge origin/mainline`), which is ordinary maintenance and often what
-            resolves a stale or conflicted epic. The line is *whose work it is* — yours goes
-            through a PR; bringing the branch up to date does not. Return to your own branch
-            afterwards.
-
-            If the integration PR already exists, leave it alone. Do not retitle it, do not
-            update it, and never merge it.
+            ⚠️ **The epic's integration PR opens itself.** A post-hook checks whether the base
+            branch already has a PR to `mainline` and opens one if not, marker commit and
+            all. Don't open it, don't retitle it, and never merge it.
 
             ⚠️ **Write no code comments.** See CLAUDE.md's _Code style_. Not explanatory
             blocks, not `⚠️` notes, not JSDoc — none, unless the issue or a reviewer asks
@@ -641,6 +594,23 @@ jobs:
             --model opus
             --allowedTools "Edit,Write,Bash(git:*),Bash(gh:*),Bash(npm:*)"
             --max-turns 80
+
+      - name: Label and link the PR
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ROLE: implementor
+          REPO: ${{ github.repository }}
+          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
+        run: .github/agent-bin/finish-pr.sh
+      - name: Open the epic integration PR
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ROLE: implementor
+          REPO: ${{ github.repository }}
+          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
+        run: .github/agent-bin/open-integration-pr.sh
 
   # ── Tester ─────────────────────────────────────────────────────────────────────
   # Owns packages/e2e. The Implementor ships behaviour and writes Testing notes into its
@@ -772,10 +742,6 @@ jobs:
             must list only your own commits. If it doesn't, re-cut and reapply rather than
             opening the PR anyway.
 
-            ⚠️ **Label the PR `@claude/tester`** — `gh pr create --label "@claude/tester"`.
-            This is the exception to the repo's "leave things unlabeled" rule: a PR carries
-            the label of the role that opened it, which is how the merge hook recognises its
-            own work. Label the PR **you open** and nothing else.
 
             Put **`Closes #<issue>`** in the body when an issue prompted the work. That line
             is what the merge hook parses to close the issue and file it on the board — omit
@@ -831,6 +797,15 @@ jobs:
             --model sonnet
             --allowedTools "Edit,Write,Bash(git:*),Bash(gh:*),Bash(npm:*),Bash(npx:*)"
             --max-turns 80
+
+      - name: Label and link the PR
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ROLE: tester
+          REPO: ${{ github.repository }}
+          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
+        run: .github/agent-bin/finish-pr.sh
 
   # ── Writer ─────────────────────────────────────────────────────────────────────
   # The tech writer. Owns documentation: every CLAUDE.md, the agent instruction files
@@ -929,9 +904,6 @@ jobs:
             `mainline`, and cut your branch **from** that base rather than from whatever the
             workflow checked out.
 
-            ⚠️ **Label the PR `@claude/writer`** — `gh pr create --label "@claude/writer"`.
-            A PR carries the label of the role that opened it; that is how the merge hook
-            recognises its own work. Label the PR **you open** and nothing else.
 
             Put **`Closes #<issue>`** in the body when an issue prompted the work — that line
             is what the merge hook parses to close it and file it on the board. Include a
@@ -952,6 +924,15 @@ jobs:
             --model sonnet
             --allowedTools "Read,Edit,Write,Bash(git:*),Bash(gh:*)"
             --max-turns 60
+
+      - name: Label and link the PR
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ROLE: writer
+          REPO: ${{ github.repository }}
+          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
+        run: .github/agent-bin/finish-pr.sh
 
   # ── Security ───────────────────────────────────────────────────────────────────
   # Reviews what just landed on mainline and files issues for what it finds. Runs on
