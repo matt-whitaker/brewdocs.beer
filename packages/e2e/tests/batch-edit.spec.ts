@@ -231,6 +231,35 @@ test("a second phase of the same type gets its own tab and its own ingredients",
     await expect(page.getByLabel("Cascade weight")).toHaveCount(0);
 });
 
+/**
+ * The add-row is scoped to its phase, not its subsection — a phase with more
+ * than one subsection (2. Boil ships both Hops and Additives) has only one add
+ * row, rendered after the last one. Scoping the assertion to the Hops group
+ * (phase-section.tsx wraps each resourceType in its own DOM group) is what
+ * actually proves the new hop joined Hops rather than merely existing
+ * somewhere on the page.
+ */
+test("adds a hop to a phase that also has additives, and it persists under Hops", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Hops Subsection Batch");
+
+    await page.getByRole("tab", {name: "Planning", exact: true}).click();
+    await page.getByRole("tab", {name: "Ingredients", exact: true}).click();
+
+    await page.getByLabel("Ingredient for 2. Boil").selectOption("hop:Cascade");
+    await page.getByRole("button", {name: "Add ingredient to 2. Boil"}).click();
+    await expect(page.getByLabel("Cascade weight")).toBeVisible();
+
+    await settleSave(page);
+    await page.reload();
+    await page.getByRole("tab", {name: "Planning", exact: true}).click();
+    await page.getByRole("tab", {name: "Ingredients", exact: true}).click();
+
+    const hopsGroup = page.getByText("Hops", {exact: true}).locator("xpath=..");
+    await expect(hopsGroup.getByLabel("Cascade weight")).toBeVisible();
+    await expect(hopsGroup.getByLabel("Northern Brewer weight")).toHaveCount(3);
+    await expect(hopsGroup.getByText("Irish Moss")).toHaveCount(0);
+});
+
 test("adds a water sample on the Mash phase and persists bundled parameters", async ({page}) => {
     await brewBatchFromKbRecipe(page, "E2E Water Batch");
     await openSchedulePhase(page, "1. Mash");
