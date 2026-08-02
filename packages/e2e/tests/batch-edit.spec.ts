@@ -436,3 +436,223 @@ test("quick reading records against the current phase, and offers water paramete
     await page.getByRole("button", {name: "Show Water Sample parameters"}).click();
     await expect(page.getByLabel("Water Sample Calcium")).toHaveValue(/60/);
 });
+
+/**
+ * The recipe's three Boil hops all share the name "Northern Brewer" — their
+ * `aria-label`s are identical, so this discriminates them by weight instead
+ * (1.0oz/0.75oz/1.0oz). Asserting the exact surviving pair, not just a count
+ * of two, is what would catch an off-by-one `remove(dot, index)` bug: removing
+ * a neighbour instead still leaves two rows, just with the wrong weights.
+ */
+test("removes the middle of three ingredients and keeps the other two", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Remove Ingredient Batch");
+    await page.getByRole("tab", {name: "Planning", exact: true}).click();
+    await page.getByRole("tab", {name: "Ingredients", exact: true}).click();
+
+    const weights = page.getByLabel("Northern Brewer weight");
+    await expect(weights).toHaveCount(3);
+    await expect(weights.nth(0)).toHaveValue("1.0oz");
+    await expect(weights.nth(1)).toHaveValue("0.75oz");
+    await expect(weights.nth(2)).toHaveValue("1.0oz");
+
+    await page.getByLabel("Remove Northern Brewer").nth(1).click();
+    await settleSave(page);
+    await page.reload();
+    await page.getByRole("tab", {name: "Planning", exact: true}).click();
+    await page.getByRole("tab", {name: "Ingredients", exact: true}).click();
+
+    const survivors = page.getByLabel("Northern Brewer weight");
+    await expect(survivors).toHaveCount(2);
+    await expect(survivors.nth(0)).toHaveValue("1.0oz");
+    await expect(survivors.nth(1)).toHaveValue("1.0oz");
+});
+
+test("adds and removes equipment on a phase, persisting each change", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Equipment Batch");
+    await page.getByRole("tab", {name: "Planning", exact: true}).click();
+    await page.getByRole("tab", {name: "Equipment", exact: true}).click();
+
+    // the add-row's catalog dropdown has no accessible name (unlike the
+    // Ingredients add-row) — it's always the last combobox in its phase's
+    // section, after every existing item's own rename dropdown
+    const mashSection = page.getByRole("button", {name: "1. Mash", exact: true}).locator("xpath=..");
+    await mashSection.getByRole("combobox").last().selectOption("CO2");
+    await mashSection.getByRole("button", {name: "Add equipment to 1. Mash"}).click();
+
+    await settleSave(page);
+    await page.reload();
+    await page.getByRole("tab", {name: "Planning", exact: true}).click();
+    await page.getByRole("tab", {name: "Equipment", exact: true}).click();
+
+    const removeCo2 = page.getByRole("button", {name: "Remove CO2 from 1. Mash"});
+    await expect(removeCo2).toBeVisible();
+
+    await removeCo2.click();
+    await settleSave(page);
+    await page.reload();
+    await page.getByRole("tab", {name: "Planning", exact: true}).click();
+    await page.getByRole("tab", {name: "Equipment", exact: true}).click();
+
+    await expect(page.getByRole("button", {name: "Remove CO2 from 1. Mash"})).toHaveCount(0);
+});
+
+/**
+ * A fresh batch's three phases (Mash/Boil/Ferment) are each the only instance
+ * of a required type, so `canRemovePhase` should block every one of them.
+ * ⚠️ It does so by omitting the remove button entirely, not by disabling it —
+ * `disabled`/`title={lockedReason}` on this button is a *different* rule (a
+ * batch that has already progressed), so there is no disabled control to read
+ * a reason from here.
+ */
+test("keeps the last phase of a required type from being removed", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Locked Phase Batch");
+    await page.getByRole("tab", {name: "Planning", exact: true}).click();
+    await page.getByRole("tab", {name: "Phases", exact: true}).click();
+
+    await expect(page.getByRole("button", {name: "Remove 1. Mash"})).toHaveCount(0);
+    await expect(page.getByRole("button", {name: "Remove 2. Boil"})).toHaveCount(0);
+    await expect(page.getByRole("button", {name: "Remove 3. Ferment"})).toHaveCount(0);
+
+    // a second Boil makes the type have two — both become removable
+    await page.getByLabel("Phase type to add").selectOption("boil");
+    await page.getByRole("button", {name: "Add phase"}).click();
+    await settleSave(page);
+
+    await expect(page.getByRole("button", {name: "Remove 2. Boil"})).toBeVisible();
+    await expect(page.getByRole("button", {name: "Remove 4. Boil"})).toBeVisible();
+
+    // dropping back to one Boil restores the rule
+    await page.getByRole("button", {name: "Remove 4. Boil"}).click();
+    await settleSave(page);
+    await expect(page.getByRole("button", {name: "Remove 2. Boil"})).toHaveCount(0);
+});
+
+test("removing a phase drops its own reading but leaves a sibling phase's reading untouched", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Phase Prune Batch");
+
+    await openSchedulePhase(page, "2. Boil");
+    await page.getByRole("button", {name: "Add reading"}).click();
+    await page.getByLabel("Reading reading").fill("1.050");
+    await page.getByLabel("Reading reading").blur();
+    await settleSave(page);
+
+    await page.getByRole("tab", {name: "Planning", exact: true}).click();
+    await page.getByRole("tab", {name: "Phases", exact: true}).click();
+    await page.getByLabel("Phase type to add").selectOption("boil");
+    await page.getByRole("button", {name: "Add phase"}).click();
+    await settleSave(page);
+
+    // an empty phase's Brewing tab renders disabled — give it an equipment
+    // item so it's clickable, the same way the "second phase" test above
+    // gives its new phase an ingredient
+    await page.getByRole("tab", {name: "Equipment", exact: true}).click();
+    const newBoilSection = page.getByRole("button", {name: "4. Boil", exact: true}).locator("xpath=..");
+    await newBoilSection.getByRole("combobox").last().selectOption("CO2");
+    await newBoilSection.getByRole("button", {name: "Add equipment to 4. Boil"}).click();
+    await settleSave(page);
+
+    await openSchedulePhase(page, "4. Boil");
+    await page.getByRole("button", {name: "Add reading"}).click();
+    await page.getByLabel("Reading reading").fill("1.045");
+    await page.getByLabel("Reading reading").blur();
+    await settleSave(page);
+
+    await page.getByRole("tab", {name: "Planning", exact: true}).click();
+    await page.getByRole("tab", {name: "Phases", exact: true}).click();
+    await page.getByRole("button", {name: "Remove 4. Boil"}).click();
+    await settleSave(page);
+    await page.reload();
+
+    await page.getByRole("tab", {name: "Brewing", exact: true}).click();
+    await expect(page.getByRole("tab", {name: "4. Boil", exact: true})).toHaveCount(0);
+
+    await openSchedulePhase(page, "2. Boil");
+    await expect(page.getByLabel("Reading reading")).toHaveValue(/1\.05/);
+});
+
+test("reorders a phase, renumbering its label, and survives a reload", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Reorder Batch");
+
+    await page.getByRole("tab", {name: "Planning", exact: true}).click();
+    await page.getByRole("tab", {name: "Phases", exact: true}).click();
+    await page.getByRole("button", {name: "Move 2. Boil up", exact: true}).click();
+    await settleSave(page);
+
+    await expect(page.getByText("1. Boil", {exact: true})).toBeVisible();
+    await expect(page.getByText("2. Mash", {exact: true})).toBeVisible();
+
+    await page.reload();
+    await page.getByRole("tab", {name: "Planning", exact: true}).click();
+    await page.getByRole("tab", {name: "Phases", exact: true}).click();
+    await expect(page.getByText("1. Boil", {exact: true})).toBeVisible();
+    await expect(page.getByText("2. Mash", {exact: true})).toBeVisible();
+    await expect(page.getByText("3. Ferment", {exact: true})).toBeVisible();
+});
+
+/**
+ * Planning's Equipment collapse state is meant to key off `phase.id`, not the
+ * phase's position — see the app CLAUDE.md's Model-boundary notes on
+ * BatchSchedule's id-keyed collapse. This is a **finding, not a spec to
+ * accommodate** (see Out of scope): `equipment-phase-section.tsx`'s session
+ * key is `` `recipe-edit.equipment.phase.${phase}` ``, where `phase` is the
+ * numeric index passed from `equipment/index.tsx` — position-keyed, not
+ * id-keyed. After the swap below, the section that was collapsed as "2. Boil"
+ * renders **expanded** as "1. Boil", and the untouched Mash section — now at
+ * the collapsed section's old index — renders collapsed instead.
+ */
+test("keeps Planning's collapsed equipment section on its own phase after a reorder", async ({page}) => {
+    // known app bug (see the block comment above) — keep this failing rather than
+    // weaken the assertion, so a fix flips it back to green instead of silently
+    // regressing again
+    test.fail();
+    await brewBatchFromKbRecipe(page, "E2E Reorder Collapse Batch");
+
+    await page.getByRole("tab", {name: "Planning", exact: true}).click();
+    await page.getByRole("tab", {name: "Equipment", exact: true}).click();
+    const boilEquipmentHeader = page.getByRole("button", {name: "2. Boil", exact: true});
+    await boilEquipmentHeader.click();
+    await expect(boilEquipmentHeader).toHaveAttribute("aria-expanded", "false");
+
+    await page.getByRole("tab", {name: "Phases", exact: true}).click();
+    await page.getByRole("button", {name: "Move 2. Boil up", exact: true}).click();
+    await settleSave(page);
+    await page.reload();
+
+    await page.getByRole("tab", {name: "Planning", exact: true}).click();
+    await page.getByRole("tab", {name: "Equipment", exact: true}).click();
+    // the section collapsed as "2. Boil" is the same phase, now "1. Boil" — it
+    // should still be the one collapsed, and Mash (never touched) should not
+    await expect(page.getByRole("button", {name: "1. Boil", exact: true})).toHaveAttribute("aria-expanded", "false");
+    await expect(page.getByRole("button", {name: "2. Mash", exact: true})).toHaveAttribute("aria-expanded", "true");
+});
+
+/**
+ * The Brewing screen's active sub-tab is meant to key off `phase.id` too, but
+ * `usePanelSwitcher` persists the panel's **title** string
+ * (`schedule.tsx`: `PanelSwitcherContent title={phaseLabel(...)}`, matched
+ * back via `props.title === active` in `panel-switcher/index.tsx`) — a
+ * position-numbered label, not an id. This is a **finding, not a spec to
+ * accommodate**: after the reorder below, the query still holds the old label
+ * "2. Boil", no tab's title matches it any more, and the tab bar silently
+ * shows no tab selected at all instead of following the phase.
+ */
+test("keeps the Brewing screen's active tab on the same phase after a reorder", async ({page}) => {
+    // known app bug (see the block comment above) — keep this failing rather than
+    // weaken the assertion, so a fix flips it back to green instead of silently
+    // regressing again
+    test.fail();
+    await brewBatchFromKbRecipe(page, "E2E Reorder Active Tab Batch");
+
+    await openSchedulePhase(page, "2. Boil");
+    await expect(page.getByRole("tab", {name: "2. Boil", exact: true})).toHaveAttribute("aria-selected", "true");
+
+    await page.getByRole("tab", {name: "Planning", exact: true}).click();
+    await page.getByRole("tab", {name: "Phases", exact: true}).click();
+    await page.getByRole("button", {name: "Move 2. Boil up", exact: true}).click();
+    await settleSave(page);
+
+    // the Brewing tab active on this phase before the reorder should still
+    // show it, not silently fall back to whichever phase is now first
+    await page.getByRole("tab", {name: "Brewing", exact: true}).click();
+    await expect(page.getByRole("tab", {name: "1. Boil", exact: true})).toHaveAttribute("aria-selected", "true");
+});
