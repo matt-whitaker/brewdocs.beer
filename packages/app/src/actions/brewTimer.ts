@@ -6,27 +6,13 @@ export function isRunning(events?: TimerEvent[]): boolean {
 }
 
 export function elapsedSeconds(events: TimerEvent[] | undefined, now: Date): number {
-    if (!events?.length) return 0;
+    const firstStart = events?.find(({type}) => type === "start");
+    const last = events?.at(-1);
+    if (!firstStart || !last) return 0;
 
-    let elapsed = 0;
-    let runningSince: number | undefined;
+    const startedAt = new Date(firstStart.date).getTime();
+    const endedAt = isRunning(events) ? now.getTime() : new Date(last.date).getTime();
+    if (Number.isNaN(startedAt) || Number.isNaN(endedAt)) return 0;
 
-    events.forEach(({type, date}) => {
-        const at = new Date(date).getTime();
-        if (Number.isNaN(at)) return;
-
-        if (type === "start" || type === "resume") {
-            runningSince ??= at;
-            return;
-        }
-
-        if (runningSince !== undefined) {
-            elapsed += at - runningSince;
-            runningSince = undefined;
-        }
-    });
-
-    if (runningSince !== undefined) elapsed += now.getTime() - runningSince;
-
-    return Math.max(0, Math.floor(elapsed / 1000));
+    return Math.max(0, Math.floor((endedAt - startedAt) / 1000));
 }
