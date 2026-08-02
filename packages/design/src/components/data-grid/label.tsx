@@ -1,7 +1,7 @@
 import classNames from "classnames";
 import {PropsWithChildren} from "react";
 import {PropsWithClass} from "@brewdocs.beer/core";
-import {COL_SPANS} from "./styles";
+import {COL_SPANS, COL_STARTS, GridColumn} from "./styles";
 
 // The trailing variants shrink the label when it sits in a data-grid nested
 // inside another data-grid (an expanded body); text-2xs (theme token) matches
@@ -13,10 +13,12 @@ export type DataGridLabelProps = PropsWithChildren & PropsWithClass & {
     htmlFor?: string;
     tiny?: boolean;
     /** columns to span within the row */
-    cols?: number;
+    cols?: GridColumn;
+    /** the grid column to start at. Omit to let the row place it in flow. */
+    colStart?: GridColumn;
 };
-export function DataGridLabel({ children, className, htmlFor, tiny = false, cols = 4 }: DataGridLabelProps) {
-    const classes = classNames(LABEL_CLASS, COL_SPANS[cols - 1], [className], { [TINY]: tiny });
+export function DataGridLabel({ children, className, htmlFor, tiny = false, cols = 4, colStart }: DataGridLabelProps) {
+    const classes = classNames(LABEL_CLASS, colStart && COL_STARTS[colStart - 1], COL_SPANS[cols - 1], [className], { [TINY]: tiny });
 
     if (htmlFor) {
         return (

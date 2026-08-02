@@ -436,3 +436,47 @@ test("quick reading records against the current phase, and offers water paramete
     await page.getByRole("button", {name: "Show Water Sample parameters"}).click();
     await expect(page.getByLabel("Water Sample Calcium")).toHaveValue(/60/);
 });
+
+/**
+ * A reading row's fields must not collide.
+ *
+ * ⚠️ This asserts *placement*, which is deliberately different from everything
+ * above it. Every other test here fills a field and reads the value back, and
+ * they all passed while these rows were visibly broken — the name and value
+ * inputs overlapped by 65px and wrapped onto two lines, because `DataGridInput`
+ * pinned itself to a value-side column and the name field was using it too.
+ * A value assertion cannot see that; only geometry can.
+ */
+async function boxOf(page: Page, label: string) {
+    const box = await page.getByLabel(label).boundingBox();
+    if (!box) throw new Error(`no bounding box for "${label}"`);
+    return box;
+}
+
+function overlaps(a: {x: number; y: number; width: number; height: number}, b: typeof a) {
+    return a.x < b.x + b.width - 0.5 && b.x < a.x + a.width - 0.5
+        && a.y < b.y + b.height - 0.5 && b.y < a.y + a.height - 0.5;
+}
+
+test("reading rows lay out without overlapping fields", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "Reading layout");
+    await openSchedulePhase(page, "1. Mash");
+
+    // the add row, before anything exists
+    const addName = await boxOf(page, "Gravity name to add");
+    const addValue = await boxOf(page, "Gravity value to add");
+    expect(overlaps(addName, addValue), "add row: name and value overlap").toBe(false);
+    expect(addName.x, "add row: name should start at the left of the grid").toBeLessThan(addValue.x);
+
+    // and an item row, which additionally carries the unit select between them
+    await page.getByRole("button", {name: "Add reading"}).click();
+    await settleSave(page);
+
+    const name = await boxOf(page, "Reading name");
+    const value = await boxOf(page, "Reading reading");
+    expect(overlaps(name, value), "item row: name and value overlap").toBe(false);
+    expect(name.x, "item row: name should sit left of the value").toBeLessThan(value.x);
+
+    // one line, not two — the overlap used to force a wrap
+    expect(Math.abs(name.y - value.y), "item row: fields should share a line").toBeLessThan(name.height);
+});
