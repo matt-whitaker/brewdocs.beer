@@ -63,9 +63,9 @@ export function BrewTimer({
                         <button type="button" className="btn btn-xs sm:btn-sm join-item btn-active" aria-pressed={true}>Global</button>
                         <button type="button" className="btn btn-xs sm:btn-sm join-item" title="Coming soon" disabled>Phase</button>
                     </div>
-                    <button type="button" className="btn btn-xs sm:btn-sm" aria-label="Log milestone" onClick={toggleModal}>
+                    <button type="button" className="btn btn-xs sm:btn-sm" aria-label="Log reading" onClick={toggleModal}>
                         <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
-                        Milestone
+                        Reading
                     </button>
                 </div>
             </div>
