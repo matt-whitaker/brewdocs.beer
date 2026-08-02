@@ -1020,8 +1020,10 @@ jobs:
               validate / sanitise step dies, does the upload / write / send still happen?
               ⚠️ In a workflow `if: always()` and `if: failure()` evaluate the **job**
               status, not the previous step's, so a guard exiting non-zero does not stop the
-              step after it. This shipped once — a redaction step that died left the raw
-              file in place for the upload step to publish.
+              step after it. This reached review once — a redaction step that died would
+              have left the raw file in place for the upload step to publish. It was caught
+              by a reviewer asking what happens when the guard fails, which is the question
+              to ask, and the reason the happy path passing proves nothing.
             - **Workflow and supply chain** — a permission widened past what a job needs, an
               allowlist loosened to a wildcard, an unpinned or newly-added action, a script
               that interpolates untrusted input into a shell command.
