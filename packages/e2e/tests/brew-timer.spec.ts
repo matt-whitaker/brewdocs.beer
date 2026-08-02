@@ -80,7 +80,7 @@ test("logs a quick milestone that lands on the timeline and in the phase's readi
 
     // defaults (first kind "Gravity", first phase "1. Mash") match the reading
     // grid's own "Add reading" default label, so no need to touch the selects
-    await page.getByRole("button", {name: "Log milestone"}).click();
+    await page.getByRole("button", {name: "Log reading"}).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
     await dialog.getByRole("button", {name: "Confirm"}).click();
@@ -115,7 +115,7 @@ test("hovering each marker after logging two milestones shows that marker's own 
     await page.waitForTimeout(1000);
 
     // defaults (Gravity kind, "Reading" label) match the first milestone
-    await page.getByRole("button", {name: "Log milestone"}).click();
+    await page.getByRole("button", {name: "Log reading"}).click();
     let dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
     await dialog.getByRole("button", {name: "Confirm"}).click();
@@ -126,10 +126,10 @@ test("hovering each marker after logging two milestones shows that marker's own 
 
     await page.waitForTimeout(4000);
 
-    await page.getByRole("button", {name: "Log milestone"}).click();
+    await page.getByRole("button", {name: "Log reading"}).click();
     dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
-    await dialog.getByLabel("Milestone kind").selectOption("volume");
+    await dialog.getByLabel("Reading kind").selectOption("volume");
     await dialog.getByRole("button", {name: "Confirm"}).click();
     await expect(dialog).not.toBeVisible();
 
@@ -181,7 +181,7 @@ test("places a freshly logged milestone marker without waiting for a tick to cat
     await page.waitForTimeout(100);
     await page.clock.runFor(5600);
 
-    await page.getByRole("button", {name: "Log milestone"}).click();
+    await page.getByRole("button", {name: "Log reading"}).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
     await dialog.getByRole("button", {name: "Confirm"}).click();

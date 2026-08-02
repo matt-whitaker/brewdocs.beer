@@ -29,12 +29,12 @@ export const QuickMilestoneModal = forwardRef<HTMLDialogElement, QuickMilestoneM
 
         return (
             <Modal ref={ref}>
-                <ModalScreen title="Quick milestone" onConfirm={confirm}>
+                <ModalScreen title="Quick reading" onConfirm={confirm}>
                     <div className="grid gap-3 py-2">
                         <div className="grid gap-1">
-                            <span className="text-sm font-bold">Milestone</span>
+                            <span className="text-sm font-bold">Reading</span>
                             <InputSelect
-                                label="Milestone kind"
+                                label="Reading kind"
                                 className="w-full"
                                 data={kindOptions}
                                 value={selectedKind}
@@ -43,7 +43,7 @@ export const QuickMilestoneModal = forwardRef<HTMLDialogElement, QuickMilestoneM
                         <div className="grid gap-1">
                             <span className="text-sm font-bold">Phase</span>
                             <InputSelect
-                                label="Milestone phase"
+                                label="Reading phase"
                                 className="w-full"
                                 data={phaseOptions}
                                 value={selectedPhaseId}
