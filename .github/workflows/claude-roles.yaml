@@ -35,9 +35,6 @@ run-name: >-
 # ⚠️ A BARE "@claude" DOES NOTHING, deliberately, so a half-typed handle cannot start the
 # wrong agent. Labels trigger nothing either — `on.issues` is not subscribed.
 #
-# ⚠️ TESTER AND WRITER ALSO START WITHOUT A HANDLE. They `needs:` the Implementor and run
-# on the PR it opened, so a handle is not the only route any more. See their `if:` blocks.
-#
 # ⚠️ BACKLOG WORK IS SCRIPTED, NOT PROMPTED. Every role carries hard-coded hooks around
 # its model step, in `.github/agent-bin/`:
 #
@@ -380,10 +377,6 @@ jobs:
         (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude/implementor'))
       )
     runs-on: ubuntu-latest
-    # The PR this run produced, read by the tester and writer jobs that chain off it.
-    # Empty when the run opened none, which is what stops the chain — see their `if:`.
-    outputs:
-      pr: ${{ steps.finish.outputs.pr }}
     permissions:
       contents: write
       pull-requests: write
@@ -632,7 +625,6 @@ jobs:
             --max-turns 80
 
       - name: Label and link the PR
-        id: finish
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -657,23 +649,11 @@ jobs:
   # fire-and-forget call while lint/tsc/build stay green) is only caught by a test written
   # to distrust the change.
   tester:
-    # Chains off the Implementor as well as answering its own handle. The last clause is
-    # the chain; the three before it are unchanged and still work on their own.
-    #
-    # ⚠️ `!cancelled()` is load-bearing, not decoration. With `needs:`, a SKIPPED upstream
-    # job skips its dependents, and GitHub applies an implicit "all needs succeeded" gate.
-    # A status-check function overrides both. Drop it and a hand-typed @claude/tester can
-    # never run again: the implementor skips, so this skips. `!cancelled()` over `always()`
-    # so a cancelled run doesn't drag the job in; on an implementor *failure* it still
-    # evaluates, then correctly skips on the result check below.
-    needs: [implementor]
     if: |
-      !cancelled() && github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]' && (
+      github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]' && (
         (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude/tester')) ||
         (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude/tester')) ||
-        (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude/tester')) ||
-        (github.event_name == 'issue_comment' && !github.event.issue.pull_request
-          && needs.implementor.result == 'success' && needs.implementor.outputs.pr != '')
+        (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude/tester'))
       )
     runs-on: ubuntu-latest
     permissions:
@@ -723,21 +703,16 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # ⚠️ track_progress forces the action's TAG MODE, which gates on this phrase
-          # independently of our own `if:`. It must therefore match EVERY comment that can
-          # start this job — and since the chain above starts it from a comment saying
-          # "@claude/implementor", a "@claude/tester" phrase would skip the step in 0s and
-          # leave a placeholder comment. "@claude/" matches any role handle; the job's own
-          # `if:` is what routes, so a @claude/writer comment still cannot start the Tester.
-          trigger_phrase: "@claude/"
+          # independently of our own `if:`. Leave it at the default "@claude" and the
+          # action skips in 0s with a placeholder comment, because "@claude/tester"
+          # is not a match for "@claude".
+          trigger_phrase: "@claude/tester"
           track_progress: true
           prompt: |
             You are the **Tester** — you own `packages/e2e`, the Playwright suite that
             drives the real app in a browser. You are triggered by someone writing
-            **`@claude/tester`** in a comment, on an issue or a PR, or automatically once an
-            Implementor run finishes and opens its PR. Labels never start a run — they only
-            record which roles have already been here.
-            ${{ needs.implementor.outputs.pr && format('**This is an automatic run.** An Implementor just opened PR #{0} — that is your subject. Read it first with `gh pr view {0} --comments` and work from its Handoff Testing notes.', needs.implementor.outputs.pr) || '' }}
-            ${{ needs.implementor.outputs.pr && 'Nobody asked for this run by hand, so there is no instruction comment to read — the PR and its diff are the whole brief.' || '' }}
+            **`@claude/tester`** in a comment, on an issue or a PR. Labels never start a run
+            — they only record which roles have already been here.
 
             Read `packages/e2e/CLAUDE.md` first — it is short and it is the spec for how
             this suite works. The repo-root `CLAUDE.md` covers branch/PR/commit conventions.
@@ -875,22 +850,11 @@ jobs:
   # neither of them was really working on. Implementor and Tester now report what needs
   # documenting in their handoff and change no docs themselves.
   writer:
-    # Chains off the Implementor like the Tester, but waits on the Tester too, so one
-    # Writer run sees both roles' docs candidates instead of two runs racing on the same
-    # CLAUDE.md — the merge conflicts that split this role out in the first place.
-    #
-    # ⚠️ `!cancelled()` is load-bearing — see the note on the tester job. Without it a
-    # hand-typed @claude/writer can never run again.
-    # ⚠️ Waiting on the tester means a manually-triggered Tester run leaves this job
-    # showing as *pending* in the checks list until it finishes, then skipping. Cosmetic.
-    needs: [implementor, tester]
     if: |
-      !cancelled() && github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]' && (
+      github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]' && (
         (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude/writer')) ||
         (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude/writer')) ||
-        (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude/writer')) ||
-        (github.event_name == 'issue_comment' && !github.event.issue.pull_request
-          && needs.implementor.result == 'success' && needs.implementor.outputs.pr != '')
+        (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude/writer'))
       )
     runs-on: ubuntu-latest
     permissions:
@@ -920,19 +884,14 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           track_progress: true
-          # ⚠️ Must match every comment that can start this job, including the chained run's
-          # "@claude/implementor" — see the note on the tester job's trigger_phrase.
-          trigger_phrase: "@claude/"
+          trigger_phrase: "@claude/writer"
           prompt: |
             You are the **Writer** — the technical writer. You own the repo's documentation:
             every `CLAUDE.md`, the agent instruction files under `.claude/skills/`, and any
             other file whose job is to explain rather than to run. No other role edits them.
 
             You are triggered by someone writing **`@claude/writer`** in a comment, on an
-            issue or a PR — read that comment first, it is the instruction — or automatically
-            once an Implementor run finishes and opens its PR.
-            ${{ needs.implementor.outputs.pr && format('**This is an automatic run.** An Implementor opened PR #{0}, and a Tester may have opened one of its own against the same issue. Start from `gh pr view {0} --comments` and collect the docs candidates from both.', needs.implementor.outputs.pr) || '' }}
-            ${{ needs.implementor.outputs.pr && 'There is no instruction comment on an automatic run. Apply exactly the filter you always do — for a run nobody asked for, rejecting every candidate and opening no PR is the most likely correct outcome, not a failure.' || '' }}
+            issue or a PR. Read that comment first: it is the instruction.
 
             **Where your work comes from.** Usually an Implementor or Tester PR whose handoff
             ends with a fenced `json` block of **docs candidates**:
