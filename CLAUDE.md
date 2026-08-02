@@ -171,7 +171,10 @@ runs the workflow from the default branch, so a PR branch's version is never the
 model step.
 
 - `stamp-role-label.sh` — pre, every role. Stamps `@claude/<role>` on the issue or PR.
-- `file-sub-issues.sh` — post, Researcher. Parents and milestones from the epic's manifest.
+- `file-sub-issues.sh` — post, Researcher. Parents the epic's sub-issues and copies its
+  milestone down. **Discovers** them — a bot-authored issue, numbered above the epic, whose
+  body carries a *Base branch* line naming the epic's own `<epic#>-…` branch. Honours an
+  old `owner-manifest` comment too, unioned.
 - `set-issue-in-progress.sh` — pre, Implementor and Tester. Moves the triggering issue to
   **In Progress** on project #4, so the board reflects reality when work starts rather than
   only when it merges. Skips a closed issue, so a re-run never resurrects finished work.
@@ -185,6 +188,17 @@ model step.
 ⚠️ These were prompt instructions until a model skipped them. A label trail is worthless if
 a run can forget to stamp it, and the merge hook is the only backlog behaviour that worked
 on its first attempt — everything model-driven took three.
+⚠️ **A scripted hook fed by model-written input is still model-driven.** Sub-issue filing
+read a machine-readable manifest the Researcher was told to leave; across nine epics it
+wrote one exactly once, and the hook logged `No owner-manifest — nothing to file` and did
+nothing. Moving the instruction from "call the API" to "write a JSON block" only moved
+where it got skipped. Derive the input from something the model must produce **for another
+reason** — here the *Base branch* line, which the integration PR already depends on.
+⚠️ **A prose marker cannot be the only marker in a repo whose issues quote its own
+conventions.** The first version matched a *Base branch* line plus `epic #N` and adopted a
+meta-issue that quoted the convention verbatim as an example. The author check
+(`.user.type == "Bot"`) is what makes it sound — with the consequence, accepted, that a
+hand-written sub-issue is never auto-parented.
 ⚠️ `PROJECTS_TOKEN` appears only in `close-merged-work.sh` and `set-issue-in-progress.sh`, both scripted steps. Step env is per-step, so a model step in the same job cannot read it. It is a long-lived
 classic PAT (`project` + `read:org`) covering every project the maintainer owns, secret
 masking covers logs only, and a role holding `Bash(gh:*)` could publish it in a comment.

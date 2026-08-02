@@ -271,39 +271,20 @@ jobs:
             - ⚠️ **Don't link, parent, or milestone anything — a script does it.**
               You create the issues and nothing else about the backlog: no `sub_issues` API
               calls, no `--milestone`, no project edits. A post-hook runs the moment you
-              finish and does all of it from the manifest you leave (below), so that
-              manifest is the handoff, not a decoration. Doing it yourself duplicates work
-              and makes the two of you fight over the same fields.
+              finish and does all of it. Doing it yourself duplicates work and makes the two
+              of you fight over the same fields.
+              ⚠️ It finds the sub-issues by reading their **Base branch** line, so that line
+              is what makes a sub-issue findable at all — an issue missing it is never
+              parented and never gets the milestone. Nothing else is asked of you: there is
+              no list to leave behind, and a re-run picks up anything an earlier run missed.
             - Don't give any sub-issue the job of opening the epic's integration PR. The
               Implementor now opens it on the **first** run that finds it missing, so it
               exists from the start of the epic and the maintainer can watch the feature
               accumulate. Nothing about it belongs in a sub-issue body.
             - Post ONE comment on this epic listing the sub-issues in prerequisite order,
-              **ending with the manifest above** — on a follow-up run this comment can be
-              short (what changed, plus the full manifest); it does not have to restate the
-              whole decomposition.
-              marking which are parallel vs blocked — a single index to review.
-              ⚠️ **End that comment with a machine-readable manifest**, exactly this shape,
-              as the last thing in the comment:
-
-                  <!-- owner-manifest
-                  {"epic": 246, "children": [346, 347]}
-                  -->
-
-              An HTML comment, so it is invisible in the rendered issue. The post-hook files the
-              sub-issues from **this**, not from your prose — a script reads it, with no
-              model involved, which is why it has to be exact. Keep the human-readable list
-              above it as well; that is what the maintainer reads.
-
-              ⚠️ **This is an obligation on EVERY run, not just the first.** `children` must
-              list **every** sub-issue of this epic — the ones you created just now *and*
-              any from earlier runs — because the script acts on the newest manifest alone
-              and does not accumulate. So on a follow-up, even one that only adds a single
-              sub-issue or answers a question, post a fresh manifest carrying the full set
-              before you finish. Reread the epic's existing sub-issues if you need to
-              rebuild the list. Skipping this is what leaves sub-issues unparented and off
-              the milestone, and it has already happened: #376 and #377 sat unfiled because
-              a follow-up run posted an index comment with no manifest.
+              marking which are parallel vs blocked — a single index for the maintainer to
+              review. On a follow-up run this comment can be short (just what changed); it
+              does not have to restate the whole decomposition.
 
             Carry these standing Out-of-scope items into every sub-issue: don't hand-edit
             generated files (`routeTree.gen.ts`); don't add lodash (use
