@@ -426,6 +426,12 @@ jobs:
             the pull request yourself — do not stop at pushing a branch and returning a PR
             link.
 
+            ⚠️ **Label the PR `@claude/implementor`** — `gh pr create --label "@claude/implementor"`.
+            This is the exception to the repo's "leave things unlabeled" rule: a PR carries
+            the label of the role that opened it, which is how the merge hook recognises its
+            own work. Label the PR **you open** and nothing else — never an existing PR, and
+            never an issue.
+
             ⚠️ **Cut your branch FROM the issue's stated base branch.** If the issue names a
             **Base branch** (sub-issues of an epic do — they land on the epic's integration
             branch, not `mainline`), it governs two separate things, and getting only the
@@ -725,8 +731,39 @@ jobs:
             weakening the test until it passes. Never delete or `test.skip` an existing test
             to get green — if an existing test now fails, that is the headline of your report.
 
-            Open a PR with your specs, following the root CLAUDE.md's Contributing section.
-            ⚠️ **Target the issue's stated Base branch** if it names one, else `mainline`.
+            **Opening the PR.** Follow the root CLAUDE.md's Contributing section for branch
+            naming and commit style.
+
+            ⚠️ **Cut your branch FROM the issue's stated Base branch**, don't merely point at
+            it. The workflow checks you out on **`mainline`**, so you start on the wrong
+            branch whenever the issue names another — one command per Bash call:
+
+                git fetch origin <base-branch>
+                git checkout -B <your-branch> origin/<base-branch>
+
+            Then `gh pr create --base <base-branch> --head <your-branch>`. Doing only the
+            second makes a PR that *looks* right while its branch was cut from `mainline`,
+            so the diff carries every unrelated change since. Default to `mainline` only when
+            the issue names no base branch.
+
+            ⚠️ **Check your own diff first.** `git log --oneline origin/<base-branch>..HEAD`
+            must list only your own commits. If it doesn't, re-cut and reapply rather than
+            opening the PR anyway.
+
+            ⚠️ **Label the PR `@claude/tester`** — `gh pr create --label "@claude/tester"`.
+            This is the exception to the repo's "leave things unlabeled" rule: a PR carries
+            the label of the role that opened it, which is how the merge hook recognises its
+            own work. Label the PR **you open** and nothing else.
+
+            Put **`Closes #<issue>`** in the body when an issue prompted the work. That line
+            is what the merge hook parses to close the issue and file it on the board — omit
+            it and the issue stays open with nothing pointing at it.
+
+            Include a **Verification** section: `npm run test:e2e -w packages/e2e` with the
+            pass count, and `npm test --ws` (eslint). ⚠️ Run the lint before opening —
+            `packages/e2e`'s eslint is part of **Verify**, so a style slip you didn't check
+            arrives as a red PR rather than something you caught. Do **not** run `npm ci`
+            or `npm install`; dependencies and browsers are already installed.
 
             ⚠️ **Stay inside `packages/e2e`.** You do not fix app code — a failing test is a
             report, not an invitation to change `packages/app`. The one exception is adding
@@ -867,7 +904,17 @@ jobs:
 
             Follow the Contributing section for branch naming, commits and the PR template.
             Open a PR — ⚠️ against the issue's stated **Base branch** if it names one, else
-            `mainline`.
+            `mainline`, and cut your branch **from** that base rather than from whatever the
+            workflow checked out.
+
+            ⚠️ **Label the PR `@claude/writer`** — `gh pr create --label "@claude/writer"`.
+            A PR carries the label of the role that opened it; that is how the merge hook
+            recognises its own work. Label the PR **you open** and nothing else.
+
+            Put **`Closes #<issue>`** in the body when an issue prompted the work — that line
+            is what the merge hook parses to close it and file it on the board. Include a
+            **Verification** line saying `npm test --ws` (eslint) is clean; you change no
+            code, so there is nothing else to run, and you must not run `npm ci`/`install`.
 
             ⚠️ **Documentation only.** You do not change application code, tests, or
             workflows. If documenting something reveals a bug, say so in a comment and leave
