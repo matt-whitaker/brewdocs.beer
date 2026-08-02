@@ -53,6 +53,7 @@ function RecipeEditAssignmentRow({ row, assignment, remove, update, updateScalar
                 return (
                     <DataGridInput
                         colStart={3}
+                        label={`${assignmentResourceName(assignment)} weight`}
                         value={assignment.resource.weight.value}
                         onChange={onChangeWeightValue}
                         onBlur={onBlurWeight}
