@@ -4,10 +4,11 @@
 #
 # Children are DISCOVERED, not declared. This used to read a machine-readable manifest
 # the model left in a comment; across nine epics the model wrote one exactly once, so the
-# hook silently filed nothing. The anchor now is the *Base branch* line the Researcher
-# must already put in every sub-issue body, which open-integration-pr.sh also parses:
+# hook silently filed nothing. The anchor now is the reference the Researcher must already
+# put in every child's body:
 #
-#   **Base branch: `412-brewtimer`** — the integration branch for epic #412.
+#   a story says   Part of epic #412.
+#   a task says    **Branch: `412-brewtimer`**   (its story's branch)
 #
 # A manifest is still honoured when one exists, unioned with what was discovered, so
 # epics decomposed under the old contract keep working.
@@ -38,15 +39,14 @@ fi
 # Three markers, all required:
 #
 #   1. the author is a Bot — the Researcher creates sub-issues through the action
-#   2. a Base branch line whose branch is the epic's own `<epic#>-<summary>` branch
-#   3. a reference to `epic #<N>`
+#   2. a reference to this parent, as `epic #<N>` or `story #<N>`
+#   3. a number above the parent's
 #
-# ⚠️ The body markers alone are not enough, and this repo is exactly where that breaks:
-# it has meta-issues *about* the agent workflow, and one of them quoted the Base branch
-# convention verbatim as an example. It satisfied every text rule and was adopted as a
-# sub-issue of the epic it was describing. No prose heuristic can survive documentation
-# that quotes the prose — the author check is what makes this sound, since a human-written
-# issue is type User and a Researcher-created one is type Bot.
+# ⚠️ The body markers alone are not enough in a repo that documents its own conventions:
+# a meta-issue quoting the convention verbatim satisfied every text rule and was adopted as
+# a child of the issue it was describing. No prose heuristic survives documentation that
+# quotes the prose — the author check is what makes this sound, since a human-written issue
+# is type User and a Researcher-created one is type Bot.
 #
 # ⚠️ The consequence is that a sub-issue the maintainer writes BY HAND is never
 # auto-parented. That is the intended trade: this hook exists to clean up after the model.
@@ -67,14 +67,13 @@ discovered=$(EPIC="$ISSUE" gh api --paginate \
             | select(.pull_request == null)
             | select(.number > (env.EPIC | tonumber))
             | select(.user.type == "Bot")
-            | select((.body // "") | test("(?i)base *branch *: *.?`" + env.EPIC + "-"))
-            | select((.body // "") | test("(?i)epic +#" + env.EPIC + "([^0-9]|$)"))
+            | select((.body // "") | test("(?i)(epic|story) +#" + env.EPIC + "([^0-9]|$)"))
             | .number ] | .[]' 2>/dev/null || true)
 
 if [ -n "$discovered" ]; then
     echo "discovered for #$ISSUE: $(printf '%s' "$discovered" | tr '\n' ' ')"
 else
-    echo "no issue body carries a Base branch line naming epic #$ISSUE"
+    echo "no issue body references epic/story #$ISSUE"
 fi
 
 children=$(printf '%s\n%s\n' "$manifest_children" "$discovered" | grep -E '^[0-9]+$' | sort -un || true)
