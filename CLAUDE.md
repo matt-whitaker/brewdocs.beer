@@ -154,7 +154,6 @@ editing its markdown, not hunting a block scalar; the workflow went 1102 lines t
   provenance so a finding stands out in a queue.
 
 ⚠️ All six `@claude/*` labels must exist in the repo or the stamp hook warns and skips.
-`@claude/owner` is retired and can be deleted.
 
 ⚠️ A bare `@claude` does nothing, so a half-typed handle cannot start the wrong agent.
 ⚠️ Manager and Researcher require `!github.event.issue.pull_request` — `issue_comment` fires
@@ -287,7 +286,7 @@ Bash(git add:*), Bash(git commit:*), Bash(git rm:*), Bash(git-push.sh:*)
 
 ⚠️ Keep task checklists to 3–5 outcome-level items. The action narrates each one back to the
 PR, so a 10-item list spends most of the budget before any code is written.
-⚠️ `trigger_phrase` must match the handle per job. `track_progress: true` forces the action's
+⚠️ `trigger_phrase` must match the handle per job — for the five comment-triggered roles. Security has none and needs none: it fires on `pull_request: closed`, not on a phrase. `track_progress: true` forces the action's
 own tag mode, which gates on that phrase independently of our `if:` — leave it at the default
 `@claude` and the job fires, the action skips in `0s`, and it posts a placeholder comment.
 ⚠️ Verify on a bot-opened PR waits for a maintainer to click *Approve and run*.
