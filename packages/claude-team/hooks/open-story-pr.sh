@@ -51,14 +51,40 @@ if [ "$(git rev-list --count "origin/$default..origin/$branch")" -eq 0 ]; then
     exit 0
 fi
 
-title=$(gh issue view "$ISSUE" --repo "$REPO" --json title --jq '.title')
+# ⚠️ THE PR CLOSES THE STORY, NOT THE TRIGGERING ISSUE. Writing `Closes #<task>` here is
+# what sank the model once already: the first task's PR announced itself finished, CI went
+# green, and merging was the obvious move — closing the branch with the story's other tasks
+# unstarted. A branch is named `<story#>-<summary>`, so the number it starts with is the
+# story: itself when a story triggered the run, its parent when a task did.
+STORY=$(printf '%s' "$branch" | grep -oE '^[0-9]+' || true)
+[ -n "$STORY" ] || STORY="$ISSUE"
+
+title=$(gh issue view "$STORY" --repo "$REPO" --json title --jq '.title')
+tasks=$(gh api "repos/$REPO/issues/$STORY/sub_issues" \
+    --jq '.[] | "\(.number)\t\(.title)"' 2>/dev/null || true)
 
 body_file=$(mktemp)
 {
     printf 'Story PR for `%s`.\n\n' "$branch"
-    printf 'Every role working this story commits to this branch, so this PR grows as the\n'
-    printf 'story lands — code, tests and docs together — rather than arriving as several.\n'
-    printf '\nCloses #%s\n' "$ISSUE"
+    printf '⚠️ **This PR stays open until the story is complete.** Every role working the story\n'
+    printf 'commits to this branch, so it grows as the story lands — code, tests and docs\n'
+    printf 'together — rather than arriving as several PRs. One task looking finished is not a\n'
+    printf 'signal to merge.\n\n'
+    printf 'Closes #%s\n' "$STORY"
+
+    if [ -n "$tasks" ]; then
+        printf '\n### Tasks\n\n'
+        printf '%s\n' "$tasks" | while IFS=$'\t' read -r n t; do
+            printf -- '- #%s — %s\n' "$n" "$t"
+        done
+        # ⚠️ The tasks need their own closing keywords. close-merged-work.sh only falls back
+        # to parsing the body when `closingIssuesReferences` is EMPTY, and a story PR targets
+        # the default branch — so GitHub populates it with the story and the parse never runs.
+        # Listing the tasks without keywords would leave every one of them open on merge.
+        printf '\nMerging closes them too:'
+        printf '%s\n' "$tasks" | cut -f1 | while read -r n; do printf ' closes #%s' "$n"; done
+        printf '\n'
+    fi
 } > "$body_file"
 
 if gh pr create --repo "$REPO" --base "$default" --head "$branch" --title "$title" --body-file "$body_file" >/dev/null 2>&1; then

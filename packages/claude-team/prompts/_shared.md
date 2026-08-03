@@ -19,6 +19,12 @@ branch and appears in the **story's** PR.
 3. **Every role after that commits to the same branch.** No role cuts its own.
 4. The maintainer reviews one PR as it accumulates and merges it.
 
+⚠️ **The story's PR is not yours to finish.** It belongs to the story and closes when the
+story does — it says `Closes #<story>`, never `Closes #<your task>`. Finishing your task
+does not finish the PR, so do not describe it as ready, complete, or good to merge; other
+tasks are still landing on the same branch. Report what *your task* did and leave the PR's
+state to the story.
+
 ⚠️ **Do not create a branch.** Check out the story's existing branch:
 
 ```

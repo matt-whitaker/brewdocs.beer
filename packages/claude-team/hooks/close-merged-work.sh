@@ -21,6 +21,21 @@ if [ -z "$issues" ]; then
   exit 0
 fi
 
+# ⚠️ Closing a story closes its tasks by definition, so derive them instead of trusting the
+# PR body. open-story-pr.sh lists the tasks with closing keywords, but it writes that body
+# ONCE when the PR opens — a task the Architect cuts afterwards is nowhere in it and would
+# be left open by a merge that plainly finished it. One level only: a story's children are
+# its tasks, and nothing recurses into an epic.
+for issue in $issues; do
+  kids=$(gh api "repos/$REPO/issues/$issue/sub_issues" \
+    --jq '.[] | select(.state == "open") | .number' 2>/dev/null || true)
+  if [ -n "$kids" ]; then
+    echo "#$issue has open sub-issues:" $kids
+    issues=$(printf '%s\n%s\n' "$issues" "$kids")
+  fi
+done
+issues=$(printf '%s\n' $issues | sort -un)
+
 for issue in $issues; do
   if [ "$(gh issue view "$issue" --repo "$REPO" --json state --jq '.state')" = "OPEN" ]; then
     gh issue close "$issue" --repo "$REPO" --comment "Completed by #${PR}."
