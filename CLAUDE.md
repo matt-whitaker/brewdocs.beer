@@ -142,7 +142,10 @@ editing its markdown, not hunting a block scalar; the workflow went 1102 lines t
   needed the merged PR number, so it arrives as `PR` in the model step's env and the prompt
   says `gh pr diff "$PR"`. Anything else dynamic takes the same route.
 
-**Routing.** The handle in the comment picks the role. Labels route nothing.
+**Routing.** The **`@claude` label** is the front door: applying it to an issue starts a run,
+and `delegate.sh` reads the issue's state to pick the role. A bare `@claude` in a comment does
+the same. A `@claude/<role>` handle in a comment names the role outright and skips the
+inspection (rule 1) — still the way to override a bad guess.
 
 - `@claude/architect` — epic or story. Shapes the issue, cuts a story's branch, and creates
   its tasks — each stamped with the role that should pick it up.
@@ -153,13 +156,39 @@ editing its markdown, not hunting a block scalar; the workflow went 1102 lines t
   `@claude/security`. ⚠️ The one exception to "create issues unlabeled": it marks
   provenance so a finding stands out in a queue.
 
-⚠️ All six `@claude/*` labels must exist in the repo or the stamp hook warns and skips.
+⚠️ `@claude` **and** every `@claude/<role>` label must exist in the repo — `@claude` or nothing
+triggers, and a missing role label makes the stamp hook warn and skip.
 
-⚠️ A bare `@claude` does nothing, so a half-typed handle cannot start the wrong agent.
-⚠️ The Architect requires `!github.event.issue.pull_request` — `issue_comment` fires
-for PRs too, and without the guard a PR comment started a role written for an epic issue.
+⚠️ **The delegator is its own job and every role carries `needs: delegate`.** A job cannot gate
+on a step inside itself. This is not the `needs:` shape reverted below: there, roles needed
+`implementor`, which *itself* skipped most runs, and a job needing a skipped job reports
+cancelled. `delegate` always runs when the workflow triggers, so dependents reach their own
+`if:` and skip cleanly.
 
-⚠️ Every role is started by hand. **Tester and Writer briefly chained off the Implementor via
+⚠️ **The loop guard is the exact label name.** Roles stamp `@claude/<role>`, and every stamp is
+another `labeled` event. The delegate job requires `github.event.label.name == '@claude'` —
+an exact match — backed by the bot-actor guard. Both hold independently; either alone is one
+edit away from an infinite loop rather than a visible failure.
+
+⚠️ **Re-adding `@claude` is the "run again" gesture**, deliberately — `labeled` fires on every
+add, so remove-and-re-add re-runs the delegator against current issue state.
+
+⚠️ **A handle is never blocked by the router.** Each role's `if:` is
+`always() && (router picked me || the comment names me)`, so an explicit handle still routes if
+`delegate.sh` fails outright. Only a *skipped* delegate skips the roles.
+
+⚠️ `trigger_phrase` is `@claude` on every role, not `@claude/<role>`. A label trigger carries no
+comment for a per-role phrase to match. It is inert today regardless — `checkContainsTrigger()`
+returns early on `if (prompt) return true` and we always pass a prompt (verified at `v1.0.183`)
+— but if that short-circuit ever goes, `@claude` still matches the comment path where a
+per-role phrase would fail every role at once.
+
+⚠️ The Architect requires `!github.event.issue.pull_request` on its handle arm — `issue_comment`
+fires for PRs too, and without the guard a PR comment started a role written for an epic issue.
+The router cannot pick it on a PR (rule 2 sends every PR to the Implementor).
+
+⚠️ Every run is started by hand — a label or a comment — and the delegator picks the role from
+there. No role chains off another. **Tester and Writer briefly chained off the Implementor via
 `needs:` and it was reverted** — the job graph left them queued behind every run, and a role
 that skips after waiting reports as cancelled, so the history filled with cancelled jobs. If
 it is ever retried, the constraint that shaped it still holds: a comment cannot chain the
@@ -170,8 +199,9 @@ the noise. Cost the chain carried, for whoever revisits it: `!cancelled()` in bo
 (without it a skipped Implementor skips them, so a hand-typed handle could never run), and
 `trigger_phrase: "@claude/"` (tag mode gates on the phrase independently of the `if:`, and a
 chained run's comment says `@claude/implementor`).
-⚠️ Workflow changes to any of this **cannot be tested before merge**: `issue_comment` always
-runs the workflow from the default branch, so a PR branch's version is never the one that fires.
+⚠️ Workflow changes to any of this **cannot be tested before merge**: `issues` and
+`issue_comment` both always run the workflow from the default branch, so a PR branch's version
+is never the one that fires.
 
 **Backlog work is scripted, never prompted.** Hooks in `packages/claude-team/hooks/` run around each
 model step.
@@ -182,11 +212,14 @@ model step.
   milestone down. **Discovers** them — a bot-authored issue, numbered above the epic, whose
   body references it as `epic #N` or `story #N`. Honours an old `owner-manifest` comment
   too, unioned.
-- `acknowledge.sh` — pre, every role. Reacts 👀 so a trigger is visibly received before any
-  model runs.
-- `delegate.sh` — pre, every role. Picks the role(s) from issue state and emits them; routing
-  is a shell script, never a model. ⚠️ A missing `Role:` stamp defaults to Implementor and
-  says so — wrong is recoverable, silent is not.
+- `acknowledge.sh` — the **delegate** job, first step of every run. Reacts 👀 so a trigger is
+  visibly received before any model runs. ⚠️ It reacts via `issues/comments/<id>`, so it is
+  handed a `COMMENT_ID` only for `issue_comment` — a review comment's id belongs to the
+  *pulls* collection and would react to an unrelated comment. Empty falls back to the issue
+  or PR itself.
+- `delegate.sh` — the **delegate** job, and the gate every role hangs off. Picks the role(s)
+  from issue state and emits them; routing is a shell script, never a model. ⚠️ A missing
+  `Role:` stamp defaults to Implementor and says so — wrong is recoverable, silent is not.
 - `set-issue-status.sh` — pre, Implementor and Tester. Moves the triggering issue to
   **In Progress** on project #4, so the board reflects reality when work starts rather than
   only when it merges. Skips a closed issue, so a re-run never resurrects finished work.
