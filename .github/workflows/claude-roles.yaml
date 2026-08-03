@@ -37,7 +37,9 @@ run-name: >-
 # its model step, from `packages/claude-team/hooks/`:
 #
 #   pre   every role      stamp-role-label.sh      stamps @claude/<role> on the issue or PR
-#   pre   impl + tester   set-issue-in-progress.sh moves the issue to In Progress on the board
+#   pre   every role      acknowledge.sh           reacts 👀 so the trigger is visibly received
+#   pre   every role      delegate.sh              picks the role(s) from issue state
+#   pre   impl + tester   set-issue-status.sh      sets the issue's board Status (STATUS input)
 #   post  architect       file-sub-issues.sh       parents stories to epics, tasks to stories
 #   post  impl/test/write finish-pr.sh             labels the PR, appends `Closes #<issue>`
 #   post  impl/test/write open-story-pr.sh         opens the story's PR if it has none
@@ -62,7 +64,7 @@ run-name: >-
 # A prompt file cannot hold `${{ }}` — Actions never evaluates inside a file — so anything
 # dynamic goes in the model step's env instead (Security's `PR` is the only one today).
 #
-# ⚠️ PROJECTS_TOKEN appears in `close-merged-work.sh` and `set-issue-in-progress.sh`, and
+# ⚠️ PROJECTS_TOKEN appears in `close-merged-work.sh` and `set-issue-status.sh`, and
 # nowhere else. It is a long-lived classic PAT covering every project the maintainer owns,
 # and secret masking covers logs only — not an API payload a model could write — so it
 # stays out of any environment a prompt can read. Step env is per-step, which is what makes
@@ -219,7 +221,8 @@ jobs:
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
           PROJECT_OWNER: "@me"
           PROJECT_NUMBER: "4"
-        run: "$RUNNER_TEMP/agent-bin/set-issue-in-progress.sh"
+          STATUS: "In Progress"
+        run: "$RUNNER_TEMP/agent-bin/set-issue-status.sh"
       - uses: anthropics/claude-code-action@v1
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -318,7 +321,8 @@ jobs:
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
           PROJECT_OWNER: "@me"
           PROJECT_NUMBER: "4"
-        run: "$RUNNER_TEMP/agent-bin/set-issue-in-progress.sh"
+          STATUS: "In Progress"
+        run: "$RUNNER_TEMP/agent-bin/set-issue-status.sh"
       - uses: anthropics/claude-code-action@v1
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

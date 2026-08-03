@@ -62,7 +62,9 @@ forgotten by a model that ran out of turns or simply skipped it.
 | hook | when | does |
 |---|---|---|
 | `stamp-role-label.sh` | pre, every role | stamps `@claude/<role>` on the triggering issue or PR |
-| `set-issue-in-progress.sh` | pre, authors | moves the issue to In Progress on the board |
+| `acknowledge.sh` | pre, every role | reacts 👀 so the trigger is visibly received |
+| `delegate.sh` | pre, every role | picks the role(s) from issue state — routing is scripted, not judged |
+| `set-issue-status.sh` | pre, authors | sets the issue's board Status; the column is an input |
 | `file-sub-issues.sh` | post, Architect | parents stories to their epic, tasks to their story |
 | `open-story-pr.sh` | post, authors | opens the story's PR if it has none |
 | `finish-pr.sh` | post, authors | labels the PR and ensures it closes its issue |
