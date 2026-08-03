@@ -8,6 +8,12 @@ description: Assembles a role's prompt from the claude-team base and this repo's
 #   .github/agent-prompts/_shared.md          this repo's specifics, every role
 #   .github/agent-prompts/<role>.md           this repo's specifics for this role
 #
+# ⚠️ THAT ORDER IS LOAD-BEARING, and the code drifted from this comment once already.
+# `_shared.md` opens by overriding the action's own tag-mode prompt, which tells the model
+# — four times, for comment events — that its instructions are the triggering comment. Ours
+# arrives after all of that as `<custom_instructions>`, so the override has to be the first
+# thing in it. General frame first, role specifics second, so the specific wins any conflict.
+#
 # ⚠️ `prompt` is an action INPUT, not shell — `$(cat file)` in a `with:` value arrives at
 # the model as those literal characters. `prompt_file` would avoid the dance, but only the
 # inner base-action exposes it; the composite claude-code-action@v1 takes `prompt` alone.
@@ -44,9 +50,9 @@ runs:
         d="PROMPT_EOF_${{ github.run_id }}"
         {
           echo "body<<$d"
-          cat "$base/$role.md"
-          echo
           cat "$base/_shared.md"
+          echo
+          cat "$base/$role.md"
           echo
           cat "$overlay/_shared.md"
           # a role-specific overlay is optional — not every role needs one
