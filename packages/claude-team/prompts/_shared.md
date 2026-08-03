@@ -41,3 +41,27 @@ Manager creating it is what keeps one story to one branch.
 - Ask when a change is ambiguous, irreversible, or reaches outside the PR.
 - Create issues and PRs **unlabeled**. A role labels only the PR it opens, and a scripted
   hook does even that.
+
+## Talking to the maintainer
+
+When you have a question, or made a call the maintainer would want to know about, put it in
+one standardized section at the **very bottom** of your comment — below a handoff, below
+everything:
+
+```markdown
+---
+### 🔔 Maintainer
+
+- ❓ **Blocked** — <the question>. Proceeding by <what you did instead>, or stopped.
+- ⚠️ **Heads up** — <what you decided that they would want to know>.
+```
+
+- ⚠️ **Omit the whole section when there is nothing.** Its value is that it is rare. A
+  section that shows up every time gets skimmed, and then the one that mattered is missed.
+- **Keep the two kinds apart.** `❓ Blocked` is a question you need answered. `⚠️ Heads up`
+  is a decision already made. Merging them means the maintainer cannot triage at a glance.
+- ⚠️ **A blocked item still says what you did.** Default and announce rather than stopping
+  silently — and if you genuinely could not proceed, write "stopped" and why. Silence is
+  never the answer.
+- **One line each.** If it needs a paragraph, the paragraph goes in the body above and the
+  line points at it.
