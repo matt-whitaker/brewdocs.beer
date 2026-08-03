@@ -2,15 +2,19 @@
 # Post-hook for every role that opens a PR. Does the two things a prompt kept
 # being asked to remember:
 #
-#   1. labels the PR with the role that opened it
+#   1. labels the PR with the role(s) that worked it
 #   2. makes sure the body carries `Closes #<issue>`
 #
 # (2) is the one that silently loses work: close-merged-work.sh finds what a PR
 # finished by parsing that keyword, so a missing line means the issue never
 # closes and never reaches Done, with nothing to signal it.
+#
+# ROLES is a space-separated list because the authoring roles run as sequential
+# steps in ONE job and this hook runs once at the end of it. A single role is a
+# list of one; the PR should carry the whole trail, not whichever ran last.
 set -euo pipefail
 
-: "${ROLE:?ROLE is required}"
+: "${ROLES:?ROLES is required}"
 : "${REPO:?REPO is required}"
 
 branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
@@ -31,11 +35,13 @@ if [ -z "$pr" ]; then
     exit 0
 fi
 
-if gh pr edit "$pr" --repo "$REPO" --add-label "@claude/$ROLE" >/dev/null 2>&1; then
-    echo "PR #$pr -> @claude/$ROLE"
-else
-    echo "::warning::could not label PR #$pr — does @claude/$ROLE exist in this repo?"
-fi
+for role in $ROLES; do
+    if gh pr edit "$pr" --repo "$REPO" --add-label "@claude/$role" >/dev/null 2>&1; then
+        echo "PR #$pr -> @claude/$role"
+    else
+        echo "::warning::could not label PR #$pr — does @claude/$role exist in this repo?"
+    fi
+done
 
 if [ -z "${ISSUE:-}" ]; then
     echo "No triggering issue — nothing to close."
