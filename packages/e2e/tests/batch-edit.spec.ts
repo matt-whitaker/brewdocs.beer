@@ -729,3 +729,30 @@ test("reading rows lay out without overlapping fields", async ({page}) => {
     // one line, not two — the overlap used to force a wrap
     expect(Math.abs(name.y - value.y), "item row: fields should share a line").toBeLessThan(name.height);
 });
+
+/**
+ * Water Chemistry is the one reading kind with **no** value field — one row is
+ * one water sample, and its seven parameters live behind the expander. That
+ * makes it the case the test above cannot cover: with nothing to collide with,
+ * a name field pinned to a value column looks fine until you notice it starts
+ * halfway across the row.
+ *
+ * Asserts against the Gravity name field rather than a fixed x, so the two
+ * grids are held to the same left edge without pinning the test to a layout
+ * constant.
+ */
+test("the Water Chemistry name field starts at the same left edge as the other reading grids", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "Water layout");
+    await openSchedulePhase(page, "1. Mash");
+
+    const gravity = await boxOf(page, "Gravity name to add");
+    const water = await boxOf(page, "Water Chemistry name to add");
+    expect(water.x, "water add row should share the left edge of the other grids").toBeCloseTo(gravity.x, 0);
+
+    // and once a sample exists, its row too
+    await page.getByRole("button", {name: "Add water sample"}).click();
+    await settleSave(page);
+
+    const item = await boxOf(page, "Water Sample name");
+    expect(item.x, "water item row should share that left edge").toBeCloseTo(gravity.x, 0);
+});
