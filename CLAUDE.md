@@ -182,7 +182,12 @@ model step.
   milestone down. **Discovers** them — a bot-authored issue, numbered above the epic, whose
   body references it as `epic #N` or `story #N`. Honours an old `owner-manifest` comment
   too, unioned.
-- `set-issue-in-progress.sh` — pre, Implementor and Tester. Moves the triggering issue to
+- `acknowledge.sh` — pre, every role. Reacts 👀 so a trigger is visibly received before any
+  model runs.
+- `delegate.sh` — pre, every role. Picks the role(s) from issue state and emits them; routing
+  is a shell script, never a model. ⚠️ A missing `Role:` stamp defaults to Implementor and
+  says so — wrong is recoverable, silent is not.
+- `set-issue-status.sh` — pre, Implementor and Tester. Moves the triggering issue to
   **In Progress** on project #4, so the board reflects reality when work starts rather than
   only when it merges. Skips a closed issue, so a re-run never resurrects finished work.
 - `finish-pr.sh` — post, Implementor / Tester / Writer. Labels the PR the run opened with
@@ -205,7 +210,7 @@ conventions.** The first version matched a branch line plus `epic #N` and adopte
 meta-issue that quoted the convention verbatim as an example. The author check
 (`.user.type == "Bot"`) is what makes it sound — with the consequence, accepted, that a
 hand-written sub-issue is never auto-parented.
-⚠️ `PROJECTS_TOKEN` appears only in `close-merged-work.sh` and `set-issue-in-progress.sh`, both scripted steps. Step env is per-step, so a model step in the same job cannot read it. It is a long-lived
+⚠️ `PROJECTS_TOKEN` appears only in `close-merged-work.sh` and `set-issue-status.sh`, both scripted steps. Step env is per-step, so a model step in the same job cannot read it. It is a long-lived
 classic PAT (`project` + `read:org`) covering every project the maintainer owns, secret
 masking covers logs only, and a role holding `Bash(gh:*)` could publish it in a comment.
 
