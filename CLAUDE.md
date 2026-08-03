@@ -144,8 +144,8 @@ editing its markdown, not hunting a block scalar; the workflow went 1102 lines t
 
 **Routing.** The handle in the comment picks the role. Labels route nothing.
 
-- `@claude/manager` — epic or story. Shapes the issue; on a story, also cuts its branch.
-- `@claude/researcher` — epic or story. Decomposes an epic into stories, a story into tasks.
+- `@claude/architect` — epic or story. Shapes the issue, cuts a story's branch, and creates
+  its tasks — each stamped with the role that should pick it up.
 - `@claude/implementor` — issue or PR. Writes the code and opens the PR.
 - `@claude/tester` — issue or PR. Owns `packages/e2e`.
 - `@claude/writer` — issue or PR. Owns every `CLAUDE.md` and `.claude/skills/`.
@@ -156,7 +156,7 @@ editing its markdown, not hunting a block scalar; the workflow went 1102 lines t
 ⚠️ All six `@claude/*` labels must exist in the repo or the stamp hook warns and skips.
 
 ⚠️ A bare `@claude` does nothing, so a half-typed handle cannot start the wrong agent.
-⚠️ Manager and Researcher require `!github.event.issue.pull_request` — `issue_comment` fires
+⚠️ The Architect requires `!github.event.issue.pull_request` — `issue_comment` fires
 for PRs too, and without the guard a PR comment started a role written for an epic issue.
 
 ⚠️ Every role is started by hand. **Tester and Writer briefly chained off the Implementor via
@@ -177,7 +177,7 @@ runs the workflow from the default branch, so a PR branch's version is never the
 model step.
 
 - `stamp-role-label.sh` — pre, every role. Stamps `@claude/<role>` on the issue or PR.
-- `file-sub-issues.sh` — post, Researcher. Parents stories to their epic and tasks to their
+- `file-sub-issues.sh` — post, Architect. Parents stories to their epic and tasks to their
   story, and copies its
   milestone down. **Discovers** them — a bot-authored issue, numbered above the epic, whose
   body references it as `epic #N` or `story #N`. Honours an old `owner-manifest` comment
@@ -195,7 +195,7 @@ model step.
 a run can forget to stamp it, and the merge hook is the only backlog behaviour that worked
 on its first attempt — everything model-driven took three.
 ⚠️ **A scripted hook fed by model-written input is still model-driven.** Sub-issue filing
-read a machine-readable manifest the Researcher was told to leave; across nine epics it
+read a machine-readable manifest the decomposing role was told to leave; across nine epics it
 wrote one exactly once, and the hook logged `No owner-manifest — nothing to file` and did
 nothing. Moving the instruction from "call the API" to "write a JSON block" only moved
 where it got skipped. Derive the input from something the model must produce **for another
@@ -248,9 +248,10 @@ per-role overlays in `.github/agent-prompts/`.
 | **Story** | **one** | **exactly one** | a sub-issue of an epic — the unit that ships |
 | **Task** | no | no | a sub-issue of a story; work that lands on the story's branch |
 
-- Manager cuts the story's branch off `mainline`, empty, and records it in the story as a
+- Architect cuts the story's branch off `mainline`, empty, and records it in the story as a
   **Branch** line.
-- Researcher stamps that same line onto every task, so a task commits to its story's branch.
+- Architect stamps that same line onto every task, plus a **Role** line naming who picks it
+  up — routing is a shell script that reads the stamp rather than judging it.
 - The **first author to run** — Implementor, Tester or Writer — opens the story's PR, via
   `open-story-pr.sh`. All three carry the hook; whichever runs first wins.
 - Every role after that commits to the same branch. **No role cuts its own.**
@@ -266,7 +267,7 @@ main cost of the old epic-integration-branch model.
 
 
 **Budgets.** `sonnet` throughout except the Implementor, which runs `opus` — it is the only
-role whose output the maintainer must review line by line. Manager 40 turns, Writer 60,
+role whose output the maintainer must review line by line. Architect 100 turns, Writer 60,
 Security 40, the rest 80. Implementor and Tester run `npm ci` as a step; nobody else builds.
 
 **Allowlists union, they don't replace.** A role's `claude_args --allowedTools` is merged with
