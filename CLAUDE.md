@@ -227,7 +227,22 @@ model step.
   its role, and appends `Closes #<issue>` if the model didn't write one.
 - `open-story-pr.sh` — post, every authoring role. Opens the story's PR when its branch has
   none and has commits. Reads the branch from the issue's **Branch** line.
+- `log-to-epic.sh` — post, authors job. Rewrites **one** rolling work-log comment on the
+  epic: what is open across every story, what just ran, and **what to pick up next** named
+  with its `Role:` stamp so the maintainer can assign without opening anything.
+  ⚠️ Entirely derived from GitHub state — no model writes any part of it, which is the
+  whole reason it can be trusted as a status board. ⚠️ One comment, rewritten, not one per
+  run: an epic with ten tasks × three roles would otherwise bury itself in thirty comments.
 - `close-merged-work.sh` — on merge. Closes the PR's issues and files them on the board.
+  ⚠️ It also closes a closed issue's **open sub-issues**: `open-story-pr.sh` lists the
+  tasks with closing keywords, but that body is written once when the PR opens, so a task
+  cut afterwards is nowhere in it.
+
+⚠️ **`gh api` prints its error body to STDOUT, so `--jq` never runs and a 404 lands in your
+variable.** `repos/…/issues/<n>/parent` 404s for anything unparented — most issues — so an
+unguarded capture returns `{"message":"No parent issue found",…}` and the caller treats that
+blob as an issue number. `delegate.sh` and `log-to-epic.sh` both filter captures to digits
+and read anything else as absent. Any new hook reading that endpoint must do the same.
 
 ⚠️ These were prompt instructions until a model skipped them. A label trail is worthless if
 a run can forget to stamp it, and the merge hook is the only backlog behaviour that worked

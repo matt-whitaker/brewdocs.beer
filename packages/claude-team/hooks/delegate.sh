@@ -102,8 +102,15 @@ fi
 
 body=$(gh issue view "$NUMBER" --repo "$REPO" --json body --jq '.body // ""')
 branch=$(printf '%s' "$body" | grep -oiE 'branch: *`[^`]+`' | head -1 | sed -E 's/.*`([^`]+)`.*/\1/' || true)
-kids=$(gh api "repos/$REPO/issues/$NUMBER/sub_issues" --jq 'length' 2>/dev/null || echo 0)
-parent=$(gh api "repos/$REPO/issues/$NUMBER/parent" --jq '.number' 2>/dev/null || true)
+# ⚠️ `gh api` prints its ERROR BODY TO STDOUT, so a 404 lands in the variable and `--jq`
+# never runs. `repos/…/parent` 404s for anything unparented — most issues — so an unguarded
+# capture yields `{"message":"No parent issue found",…}` and every caller downstream treats
+# that blob as an issue number. Keep digits, and read anything else as absent.
+digits_or_empty() { case "$1" in ''|*[!0-9]*) ;; *) printf '%s' "$1" ;; esac; }
+
+kids=$(digits_or_empty "$(gh api "repos/$REPO/issues/$NUMBER/sub_issues" --jq 'length' 2>/dev/null || true)")
+kids=${kids:-0}
+parent=$(digits_or_empty "$(gh api "repos/$REPO/issues/$NUMBER/parent" --jq '.number' 2>/dev/null || true)")
 
 # ---- 3 & 4. nothing shaped yet, or an epic holding stories -> architect
 if [ -z "$branch" ] && [ "$kids" -eq 0 ]; then
