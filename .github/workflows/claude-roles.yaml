@@ -20,18 +20,19 @@ run-name: >-
   · #${{ github.event.issue.number || github.event.pull_request.number }}
   ${{ github.event.issue.title || github.event.pull_request.title }}
 
-# ONE WORKFLOW, FIVE JOBS, SIX ROLES. Kept in one file so the Actions history stays
+# ONE WORKFLOW, FIVE JOBS, SEVEN ROLES. Kept in one file so the Actions history stays
 # readable: one run per trigger, with whatever was not selected skipping inside it rather
 # than filling the list with skipped runs.
 #
 #   delegate            routes — no model
 #   architect           shapes work and cuts tasks
-#   authors             Implementor -> Tester -> Writer, as sequential STEPS in one job
+#   authors             Implementor|Designer -> Tester -> Writer, sequential STEPS in one job
 #   security            on merge, not on a trigger
 #   merge_housekeeping  on merge — no model
 #
-# The three authoring roles share a job so one `@claude` runs the whole chain. See that
-# job's header for why they are steps and not `needs:`.
+# The authoring roles share a job so one `@claude` runs the whole chain. Implementor and
+# Designer are alternatives — a task is one or the other, split on the package it touches.
+# See that job's header for why they are steps and not `needs:`.
 #
 # ⚠️ THE DELEGATOR ROUTES. Two ways in, one router:
 #
@@ -273,9 +274,10 @@ jobs:
           REPO: ${{ github.repository }}
           ISSUE: ${{ github.event.issue.number }}
         run: "$RUNNER_TEMP/agent-bin/file-sub-issues.sh"
-  # ── Authors: Implementor → Tester → Writer ─────────────────────────────────────
-  # The three authoring roles as sequential STEPS in one job, so a single `@claude` on a
-  # task runs all three with no further input from the maintainer.
+  # ── Authors: Implementor | Designer → Tester → Writer ──────────────────────────
+  # The authoring roles as sequential STEPS in one job, so a single `@claude` on a task
+  # runs the whole chain with no further input from the maintainer. Implementor and Designer
+  # are alternatives — a task is one or the other, split on the package it touches.
   #
   # ⚠️ STEPS, NOT `needs:`. #430 reverted role chaining because `needs:` ACROSS JOBS left
   # the followers queued behind every run, and a job that skips after waiting reports as
@@ -284,10 +286,11 @@ jobs:
   # failed. (The one `needs:` in this file, on `delegate`, is a different case — see the
   # header.)
   #
-  # ⚠️ BUDGET. Three model runs back to back: opus at 80 turns, then sonnet at 80, then
-  # sonnet at 60 — 220 turns on one runner, plus `npm ci` and a browser install. By a wide
-  # margin the longest job here. A single-role run is unaffected: the other two model steps
-  # skip and their setup skips with them.
+  # ⚠️ BUDGET. Three model runs back to back — an author at opus 80 turns, then sonnet 80,
+  # then sonnet 60: 220 turns on one runner, plus `npm ci` and a browser install. By a wide
+  # margin the longest job here. Implementor and Designer never both run, so 220 is the
+  # ceiling, not 300. A single-role run is unaffected: the other model steps skip and their
+  # setup skips with them.
   #
   # ⚠️ EACH ROLE GETS ITS OWN TRACKING COMMENT, because `use_sticky_comment` is not set —
   # the action reuses a comment only when it is. That is what keeps the Implementor's
@@ -305,12 +308,15 @@ jobs:
     if: |
       always() && needs.delegate.result != 'skipped' && (
         contains(needs.delegate.outputs.roles, 'implementor')
+        || contains(needs.delegate.outputs.roles, 'designer')
         || contains(needs.delegate.outputs.roles, 'tester')
         || contains(needs.delegate.outputs.roles, 'writer')
         || contains(github.event.comment.body, '@claude/implementor')
+        || contains(github.event.comment.body, '@claude/designer')
         || contains(github.event.comment.body, '@claude/tester')
         || contains(github.event.comment.body, '@claude/writer')
         || contains(github.event.review.body, '@claude/implementor')
+        || contains(github.event.review.body, '@claude/designer')
         || contains(github.event.review.body, '@claude/tester')
         || contains(github.event.review.body, '@claude/writer')
       )
@@ -334,6 +340,10 @@ jobs:
         uses: ./.github/actions/load-prompt
         with:
           role: implementor
+      - id: p_designer
+        uses: ./.github/actions/load-prompt
+        with:
+          role: designer
       - id: p_tester
         uses: ./.github/actions/load-prompt
         with:
@@ -379,7 +389,7 @@ jobs:
           COMMENT: ${{ github.event.comment.body || github.event.review.body }}
         run: |
           list=""
-          for r in implementor tester writer; do
+          for r in implementor designer tester writer; do
             case " $ROUTED " in
               *"$r"*) list="$list $r"; continue ;;
             esac
@@ -394,12 +404,12 @@ jobs:
       # without it `tsc` resolves to the runner image's global TypeScript (a different
       # major) and fails on config this repo pins as valid. The Writer builds nothing, so a
       # Writer-only run skips all of it.
-      - if: contains(steps.roles.outputs.list, 'implementor') || contains(steps.roles.outputs.list, 'tester')
+      - if: contains(steps.roles.outputs.list, 'implementor') || contains(steps.roles.outputs.list, 'designer') || contains(steps.roles.outputs.list, 'tester')
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-      - if: contains(steps.roles.outputs.list, 'implementor') || contains(steps.roles.outputs.list, 'tester')
+      - if: contains(steps.roles.outputs.list, 'implementor') || contains(steps.roles.outputs.list, 'designer') || contains(steps.roles.outputs.list, 'tester')
         run: npm ci
       # Browser install as a workflow step, not a Claude turn. Without it the Tester can
       # write specs but never run them, and an unrun test is worse than no test.
@@ -407,7 +417,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Move the issue to In Progress
-        if: contains(steps.roles.outputs.list, 'implementor') || contains(steps.roles.outputs.list, 'tester')
+        if: contains(steps.roles.outputs.list, 'implementor') || contains(steps.roles.outputs.list, 'designer') || contains(steps.roles.outputs.list, 'tester')
         env:
           # ⚠️ PROJECTS_TOKEN is safe here and only here: step env is per-step, so the model
           # steps below cannot read it. See the Owner post-mortem in CLAUDE.md.
@@ -458,6 +468,44 @@ jobs:
             --max-turns 80
             --json-schema '${{ steps.schema.outputs.body }}'
 
+      # ── Designer ──
+      # The Implementor of the design system. Same shape — branch, PR, gate, handoff — with
+      # the design package as its subject instead of the code that consumes it.
+      #
+      # ⚠️ The boundary is the PACKAGE, not a judgement call, so it can be checked rather
+      # than negotiated. A task that changes a primitive *and* its call sites is two tasks,
+      # and the Architect cuts it in two; the prompt tells the Designer to say so and stop
+      # rather than reach across.
+      #
+      # ⚠️ Implementor and Designer are alternatives, not a sequence — a task is one or the
+      # other. Both emit the same handoff schema, so whichever ran feeds the Tester and
+      # Writer below.
+      - name: Stamp the Designer label
+        if: contains(steps.roles.outputs.list, 'designer')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ROLE: designer
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
+        run: "$RUNNER_TEMP/agent-bin/stamp-role-label.sh"
+      - name: Designer
+        id: designer
+        if: contains(steps.roles.outputs.list, 'designer')
+        uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          STORY: ${{ needs.delegate.outputs.story }}
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          trigger_phrase: "@claude"
+          track_progress: true
+          prompt: ${{ steps.p_designer.outputs.body }}
+          claude_args: |
+            --model opus
+            --allowedTools "Edit,Write,Bash(git:*),Bash(gh:*),Bash(npm:*)"
+            --max-turns 80
+            --json-schema '${{ steps.schema.outputs.body }}'
+
       # ── Tester ──
       # Owns packages/e2e. The Implementor ships behaviour and reports Testing notes; the
       # Tester turns those into Playwright specs. Split because the two pull in opposite
@@ -483,17 +531,19 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           trigger_phrase: "@claude"
           track_progress: true
-          # ⚠️ The handoff arrives as prompt CONTEXT, not as something to go and find. It is
-          # empty when the Implementor did not run in this job (a Tester-only trigger) or
-          # when its step failed — which is exactly why `testingNotes: []` and an absent
-          # block have to read differently. The prompt says how to tell them apart.
+          # ⚠️ The handoff arrives as prompt CONTEXT, not as something to go and find.
+          # Implementor OR Designer, whichever authored — they are alternatives and emit the
+          # same schema, so `||` takes the one that ran (an unrun step's output is empty,
+          # which is falsy). Empty when neither ran (a Tester-only trigger) or when the
+          # author's step failed — exactly why `testingNotes: []` and an absent block have
+          # to read differently. The prompt says how to tell them apart.
           prompt: |
             ${{ steps.p_tester.outputs.body }}
 
             ## Handoff from the Implementor
 
             ```json
-            ${{ steps.implementor.outputs.structured_output }}
+            ${{ steps.implementor.outputs.structured_output || steps.designer.outputs.structured_output }}
             ```
           claude_args: |
             --model sonnet
@@ -526,7 +576,8 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           trigger_phrase: "@claude"
           track_progress: true
-          # The Writer sees the Implementor's candidates directly. ⚠️ Still a proposal, not
+          # The Writer sees the author's candidates directly — Implementor or Designer,
+          # whichever ran. ⚠️ Still a proposal, not
           # an order — a schema must not imply obligation, and rejecting every candidate
           # stays a correct outcome. writer.md carries that.
           prompt: |
@@ -535,7 +586,7 @@ jobs:
             ## Handoff from the Implementor
 
             ```json
-            ${{ steps.implementor.outputs.structured_output }}
+            ${{ steps.implementor.outputs.structured_output || steps.designer.outputs.structured_output }}
             ```
           claude_args: |
             --model sonnet

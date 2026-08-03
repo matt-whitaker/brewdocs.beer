@@ -149,7 +149,14 @@ inspection (rule 1) — still the way to override a bad guess.
 
 - `@claude/architect` — epic or story. Shapes the issue, cuts a story's branch, and creates
   its tasks — each stamped with the role that should pick it up.
-- `@claude/implementor` — issue or PR. Writes the code and opens the PR.
+- `@claude/implementor` — issue or PR. Writes the code and opens the PR. Owns the
+  *consumers* of the design system (`packages/app`, `packages/www`), not the system itself.
+- `@claude/designer` — issue or PR. An Implementor whose subject is `packages/design`: the
+  primitives, their props and class strings, the stories and the tokens.
+  ⚠️ The split is by **package**, not by judgement, so it can be checked rather than
+  negotiated. A task that changes a primitive *and* its call sites is two tasks — the
+  Architect cuts it in two, and the Designer's prompt says to report and stop rather than
+  reach across. Implementor and Designer never both run for one task.
 - `@claude/tester` — issue or PR. Owns `packages/e2e`.
 - `@claude/writer` — issue or PR. Owns every `CLAUDE.md` and `.claude/skills/`.
 - **Security** — no handle. Runs on merge to `mainline` and files issues, labelled

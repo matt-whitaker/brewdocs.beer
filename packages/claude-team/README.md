@@ -24,7 +24,7 @@ its packages or its conventions — if it does, it belongs in the consumer's ove
 ## How a story moves
 
 1. **Architect** shapes the story and cuts its branch off the default branch.
-2. The **first author to run** — Implementor, Tester or Writer — opens the story's PR.
+2. The **first author to run** — Implementor or Designer, Tester, Writer — opens the story's PR.
 3. **Every subsequent role commits to that same branch.** No role cuts its own.
 4. The maintainer reviews one PR as it accumulates each role's contribution, and merges.
 
@@ -36,7 +36,8 @@ A reviewer sees the story land as a whole.
 | role | trigger | works on | writes |
 |---|---|---|---|
 | Architect | `@claude/architect` | epic or story | the issue, a story's branch, and its tasks |
-| Implementor | `@claude/implementor` | story or task | code |
+| Implementor | `@claude/implementor` | story or task | code, outside the design system |
+| Designer | `@claude/designer` | story or task | code, inside the design system |
 | Tester | `@claude/tester` | story or task | tests |
 | Writer | `@claude/writer` | story or task | documentation |
 | Security | none — runs on merge | the merged PR | issues it files |
