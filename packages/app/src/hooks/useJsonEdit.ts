@@ -25,17 +25,25 @@ export default function useJsonEdit<T extends object>(data: T, onChange: (data: 
     // resync whenever the store emits a batch that actually differs; sibling
     // screens stay mounted in hidden tabs and would otherwise edit from stale
     // copies, clobbering each other's saves
+    const pending = useRef(false);
     useEffect(() => {
+        if (pending.current) return;
         setState(prev => (isEqual(prev, data) ? prev : data));
     }, [data]);
 
-    const debouncedOnChange = useMemo(() => debounce(onChange, 350), [onChange]);
+    const settle = useCallback((next: T) => {
+        pending.current = false;
+        return onChange(next);
+    }, [onChange]);
+
+    const debouncedSettle = useMemo(() => debounce(settle, 350), [settle]);
 
     /** applies a new draft; edits that aren't typed character-by-character settle immediately */
     const commit = useCallback((next: T, immediate = false) => {
         setState(next);
-        (immediate ? onChange : debouncedOnChange)(next);
-    }, [onChange, debouncedOnChange]);
+        pending.current = true;
+        (immediate ? settle : debouncedSettle)(next);
+    }, [settle, debouncedSettle]);
 
     /**
      * Updates a property on the JSON object
