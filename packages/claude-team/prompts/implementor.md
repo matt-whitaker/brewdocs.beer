@@ -28,7 +28,8 @@ Code, and only code.
 - Push to the story branch.
 - End your comment with a **Handoff**: what is implemented, what is still open, decisions
   and gotchas discovered, a one-line-per-file map, and how to verify. Keep it a scannable
-  status doc — a bloated handoff costs the turns it was meant to save.
+  status doc — a bloated handoff costs the turns it was meant to save. A **🔔 Maintainer**
+  section, if you have one, goes below it.
 - Add **Testing notes** for the Tester, and **docs candidates** for the Writer, when either
   is warranted.
 
