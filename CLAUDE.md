@@ -140,7 +140,23 @@ editing its markdown, not hunting a block scalar; the workflow went 1102 lines t
   bare `EOF`, and these prompts carry fenced examples.
 - ⚠️ **A prompt file cannot hold `${{ }}`** — it is never evaluated inside a file. Security
   needed the merged PR number, so it arrives as `PR` in the model step's env and the prompt
-  says `gh pr diff "$PR"`. Anything else dynamic takes the same route.
+  says `gh pr diff "$PR"`. The authoring roles get `ISSUE` and `STORY` the same way.
+- ⚠️ **Our prompt is not the whole prompt.** `track_progress: true` forces the action's tag
+  mode, and `generatePrompt` returns `defaultPrompt + "<custom_instructions>" + ours`. For
+  **comment** events that default prompt says, four separate times, that the model's
+  instructions are the triggering comment — so a conversational `@claude/architect take
+  stock…` became the brief and the role file was demoted to background. The observed result
+  was a run that replied *"I'll analyze this and get back to you"* and stopped. Label
+  triggers are unaffected: no `<trigger_comment>` block is emitted, and the text becomes
+  "read the entire issue body to understand the task".
+  - `_shared.md` therefore **opens** by overriding that framing — the trigger is routing,
+    the brief is the role file plus the issue — and forbids ending a run on an intention.
+  - ⚠️ That is why `load-prompt` composes `_shared.md` **before** `<role>.md`: the override
+    has to be the first thing inside `<custom_instructions>`. The code and its own header
+    comment disagreed on this order once already.
+  - ⚠️ **Agent mode is not the escape hatch.** It would make our prompt authoritative, but
+    it sets `claudeCommentId: undefined` — no tracking comment at all, which is the
+    maintainer's only window into a run and where handoffs land.
 
 **Routing.** The **`@claude` label** is the front door: applying it to an issue starts a run,
 and `delegate.sh` reads the issue's state to pick the role. A bare `@claude` in a comment does
@@ -240,7 +256,12 @@ model step.
   ⚠️ Entirely derived from GitHub state — no model writes any part of it, which is the
   whole reason it can be trusted as a status board. ⚠️ One comment, rewritten, not one per
   run: an epic with ten tasks × three roles would otherwise bury itself in thirty comments.
-- `close-merged-work.sh` — on merge. Closes the PR's issues and files them on the board.
+- `close-merged-work.sh` — on merge, for **every** merged PR, not just an agent's. It was
+  gated on a `@claude/*` label or a Bot author and so skipped the maintainer's own PRs,
+  which are unlabeled by convention — eight issues closed via GitHub's native keywords
+  while the board was never updated. Nothing it does needs the PR to be an agent's, and it
+  exits early on one that closes no issue. Closes the PR's issues and files them on the
+  board.
   ⚠️ It also closes a closed issue's **open sub-issues**: `open-story-pr.sh` lists the
   tasks with closing keywords, but that body is written once when the PR opens, so a task
   cut afterwards is nowhere in it.
