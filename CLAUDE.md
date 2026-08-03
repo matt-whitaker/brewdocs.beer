@@ -275,21 +275,35 @@ read as "these agents have been here". The maintainer clears them as a check-off
   the link where a human reads it; the hook is the net, because a missing keyword loses the
   close and the board move with nothing to signal it.
 
-**Documentation belongs to the Writer.** Implementor and Tester change no `CLAUDE.md`. They
-optionally end their handoff with a fenced `json` block of **docs candidates** —
-`{"docsCandidates": [{"file", "note", "why"}]}` — and the Writer decides what earns a place.
+**The handoff between authors is a JSON contract**, not prose. The Implementor's step
+carries `--json-schema`, so its final message must match
+[`packages/claude-team/schemas/handoff.json`](packages/claude-team/schemas/handoff.json) —
+`testingNotes` for the Tester, `docsCandidates` for the Writer. The action exposes it as
+`structured_output`, and the workflow appends it to the other two roles' prompts.
 
-- ⚠️ A candidate is a proposal, not an order. The files only stay useful if the Writer says
-  no to what restates the diff or goes stale within a release.
-- ⚠️ Omit the block when nothing cost you time. A dutiful list trains the Writer to skim.
-- `why` is the field that decides it — a note without a real cost behind it usually isn't one.
-- This exists because `CLAUDE.md` was the biggest single source of merge conflicts: every
-  role edited it, so parallel branches collided on prose neither was really working on.
-
-**Testing belongs to the Tester.** The Implementor writes no e2e specs and leaves
-**Testing notes** instead. An engineer finishing a feature writes the test that passes; this repo's
-actual failure mode — a save that throws inside a fire-and-forget call while lint, tsc and
-build stay green — is only caught by a test written to distrust the change.
+- ⚠️ **Both keys are required, and `[]` is a real answer** — "I looked, there is nothing".
+  A consumer that cannot tell that from "forgot" is the exact failure that killed
+  `owner-manifest`: prose sections a later role has to find and parse are optional in
+  practice. A schema is not.
+- ⚠️ **An empty/absent block means no Implementor ran** (a Tester-only trigger, or its step
+  failed) — different again from `[]`. All three prompts spell out the three cases.
+- ⚠️ **The schema lives in `packages/claude-team`, but `--json-schema` takes inline JSON,
+  not a path.** A workflow step compacts the file with `jq -c` and injects it, the same way
+  `load-prompt` carries prompts. That step **fails the run** if the file contains a single
+  quote, since the value is wrapped in single quotes inside `claude_args` — and
+  `claude_args` is parsed line by line, so it must also stay one line.
+- ⚠️ `docsCandidates[].file` is a free string, never an enum of this repo's paths — the
+  roles are portable and must not encode one repository's layout.
+- ⚠️ A candidate is a proposal, not an order; arriving as structured data changes nothing
+  about that. The files only stay useful if the Writer says no to what restates the diff or
+  goes stale within a release, and rejecting every candidate stays a correct outcome.
+- `why` is the field that decides an entry — no real cost behind it, no entry.
+- Documentation is split out because `CLAUDE.md` was the biggest single source of merge
+  conflicts: every role edited it, so parallel branches collided on prose neither was
+  really working on. Testing is split out because an engineer finishing a feature writes
+  the test that passes, and this repo's actual failure mode — a save that throws inside a
+  fire-and-forget call while lint, tsc and build stay green — is only caught by a test
+  written to distrust the change.
 
 **Epic → story → task.** The team definition lives in
 [`packages/claude-team`](packages/claude-team/README.md); this repo extends it with

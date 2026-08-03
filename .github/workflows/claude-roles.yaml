@@ -348,6 +348,25 @@ jobs:
           cp packages/claude-team/hooks/*.sh "$RUNNER_TEMP/agent-bin/"
           chmod +x "$RUNNER_TEMP/agent-bin"/*.sh
 
+      # The handoff contract lives in packages/claude-team so a second repo gets it
+      # unchanged, but `--json-schema` takes INLINE JSON, not a path — so the file is
+      # compacted to one line here and injected into claude_args below. Same shape as
+      # load-prompt: the file is the source of truth, the workflow only carries it.
+      # ⚠️ Loaded here, before any model step, for the usual reason — a `run:` reads the
+      # working tree and the model switches branches partway through.
+      - id: schema
+        name: Load the handoff schema
+        run: |
+          # ⚠️ claude_args is line-parsed, so the schema must be ONE line; and it is wrapped
+          # in single quotes there, so it must contain none. Fail loudly rather than emit a
+          # value that would mangle every flag after it.
+          body=$(jq -c . packages/claude-team/schemas/handoff.json)
+          case "$body" in
+            *"'"*) echo "::error::handoff.json contains a single quote; it cannot be inlined into claude_args"; exit 1 ;;
+          esac
+          echo "body=$body" >> "$GITHUB_OUTPUT"
+          echo "handoff schema loaded (${#body} chars)"
+
       # Resolved once, read by every gate below — otherwise the same condition appears
       # nine times and drifts.
       # ⚠️ The comment body arrives as ENV and is never interpolated into the script. A
@@ -415,6 +434,7 @@ jobs:
           NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
         run: "$RUNNER_TEMP/agent-bin/stamp-role-label.sh"
       - name: Implementor
+        id: implementor
         if: contains(steps.roles.outputs.list, 'implementor')
         uses: anthropics/claude-code-action@v1
         env:
@@ -428,10 +448,15 @@ jobs:
           # Allowlist by *family*, not per-subcommand. Deliberately NOT bare `Bash`: this
           # runner carries GH_TOKEN and the Claude OAuth token in env, and arbitrary shell
           # could exfiltrate them. Only write-access actors can trigger a run.
+          # ⚠️ --json-schema makes the Implementor's final message the handoff contract, and
+          # the action exposes it as `structured_output` for the two steps below. Prose
+          # sections a later role has to find and parse are the shape that failed for
+          # sub-issue filing: a consumer cannot tell "nothing to report" from "forgot".
           claude_args: |
             --model opus
             --allowedTools "Edit,Write,Bash(git:*),Bash(gh:*),Bash(npm:*)"
             --max-turns 80
+            --json-schema '${{ steps.schema.outputs.body }}'
 
       # ── Tester ──
       # Owns packages/e2e. The Implementor ships behaviour and reports Testing notes; the
@@ -458,7 +483,18 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           trigger_phrase: "@claude"
           track_progress: true
-          prompt: ${{ steps.p_tester.outputs.body }}
+          # ⚠️ The handoff arrives as prompt CONTEXT, not as something to go and find. It is
+          # empty when the Implementor did not run in this job (a Tester-only trigger) or
+          # when its step failed — which is exactly why `testingNotes: []` and an absent
+          # block have to read differently. The prompt says how to tell them apart.
+          prompt: |
+            ${{ steps.p_tester.outputs.body }}
+
+            ## Handoff from the Implementor
+
+            ```json
+            ${{ steps.implementor.outputs.structured_output }}
+            ```
           claude_args: |
             --model sonnet
             --allowedTools "Edit,Write,Bash(git:*),Bash(gh:*),Bash(npm:*),Bash(npx:*)"
@@ -490,7 +526,17 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           trigger_phrase: "@claude"
           track_progress: true
-          prompt: ${{ steps.p_writer.outputs.body }}
+          # The Writer sees the Implementor's candidates directly. ⚠️ Still a proposal, not
+          # an order — a schema must not imply obligation, and rejecting every candidate
+          # stays a correct outcome. writer.md carries that.
+          prompt: |
+            ${{ steps.p_writer.outputs.body }}
+
+            ## Handoff from the Implementor
+
+            ```json
+            ${{ steps.implementor.outputs.structured_output }}
+            ```
           claude_args: |
             --model sonnet
             --allowedTools "Read,Edit,Write,Bash(git:*),Bash(gh:*)"
