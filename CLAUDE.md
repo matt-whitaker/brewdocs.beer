@@ -121,6 +121,25 @@ Six roles, one workflow (`.github/workflows/claude-roles.yaml`), so a comment ma
 with the unselected roles skipping inside it rather than five skipped runs cluttering the
 history.
 
+**Each role's prompt is a file** — `.github/agent-prompts/<role>.md`. Editing a role means
+editing its markdown, not hunting a block scalar; the workflow went 1102 lines to 607.
+
+- A `Load the role prompt` step reads the file into a step output, and the job passes
+  `prompt: ${{ steps.prompt.outputs.body }}`.
+- ⚠️ **`prompt_file` is not available to us.** It exists on the inner `base-action`, but the
+  composite `anthropics/claude-code-action@v1` exposes only `prompt` and points
+  `INPUT_PROMPT_FILE` at its own temp path. Passing a path would send the path as the prompt.
+- ⚠️ **`$(cat file)` in `prompt:` does nothing.** `with:` values are inputs, not shell —
+  Actions expands `${{ }}` and nothing else, so the literal `$(cat …)` reaches the model.
+- ⚠️ **Load before the model step.** A `run:` reads the working tree, and the model checks out
+  a feature branch partway through; a branch cut before a prompt landed would not carry it.
+  Same trap as the agent-bin hooks. The ordering is load-bearing.
+- ⚠️ **Random heredoc delimiter.** A fixed `EOF` truncates at any prompt line that is itself
+  bare `EOF`, and these prompts carry fenced examples.
+- ⚠️ **A prompt file cannot hold `${{ }}`** — it is never evaluated inside a file. Security
+  needed the merged PR number, so it arrives as `PR` in the model step's env and the prompt
+  says `gh pr diff "$PR"`. Anything else dynamic takes the same route.
+
 **Routing.** The handle in the comment picks the role. Labels route nothing.
 
 - `@claude/manager` — issues only. Shapes a rough epic and cuts its integration branch.
