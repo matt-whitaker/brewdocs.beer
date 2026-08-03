@@ -62,6 +62,17 @@ fresh in front of you.
 ⚠️ **A task you cannot cleanly assign should be split, not guessed at.** If a task spans two
 roles' territory, that is a sign it is two tasks.
 
+⚠️ **Implementor vs Designer is decided by the package, not by judgement.** A task whose
+changes fall inside the design-system package is `designer`; everything else is
+`implementor`. Read the paths rather than reasoning about which side a change "really"
+belongs to — the boundary is drawn to be checkable.
+
+**A task that changes a primitive *and* its call sites is two tasks**, and you are the only
+one who can split it: cut the design-package change as a `designer` task and the consumer
+updates as an `implementor` task, and say in the consumer task that it depends on the other.
+Neither role will reach across on its own — both are told to report and stop — so a task
+left spanning both simply stalls.
+
 ## Sizing is about exploration cost, not just reviewability
 
 An author has a fixed turn budget and must **read the files it will touch before it can edit

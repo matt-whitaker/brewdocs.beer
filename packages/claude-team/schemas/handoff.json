@@ -1,0 +1,50 @@
+{
+  "type": "object",
+  "description": "What an authoring role passes to the roles that run after it. Both keys are required. An empty array is a real answer meaning nothing here is worth another role a turn, and is not the same as the step never having run at all.",
+  "properties": {
+    "testingNotes": {
+      "type": "array",
+      "description": "For the Tester. Behaviour that a test written to distrust this change should cover — not a description of what was built. Empty when the change genuinely warrants no new coverage.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "area": {
+            "type": "string",
+            "description": "The behaviour or flow to cover, named in reader-facing terms rather than as a file path."
+          },
+          "why": {
+            "type": "string",
+            "description": "What could break here and stay invisible to lint, typecheck and build. A note with no plausible silent failure behind it is not worth a test."
+          }
+        },
+        "required": ["area", "why"],
+        "additionalProperties": false
+      }
+    },
+    "docsCandidates": {
+      "type": "array",
+      "description": "For the Writer. Things that cost you time to work out and would cost the next reader the same. A proposal, never an instruction — the Writer decides what earns a place. Empty when nothing cost you time.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "string",
+            "description": "Repo-relative path of the document that should carry it. A free string on purpose: these roles are portable and must not encode the layout of any one repository."
+          },
+          "note": {
+            "type": "string",
+            "description": "What the document should say, stated as the fact itself rather than as a topic to write about."
+          },
+          "why": {
+            "type": "string",
+            "description": "The concrete cost you paid for not knowing it. This is the field that decides whether the note survives; with no real cost behind it, it usually should not."
+          }
+        },
+        "required": ["file", "note", "why"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["testingNotes", "docsCandidates"],
+  "additionalProperties": false
+}

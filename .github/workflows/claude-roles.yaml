@@ -12,38 +12,74 @@ run-name: >-
   ${{ github.event_name == 'pull_request'
   && (github.event.pull_request.merged && 'Post-merge' || 'PR closed')
   || contains(github.event.comment.body || github.event.review.body, '@claude/architect') && 'Architect'
+  || contains(github.event.comment.body || github.event.review.body, '@claude/implementor') && 'Implementor'
   || contains(github.event.comment.body || github.event.review.body, '@claude/tester') && 'Tester'
   || contains(github.event.comment.body || github.event.review.body, '@claude/writer') && 'Writer'
-  || 'Implementor' }}
+  || contains(github.event.comment.body || github.event.review.body, '@claude/designer') && 'Designer'
+  || 'Delegate' }}
   · #${{ github.event.issue.number || github.event.pull_request.number }}
   ${{ github.event.issue.title || github.event.pull_request.title }}
 
-# FIVE ROLES, ONE WORKFLOW. Architect / Implementor / Tester / Writer are jobs
-# here rather than separate files to keep the Actions history readable: the role is picked
-# by a job-level `if:`, so it is one run per comment with the unselected roles skipping
-# inside it. Security is the sixth and runs on merge, not on a comment.
+# ONE WORKFLOW, FIVE JOBS, SEVEN ROLES. Kept in one file so the Actions history stays
+# readable: one run per trigger, with whatever was not selected skipping inside it rather
+# than filling the list with skipped runs.
 #
-# ⚠️ THE HANDLE IN THE COMMENT ROUTES. Not labels.
+#   delegate            routes — no model
+#   architect           shapes work and cuts tasks
+#   authors             Implementor|Designer -> Tester -> Writer, sequential STEPS in one job
+#   security            on merge, not on a trigger
+#   merge_housekeeping  on merge — no model
 #
-#   "@claude/architect ..."    -> Architect    (issues only — it shapes work and cuts tasks)
-#   "@claude/implementor ..."  -> Implementor  (issue or PR)
-#   "@claude/tester ..."       -> Tester       (issue or PR)
-#   "@claude/writer ..."       -> Writer       (issue or PR)
+# The authoring roles share a job so one `@claude` runs the whole chain. Implementor and
+# Designer are alternatives — a task is one or the other, split on the package it touches.
+# See that job's header for why they are steps and not `needs:`.
 #
-# ⚠️ A BARE "@claude" DOES NOTHING, deliberately, so a half-typed handle cannot start the
-# wrong agent. Labels trigger nothing either — `on.issues` is not subscribed.
+# ⚠️ THE DELEGATOR ROUTES. Two ways in, one router:
+#
+#   label "@claude" on an issue  -> delegate.sh reads issue state and picks the role
+#   "@claude" in a comment       -> same
+#   "@claude/<role>" in a comment-> delegate.sh rule 1 returns that role outright
+#
+# Every model job carries `needs: delegate` and gates on `needs.delegate.outputs.roles`.
+# A job cannot gate on a step inside itself, which is why the router is its own job.
+#
+# ⚠️ THIS IS NOT THE `needs:` SHAPE #430 REVERTED. There, roles needed `implementor`, which
+# itself skipped most runs — and a job needing a skipped job reports cancelled, which was
+# the noise. `delegate` always RUNS whenever the workflow triggers, so dependents reach
+# their own `if:` and skip cleanly. The alternative (delegate as a step in all six jobs)
+# spins six runners to check out a repo and then do nothing.
+#
+# ⚠️ A HANDLE MUST NEVER BE BLOCKED BY THE ROUTER. Each role's `if:` is
+# `always() && (router picked me || the comment names me)`, so an explicit handle still
+# routes when delegate.sh fails outright. Only a *skipped* delegate skips the roles.
+#
+# ⚠️ THE LOOP GUARD IS THE EXACT LABEL NAME. Roles stamp "@claude/<role>", and every stamp
+# is another `issues: labeled` event. The delegate job requires
+# `github.event.label.name == '@claude'` — an exact match, so no "@claude/..." stamp can
+# re-enter — backed by the bot-actor guard, since the stamp is applied as a bot. Both must
+# hold; either alone is one edit away from an infinite loop rather than a visible failure.
+#
+# ⚠️ RE-ADDING "@claude" IS THE "RUN AGAIN" GESTURE, deliberately. `labeled` fires on every
+# add, so removing and re-adding re-runs the delegator on current issue state — which is
+# what you want after editing the issue. Concurrency queues it behind any run in flight.
 #
 # ⚠️ BACKLOG WORK IS SCRIPTED, NOT PROMPTED. Every role carries hard-coded hooks around
 # its model step, from `packages/claude-team/hooks/`:
 #
+#   delegate job          acknowledge.sh           reacts 👀 so the trigger is visibly received
+#   delegate job          delegate.sh              picks the role(s) from issue state
 #   pre   every role      stamp-role-label.sh      stamps @claude/<role> on the issue or PR
-#   pre   every role      acknowledge.sh           reacts 👀 so the trigger is visibly received
-#   pre   every role      delegate.sh              picks the role(s) from issue state
-#   pre   impl + tester   set-issue-status.sh      sets the issue's board Status (STATUS input)
+#   pre   authors job     set-issue-status.sh      sets the issue's board Status (STATUS input)
 #   post  architect       file-sub-issues.sh       parents stories to epics, tasks to stories
-#   post  impl/test/write finish-pr.sh             labels the PR, appends `Closes #<issue>`
-#   post  impl/test/write open-story-pr.sh         opens the story's PR if it has none
+#   post  authors job     finish-pr.sh             labels the PR, appends `Closes #<issue>`
+#   post  authors job     open-story-pr.sh         opens the story's PR if it has none
+#   post  authors job     log-to-epic.sh           rewrites the epic's rolling work log
 #   merge (no role)       close-merged-work.sh     closes the PR's issues, files them on the board
+#
+# ⚠️ The authors job's post-hooks run ONCE at the end of the job, not once per role — three
+# copies would relabel and re-check the same PR three times. The stamps are the exception:
+# each role stamps before its own model step, so a chain that dies partway reads as how far
+# it actually got.
 #
 # These used to be prompt instructions, and a model could skip them — the label trail is
 # worthless if a run can forget to stamp it. They cost no turns and cannot be forgotten.
@@ -70,6 +106,9 @@ run-name: >-
 # stays out of any environment a prompt can read. Step env is per-step, which is what makes
 # these two safe: the model step in the same job cannot see it.
 on:
+  # the primary trigger. Gated to the label being exactly "@claude" — see the loop guard.
+  issues:
+    types: [labeled]
   issue_comment:
     types: [created]
   pull_request_review_comment:
@@ -92,6 +131,67 @@ env:
   NODE_VERSION: 22
 
 jobs:
+  # ── Delegate ───────────────────────────────────────────────────────────────────
+  # The router. Acknowledges the trigger, then decides which role handles it. Every model
+  # job below hangs off this one.
+  #
+  # ⚠️ NO MODEL, on purpose. Routing was going to be a model step emitting JSON, and "a
+  # model producing data a consumer depends on" is the pattern this repo has been bitten by
+  # most. Sitting in front of every role makes a bad decision here cost the whole run;
+  # almost none of it needs judgement. See the header for the loop guard and the `needs:`
+  # note, and delegate.sh for the precedence rules.
+  delegate:
+    if: |
+      github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]' && (
+        (github.event_name == 'issues' && github.event.label.name == '@claude') ||
+        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+        (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
+        (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude'))
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # write so the unroutable path can leave a comment rather than skipping silently
+      issues: write
+      pull-requests: read
+    outputs:
+      roles: ${{ steps.route.outputs.roles }}
+      story: ${{ steps.route.outputs.story }}
+      defaulted: ${{ steps.route.outputs.defaulted }}
+      reason: ${{ steps.route.outputs.reason }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Stash the agent hooks
+        run: |
+          mkdir -p "$RUNNER_TEMP/agent-bin"
+          cp packages/claude-team/hooks/*.sh "$RUNNER_TEMP/agent-bin/"
+          chmod +x "$RUNNER_TEMP/agent-bin"/*.sh
+      # First real step of every run: the 👀 lands before anything has thought about it.
+      - name: Acknowledge the trigger
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
+          # ⚠️ issue_comment only. A review comment's id belongs to the *pulls* comments
+          # collection, and acknowledge.sh reacts via `issues/comments/<id>` — passing one
+          # here reacts to an unrelated comment or 404s. Empty falls back to the PR itself,
+          # which is an issue as far as the reactions API is concerned.
+          COMMENT_ID: ${{ github.event_name == 'issue_comment' && github.event.comment.id || '' }}
+        run: "$RUNNER_TEMP/agent-bin/acknowledge.sh"
+      - id: route
+        name: Pick the role
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
+          # empty on a label trigger — that is what sends delegate.sh past rule 1 into
+          # reading issue state, which is the whole point of the label path
+          COMMENT_BODY: ${{ github.event.comment.body || github.event.review.body }}
+          # `issues` never fires for a PR (labelling one is a `pull_request` event), so the
+          # only PR path in is a comment or review.
+          IS_PR: ${{ (github.event.issue.pull_request || github.event_name == 'pull_request_review_comment' || github.event_name == 'pull_request_review') && 'true' || 'false' }}
+        run: "$RUNNER_TEMP/agent-bin/delegate.sh"
+
   # ── Architect ────────────────────────────────────────────────────────────────
   # Shapes work so the others can act on it. On an epic it defines the goal and cuts
   # stories; on a story it researches, rewrites the issue, cuts the branch and creates
@@ -99,11 +199,15 @@ jobs:
   # cold starts that each re-read the same issue.
   # ⚠️ It stops at task creation. It never hands to an author, and never opens a PR.
   architect:
+    needs: delegate
+    # ⚠️ The `!github.event.issue.pull_request` guard rides the handle arm only. The router
+    # can never pick architect on a PR (rule 2 sends every PR to implementor), but a handle
+    # typed into a PR comment would otherwise start a role written for an epic issue.
     if: |
-      github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]'
-      && github.event_name == 'issue_comment'
-      && !github.event.issue.pull_request
-      && contains(github.event.comment.body, '@claude/architect')
+      always() && needs.delegate.result != 'skipped' && (
+        contains(needs.delegate.outputs.roles, 'architect')
+        || (!github.event.issue.pull_request && contains(github.event.comment.body, '@claude/architect'))
+      )
     runs-on: ubuntu-latest
     permissions:
       # write purely to push the epic's (empty) integration branch — the prompt
@@ -140,11 +244,14 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          # ⚠️ track_progress forces the action's TAG MODE, which gates on this phrase
-          # independently of our own `if:`. Leave it at the default "@claude" and the
-          # action skips in 0s with a placeholder comment, because "@claude/architect"
-          # is not a match for "@claude".
-          trigger_phrase: "@claude/architect"
+          # ⚠️ track_progress forces the action's TAG MODE. That mode re-checks the
+          # trigger phrase independently of our `if:` — but checkContainsTrigger() returns
+          # early on `if (prompt) return true`, and we always pass a prompt, so the phrase
+          # is inert at v1 (verified at v1.0.183). It is "@claude" rather than
+          # "@claude/architect" because a LABEL trigger carries no comment for a per-role
+          # phrase to match: if that short-circuit ever goes away, "@claude" still matches
+          # the comment path and a per-role phrase would fail every role at once.
+          trigger_phrase: "@claude"
           track_progress: true
           prompt: ${{ steps.prompt.outputs.body }}
           # Read-and-write-issues only; no build tools needed for shaping an epic.
@@ -154,25 +261,64 @@ jobs:
             --max-turns 100
 
       - name: File the story's sub-issues
-        if: always() && github.event_name == 'issue_comment' && !github.event.issue.pull_request
+        # ⚠️ `issues` must be here as well as `issue_comment`. The label is now the primary
+        # way an Architect run starts, and keyed to comments alone this hook — the thing that
+        # parents the tasks it just created — never fired on the path that will be used most.
+        if: |
+          always() && (
+            github.event_name == 'issues'
+            || (github.event_name == 'issue_comment' && !github.event.issue.pull_request)
+          )
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           ISSUE: ${{ github.event.issue.number }}
         run: "$RUNNER_TEMP/agent-bin/file-sub-issues.sh"
-  # ── Implementor ────────────────────────────────────────────────────────────────
-  # The main engineer. Executes issues and handles follow-up engineering (bug fixes,
-  # requested changes, merge-conflict resolution). Reads the issue + its comments (and,
-  # on a PR, the description + current comments) for context before touching code.
-  # Deliverable is code + a PR against mainline. The only role that answers @claude.
-  implementor:
-    # Per-event trigger check. The actor guard stops a self-trigger loop: track_progress
-    # posts as github-actions[bot], and a comment quoting "@claude" would re-enter here.
+  # ── Authors: Implementor | Designer → Tester → Writer ──────────────────────────
+  # The authoring roles as sequential STEPS in one job, so a single `@claude` on a task
+  # runs the whole chain with no further input from the maintainer. Implementor and Designer
+  # are alternatives — a task is one or the other, split on the package it touches.
+  #
+  # ⚠️ STEPS, NOT `needs:`. #430 reverted role chaining because `needs:` ACROSS JOBS left
+  # the followers queued behind every run, and a job that skips after waiting reports as
+  # cancelled — the history filled with cancelled entries. Sequential steps have no job
+  # graph, so none of that applies. Do not reach for `needs:` here; that is the shape that
+  # failed. (The one `needs:` in this file, on `delegate`, is a different case — see the
+  # header.)
+  #
+  # ⚠️ BUDGET. Three model runs back to back — an author at opus 80 turns, then sonnet 80,
+  # then sonnet 60: 220 turns on one runner, plus `npm ci` and a browser install. By a wide
+  # margin the longest job here. Implementor and Designer never both run, so 220 is the
+  # ceiling, not 300. A single-role run is unaffected: the other model steps skip and their
+  # setup skips with them.
+  #
+  # ⚠️ EACH ROLE GETS ITS OWN TRACKING COMMENT, because `use_sticky_comment` is not set —
+  # the action reuses a comment only when it is. That is what keeps the Implementor's
+  # handoff readable after the Tester and Writer have run; sticky would overwrite it with
+  # the next role's and destroy the thing the chain exists to pass along.
+  #
+  # ⚠️ EACH ROLE STAMPS ITS LABEL BEFORE ITS OWN MODEL STEP, not all three up front. A run
+  # that dies in the Tester should read as "implementor and tester were here", not as a
+  # Writer that never started.
+  #
+  # ⚠️ THE POST-HOOKS RUN ONCE, AT THE END. Three copies would relabel and re-check the
+  # same PR three times.
+  authors:
+    needs: delegate
     if: |
-      github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]' && (
-        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude/implementor')) ||
-        (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude/implementor')) ||
-        (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude/implementor'))
+      always() && needs.delegate.result != 'skipped' && (
+        contains(needs.delegate.outputs.roles, 'implementor')
+        || contains(needs.delegate.outputs.roles, 'designer')
+        || contains(needs.delegate.outputs.roles, 'tester')
+        || contains(needs.delegate.outputs.roles, 'writer')
+        || contains(github.event.comment.body, '@claude/implementor')
+        || contains(github.event.comment.body, '@claude/designer')
+        || contains(github.event.comment.body, '@claude/tester')
+        || contains(github.event.comment.body, '@claude/writer')
+        || contains(github.event.review.body, '@claude/implementor')
+        || contains(github.event.review.body, '@claude/designer')
+        || contains(github.event.review.body, '@claude/tester')
+        || contains(github.event.review.body, '@claude/writer')
       )
     runs-on: ubuntu-latest
     permissions:
@@ -187,202 +333,22 @@ jobs:
         with:
           # full history so it can branch from and diff against mainline
           fetch-depth: 0
-      - id: prompt
+      # All three prompts load up front, while the tree is still the default branch — the
+      # same reason the hooks are stashed. A model step checks out a feature branch, and by
+      # the Writer's turn the tree is whatever the Implementor left.
+      - id: p_implementor
         uses: ./.github/actions/load-prompt
         with:
           role: implementor
-      - name: Stash the agent hooks
-        run: |
-          mkdir -p "$RUNNER_TEMP/agent-bin"
-          cp packages/claude-team/hooks/*.sh "$RUNNER_TEMP/agent-bin/"
-          chmod +x "$RUNNER_TEMP/agent-bin"/*.sh
-      # Install as workflow steps, not from inside the run: this costs Claude zero turns,
-      # and without it `tsc` resolves to the runner image's global TypeScript (a different
-      # major) and fails on config this repo pins as valid.
-      - uses: actions/setup-node@v4
+      - id: p_designer
+        uses: ./.github/actions/load-prompt
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-      - run: npm ci
-      - name: Stamp the role label
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ROLE: implementor
-          REPO: ${{ github.repository }}
-          NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
-        run: "$RUNNER_TEMP/agent-bin/stamp-role-label.sh"
-      - name: Move the issue to In Progress
-        env:
-          # ⚠️ PROJECTS_TOKEN is safe here and only here: step env is per-step, so the
-          # model step below cannot read it. See the Owner post-mortem in CLAUDE.md.
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PROJECTS_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
-          REPO: ${{ github.repository }}
-          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
-          PROJECT_OWNER: "@me"
-          PROJECT_NUMBER: "4"
-          STATUS: "In Progress"
-        run: "$RUNNER_TEMP/agent-bin/set-issue-status.sh"
-      - uses: anthropics/claude-code-action@v1
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          # ⚠️ track_progress forces the action's TAG MODE, which gates on this phrase
-          # independently of our own `if:`. Leave it at the default "@claude" and the
-          # action skips in 0s with a placeholder comment, because "@claude/implementor"
-          # is not a match for "@claude".
-          trigger_phrase: "@claude/implementor"
-          track_progress: true
-          prompt: ${{ steps.prompt.outputs.body }}
-          # Allowlist by *family*, not per-subcommand. Deliberately NOT bare `Bash`: this
-          # runner carries GH_TOKEN and the Claude OAuth token in env, and arbitrary shell
-          # could exfiltrate them. Only write-access actors can trigger a run (see the `if:`
-          # actor gate). 80-turn budget: each run is a cold container that re-orients before
-          # making the change — the prompt's read-for-context note is the real cost control.
-          claude_args: |
-            --model opus
-            --allowedTools "Edit,Write,Bash(git:*),Bash(gh:*),Bash(npm:*)"
-            --max-turns 80
-
-      - name: Label and link the PR
-        if: always()
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ROLE: implementor
-          REPO: ${{ github.repository }}
-          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
-        run: "$RUNNER_TEMP/agent-bin/finish-pr.sh"
-      - name: Open the story PR
-        if: always()
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ROLE: implementor
-          REPO: ${{ github.repository }}
-          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
-        run: "$RUNNER_TEMP/agent-bin/open-story-pr.sh"
-
-  # ── Tester ─────────────────────────────────────────────────────────────────────
-  # Owns packages/e2e. The Implementor ships behaviour and writes Testing notes into its
-  # PR Handoff; the Tester turns those notes into Playwright specs. Split out because the
-  # two jobs pull in opposite directions — an engineer finishing a feature writes the test
-  # that passes, and the failure mode this repo actually has (a save that throws inside a
-  # fire-and-forget call while lint/tsc/build stay green) is only caught by a test written
-  # to distrust the change.
-  tester:
-    if: |
-      github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]' && (
-        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude/tester')) ||
-        (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude/tester')) ||
-        (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude/tester'))
-      )
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-      issues: write
-      id-token: write
-      actions: read
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - id: prompt
+          role: designer
+      - id: p_tester
         uses: ./.github/actions/load-prompt
         with:
           role: tester
-      - name: Stash the agent hooks
-        run: |
-          mkdir -p "$RUNNER_TEMP/agent-bin"
-          cp packages/claude-team/hooks/*.sh "$RUNNER_TEMP/agent-bin/"
-          chmod +x "$RUNNER_TEMP/agent-bin"/*.sh
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-      - run: npm ci
-      # Browser install as a workflow step, not a Claude turn. Without it the Tester can
-      # write specs but never run them, and an unrun test is worse than no test.
-      - run: npx playwright install --with-deps chromium
-      - name: Stamp the role label
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ROLE: tester
-          REPO: ${{ github.repository }}
-          NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
-        run: "$RUNNER_TEMP/agent-bin/stamp-role-label.sh"
-      - name: Move the issue to In Progress
-        env:
-          # ⚠️ PROJECTS_TOKEN is safe here and only here: step env is per-step, so the
-          # model step below cannot read it. See the Owner post-mortem in CLAUDE.md.
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PROJECTS_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
-          REPO: ${{ github.repository }}
-          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
-          PROJECT_OWNER: "@me"
-          PROJECT_NUMBER: "4"
-          STATUS: "In Progress"
-        run: "$RUNNER_TEMP/agent-bin/set-issue-status.sh"
-      - uses: anthropics/claude-code-action@v1
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          # ⚠️ track_progress forces the action's TAG MODE, which gates on this phrase
-          # independently of our own `if:`. Leave it at the default "@claude" and the
-          # action skips in 0s with a placeholder comment, because "@claude/tester"
-          # is not a match for "@claude".
-          trigger_phrase: "@claude/tester"
-          track_progress: true
-          prompt: ${{ steps.prompt.outputs.body }}
-          claude_args: |
-            --model sonnet
-            --allowedTools "Edit,Write,Bash(git:*),Bash(gh:*),Bash(npm:*),Bash(npx:*)"
-            --max-turns 80
-
-      - name: Label and link the PR
-        if: always()
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ROLE: tester
-          REPO: ${{ github.repository }}
-          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
-        run: "$RUNNER_TEMP/agent-bin/finish-pr.sh"
-      - name: Open the story PR
-        if: always()
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ROLE: tester
-          REPO: ${{ github.repository }}
-          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
-        run: "$RUNNER_TEMP/agent-bin/open-story-pr.sh"
-
-  # ── Writer ─────────────────────────────────────────────────────────────────────
-  # The tech writer. Owns documentation: every CLAUDE.md, the agent instruction files
-  # under .claude/skills, and anything else whose job is to explain rather than run.
-  #
-  # ⚠️ Split out because CLAUDE.md was the single biggest source of merge conflicts —
-  # every role edited it, so two branches touching the same package collided on prose
-  # neither of them was really working on. Implementor and Tester now report what needs
-  # documenting in their handoff and change no docs themselves.
-  writer:
-    if: |
-      github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]' && (
-        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude/writer')) ||
-        (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude/writer')) ||
-        (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude/writer'))
-      )
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-      issues: write
-      id-token: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - id: prompt
+      - id: p_writer
         uses: ./.github/actions/load-prompt
         with:
           role: writer
@@ -391,31 +357,250 @@ jobs:
           mkdir -p "$RUNNER_TEMP/agent-bin"
           cp packages/claude-team/hooks/*.sh "$RUNNER_TEMP/agent-bin/"
           chmod +x "$RUNNER_TEMP/agent-bin"/*.sh
-      - name: Stamp the role label
+
+      # The handoff contract lives in packages/claude-team so a second repo gets it
+      # unchanged, but `--json-schema` takes INLINE JSON, not a path — so the file is
+      # compacted to one line here and injected into claude_args below. Same shape as
+      # load-prompt: the file is the source of truth, the workflow only carries it.
+      # ⚠️ Loaded here, before any model step, for the usual reason — a `run:` reads the
+      # working tree and the model switches branches partway through.
+      - id: schema
+        name: Load the handoff schema
+        run: |
+          # ⚠️ claude_args is line-parsed, so the schema must be ONE line; and it is wrapped
+          # in single quotes there, so it must contain none. Fail loudly rather than emit a
+          # value that would mangle every flag after it.
+          body=$(jq -c . packages/claude-team/schemas/handoff.json)
+          case "$body" in
+            *"'"*) echo "::error::handoff.json contains a single quote; it cannot be inlined into claude_args"; exit 1 ;;
+          esac
+          echo "body=$body" >> "$GITHUB_OUTPUT"
+          echo "handoff schema loaded (${#body} chars)"
+
+      # Resolved once, read by every gate below — otherwise the same condition appears
+      # nine times and drifts.
+      # ⚠️ The comment body arrives as ENV and is never interpolated into the script. A
+      # `${{ }}` holding attacker-controllable text inside a `run:` block is a shell
+      # injection hole; `$COMMENT` in a `case` pattern is inert.
+      - id: roles
+        name: Resolve the roles for this run
+        env:
+          ROUTED: ${{ needs.delegate.outputs.roles }}
+          COMMENT: ${{ github.event.comment.body || github.event.review.body }}
+        run: |
+          list=""
+          for r in implementor designer tester writer; do
+            case " $ROUTED " in
+              *"$r"*) list="$list $r"; continue ;;
+            esac
+            case "$COMMENT" in
+              *"@claude/$r"*) list="$list $r" ;;
+            esac
+          done
+          echo "list=$list" >> "$GITHUB_OUTPUT"
+          echo "roles for this run:${list:- none}"
+
+      # Install as workflow steps, not from inside a run: this costs Claude zero turns, and
+      # without it `tsc` resolves to the runner image's global TypeScript (a different
+      # major) and fails on config this repo pins as valid. The Writer builds nothing, so a
+      # Writer-only run skips all of it.
+      - if: contains(steps.roles.outputs.list, 'implementor') || contains(steps.roles.outputs.list, 'designer') || contains(steps.roles.outputs.list, 'tester')
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - if: contains(steps.roles.outputs.list, 'implementor') || contains(steps.roles.outputs.list, 'designer') || contains(steps.roles.outputs.list, 'tester')
+        run: npm ci
+      # Browser install as a workflow step, not a Claude turn. Without it the Tester can
+      # write specs but never run them, and an unrun test is worse than no test.
+      - if: contains(steps.roles.outputs.list, 'tester')
+        run: npx playwright install --with-deps chromium
+
+      - name: Move the issue to In Progress
+        if: contains(steps.roles.outputs.list, 'implementor') || contains(steps.roles.outputs.list, 'designer') || contains(steps.roles.outputs.list, 'tester')
+        env:
+          # ⚠️ PROJECTS_TOKEN is safe here and only here: step env is per-step, so the model
+          # steps below cannot read it. See the Owner post-mortem in CLAUDE.md.
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PROJECTS_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
+          REPO: ${{ github.repository }}
+          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
+          PROJECT_OWNER: "@me"
+          PROJECT_NUMBER: "4"
+          STATUS: "In Progress"
+        run: "$RUNNER_TEMP/agent-bin/set-issue-status.sh"
+
+      # ── Implementor ──
+      # The main engineer. Executes issues and handles follow-up engineering (bug fixes,
+      # requested changes, merge-conflict resolution). Reads the issue + its comments (and,
+      # on a PR, the description + current comments) for context before touching code.
+      # Deliverable is code + a PR against mainline.
+      - name: Stamp the Implementor label
+        if: contains(steps.roles.outputs.list, 'implementor')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ROLE: implementor
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
+        run: "$RUNNER_TEMP/agent-bin/stamp-role-label.sh"
+      - name: Implementor
+        id: implementor
+        if: contains(steps.roles.outputs.list, 'implementor')
+        uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          STORY: ${{ needs.delegate.outputs.story }}
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          trigger_phrase: "@claude"
+          track_progress: true
+          prompt: ${{ steps.p_implementor.outputs.body }}
+          # Allowlist by *family*, not per-subcommand. Deliberately NOT bare `Bash`: this
+          # runner carries GH_TOKEN and the Claude OAuth token in env, and arbitrary shell
+          # could exfiltrate them. Only write-access actors can trigger a run.
+          # ⚠️ --json-schema makes the Implementor's final message the handoff contract, and
+          # the action exposes it as `structured_output` for the two steps below. Prose
+          # sections a later role has to find and parse are the shape that failed for
+          # sub-issue filing: a consumer cannot tell "nothing to report" from "forgot".
+          claude_args: |
+            --model opus
+            --allowedTools "Edit,Write,Bash(git:*),Bash(gh:*),Bash(npm:*)"
+            --max-turns 80
+            --json-schema '${{ steps.schema.outputs.body }}'
+
+      # ── Designer ──
+      # The Implementor of the design system. Same shape — branch, PR, gate, handoff — with
+      # the design package as its subject instead of the code that consumes it.
+      #
+      # ⚠️ The boundary is the PACKAGE, not a judgement call, so it can be checked rather
+      # than negotiated. A task that changes a primitive *and* its call sites is two tasks,
+      # and the Architect cuts it in two; the prompt tells the Designer to say so and stop
+      # rather than reach across.
+      #
+      # ⚠️ Implementor and Designer are alternatives, not a sequence — a task is one or the
+      # other. Both emit the same handoff schema, so whichever ran feeds the Tester and
+      # Writer below.
+      - name: Stamp the Designer label
+        if: contains(steps.roles.outputs.list, 'designer')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ROLE: designer
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
+        run: "$RUNNER_TEMP/agent-bin/stamp-role-label.sh"
+      - name: Designer
+        id: designer
+        if: contains(steps.roles.outputs.list, 'designer')
+        uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          STORY: ${{ needs.delegate.outputs.story }}
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          trigger_phrase: "@claude"
+          track_progress: true
+          prompt: ${{ steps.p_designer.outputs.body }}
+          claude_args: |
+            --model opus
+            --allowedTools "Edit,Write,Bash(git:*),Bash(gh:*),Bash(npm:*)"
+            --max-turns 80
+            --json-schema '${{ steps.schema.outputs.body }}'
+
+      # ── Tester ──
+      # Owns packages/e2e. The Implementor ships behaviour and reports Testing notes; the
+      # Tester turns those into Playwright specs. Split because the two pull in opposite
+      # directions — an engineer finishing a feature writes the test that passes, and the
+      # failure mode this repo actually has (a save that throws inside a fire-and-forget
+      # call while lint/tsc/build stay green) is only caught by a test written to distrust
+      # the change.
+      - name: Stamp the Tester label
+        if: contains(steps.roles.outputs.list, 'tester')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ROLE: tester
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
+        run: "$RUNNER_TEMP/agent-bin/stamp-role-label.sh"
+      - name: Tester
+        if: contains(steps.roles.outputs.list, 'tester')
+        uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          STORY: ${{ needs.delegate.outputs.story }}
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          trigger_phrase: "@claude"
+          track_progress: true
+          # ⚠️ The handoff arrives as prompt CONTEXT, not as something to go and find.
+          # Implementor OR Designer, whichever authored — they are alternatives and emit the
+          # same schema, so `||` takes the one that ran (an unrun step's output is empty,
+          # which is falsy). Empty when neither ran (a Tester-only trigger) or when the
+          # author's step failed — exactly why `testingNotes: []` and an absent block have
+          # to read differently. The prompt says how to tell them apart.
+          prompt: |
+            ${{ steps.p_tester.outputs.body }}
+
+            ## Handoff from the Implementor
+
+            ```json
+            ${{ steps.implementor.outputs.structured_output || steps.designer.outputs.structured_output }}
+            ```
+          claude_args: |
+            --model sonnet
+            --allowedTools "Edit,Write,Bash(git:*),Bash(gh:*),Bash(npm:*),Bash(npx:*)"
+            --max-turns 80
+
+      # ── Writer ──
+      # The tech writer. Owns documentation: every CLAUDE.md, the agent instruction files
+      # under .claude/skills, and anything else whose job is to explain rather than run.
+      #
+      # ⚠️ Split out because CLAUDE.md was the single biggest source of merge conflicts —
+      # every role edited it, so two branches touching the same package collided on prose
+      # neither was really working on. Implementor and Tester report what needs documenting
+      # and change no docs themselves.
+      - name: Stamp the Writer label
+        if: contains(steps.roles.outputs.list, 'writer')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ROLE: writer
           REPO: ${{ github.repository }}
           NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
         run: "$RUNNER_TEMP/agent-bin/stamp-role-label.sh"
-      - uses: anthropics/claude-code-action@v1
+      - name: Writer
+        if: contains(steps.roles.outputs.list, 'writer')
+        uses: anthropics/claude-code-action@v1
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          STORY: ${{ needs.delegate.outputs.story }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          trigger_phrase: "@claude"
           track_progress: true
-          trigger_phrase: "@claude/writer"
-          prompt: ${{ steps.prompt.outputs.body }}
+          # The Writer sees the author's candidates directly — Implementor or Designer,
+          # whichever ran. ⚠️ Still a proposal, not
+          # an order — a schema must not imply obligation, and rejecting every candidate
+          # stays a correct outcome. writer.md carries that.
+          prompt: |
+            ${{ steps.p_writer.outputs.body }}
+
+            ## Handoff from the Implementor
+
+            ```json
+            ${{ steps.implementor.outputs.structured_output || steps.designer.outputs.structured_output }}
+            ```
           claude_args: |
             --model sonnet
             --allowedTools "Read,Edit,Write,Bash(git:*),Bash(gh:*)"
             --max-turns 60
 
+      # ── Once, for the job ──
       - name: Label and link the PR
-        if: always()
+        if: always() && steps.roles.outputs.list != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ROLE: writer
+          # every role that ran, so the PR carries the whole trail rather than whichever
+          # one happened to be last
+          ROLES: ${{ steps.roles.outputs.list }}
           REPO: ${{ github.repository }}
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
         run: "$RUNNER_TEMP/agent-bin/finish-pr.sh"
@@ -423,10 +608,17 @@ jobs:
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ROLE: writer
           REPO: ${{ github.repository }}
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
         run: "$RUNNER_TEMP/agent-bin/open-story-pr.sh"
+      - name: Update the epic's work log
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
+          ROLES: ${{ steps.roles.outputs.list }}
+        run: "$RUNNER_TEMP/agent-bin/log-to-epic.sh"
 
   # ── Security ───────────────────────────────────────────────────────────────────
   # Reviews what just landed on mainline and files issues for what it finds. Runs on

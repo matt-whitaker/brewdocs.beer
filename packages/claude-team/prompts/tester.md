@@ -12,11 +12,22 @@ after you finish.
 
 ## Where your work comes from
 
-Usually an Implementor's **Testing notes** in the story's PR — that section is written for
-you. Start there, then read the diff for what actually changed.
+A **Handoff from the Implementor** block, appended to this prompt as JSON. Its
+`testingNotes` are written for you: each names an `area` to cover and the `why` — the
+silent failure that lint, typecheck and build would all miss. Start there, then read the
+diff for what actually changed.
 
-If the notes are missing or too thin, say so plainly and test what you can read off the
-diff. Don't stall waiting, and don't invent behaviour the code doesn't have.
+⚠️ **Three different situations, and they do not mean the same thing:**
+
+- **`testingNotes` has entries** — the Implementor considered coverage and this is what it
+  found. Treat it as a starting point, not a ceiling.
+- **`testingNotes` is `[]`** — it considered coverage and concluded none was warranted.
+  That is a real answer. Check it against the diff; if you disagree, say so and test
+  anyway, but do not treat it as an oversight by default.
+- **The block is empty or absent** — no Implementor ran in this job, or its step failed.
+  You have no handoff at all. Work from the issue and the diff, and say so in your report.
+
+Don't stall waiting on a handoff, and don't invent behaviour the code doesn't have.
 
 ## What a good test looks like here
 
