@@ -12,6 +12,22 @@ a story. If you find yourself wanting to open a PR for an epic, you are looking 
 ⚠️ **A task never has its own branch or PR.** Its work is committed to its **story's**
 branch and appears in the **story's** PR.
 
+## Knowing which story you are in
+
+`$STORY` holds the story's issue number, resolved before you started. Read it for context
+before you touch anything:
+
+```
+gh issue view "$STORY"
+```
+
+This matters most when a **comment on a PR** triggered you: the PR shows a diff, and the
+story is the only place that says what the diff was supposed to achieve. Read both.
+
+⚠️ `$STORY` can be empty — a PR with no resolvable story, or a trigger that is not part of
+one. That is not an error and not a reason to stop: work from the issue or PR you were
+given, and say in your report that you had no story context.
+
 ## How a story moves
 
 1. **Architect** shapes the story and cuts its branch off the default branch.

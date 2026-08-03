@@ -46,24 +46,48 @@ unroutable() {
     exit 0
 }
 
-# ---- 1. an explicit handle wins, with no further inspection
-for r in architect implementor tester writer designer; do
-    case "${COMMENT_BODY:-}" in
-        *"@claude/$r"*) ROLES="$r"; REASON="handle @claude/$r in the comment"; emit; exit 0 ;;
-    esac
-done
-
-# ---- 2. triggered on a PR: resolve its story, default to implementor
-if [ "${IS_PR:-false}" = "true" ]; then
-    [ -n "${NUMBER:-}" ] || unroutable "a PR trigger with no number"
-    STORY=$(gh pr view "$NUMBER" --repo "$REPO" --json closingIssuesReferences \
-        --jq '.closingIssuesReferences[0].number // empty' 2>/dev/null || true)
+# Sets STORY from a PR number. Every role triggered on a PR gets this, including one named
+# by an explicit handle — rule 1 short-circuits the routing *decision*, not the context: a
+# `@claude/tester` on a story's PR should arrive knowing which story it is testing.
+resolve_pr_story() {
+    # ⚠️ THE HEAD BRANCH NAMES THE STORY — the closing reference does not. A story branch is
+    # `<story#>-<summary>`, minted by the Architect; the closing refs are whatever the
+    # authors happened to write, and a task's `Closes #<task>` lands in there too. Measured
+    # across four real story PRs, `closingIssuesReferences[0]` gave a TASK or an unrelated
+    # story in two of them, while the branch name was right in all four.
+    local head
+    head=$(gh pr view "$NUMBER" --repo "$REPO" --json headRefName --jq '.headRefName // empty' 2>/dev/null || true)
+    STORY=$(printf '%s' "$head" | grep -oE '^[0-9]+' || true)
+    # a hand-cut branch with no issue prefix: fall back to what the PR claims to close.
+    if [ -z "$STORY" ]; then
+        STORY=$(gh pr view "$NUMBER" --repo "$REPO" --json closingIssuesReferences \
+            --jq '.closingIssuesReferences[0].number // empty' 2>/dev/null || true)
+    fi
     # ⚠️ closingIssuesReferences only populates when the PR targets the default branch —
     # GitHub ignores closing keywords otherwise. Fall back to the body for anything else.
     if [ -z "$STORY" ]; then
         STORY=$(gh pr view "$NUMBER" --repo "$REPO" --json body --jq '.body // ""' 2>/dev/null \
             | grep -oiE '(clos|fix|resolv)[a-z]* +#[0-9]+' | head -1 | grep -oE '[0-9]+' || true)
     fi
+}
+
+# ---- 1. an explicit handle wins, with no further inspection
+for r in architect implementor tester writer designer; do
+    case "${COMMENT_BODY:-}" in
+        *"@claude/$r"*)
+            ROLES="$r"; REASON="handle @claude/$r in the comment"
+            if [ "${IS_PR:-false}" = "true" ] && [ -n "${NUMBER:-}" ]; then
+                resolve_pr_story
+                REASON="$REASON; PR #$NUMBER belongs to story #${STORY:-unknown}"
+            fi
+            emit; exit 0 ;;
+    esac
+done
+
+# ---- 2. triggered on a PR: resolve its story, default to implementor
+if [ "${IS_PR:-false}" = "true" ]; then
+    [ -n "${NUMBER:-}" ] || unroutable "a PR trigger with no number"
+    resolve_pr_story
     ROLES="implementor"
     if [ -z "$STORY" ]; then
         DEFAULTED=true

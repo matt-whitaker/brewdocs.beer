@@ -324,6 +324,11 @@ jobs:
       - uses: anthropics/claude-code-action@v1
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # the story this run belongs to, resolved by the delegator from the PR's head
+          # branch. Same pattern as Security's PR: a prompt file can't hold `${{ }}`, so
+          # anything dynamic arrives as env and the model's own shell expands it. Empty when
+          # the trigger resolves to no story — the prompt says to carry on without it.
+          STORY: ${{ needs.delegate.outputs.story }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # ⚠️ track_progress forces the action's TAG MODE. That mode re-checks the
@@ -428,6 +433,11 @@ jobs:
       - uses: anthropics/claude-code-action@v1
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # the story this run belongs to, resolved by the delegator from the PR's head
+          # branch. Same pattern as Security's PR: a prompt file can't hold `${{ }}`, so
+          # anything dynamic arrives as env and the model's own shell expands it. Empty when
+          # the trigger resolves to no story — the prompt says to carry on without it.
+          STORY: ${{ needs.delegate.outputs.story }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # ⚠️ track_progress forces the action's TAG MODE. That mode re-checks the
@@ -507,6 +517,11 @@ jobs:
       - uses: anthropics/claude-code-action@v1
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # the story this run belongs to, resolved by the delegator from the PR's head
+          # branch. Same pattern as Security's PR: a prompt file can't hold `${{ }}`, so
+          # anything dynamic arrives as env and the model's own shell expands it. Empty when
+          # the trigger resolves to no story — the prompt says to carry on without it.
+          STORY: ${{ needs.delegate.outputs.story }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           track_progress: true
