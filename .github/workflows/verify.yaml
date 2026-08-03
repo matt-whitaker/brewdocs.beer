@@ -5,6 +5,23 @@ on:
   pull_request:
     branches:
       - mainline
+    paths:
+      # Only code changes need the gate. Docs, agent prompts, hooks and workflow-adjacent
+      # files don't compile, lint or build, so a PR touching only those skips this entirely.
+      #
+      # ⚠️ Negation rather than an explicit package list, deliberately. The dangerous failure
+      # is a NEW code package silently never being verified; with `packages/**` it is covered
+      # the day it is added. The cost is that a new non-code package under packages/ runs the
+      # gate for nothing until it is excluded here — harmless, and visible.
+      #
+      # ⚠️ packages/claude-team is not an npm workspace: it holds prompts and shell hooks, and
+      # `npm test -ws` never sees it.
+      - 'packages/**'
+      - '!packages/claude-team/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'nx.json'
+      - '.github/workflows/verify.yaml'
 
 concurrency:
   group: verify-${{ github.ref }}
