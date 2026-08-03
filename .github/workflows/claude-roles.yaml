@@ -36,13 +36,13 @@ run-name: >-
 # wrong agent. Labels trigger nothing either — `on.issues` is not subscribed.
 #
 # ⚠️ BACKLOG WORK IS SCRIPTED, NOT PROMPTED. Every role carries hard-coded hooks around
-# its model step, in `.github/agent-bin/`:
+# its model step, from `packages/claude-team/hooks/`:
 #
 #   pre   every role      stamp-role-label.sh      stamps @claude/<role> on the issue or PR
 #   pre   impl + tester   set-issue-in-progress.sh moves the issue to In Progress on the board
 #   post  researcher      file-sub-issues.sh       parents + milestones the epic's sub-issues
 #   post  impl/test/write finish-pr.sh             labels the PR, appends `Closes #<issue>`
-#   post  implementor     open-integration-pr.sh   opens the epic's integration PR if missing
+#   post  impl/test/write open-story-pr.sh         opens the story's PR if it has none
 #   merge (no role)       close-merged-work.sh     closes the PR's issues, files them on the board
 #
 # These used to be prompt instructions, and a model could skip them — the label trail is
@@ -120,7 +120,7 @@ jobs:
       - name: Stash the agent hooks
         run: |
           mkdir -p "$RUNNER_TEMP/agent-bin"
-          cp .github/agent-bin/*.sh "$RUNNER_TEMP/agent-bin/"
+          cp packages/claude-team/hooks/*.sh "$RUNNER_TEMP/agent-bin/"
           chmod +x "$RUNNER_TEMP/agent-bin"/*.sh
       - uses: actions/setup-node@v4
         with:
@@ -177,7 +177,7 @@ jobs:
       - name: Stash the agent hooks
         run: |
           mkdir -p "$RUNNER_TEMP/agent-bin"
-          cp .github/agent-bin/*.sh "$RUNNER_TEMP/agent-bin/"
+          cp packages/claude-team/hooks/*.sh "$RUNNER_TEMP/agent-bin/"
           chmod +x "$RUNNER_TEMP/agent-bin"/*.sh
       - uses: actions/setup-node@v4
         with:
@@ -249,7 +249,7 @@ jobs:
       - name: Stash the agent hooks
         run: |
           mkdir -p "$RUNNER_TEMP/agent-bin"
-          cp .github/agent-bin/*.sh "$RUNNER_TEMP/agent-bin/"
+          cp packages/claude-team/hooks/*.sh "$RUNNER_TEMP/agent-bin/"
           chmod +x "$RUNNER_TEMP/agent-bin"/*.sh
       # Install as workflow steps, not from inside the run: this costs Claude zero turns,
       # and without it `tsc` resolves to the runner image's global TypeScript (a different
@@ -307,14 +307,14 @@ jobs:
           REPO: ${{ github.repository }}
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
         run: "$RUNNER_TEMP/agent-bin/finish-pr.sh"
-      - name: Open the epic integration PR
+      - name: Open the story PR
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ROLE: implementor
           REPO: ${{ github.repository }}
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
-        run: "$RUNNER_TEMP/agent-bin/open-integration-pr.sh"
+        run: "$RUNNER_TEMP/agent-bin/open-story-pr.sh"
 
   # ── Tester ─────────────────────────────────────────────────────────────────────
   # Owns packages/e2e. The Implementor ships behaviour and writes Testing notes into its
@@ -348,7 +348,7 @@ jobs:
       - name: Stash the agent hooks
         run: |
           mkdir -p "$RUNNER_TEMP/agent-bin"
-          cp .github/agent-bin/*.sh "$RUNNER_TEMP/agent-bin/"
+          cp packages/claude-team/hooks/*.sh "$RUNNER_TEMP/agent-bin/"
           chmod +x "$RUNNER_TEMP/agent-bin"/*.sh
       - uses: actions/setup-node@v4
         with:
@@ -401,6 +401,14 @@ jobs:
           REPO: ${{ github.repository }}
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
         run: "$RUNNER_TEMP/agent-bin/finish-pr.sh"
+      - name: Open the story PR
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ROLE: tester
+          REPO: ${{ github.repository }}
+          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
+        run: "$RUNNER_TEMP/agent-bin/open-story-pr.sh"
 
   # ── Writer ─────────────────────────────────────────────────────────────────────
   # The tech writer. Owns documentation: every CLAUDE.md, the agent instruction files
@@ -434,7 +442,7 @@ jobs:
       - name: Stash the agent hooks
         run: |
           mkdir -p "$RUNNER_TEMP/agent-bin"
-          cp .github/agent-bin/*.sh "$RUNNER_TEMP/agent-bin/"
+          cp packages/claude-team/hooks/*.sh "$RUNNER_TEMP/agent-bin/"
           chmod +x "$RUNNER_TEMP/agent-bin"/*.sh
       - name: Stamp the role label
         env:
@@ -464,6 +472,14 @@ jobs:
           REPO: ${{ github.repository }}
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
         run: "$RUNNER_TEMP/agent-bin/finish-pr.sh"
+      - name: Open the story PR
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ROLE: writer
+          REPO: ${{ github.repository }}
+          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
+        run: "$RUNNER_TEMP/agent-bin/open-story-pr.sh"
 
   # ── Security ───────────────────────────────────────────────────────────────────
   # Reviews what just landed on mainline and files issues for what it finds. Runs on
@@ -532,7 +548,7 @@ jobs:
       - name: Stash the agent hooks
         run: |
           mkdir -p "$RUNNER_TEMP/agent-bin"
-          cp .github/agent-bin/*.sh "$RUNNER_TEMP/agent-bin/"
+          cp packages/claude-team/hooks/*.sh "$RUNNER_TEMP/agent-bin/"
           chmod +x "$RUNNER_TEMP/agent-bin"/*.sh
       - name: Close and file the PR's issues
         env:

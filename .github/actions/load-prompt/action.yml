@@ -1,10 +1,17 @@
 name: Load a role prompt
-description: Reads .github/agent-prompts/<role>.md into a step output for a model step's `prompt` input.
+description: Assembles a role's prompt from the claude-team base and this repo's overlay.
 
-# ⚠️ This exists because `prompt` is an action INPUT, not shell — `$(cat file)` in a `with:`
-# value arrives at the model as those literal characters. `prompt_file` would avoid the
-# dance, but only the inner `base-action` exposes it; the composite claude-code-action@v1
-# takes `prompt` alone. So the file has to become a step output first.
+# The prompt is four files, in this order:
+#
+#   packages/claude-team/prompts/_shared.md   the hierarchy and house rules, every role
+#   packages/claude-team/prompts/<role>.md    how this role behaves
+#   .github/agent-prompts/_shared.md          this repo's specifics, every role
+#   .github/agent-prompts/<role>.md           this repo's specifics for this role
+#
+# ⚠️ `prompt` is an action INPUT, not shell — `$(cat file)` in a `with:` value arrives at
+# the model as those literal characters. `prompt_file` would avoid the dance, but only the
+# inner base-action exposes it; the composite claude-code-action@v1 takes `prompt` alone.
+# So the files have to become a step output first.
 #
 # ⚠️ The delimiter carries the run id. `$GITHUB_OUTPUT` needs `name<<DELIM … DELIM` for any
 # multiline value, and a fixed `EOF` would truncate at any prompt line that is itself bare
@@ -12,12 +19,12 @@ description: Reads .github/agent-prompts/<role>.md into a step output for a mode
 
 inputs:
   role:
-    description: Role name, selecting .github/agent-prompts/<role>.md
+    description: Role name, selecting <role>.md from the base and the overlay
     required: true
 
 outputs:
   body:
-    description: The prompt file's contents
+    description: The assembled prompt
     value: ${{ steps.read.outputs.body }}
 
 runs:
@@ -26,9 +33,23 @@ runs:
     - id: read
       shell: bash
       run: |
+        base=packages/claude-team/prompts
+        overlay=.github/agent-prompts
+        role="${{ inputs.role }}"
+
+        for f in "$base/_shared.md" "$base/$role.md" "$overlay/_shared.md"; do
+          [ -f "$f" ] || { echo "::error::missing prompt file $f"; exit 1; }
+        done
+
         d="PROMPT_EOF_${{ github.run_id }}"
         {
           echo "body<<$d"
-          cat ".github/agent-prompts/${{ inputs.role }}.md"
+          cat "$base/$role.md"
+          echo
+          cat "$base/_shared.md"
+          echo
+          cat "$overlay/_shared.md"
+          # a role-specific overlay is optional — not every role needs one
+          [ -f "$overlay/$role.md" ] && { echo; cat "$overlay/$role.md"; }
           echo "$d"
         } >> "$GITHUB_OUTPUT"

@@ -135,7 +135,7 @@ editing its markdown, not hunting a block scalar; the workflow went 1102 lines t
   Actions expands `${{ }}` and nothing else, so the literal `$(cat …)` reaches the model.
 - ⚠️ **Load before the model step.** A `run:` reads the working tree, and the model checks out
   a feature branch partway through; a branch cut before a prompt landed would not carry it.
-  Same trap as the agent-bin hooks. The ordering is load-bearing.
+  Same trap as the claude-team hooks. The ordering is load-bearing.
 - ⚠️ **Random heredoc delimiter.** A fixed `EOF` truncates at any prompt line that is itself
   bare `EOF`, and these prompts carry fenced examples.
 - ⚠️ **A prompt file cannot hold `${{ }}`** — it is never evaluated inside a file. Security
@@ -144,8 +144,8 @@ editing its markdown, not hunting a block scalar; the workflow went 1102 lines t
 
 **Routing.** The handle in the comment picks the role. Labels route nothing.
 
-- `@claude/manager` — issues only. Shapes a rough epic and cuts its integration branch.
-- `@claude/researcher` — issues only. Decomposes an epic into sub-issues.
+- `@claude/manager` — epic or story. Shapes the issue; on a story, also cuts its branch.
+- `@claude/researcher` — epic or story. Decomposes an epic into stories, a story into tasks.
 - `@claude/implementor` — issue or PR. Writes the code and opens the PR.
 - `@claude/tester` — issue or PR. Owns `packages/e2e`.
 - `@claude/writer` — issue or PR. Owns every `CLAUDE.md` and `.claude/skills/`.
@@ -173,22 +173,22 @@ chained run's comment says `@claude/implementor`).
 ⚠️ Workflow changes to any of this **cannot be tested before merge**: `issue_comment` always
 runs the workflow from the default branch, so a PR branch's version is never the one that fires.
 
-**Backlog work is scripted, never prompted.** Hooks in `.github/agent-bin/` run around each
+**Backlog work is scripted, never prompted.** Hooks in `packages/claude-team/hooks/` run around each
 model step.
 
 - `stamp-role-label.sh` — pre, every role. Stamps `@claude/<role>` on the issue or PR.
-- `file-sub-issues.sh` — post, Researcher. Parents the epic's sub-issues and copies its
+- `file-sub-issues.sh` — post, Researcher. Parents stories to their epic and tasks to their
+  story, and copies its
   milestone down. **Discovers** them — a bot-authored issue, numbered above the epic, whose
-  body carries a *Base branch* line naming the epic's own `<epic#>-…` branch. Honours an
-  old `owner-manifest` comment too, unioned.
+  body references it as `epic #N` or `story #N`. Honours an old `owner-manifest` comment
+  too, unioned.
 - `set-issue-in-progress.sh` — pre, Implementor and Tester. Moves the triggering issue to
   **In Progress** on project #4, so the board reflects reality when work starts rather than
   only when it merges. Skips a closed issue, so a re-run never resurrects finished work.
 - `finish-pr.sh` — post, Implementor / Tester / Writer. Labels the PR the run opened with
   its role, and appends `Closes #<issue>` if the model didn't write one.
-- `open-integration-pr.sh` — post, Implementor. Opens the epic's integration PR when the
-  base branch has none, marker commit included. Reads the branch and epic number out of the
-  sub-issue's *Base branch* line.
+- `open-story-pr.sh` — post, every authoring role. Opens the story's PR when its branch has
+  none and has commits. Reads the branch from the issue's **Branch** line.
 - `close-merged-work.sh` — on merge. Closes the PR's issues and files them on the board.
 
 ⚠️ These were prompt instructions until a model skipped them. A label trail is worthless if
@@ -199,9 +199,9 @@ read a machine-readable manifest the Researcher was told to leave; across nine e
 wrote one exactly once, and the hook logged `No owner-manifest — nothing to file` and did
 nothing. Moving the instruction from "call the API" to "write a JSON block" only moved
 where it got skipped. Derive the input from something the model must produce **for another
-reason** — here the *Base branch* line, which the integration PR already depends on.
+reason** — here the **Branch** line, which the story PR already depends on.
 ⚠️ **A prose marker cannot be the only marker in a repo whose issues quote its own
-conventions.** The first version matched a *Base branch* line plus `epic #N` and adopted a
+conventions.** The first version matched a branch line plus `epic #N` and adopted a
 meta-issue that quoted the convention verbatim as an example. The author check
 (`.user.type == "Bot"`) is what makes it sound — with the consequence, accepted, that a
 hand-written sub-issue is never auto-parented.
@@ -238,29 +238,32 @@ optionally end their handoff with a fenced `json` block of **docs candidates** �
 actual failure mode — a save that throws inside a fire-and-forget call while lint, tsc and
 build stay green — is only caught by a test written to distrust the change.
 
-**One epic → one branch → one PR to `mainline`.**
+**Epic → story → task.** The team definition lives in
+[`packages/claude-team`](packages/claude-team/README.md); this repo extends it with
+per-role overlays in `.github/agent-prompts/`.
 
-- Manager cuts `<issue#>-<kebab-summary>` off `mainline`, empty, and records it in the epic.
-- Researcher stamps it onto every sub-issue as a *Base branch* line naming the epic.
-- Each Implementor branches off it and PRs into it.
-- Whichever Implementor first finds no integration PR opens it, so it fills up as sub-issues
-  merge instead of appearing whole at the end.
+| level | branch | PR | is |
+|---|---|---|---|
+| **Epic** | no | **no** | a cross-story product goal; a grouping, nothing more |
+| **Story** | **one** | **exactly one** | a sub-issue of an epic — the unit that ships |
+| **Task** | no | no | a sub-issue of a story; work that lands on the story's branch |
 
-⚠️ A *Base branch* governs two things and naming only the PR's base is the trap. The runner
-checks out `mainline`, so `gh pr create --base <epic>` without `git checkout -B <branch>
-origin/<epic>` yields a PR that looks right but was cut from `mainline` — its diff then
-carries every mainline change since, other epics' features included. Seen on PR #330.
-⚠️ The first integration PR needs an `--allow-empty` marker commit; the branch is identical
-to `mainline` and GitHub refuses a PR with no commits between.
-⚠️ Only housekeeping may be pushed straight to an integration branch — that marker, and
-merging `mainline` in. Feature work lands by merging sub-issue PRs.
-⚠️ `pull_request` events run the workflow from the PR's **base** branch, so workflow fixes do
-not reach in-flight epics until `mainline` is merged into them.
-⚠️ GitHub ignores closing keywords unless the PR targets the default branch, so a sub-issue
-PR's `Closes #N` is inert and `closingIssuesReferences` is empty. The merge hook parses the
-keyword out of the body instead. The epic's integration PR must carry **exactly one** closing
-keyword — its own — since it does target `mainline`; a sub-PR index written as
-`· closes #341` silently attaches that sub-issue to the epic's PR.
+- Manager cuts the story's branch off `mainline`, empty, and records it in the story as a
+  **Branch** line.
+- Researcher stamps that same line onto every task, so a task commits to its story's branch.
+- The **first author to run** — Implementor, Tester or Writer — opens the story's PR, via
+  `open-story-pr.sh`. All three carry the hook; whichever runs first wins.
+- Every role after that commits to the same branch. **No role cuts its own.**
+
+⚠️ One PR per story, growing, is the point. The maintainer reviews the story landing as a
+whole — code, tests and docs — instead of one PR per role.
+⚠️ A story PR targets `mainline`, so its `Closes #<story>` works normally. Tasks are closed
+by the merge hook parsing the body, not by GitHub.
+⚠️ `pull_request` events run the workflow from the PR's **base** branch, so workflow fixes
+do not reach an in-flight story until `mainline` is merged into it.
+⚠️ An epic has no branch, so nothing to merge in and nothing to keep current. That was the
+main cost of the old epic-integration-branch model.
+
 
 **Budgets.** `sonnet` throughout except the Implementor, which runs `opus` — it is the only
 role whose output the maintainer must review line by line. Manager 40 turns, Writer 60,
