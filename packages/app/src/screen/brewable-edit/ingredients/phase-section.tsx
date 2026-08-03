@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import {useCallback, useMemo} from "react";
 import {KbGrain, KbHop, KbYeast} from "@brewdocs.beer/kb";
 import DataGrid from "@/component/data-grid";
@@ -71,16 +72,19 @@ export default function RecipeEditPhaseSection({
                     ))}
                 </div>
             ))}
-            <RecipeEditPhaseAddRow
-                phaseId={phaseId}
-                phaseLabel={label}
-                phaseType={phaseType}
-                add={add}
-                resourceOptions={resourceOptions}
-                kbGrainsIndex={kbGrainsIndex}
-                kbHopsIndex={kbHopsIndex}
-                kbYeastsIndex={kbYeastsIndex}
-            />
+            <div className={classNames({ "mt-2 border-t border-base-300": subsections.length > 0 })}>
+                <DataGridSubheaderRow>Add to {label}</DataGridSubheaderRow>
+                <RecipeEditPhaseAddRow
+                    phaseId={phaseId}
+                    phaseLabel={label}
+                    phaseType={phaseType}
+                    add={add}
+                    resourceOptions={resourceOptions}
+                    kbGrainsIndex={kbGrainsIndex}
+                    kbHopsIndex={kbHopsIndex}
+                    kbYeastsIndex={kbYeastsIndex}
+                />
+            </div>
         </DataGrid>
     );
 }

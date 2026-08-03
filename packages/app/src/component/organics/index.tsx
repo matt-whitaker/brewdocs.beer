@@ -10,25 +10,30 @@ export type OrganicsProps = {
     hops: {name: string}[];
     grains: {name: string}[];
     yeasts: {name: string}[];
+    additives: {name: string}[];
     className?: string
 };
 
-export default function Organics({ hops, grains, yeasts, className }: OrganicsProps) {
-    // hops repeat across boil additions, so collapse them to distinct names
-    const hopsList = useMemo(() => [...new Set(hops.map(({ name }) => name)).values()].join(", "), [hops]);
-    const grainsList = useMemo(() => grains.map(({ name }) => name).join(", "), [grains]);
-    const yeastsList = useMemo(() => yeasts.map(({ name }) => name).join(", "), [yeasts]);
+const namesList = (items: {name: string}[]) => items.map(({ name }) => name).join(", ");
+// hops and additives repeat across boil additions, so collapse them to distinct names
+const distinctNamesList = (items: {name: string}[]) => [...new Set(items.map(({ name }) => name)).values()].join(", ");
+
+export default function Organics({ hops, grains, yeasts, additives, className }: OrganicsProps) {
+    const hopsList = useMemo(() => distinctNamesList(hops), [hops]);
+    const grainsList = useMemo(() => namesList(grains), [grains]);
+    const yeastsList = useMemo(() => namesList(yeasts), [yeasts]);
+    const additivesList = useMemo(() => distinctNamesList(additives), [additives]);
 
     const rows = useMemo<[string, string][]>(
-        () => [["Hops", hopsList], ["Grain", grainsList], ["Yeast", yeastsList]],
-        [hopsList, grainsList, yeastsList]
+        () => [["Hops", hopsList], ["Grain", grainsList], ["Yeast", yeastsList], ["Additives", additivesList]],
+        [hopsList, grainsList, yeastsList, additivesList]
     );
 
     return (
         <DataGrid className={className}>
             {rows.map(([name, list]) => (
                 <Fragment key={name}>
-                    {/* labels — three collapsible headers in one grid would fold each
+                    {/* labels — collapsible headers in one grid would fold each
                         other's rows, since the collapse rule takes every following
                         sibling */}
                     <DataGridHeaderRow>{name}</DataGridHeaderRow>

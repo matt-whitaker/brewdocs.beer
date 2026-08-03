@@ -3,6 +3,7 @@ import Recipe from "@/model/recipe";
 import queryClient from "@/queryClient";
 import recipesStorage from "@/storage/recipes";
 import {FilterFn} from "@/utils/func";
+import serialize from "@/utils/serialize";
 
 export const recipesQueryKey = () => ["recipes"];
 export const fetchRecipes = async () => recipesStorage.list();
@@ -49,10 +50,10 @@ export const deleteRecipe = async (id: string) => {
 // Doing the merge here, against the current stored value, means a sibling panel
 // editing a different slice can't clobber this one, and the caller needn't hold
 // a ref to the whole recipe to reconstruct it.
-export const patchRecipe = async (id: string, patch: Partial<Recipe>) => {
+export const patchRecipe = (id: string, patch: Partial<Recipe>) => serialize(`recipe:${id}`, async () => {
     const current = await recipesStorage.get(id);
     if (!current) return;
     await recipesStorage.save(id, {...current, ...patch});
     await queryClient.invalidateQueries({queryKey: recipeQueryKey(id)});
     await queryClient.invalidateQueries({queryKey: recipesQueryKey()});
-};
+});
