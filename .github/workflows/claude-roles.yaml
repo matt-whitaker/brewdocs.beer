@@ -11,23 +11,21 @@ run-name: >-
   Claude ·
   ${{ github.event_name == 'pull_request'
   && (github.event.pull_request.merged && 'Post-merge' || 'PR closed')
-  || contains(github.event.comment.body || github.event.review.body, '@claude/manager') && 'Manager'
-  || contains(github.event.comment.body || github.event.review.body, '@claude/researcher') && 'Researcher'
+  || contains(github.event.comment.body || github.event.review.body, '@claude/architect') && 'Architect'
   || contains(github.event.comment.body || github.event.review.body, '@claude/tester') && 'Tester'
   || contains(github.event.comment.body || github.event.review.body, '@claude/writer') && 'Writer'
   || 'Implementor' }}
   · #${{ github.event.issue.number || github.event.pull_request.number }}
   ${{ github.event.issue.title || github.event.pull_request.title }}
 
-# SIX ROLES, ONE WORKFLOW. Manager / Researcher / Implementor / Tester / Writer are jobs
+# FIVE ROLES, ONE WORKFLOW. Architect / Implementor / Tester / Writer are jobs
 # here rather than separate files to keep the Actions history readable: the role is picked
 # by a job-level `if:`, so it is one run per comment with the unselected roles skipping
 # inside it. Security is the sixth and runs on merge, not on a comment.
 #
 # ⚠️ THE HANDLE IN THE COMMENT ROUTES. Not labels.
 #
-#   "@claude/manager ..."      -> Manager      (issues only — it shapes an epic)
-#   "@claude/researcher ..."   -> Researcher   (issues only — it decomposes an epic)
+#   "@claude/architect ..."    -> Architect    (issues only — it shapes work and cuts tasks)
 #   "@claude/implementor ..."  -> Implementor  (issue or PR)
 #   "@claude/tester ..."       -> Tester       (issue or PR)
 #   "@claude/writer ..."       -> Writer       (issue or PR)
@@ -40,7 +38,7 @@ run-name: >-
 #
 #   pre   every role      stamp-role-label.sh      stamps @claude/<role> on the issue or PR
 #   pre   impl + tester   set-issue-in-progress.sh moves the issue to In Progress on the board
-#   post  researcher      file-sub-issues.sh       parents + milestones the epic's sub-issues
+#   post  architect       file-sub-issues.sh       parents stories to epics, tasks to stories
 #   post  impl/test/write finish-pr.sh             labels the PR, appends `Closes #<issue>`
 #   post  impl/test/write open-story-pr.sh         opens the story's PR if it has none
 #   merge (no role)       close-merged-work.sh     closes the PR's issues, files them on the board
@@ -92,16 +90,18 @@ env:
   NODE_VERSION: 22
 
 jobs:
-  # ── Manager ────────────────────────────────────────────────────────────────────
-  # The least-active role. Turns a loosely-defined epic the maintainer drops in into a
-  # well-defined one the other two roles can act on. Deliverable is a better epic in the
-  # same issue (edit + comment) — never code, never sub-issues, never a PR.
-  manager:
+  # ── Architect ────────────────────────────────────────────────────────────────
+  # Shapes work so the others can act on it. On an epic it defines the goal and cuts
+  # stories; on a story it researches, rewrites the issue, cuts the branch and creates
+  # tasks. Manager and Researcher merged into this — they were one act split across two
+  # cold starts that each re-read the same issue.
+  # ⚠️ It stops at task creation. It never hands to an author, and never opens a PR.
+  architect:
     if: |
       github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]'
       && github.event_name == 'issue_comment'
       && !github.event.issue.pull_request
-      && contains(github.event.comment.body, '@claude/manager')
+      && contains(github.event.comment.body, '@claude/architect')
     runs-on: ubuntu-latest
     permissions:
       # write purely to push the epic's (empty) integration branch — the prompt
@@ -116,7 +116,7 @@ jobs:
       - id: prompt
         uses: ./.github/actions/load-prompt
         with:
-          role: manager
+          role: architect
       - name: Stash the agent hooks
         run: |
           mkdir -p "$RUNNER_TEMP/agent-bin"
@@ -125,11 +125,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      # No `npm ci`: the Manager reads code to shape the epic, it doesn't build.
+      # No `npm ci`: the Architect reads code to shape work, it doesn't build.
       - name: Stamp the role label
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ROLE: manager
+          ROLE: architect
           REPO: ${{ github.repository }}
           NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
         run: "$RUNNER_TEMP/agent-bin/stamp-role-label.sh"
@@ -140,81 +140,24 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # ⚠️ track_progress forces the action's TAG MODE, which gates on this phrase
           # independently of our own `if:`. Leave it at the default "@claude" and the
-          # action skips in 0s with a placeholder comment, because "@claude/manager"
+          # action skips in 0s with a placeholder comment, because "@claude/architect"
           # is not a match for "@claude".
-          trigger_phrase: "@claude/manager"
+          trigger_phrase: "@claude/architect"
           track_progress: true
           prompt: ${{ steps.prompt.outputs.body }}
           # Read-and-write-issues only; no build tools needed for shaping an epic.
           claude_args: |
             --model sonnet
             --allowedTools "Read,Edit,Write,Bash(gh:*),Bash(git:*)"
-            --max-turns 40
+            --max-turns 100
 
-  # ── Researcher ─────────────────────────────────────────────────────────────────
-  # The product owner. Takes a well-defined epic, follows its Research path, does the
-  # file-by-file grounding, and breaks the work into implementable sub-issues linked to
-  # the epic. Deliverable is sub-issues + an index comment — never code, never a PR.
-  researcher:
-    if: |
-      github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]'
-      && github.event_name == 'issue_comment'
-      && !github.event.issue.pull_request
-      && contains(github.event.comment.body, '@claude/researcher')
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      issues: write
-      id-token: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - id: prompt
-        uses: ./.github/actions/load-prompt
-        with:
-          role: researcher
-      - name: Stash the agent hooks
-        run: |
-          mkdir -p "$RUNNER_TEMP/agent-bin"
-          cp packages/claude-team/hooks/*.sh "$RUNNER_TEMP/agent-bin/"
-          chmod +x "$RUNNER_TEMP/agent-bin"/*.sh
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-      # No `npm ci`: the Researcher reads code and files issues, it doesn't build.
-      - name: Stamp the role label
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ROLE: researcher
-          REPO: ${{ github.repository }}
-          NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
-        run: "$RUNNER_TEMP/agent-bin/stamp-role-label.sh"
-      - uses: anthropics/claude-code-action@v1
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          # ⚠️ track_progress forces the action's TAG MODE, which gates on this phrase
-          # independently of our own `if:`. Leave it at the default "@claude" and the
-          # action skips in 0s with a placeholder comment, because "@claude/researcher"
-          # is not a match for "@claude".
-          trigger_phrase: "@claude/researcher"
-          track_progress: true
-          prompt: ${{ steps.prompt.outputs.body }}
-          claude_args: |
-            --model sonnet
-            --allowedTools "Read,Edit,Write,Bash(gh:*),Bash(git:*)"
-            --max-turns 80
-
-      - name: File the epic's sub-issues
+      - name: File the story's sub-issues
         if: always() && github.event_name == 'issue_comment' && !github.event.issue.pull_request
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           ISSUE: ${{ github.event.issue.number }}
         run: "$RUNNER_TEMP/agent-bin/file-sub-issues.sh"
-
   # ── Implementor ────────────────────────────────────────────────────────────────
   # The main engineer. Executes issues and handles follow-up engineering (bug fixes,
   # requested changes, merge-conflict resolution). Reads the issue + its comments (and,
@@ -532,8 +475,7 @@ jobs:
     if: |
       github.event_name == 'pull_request'
       && github.event.pull_request.merged == true
-      && (contains(github.event.pull_request.labels.*.name, '@claude/manager')
-        || contains(github.event.pull_request.labels.*.name, '@claude/researcher')
+      && (contains(github.event.pull_request.labels.*.name, '@claude/architect')
         || contains(github.event.pull_request.labels.*.name, '@claude/implementor')
         || contains(github.event.pull_request.labels.*.name, '@claude/tester')
         || contains(github.event.pull_request.labels.*.name, '@claude/writer')

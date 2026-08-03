@@ -23,7 +23,7 @@ its packages or its conventions — if it does, it belongs in the consumer's ove
 
 ## How a story moves
 
-1. **Manager** shapes the story and cuts its branch off the default branch.
+1. **Architect** shapes the story and cuts its branch off the default branch.
 2. The **first author to run** — Implementor, Tester or Writer — opens the story's PR.
 3. **Every subsequent role commits to that same branch.** No role cuts its own.
 4. The maintainer reviews one PR as it accumulates each role's contribution, and merges.
@@ -35,8 +35,7 @@ A reviewer sees the story land as a whole.
 
 | role | trigger | works on | writes |
 |---|---|---|---|
-| Manager | `@claude/manager` | epic or story | the issue, and a story's branch |
-| Researcher | `@claude/researcher` | epic or story | sub-issues (stories, or tasks) |
+| Architect | `@claude/architect` | epic or story | the issue, a story's branch, and its tasks |
 | Implementor | `@claude/implementor` | story or task | code |
 | Tester | `@claude/tester` | story or task | tests |
 | Writer | `@claude/writer` | story or task | documentation |
@@ -64,7 +63,7 @@ forgotten by a model that ran out of turns or simply skipped it.
 |---|---|---|
 | `stamp-role-label.sh` | pre, every role | stamps `@claude/<role>` on the triggering issue or PR |
 | `set-issue-in-progress.sh` | pre, authors | moves the issue to In Progress on the board |
-| `file-sub-issues.sh` | post, Researcher | parents stories to their epic, tasks to their story |
+| `file-sub-issues.sh` | post, Architect | parents stories to their epic, tasks to their story |
 | `open-story-pr.sh` | post, authors | opens the story's PR if it has none |
 | `finish-pr.sh` | post, authors | labels the PR and ensures it closes its issue |
 | `close-merged-work.sh` | on merge | closes the PR's issues and files them on the board |

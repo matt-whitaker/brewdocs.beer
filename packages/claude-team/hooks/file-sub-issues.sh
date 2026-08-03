@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Post-hook for the Researcher. Parents the epic's sub-issues to it and copies the
+# Post-hook for the Architect. Parents the epic's sub-issues to it and copies the
 # epic's milestone down.
 #
 # Children are DISCOVERED, not declared. This used to read a machine-readable manifest
 # the model left in a comment; across nine epics the model wrote one exactly once, so the
-# hook silently filed nothing. The anchor now is the reference the Researcher must already
+# hook silently filed nothing. The anchor now is the reference the Architect must already
 # put in every child's body:
 #
 #   a story says   Part of epic #412.
@@ -38,7 +38,7 @@ fi
 #
 # Three markers, all required:
 #
-#   1. the author is a Bot — the Researcher creates sub-issues through the action
+#   1. the author is a Bot — the Architect creates sub-issues through the action
 #   2. a reference to this parent, as `epic #<N>` or `story #<N>`
 #   3. a number above the parent's
 #
@@ -46,7 +46,7 @@ fi
 # a meta-issue quoting the convention verbatim satisfied every text rule and was adopted as
 # a child of the issue it was describing. No prose heuristic survives documentation that
 # quotes the prose — the author check is what makes this sound, since a human-written issue
-# is type User and a Researcher-created one is type Bot.
+# is type User and an Architect-created one is type Bot.
 #
 # ⚠️ The consequence is that a sub-issue the maintainer writes BY HAND is never
 # auto-parented. That is the intended trade: this hook exists to clean up after the model.

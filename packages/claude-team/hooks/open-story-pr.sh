@@ -6,7 +6,7 @@
 # there is no Branch line and it no-ops. A task carries its *story's* Branch line, so a
 # task run finds the story's PR already open and does nothing.
 #
-# The branch comes from the issue body's Branch line, which the Manager writes:
+# The branch comes from the issue body's Branch line, which the Architect writes:
 #
 #   **Branch: `250-volume-milestone`**
 set -euo pipefail
@@ -22,7 +22,7 @@ body=$(gh issue view "$ISSUE" --repo "$REPO" --json body --jq '.body // ""')
 branch=$(printf '%s' "$body" | grep -oiE 'branch: *`[^`]+`' | head -1 | sed -E 's/.*`([^`]+)`.*/\1/')
 
 if [ -z "$branch" ]; then
-    echo "#$ISSUE names no branch — an epic, or a story the Manager hasn't cut yet."
+    echo "#$ISSUE names no branch — an epic, or a story the Architect hasn't cut yet."
     exit 0
 fi
 
@@ -40,7 +40,7 @@ if [ -n "$existing" ]; then
 fi
 
 if ! git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
-    echo "::warning::branch $branch does not exist on origin — the Manager may not have cut it."
+    echo "::warning::branch $branch does not exist on origin — the Architect may not have cut it."
     exit 0
 fi
 
