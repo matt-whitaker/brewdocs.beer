@@ -1,0 +1,34 @@
+name: Load a role prompt
+description: Reads .github/agent-prompts/<role>.md into a step output for a model step's `prompt` input.
+
+# ⚠️ This exists because `prompt` is an action INPUT, not shell — `$(cat file)` in a `with:`
+# value arrives at the model as those literal characters. `prompt_file` would avoid the
+# dance, but only the inner `base-action` exposes it; the composite claude-code-action@v1
+# takes `prompt` alone. So the file has to become a step output first.
+#
+# ⚠️ The delimiter carries the run id. `$GITHUB_OUTPUT` needs `name<<DELIM … DELIM` for any
+# multiline value, and a fixed `EOF` would truncate at any prompt line that is itself bare
+# EOF — a real risk in a repo whose prompts document this machinery in fenced examples.
+
+inputs:
+  role:
+    description: Role name, selecting .github/agent-prompts/<role>.md
+    required: true
+
+outputs:
+  body:
+    description: The prompt file's contents
+    value: ${{ steps.read.outputs.body }}
+
+runs:
+  using: composite
+  steps:
+    - id: read
+      shell: bash
+      run: |
+        d="PROMPT_EOF_${{ github.run_id }}"
+        {
+          echo "body<<$d"
+          cat ".github/agent-prompts/${{ inputs.role }}.md"
+          echo "$d"
+        } >> "$GITHUB_OUTPUT"

@@ -57,6 +57,13 @@ run-name: >-
 # readability. The stash step runs while the tree is still the default branch, so the copy
 # is current by construction, and it sits outside the repo so nothing can commit it.
 #
+# ⚠️ EACH ROLE'S PROMPT IS A FILE — `.github/agent-prompts/<role>.md`, loaded by the local
+# `./.github/actions/load-prompt` composite action. It reads the working tree, so like the
+# hooks above it must run BEFORE the model step, which checks out a feature branch partway
+# through. It sits second in every job, right after checkout; that position is load-bearing.
+# A prompt file cannot hold `${{ }}` — Actions never evaluates inside a file — so anything
+# dynamic goes in the model step's env instead (Security's `PR` is the only one today).
+#
 # ⚠️ PROJECTS_TOKEN appears in `close-merged-work.sh` and `set-issue-in-progress.sh`, and
 # nowhere else. It is a long-lived classic PAT covering every project the maintainer owns,
 # and secret masking covers logs only — not an API payload a model could write — so it
@@ -106,21 +113,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      # ⚠️ Read BEFORE the model step, while the tree is still the default branch — the
-      # model checks out a feature branch partway through, and a branch cut before a prompt
-      # landed would not carry it (same trap as the agent-bin hooks, #429). Keep this step
-      # above the model step; the ordering is load-bearing, not cosmetic.
-      # ⚠️ Random heredoc delimiter: a fixed EOF would truncate at any prompt line that is
-      # itself bare EOF, and these prompts carry fenced examples.
-      - name: Load the role prompt
-        id: prompt
-        run: |
-          d=$(openssl rand -hex 8)
-          {
-            echo "body<<$d"
-            cat .github/agent-prompts/manager.md
-            echo "$d"
-          } >> "$GITHUB_OUTPUT"
+      - id: prompt
+        uses: ./.github/actions/load-prompt
+        with:
+          role: manager
       - name: Stash the agent hooks
         run: |
           mkdir -p "$RUNNER_TEMP/agent-bin"
@@ -174,21 +170,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      # ⚠️ Read BEFORE the model step, while the tree is still the default branch — the
-      # model checks out a feature branch partway through, and a branch cut before a prompt
-      # landed would not carry it (same trap as the agent-bin hooks, #429). Keep this step
-      # above the model step; the ordering is load-bearing, not cosmetic.
-      # ⚠️ Random heredoc delimiter: a fixed EOF would truncate at any prompt line that is
-      # itself bare EOF, and these prompts carry fenced examples.
-      - name: Load the role prompt
-        id: prompt
-        run: |
-          d=$(openssl rand -hex 8)
-          {
-            echo "body<<$d"
-            cat .github/agent-prompts/researcher.md
-            echo "$d"
-          } >> "$GITHUB_OUTPUT"
+      - id: prompt
+        uses: ./.github/actions/load-prompt
+        with:
+          role: researcher
       - name: Stash the agent hooks
         run: |
           mkdir -p "$RUNNER_TEMP/agent-bin"
@@ -257,21 +242,10 @@ jobs:
         with:
           # full history so it can branch from and diff against mainline
           fetch-depth: 0
-      # ⚠️ Read BEFORE the model step, while the tree is still the default branch — the
-      # model checks out a feature branch partway through, and a branch cut before a prompt
-      # landed would not carry it (same trap as the agent-bin hooks, #429). Keep this step
-      # above the model step; the ordering is load-bearing, not cosmetic.
-      # ⚠️ Random heredoc delimiter: a fixed EOF would truncate at any prompt line that is
-      # itself bare EOF, and these prompts carry fenced examples.
-      - name: Load the role prompt
-        id: prompt
-        run: |
-          d=$(openssl rand -hex 8)
-          {
-            echo "body<<$d"
-            cat .github/agent-prompts/implementor.md
-            echo "$d"
-          } >> "$GITHUB_OUTPUT"
+      - id: prompt
+        uses: ./.github/actions/load-prompt
+        with:
+          role: implementor
       - name: Stash the agent hooks
         run: |
           mkdir -p "$RUNNER_TEMP/agent-bin"
@@ -367,21 +341,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      # ⚠️ Read BEFORE the model step, while the tree is still the default branch — the
-      # model checks out a feature branch partway through, and a branch cut before a prompt
-      # landed would not carry it (same trap as the agent-bin hooks, #429). Keep this step
-      # above the model step; the ordering is load-bearing, not cosmetic.
-      # ⚠️ Random heredoc delimiter: a fixed EOF would truncate at any prompt line that is
-      # itself bare EOF, and these prompts carry fenced examples.
-      - name: Load the role prompt
-        id: prompt
-        run: |
-          d=$(openssl rand -hex 8)
-          {
-            echo "body<<$d"
-            cat .github/agent-prompts/tester.md
-            echo "$d"
-          } >> "$GITHUB_OUTPUT"
+      - id: prompt
+        uses: ./.github/actions/load-prompt
+        with:
+          role: tester
       - name: Stash the agent hooks
         run: |
           mkdir -p "$RUNNER_TEMP/agent-bin"
@@ -464,21 +427,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      # ⚠️ Read BEFORE the model step, while the tree is still the default branch — the
-      # model checks out a feature branch partway through, and a branch cut before a prompt
-      # landed would not carry it (same trap as the agent-bin hooks, #429). Keep this step
-      # above the model step; the ordering is load-bearing, not cosmetic.
-      # ⚠️ Random heredoc delimiter: a fixed EOF would truncate at any prompt line that is
-      # itself bare EOF, and these prompts carry fenced examples.
-      - name: Load the role prompt
-        id: prompt
-        run: |
-          d=$(openssl rand -hex 8)
-          {
-            echo "body<<$d"
-            cat .github/agent-prompts/writer.md
-            echo "$d"
-          } >> "$GITHUB_OUTPUT"
+      - id: prompt
+        uses: ./.github/actions/load-prompt
+        with:
+          role: writer
       - name: Stash the agent hooks
         run: |
           mkdir -p "$RUNNER_TEMP/agent-bin"
@@ -534,21 +486,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      # ⚠️ Read BEFORE the model step, while the tree is still the default branch — the
-      # model checks out a feature branch partway through, and a branch cut before a prompt
-      # landed would not carry it (same trap as the agent-bin hooks, #429). Keep this step
-      # above the model step; the ordering is load-bearing, not cosmetic.
-      # ⚠️ Random heredoc delimiter: a fixed EOF would truncate at any prompt line that is
-      # itself bare EOF, and these prompts carry fenced examples.
-      - name: Load the role prompt
-        id: prompt
-        run: |
-          d=$(openssl rand -hex 8)
-          {
-            echo "body<<$d"
-            cat .github/agent-prompts/security.md
-            echo "$d"
-          } >> "$GITHUB_OUTPUT"
+      - id: prompt
+        uses: ./.github/actions/load-prompt
+        with:
+          role: security
       - uses: anthropics/claude-code-action@v1
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

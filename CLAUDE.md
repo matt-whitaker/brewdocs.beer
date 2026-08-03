@@ -124,8 +124,10 @@ history.
 **Each role's prompt is a file** — `.github/agent-prompts/<role>.md`. Editing a role means
 editing its markdown, not hunting a block scalar; the workflow went 1102 lines to 607.
 
-- A `Load the role prompt` step reads the file into a step output, and the job passes
-  `prompt: ${{ steps.prompt.outputs.body }}`.
+- A local composite action, `./.github/actions/load-prompt`, reads the file into a step
+  output; the job passes `prompt: ${{ steps.prompt.outputs.body }}`. It's a shared action
+  rather than an inline step per job because six copies of the same loader — comment and
+  all — were 15% of the workflow, which is the readability problem this was meant to fix.
 - ⚠️ **`prompt_file` is not available to us.** It exists on the inner `base-action`, but the
   composite `anthropics/claude-code-action@v1` exposes only `prompt` and points
   `INPUT_PROMPT_FILE` at its own temp path. Passing a path would send the path as the prompt.
