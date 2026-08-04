@@ -165,6 +165,7 @@ jobs:
     outputs:
       roles: ${{ steps.route.outputs.roles }}
       story: ${{ steps.route.outputs.story }}
+      kind: ${{ steps.route.outputs.kind }}
       defaulted: ${{ steps.route.outputs.defaulted }}
       reason: ${{ steps.route.outputs.reason }}
     steps:
@@ -251,6 +252,10 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
+          # epic or story, derived from the label and the title. An unprocessed issue is a
+          # story; this is the default the Architect works from, and the triggering comment
+          # is the only thing that overrides it.
+          KIND: ${{ needs.delegate.outputs.kind }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # ⚠️ THE EXACT HANDLE, and this is load-bearing. trigger_phrase does NOT gate
@@ -278,6 +283,15 @@ jobs:
           # the Architect is triggered ON the story, so the story is the issue itself
           STORY: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
         run: "$RUNNER_TEMP/agent-bin/log-to-story.py"
+      # ⚠️ Derived from the title the Architect had to write anyway. A `gh` call it was
+      # merely asked to remember is the shape that fails.
+      - name: Label an epic from its title
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
+        run: "$RUNNER_TEMP/agent-bin/sync-epic-label.py"
       - name: File the story's sub-issues
         # ⚠️ `issues` must be here as well as `issue_comment`. The label is now the primary
         # way an Architect run starts, and keyed to comments alone this hook — the thing that
