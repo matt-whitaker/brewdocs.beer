@@ -16,6 +16,7 @@ run-name: >-
   || contains(github.event.comment.body || github.event.review.body, '@claude/tester') && 'Tester'
   || contains(github.event.comment.body || github.event.review.body, '@claude/writer') && 'Writer'
   || contains(github.event.comment.body || github.event.review.body, '@claude/designer') && 'Designer'
+  || contains(github.event.comment.body || github.event.review.body, '@claude/security') && 'Security'
   || 'Delegate' }}
   · #${{ github.event.issue.number || github.event.pull_request.number }}
   ${{ github.event.issue.title || github.event.pull_request.title }}
@@ -27,7 +28,7 @@ run-name: >-
 #   delegate            routes — no model
 #   architect           shapes work and cuts tasks
 #   authors             Implementor|Designer -> Tester -> Writer, sequential STEPS in one job
-#   security            on merge, not on a trigger
+#   security            on merge, plus on request via @claude/security
 #   merge_housekeeping  on merge — no model
 #
 # The authoring roles share a job so one `@claude` runs the whole chain. Implementor and
@@ -672,11 +673,23 @@ jobs:
   # argued with, a review that files an issue gets triaged.
   #
   # ⚠️ It opens issues and nothing else — no code, no PRs, no merges.
+  #
+  # ⚠️ TWO WAYS IN, AND THE MERGE PATH MUST NOT REGRESS. `delegate` skips on `pull_request`
+  # events — it has no arm for them — so without `always()` a job that `needs:` it would
+  # skip on every merge, silently removing the automatic review.
   security:
+    needs: delegate
     if: |
-      github.event_name == 'pull_request'
-      && github.event.pull_request.merged == true
-      && github.event.pull_request.base.ref == 'mainline'
+      always() && (
+        (github.event_name == 'pull_request'
+          && github.event.pull_request.merged == true
+          && github.event.pull_request.base.ref == 'mainline')
+        || (needs.delegate.result != 'skipped' && (
+             contains(needs.delegate.outputs.roles, 'security')
+             || contains(github.event.comment.body, '@claude/security')
+             || contains(github.event.review.body, '@claude/security')
+           ))
+      )
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -697,9 +710,20 @@ jobs:
           # the one value a prompt file can't carry: `${{ }}` is evaluated by Actions in
           # the workflow, never inside a file. Passed as env so security.md stays static
           # and the model's own shell expands it.
-          PR: ${{ github.event.pull_request.number }}
+          # ⚠️ Both paths. `pull_request.number` is empty for a comment ON a PR, where the
+          # number lives at `issue.number` — without the fallback an on-demand review would
+          # run `gh pr diff ""` and review nothing.
+          PR: ${{ github.event.pull_request.number || github.event.issue.number }}
+          # merge = automatic, request = someone asked. security.md stays silent on a clean
+          # merge review and always answers a requested one.
+          TRIGGER: ${{ github.event_name == 'pull_request' && 'merge' || 'request' }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # ⚠️ The exact handle, for the reason in #488: with no value this defaults to
+          # "@claude", and "@claude/security review this" would extract as
+          # "/security review this" — swallowed as an unknown slash command, so the run
+          # returns success having never called the model.
+          trigger_phrase: "@claude/security"
           prompt: ${{ steps.prompt.outputs.body }}
           claude_args: |
             --model sonnet
