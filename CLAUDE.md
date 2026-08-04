@@ -246,7 +246,7 @@ is never the one that fires.
 
 **The mechanics are in the package.** Hooks and the traps each was written around, the
 handoff contract, labels-as-record, routing and its loop guard all live in
-[`packages/claude-team/README.md`](packages/claude-team/README.md). ⚠️ Do not restate them
+[`packages/claude-team/CLAUDE.md`](packages/claude-team/CLAUDE.md). ⚠️ Do not restate them
 here — two copies drift, and they did: this file documented a sub-issue expansion that #503
 had already removed, and the package README described the pre-#503 branching model for a
 whole session without anyone noticing.
@@ -270,7 +270,7 @@ What is BrewDocs-specific:
 
 
 **Epic → story → task.** ⚠️ **The model itself lives in
-[`packages/claude-team/README.md`](packages/claude-team/README.md)** — the hierarchy, how a
+[`packages/claude-team/CLAUDE.md`](packages/claude-team/CLAUDE.md)** — the hierarchy, how a
 story moves, routing, the handoff contract and the hooks. It is portable and this file must
 not restate it; two copies drift, and they already had. What follows is only how *this repo*
 applies it.
