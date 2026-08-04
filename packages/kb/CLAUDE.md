@@ -13,4 +13,4 @@ Package-specific guidance. See the repo-root `CLAUDE.md` for universal rules (co
 - ⚠️ Item `id`s are derived from **filenames** — renaming a data file changes its id and is a **breaking change** (batches reference recipes by this id).
 **Gotchas.** A wrong unit in data doesn't error — it silently corrupts edit behavior in the app (the unit-preserving formatter falls back to the stored unit).
 **Example.** The builder does `data.id = basename(file)` and `data.__type = ENTITY_TYPES[dir]`, overwriting whatever the JSON declares (so an in-file `id`/`__type` is dead weight): `data/recipes/anchor-steam-beer-clone.json` → `{id: "anchor-steam-beer-clone", __type: "kbRecipe"}`, regardless of its JSON.
-**Commands.** `npm run build -w packages/kb` (also runs on postinstall).
+**Commands.** `nx build kb` (also runs on postinstall).

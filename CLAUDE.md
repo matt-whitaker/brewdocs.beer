@@ -31,24 +31,27 @@ Cross-references name the target section in _italics_. A section's deep-dive may
 
 ## Commands
 
-Run from the repo root with `-w`:
+Run from the repo root via nx:
 
 ```bash
-npm run dev -w packages/app       # app dev server (auto-symlinks kb dist via predev)
-npm run build -w packages/app     # tsc --noEmit && vite build → dist/
-npm run preview -w packages/app   # serve the production build (needed to test PWA/service worker)
-npm test -w packages/app          # eslint — the verification gate (see Linting)
-npm run build -w packages/kb      # rebuild kb dist JSON from data/ (also runs on postinstall)
-npm run dev -w packages/www       # astro dev
-npm test -w packages/design       # eslint — the verification gate (see Linting)
-npm run dev -w packages/design    # storybook dev -p 6006
-npm run build -w packages/design  # storybook build -o dist → the static site the deploy workflow publishes
+nx dev app       # app dev server (auto-symlinks kb dist via predev)
+nx build app     # tsc --noEmit && vite build → dist/
+nx preview app   # serve the production build (needed to test PWA/service worker)
+nx test app      # eslint — the verification gate (see Linting)
+nx build kb      # rebuild kb dist JSON from data/ (also runs on postinstall)
+nx dev www       # astro dev
+nx test design   # eslint — the verification gate (see Linting)
+nx dev design    # storybook dev -p 6006
+nx build design  # storybook build -o dist → the static site the deploy workflow publishes
 ```
 
-Root `build:design`/`dev:design`/`test:design` delegate to `-w packages/design`, matching the `*:app`/`*:www` pattern (used by `.github/workflows/build-test-deploy.design-prod.yaml`).
+`nx run-many --target=<target>` runs a target across every project that has it — `dev` is the
+root `package.json`'s own example of this pattern.
+
+Root `build:design`/`test:design` are **CI-only** now — `.github/workflows/build-test-deploy.design-prod.yaml` still calls them by name, so they can't be removed, but a contributor's local-dev path is the `nx` form above, not those aliases.
 
 - Typecheck app only: `cd packages/app && ../../node_modules/.bin/tsc --noEmit`.
-- Lint app only: `npm run lint -w packages/app` (⚠️ see _Linting_ — must resolve the app's nested eslint 9, not the root's).
+- Lint app only: `nx test app` (⚠️ see _Linting_ — must resolve the app's nested eslint 9, not the root's).
 
 ## Package dependencies
 
