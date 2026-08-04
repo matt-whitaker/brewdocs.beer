@@ -9,6 +9,6 @@ Knowledge base — raw JSON data compiled into resource files, served over HTTP.
 - [`data/`](data/) — one JSON file per item (`grains`, `hops`, `yeasts`, `recipes`)
 - [`bin/build-json.js`](bin/build-json.js) — combines `data/` → `dist/<resource>.json`
 
-`npm run build` rebuilds `dist/` (also runs on postinstall). kb is a dumb transport adapter — caching/persistence is the app's job.
+`nx build kb` rebuilds `dist/` (also runs on postinstall). kb is a dumb transport adapter — caching/persistence is the app's job.
 
 See the [`kb` section of CLAUDE.md](/CLAUDE.md#packageskb) for detail.
