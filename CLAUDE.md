@@ -200,11 +200,21 @@ add, so remove-and-re-add re-runs the delegator against current issue state.
 `always() && (router picked me || the comment names me)`, so an explicit handle still routes if
 `delegate.sh` fails outright. Only a *skipped* delegate skips the roles.
 
-⚠️ `trigger_phrase` is `@claude` on every role, not `@claude/<role>`. A label trigger carries no
-comment for a per-role phrase to match. It is inert today regardless — `checkContainsTrigger()`
-returns early on `if (prompt) return true` and we always pass a prompt (verified at `v1.0.183`)
-— but if that short-circuit ever goes, `@claude` still matches the comment path where a
-per-role phrase would fail every role at once.
+⚠️ **`trigger_phrase` must be the role's exact handle, `@claude/<role>`.** It does **not** gate
+anything for us — `checkContainsTrigger()` returns early on `if (prompt) return true` and we
+always pass a prompt. Its only effect is that the action extracts everything *after* the phrase
+as "the user request" (`src/utils/extract-user-request.ts`) and yields it as the **final content
+block**, which the CLI scans for a slash command. Set to a bare `@claude`, the comment
+`@claude/architect do X` extracts as `/architect do X` — dispatched as an unknown slash command,
+so the run returns success in ~150ms with `num_turns: 0` having never called the model. Every
+comment-triggered role was dead this way between #485 and #488. Label triggers were unaffected:
+no comment means no user-request block.
+
+⚠️ **A dead run looks like a working one.** It reports success, raises no error, and leaves the
+comment reading *"I'll analyze this and get back to you."* — which is **not a model response**
+but `createCommentBody()`, the action's hardcoded placeholder, never updated. Diagnose a
+suspicious run by `num_turns` in the log, never by the comment: #487 was built on the assumption
+that sentence was the model talking, and fixed something else entirely.
 
 ⚠️ The Architect requires `!github.event.issue.pull_request` on its handle arm — `issue_comment`
 fires for PRs too, and without the guard a PR comment started a role written for an epic issue.
