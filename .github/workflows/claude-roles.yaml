@@ -694,9 +694,18 @@ jobs:
     permissions:
       contents: read
       # ⚠️ write, not read: the on-demand path's whole contract is that a requested review
-      # always answers, and that answer is `gh pr comment`. With read it would fail at the
-      # last step and produce exactly the silence the contract exists to prevent. Still no
-      # `contents: write` — this role reads code and files issues, it never pushes.
+      # always answers, and that answer is `gh pr comment`. GitHub scopes a comment on a PR
+      # under `pull-requests`, not `issues`, so read would fail at the final step and
+      # produce exactly the silence the contract exists to prevent.
+      #
+      # ⚠️ It covers the merge path too, which does not need it — `permissions:` is
+      # job-level and GitHub does not evaluate expressions there, so it cannot be granted
+      # per trigger. Splitting Security into two jobs would buy that granularity at the cost
+      # of duplicating the job; after #492 narrowed the allowlist to specific `gh`
+      # subcommands, what this permission still enables is "post a comment", which is the
+      # feature. Revisit if that allowlist ever widens again.
+      #
+      # Still no `contents: write` — this role reads code and files issues, it never pushes.
       pull-requests: write
       issues: write
       id-token: write
@@ -729,9 +738,19 @@ jobs:
           # returns success having never called the model.
           trigger_phrase: "@claude/security"
           prompt: ${{ steps.prompt.outputs.body }}
+          # ⚠️ SUBCOMMANDS, NOT FAMILIES — the one role where this matters (#492). It reads
+          # unmerged, unreviewed diffs, so its input is written by whoever authored the
+          # change it is judging. `Bash(gh:*)` plus `pull-requests: write` would have let a
+          # successful prompt injection run `gh pr review --approve` or `gh pr edit` on the
+          # very PR the maintainer asked it to distrust. This list is exactly what
+          # security.md's playbook uses and nothing else — `gh api` is deliberately absent,
+          # since it reaches every endpoint the token can.
+          # ⚠️ It cannot go lower than the action's base set: `Bash(git add|commit|rm:*)`
+          # and `git-push.sh` union in and cannot be removed. `contents: read` is what
+          # actually stops a push, not the allowlist.
           claude_args: |
             --model sonnet
-            --allowedTools "Read,Bash(git:*),Bash(gh:*)"
+            --allowedTools "Read,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*),Bash(gh issue create:*),Bash(gh project item-add:*),Bash(git log:*),Bash(git show:*),Bash(git diff:*)"
             --max-turns 40
 
   # ── Merge housekeeping ─────────────────────────────────────────────────────────
