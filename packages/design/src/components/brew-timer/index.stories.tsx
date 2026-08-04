@@ -35,19 +35,21 @@ const meta: Meta<typeof BrewTimer> = {
         height: {control: {type: "number", min: 8, max: 64}},
         markerSize: {control: {type: "number", min: 4, max: 24}},
         onPlayPause: {action: "playPause"},
-        onQuickMilestone: {action: "quickMilestone"}
+        onQuickMilestone: {action: "quickMilestone"},
+        onComplete: {action: "complete"}
     },
     args: {
         isRunning: false,
         elapsedSeconds: 0,
         markers: MARKERS,
         milestoneKindOptions: MILESTONE_KIND_OPTIONS,
-        phaseLabel: "2. Boil"
+        phaseLabel: "2. Boil",
+        completeLabel: "2. Boil"
     },
     parameters: {
         docs: {
             description: {
-                component: "The brew-day timer shell. It is fully controlled and holds no timer state of its own — `elapsedSeconds` and `isRunning` come from the consumer, which owns the ticking and any persistence. Reading markers are drawn by `Timeline` and given a `Popover` hit target apiece, since a `Popover` renders a `<div>` and cannot live inside the `<svg>`. The quick-reading button opens a `Modal` asking for a kind and a phase — quick-add always asks for the phase, because nothing yet signals the current one. The Global/Phase scope toggle is present for shape only; Phase is disabled until phases are automated. The public word is \"Reading\"; the model behind it is still a `Milestone`, which is why the props and handlers say `milestone`."
+                component: "The brew-day timer shell. It is fully controlled and holds no timer state of its own — `elapsedSeconds` and `isRunning` come from the consumer, which owns the ticking and any persistence. Reading markers are drawn by `Timeline` and given a `Popover` hit target apiece, since a `Popover` renders a `<div>` and cannot live inside the `<svg>`. The quick-reading button opens a `Modal` asking for a kind and a phase — quick-add always asks for the phase, because nothing yet signals the current one. The Global/Phase scope toggle is present for shape only; Phase is disabled until phases are automated. The public word is \"Reading\"; the model behind it is still a `Milestone`, which is why the props and handlers say `milestone`. `completeLabel` + `onComplete` add the card's primary action on its own right-aligned row below the timeline; `onComplete` fires on click and any confirmation is the consumer's, since only it knows what completing a phase costs."
             }
         }
     }
@@ -159,7 +161,7 @@ export const Narrow: Story = {
     parameters: {
         docs: {
             description: {
-                story: "Constrained to a 360px-wide phone viewport. Below `sm` the whole bar steps down together — the counter one type size, every button to `btn-xs`, the card to a tighter padding — and the controls drop to their own row, the scope toggle to the left and \"Reading\" to the right, so nothing bleeds past the edge."
+                story: "Constrained to a 360px-wide phone viewport. Below `sm` the whole bar steps down together — the counter one type size, every button to `btn-xs`, the card to a tighter padding — and the controls drop to their own row, the scope toggle to the left and \"Reading\" to the right, so nothing bleeds past the edge. \"Complete 2. Boil\" keeps a row of its own rather than joining that already-tight row, so a long phase label has the full card width to run into before it wraps."
             }
         }
     },
@@ -168,6 +170,18 @@ export const Narrow: Story = {
             <BrewTimer {...args} />
         </div>
     )
+};
+
+export const NoCompleteAction: Story = {
+    name: "No complete action",
+    args: {isRunning: true, elapsedSeconds: 5460, completeLabel: ""},
+    parameters: {
+        docs: {
+            description: {
+                story: "An absent or empty `completeLabel` renders no action row at all — not a disabled button and not an empty one, so the card closes on the timeline with no leftover gap. The consumer decides when the action applies; BatchSchedule shows it only on the phase the batch is actually on."
+            }
+        }
+    }
 };
 
 function QuickMilestoneDemo() {

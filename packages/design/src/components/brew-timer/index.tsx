@@ -21,8 +21,10 @@ export type BrewTimerProps = PropsWithClass & {
     markerSize?: number;
     markerTransitionMs?: number;
     label?: string;
+    completeLabel?: string;
     onPlayPause: () => void;
     onQuickMilestone: (kind: string, value: string, parameter?: string) => void;
+    onComplete?: () => void;
 };
 
 export function BrewTimer({
@@ -36,8 +38,10 @@ export function BrewTimer({
     markerSize = 10,
     markerTransitionMs,
     label = "Brew day elapsed timeline",
+    completeLabel,
     onPlayPause,
     onQuickMilestone,
+    onComplete,
     className
 }: BrewTimerProps) {
     const [modalRef, toggleModal] = useModal();
@@ -84,6 +88,19 @@ export function BrewTimer({
                     elapsedSeconds={elapsedSeconds}
                     markerSize={markerSize} />
             </div>
+            {completeLabel && onComplete
+                ? (
+                    <div className="flex justify-end pt-1">
+                        <button
+                            type="button"
+                            className="btn btn-primary btn-xs sm:btn-sm"
+                            aria-label={`Complete ${completeLabel}`}
+                            onClick={onComplete}>
+                            Complete {completeLabel}
+                        </button>
+                    </div>
+                )
+                : null}
             <QuickMilestoneModal
                 ref={modalRef}
                 kindOptions={milestoneKindOptions}
