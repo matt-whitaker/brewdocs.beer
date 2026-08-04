@@ -397,7 +397,20 @@ Bash(git add:*), Bash(git commit:*), Bash(git rm:*), Bash(git-push.sh:*)
 - What is granted is the union of the two lists and **nothing else** — every other binary
   (`python3`, `node`, `mkdir`, `mv`, `cp`, `cat`, `chmod`, `sed`) is denied, as is any
   `&&`-chained command. That is the usual source of a run's permission denials.
-- ⚠️ Denials cost turns. A Tester run hit its 80-turn cap with 11 of them and produced no PR.
+- ⚠️ Denials cost turns. A Tester run hit its 80-turn cap with 11 of them and produced no PR;
+  a Security run spent 8 of 13. ⚠️ **The usual cause is the prompt, not the allowlist** —
+  everything that review needed was already permitted, and it burned the budget
+  rediscovering that. Telling a role what it has (`Read` not `cat`, `Grep` not shell `grep`,
+  one command per Bash call, a denial is settled) took it to 4 of 16 without widening
+  anything.
+- ⚠️ **Security is allowlisted by SUBCOMMAND, not by family** (#492), and it is the one role
+  where that matters: it reads unmerged diffs, so its input is authored by whoever wrote the
+  change it is judging. `Bash(gh:*)` plus `pull-requests: write` would let a successful
+  prompt injection run `gh pr review --approve` on the very PR the maintainer asked it to
+  distrust. `gh api` is deliberately absent — it reaches every endpoint the token has.
+- ⚠️ **An allowlist has a floor no role can go below.** `Bash(git add|commit|rm:*)` and
+  `git-push.sh` union in from the action's base set and cannot be removed. What stops
+  Security pushing is `contents: read`, not its allowlist.
 - ⚠️ Widen a role's list only against a denial you have actually seen. The transcript that
   would show them is not retained (issue #431, parked), so until it is, a denial is a guess.
 
