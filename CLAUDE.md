@@ -101,7 +101,7 @@ Guidance for human contributors **and** for the `@claude` GitHub integration.
 - **PR title.** Same imperative style.
 - **PR description** — a light template, *Verification* load-bearing (the PR body is the only record the gate ran):
   - **Summary** — what changed and why, with `Closes #<issue>` when there's a ticket.
-  - **Verification** — `npm test` (lint) ✓, `tsc --noEmit` ✓, `vite build` ✓, and which screens/flows were checked in the browser.
+  - **Verification** — `nx run-many --target=test` (lint) ✓, `tsc --noEmit` ✓, `nx build app` ✓, and which screens/flows were checked in the browser.
   - **Screenshots** — for any UI change.
 - **Merge.** Squash only. **The maintainer merges** — contributors and the `@claude` bot open PRs, never merge them. No auto-merge.
 - Protect `mainline` to require the **Verify** check green before merge.
@@ -113,7 +113,7 @@ Guidance for human contributors **and** for the `@claude` GitHub integration.
 - ⚠️ This applies to the `@claude` roles too. Comment-heavy output is a recurring failure mode: the volume buries the few things that matter and goes stale the moment the code moves.
 
 ### Definition of done
-- The gate is `npm test` (eslint, errors-only) **and** `tsc --noEmit` **and** `vite build` clean, plus manual browser checks for any UI change. A green lint + typecheck + build is the floor for every change.
+- The gate is `nx run-many --target=test` (eslint, errors-only) **and** `tsc --noEmit` **and** `nx build app` clean, plus manual browser checks for any UI change. A green lint + typecheck + build is the floor for every change.
 - ⚠️ Don't hand-edit generated files (`routeTree.gen.ts`); don't add `lodash` or `../` parent-relative intra-app imports (both lint-enforced — use `@/`).
 - ⚠️ Renaming files under `packages/kb/data/**` changes derived ids — a breaking change (see `packages/kb/CLAUDE.md`); call it out in the PR.
 - Prefer surfacing follow-ups over silently expanding scope; note orphaned/dead code you leave rather than deleting adjacent things unasked.
