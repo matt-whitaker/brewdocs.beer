@@ -7,7 +7,7 @@ import DataGridRow from "@/component/data-grid/row";
 import DataGridSubheaderRow from "@/component/data-grid/subheader-row";
 import useJsonEdit from "@/hooks/useJsonEdit";
 import Recipe from "@/model/recipe";
-import {patchRecipe, useRecipe} from "@/state/recipes";
+import {usePatchRecipe, useRecipe} from "@/state/recipes";
 import {saveSession, useSession} from "@/state/session";
 
 const SESSION_KEY = "recipe-edit.details";
@@ -18,14 +18,16 @@ export type RecipeEditDetailsProps = {
 export default function RecipeEditDetails({ recipeId }: RecipeEditDetailsProps) {
     const recipe = useRecipe(recipeId);
     const session = useSession();
+    const patchRecipe = usePatchRecipe(recipeId);
+
     // Details owns every field except the brewable, which the sibling BrewableEdit
     // owns — so patch our fields only and never write brewable back, or a late
     // debounced save (fired after a tab switch to the brewable editor) would
-    // overwrite a brewable edit. patchRecipe merges onto the freshest stored recipe.
+    // overwrite a brewable edit.
     const onChange = useCallback((r: Recipe) => {
         const {brewable: _brewable, ...rest} = r;
-        return patchRecipe(recipeId, rest);
-    }, [recipeId]);
+        patchRecipe(rest);
+    }, [patchRecipe]);
     const [data, update, updateScalar] = useJsonEdit<Recipe>(recipe, onChange);
 
     const onToggleCollapsed = useCallback((collapsed: boolean) => saveSession(SESSION_KEY, collapsed), []);
