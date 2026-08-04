@@ -93,6 +93,13 @@ only the Architect can cut it in two.
 ⚠️ **The Tester and Writer are tasks the Architect cuts**, ordered after the authoring ones.
 No role chains off another — nothing runs that a maintainer did not trigger.
 
+⚠️ **Trigger order is derived, never stamped.** Tasks sort by `(phase, issue number)`: phase
+from the `Role:` stamp — authors, then tests, then docs — and number within a phase, because
+the Architect creates them in the order it intends. A task is ready once everything before it
+is closed, so the first open task is the one to trigger. Both inputs are things the Architect
+must produce for other reasons; a third stamp naming an order would be a third line it could
+skip.
+
 ## The handoff between authors
 
 An author's step carries `--json-schema`, so its final message is a contract: `testingNotes`
@@ -144,6 +151,7 @@ forgotten by a model that ran out of turns or simply skipped it.
 | `file-sub-issues.sh` | post, Architect | parents stories to their epic, tasks to their story |
 | `finish-pr.sh` | post, authors | labels the PR and ensures it closes its issue |
 | `post-handoff.sh` | post, authors | posts the JSON handoff to the story's issue |
+| `log-to-story.sh` | post, Architect + authors + on merge | rewrites one comment on the story listing its tasks in trigger order |
 | `log-to-epic.sh` | post, authors | rewrites one rolling work-log comment on the epic |
 | `open-story-pr.sh` | **on merge** | opens the story's PR once a task has landed on its branch |
 | `close-merged-work.sh` | on merge | closes the PR's issues and files them on the board |
