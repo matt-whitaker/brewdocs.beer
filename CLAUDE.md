@@ -365,44 +365,28 @@ one per task, updated rather than duplicated on a re-run.
   fire-and-forget call while lint, tsc and build stay green — is only caught by a test
   written to distrust the change.
 
-**Epic → story → task.** The team definition lives in
-[`packages/claude-team`](packages/claude-team/README.md); this repo extends it with
-per-role overlays in `.github/agent-prompts/`.
+**Epic → story → task.** ⚠️ **The model itself lives in
+[`packages/claude-team/README.md`](packages/claude-team/README.md)** — the hierarchy, how a
+story moves, routing, the handoff contract and the hooks. It is portable and this file must
+not restate it; two copies drift, and they already had. What follows is only how *this repo*
+applies it.
 
-| level | branch | its PR targets | closed by |
-|---|---|---|---|
-| **Epic** | none | — | its stories closing |
-| **Story** | `<story#>-…`, cut by the Architect | `mainline` | its PR merging |
-| **Task** | `<task#>-…`, cut by its author off the story branch | the **story** branch | its own PR merging |
+- **Default branch** `mainline`. A story's PR targets it and a merge ships to prod, so the
+  story PR is the last gate before deploy.
+- **Overlays** live in `.github/agent-prompts/` — `_shared.md` plus an optional
+  `<role>.md`, appended to the package's prompt of the same name.
+- **Board.** Issues and PRs go on project #4 (`gh project item-add 4 --owner "@me"`);
+  `set-issue-status.sh` and `close-merged-work.sh` move them, and are the only steps holding
+  `PROJECTS_TOKEN`.
+- **The front door is the `@claude` label.** ⚠️ It and every `@claude/<role>` label must
+  exist in the repo — the front door triggers nothing if absent, and a missing role label
+  makes the stamp hook warn and skip.
 
-- Architect cuts the story's branch off `mainline`, empty, and records it in the story as a
-  **Branch** line. It stamps that **same** line onto every task — it always names the
-  *story's* branch, never a branch for the task — plus a **Role** line naming who picks it
-  up. Routing is a shell script that reads the stamp rather than judging it.
-- Each author cuts `<task#>-…` off the story branch, works there, and opens a PR **into**
-  the story branch. Merging that closes the task and lands the work on the story.
-- The **story's** PR opens on the first task merge, via `open-story-pr.sh` — ⚠️ from
-  `merge_housekeeping`, not from an authoring run. The story branch is empty until a task
-  lands on it, and GitHub will not open a PR with no commits between base and head.
-
-⚠️ **Tasks used to share the story's branch, and that was a race.** The concurrency group is
-keyed on issue number, so two tasks are in *different* groups and could commit to the same
-branch simultaneously. Sub-branching fixes it structurally rather than by triggering runs one
-at a time.
-⚠️ One story PR, growing, is still the point — the maintainer reviews the story landing as a
-whole rather than one PR per role. It just accumulates by merge now, not by direct commit.
-⚠️ A story PR targets `mainline`, so its `Closes #<story>` works normally. **A task PR does
-not** — GitHub ignores closing keywords on a non-default base, so `close-merged-work.sh`
-parsing the body is the only thing that closes a task.
-⚠️ That hook no longer expands a closed issue's open sub-issues. It did when tasks had no
-PRs and a story's merge was the only thing that could close them; now a task still open when
-its story merges is a real signal — abandoned, or its PR never landed — and closing it would
-hide the case worth seeing.
-⚠️ `pull_request` events run the workflow from the PR's **base** branch, so workflow fixes
-do not reach an in-flight story until `mainline` is merged into it.
-⚠️ An epic has no branch, so nothing to merge in and nothing to keep current. That was the
-main cost of the old epic-integration-branch model.
-
+⚠️ Workflow changes to any of this **cannot be tested before merge**: `issues` and
+`issue_comment` both run the workflow from the default branch, so a PR branch's version is
+never the one that fires. Diagnose a suspicious run by `num_turns` in its log — a dead run
+reports success and leaves the action's placeholder comment behind, which reads exactly like
+a real reply.
 
 **Budgets.** `sonnet` throughout except the Implementor, which runs `opus` — it is the only
 role whose output the maintainer must review line by line. Architect 100 turns,
