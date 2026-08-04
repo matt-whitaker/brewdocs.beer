@@ -1,8 +1,11 @@
 import {useCallback, useMemo} from "react";
-import {BrewTimer, BrewTimerMarker} from "@brewdocs.beer/design";
+import {BrewTimer, BrewTimerMarker, ScreenP} from "@brewdocs.beer/design";
 import {currentPhaseIndex} from "@/actions/batchProgress";
 import {isRunning} from "@/actions/brewTimer";
 import {putEntry} from "@/actions/tracker";
+import Modal from "@/component/modal";
+import ModalScreen from "@/component/modal/screen";
+import useModal from "@/component/modal/useModal";
 import useElapsedSeconds from "@/hooks/useElapsedSeconds";
 import {MutateFn} from "@/hooks/useJsonEdit";
 import Batch from "@/model/batch";
@@ -20,11 +23,13 @@ const readingKind = (kind: string) => READING_KINDS.find(candidate => candidate.
 export type BatchScheduleBrewTimerProps = {
     batch: Batch;
     mutate: MutateFn<Batch>;
+    completePhase: (phaseId: string) => void;
 };
 
-export default function BatchScheduleBrewTimer({ batch, mutate }: BatchScheduleBrewTimerProps) {
+export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }: BatchScheduleBrewTimerProps) {
     const elapsed = useElapsedSeconds(batch.timer);
     const phases = batch.brewable.schedule.phases;
+    const [completeModalRef, toggleCompleteModal] = useModal();
 
     const onPlayPause = useCallback(() => {
         mutate(draft => {
@@ -69,6 +74,11 @@ export default function BatchScheduleBrewTimer({ batch, mutate }: BatchScheduleB
 
     const currentIndex = useMemo(() => currentPhaseIndex(phases, batch.tracker), [phases, batch.tracker]);
     const currentPhaseLabel = phases[currentIndex] ? phaseLabel(phases, currentIndex) : "";
+
+    const onConfirmComplete = useCallback(() => {
+        const phase = phases[currentIndex];
+        if (phase) completePhase(phase.id);
+    }, [phases, currentIndex, completePhase]);
 
     const milestoneKindOptions = useMemo(
         () => (phases[currentIndex] ? readingKindsForPhase(phases[currentIndex].type) : [])
@@ -116,16 +126,27 @@ export default function BatchScheduleBrewTimer({ batch, mutate }: BatchScheduleB
     }, [sessionStart, phases, batch.tracker]);
 
     return (
-        <BrewTimer
-            className="mb-2"
-            isRunning={isRunning(batch.timer)}
-            elapsedSeconds={elapsed}
-            markers={markers}
-            markerTransitionMs={TICK_MS}
-            milestoneKindOptions={milestoneKindOptions}
-            milestoneParameterOptions={milestoneParameterOptions}
-            phaseLabel={currentPhaseLabel}
-            onPlayPause={onPlayPause}
-            onQuickMilestone={onQuickMilestone} />
+        <>
+            <BrewTimer
+                className="mb-2"
+                isRunning={isRunning(batch.timer)}
+                elapsedSeconds={elapsed}
+                markers={markers}
+                markerTransitionMs={TICK_MS}
+                milestoneKindOptions={milestoneKindOptions}
+                milestoneParameterOptions={milestoneParameterOptions}
+                phaseLabel={currentPhaseLabel}
+                completeLabel={currentPhaseLabel}
+                onPlayPause={onPlayPause}
+                onQuickMilestone={onQuickMilestone}
+                onComplete={toggleCompleteModal} />
+            {currentPhaseLabel ? (
+                <Modal ref={completeModalRef}>
+                    <ModalScreen title={`Complete ${currentPhaseLabel}`} onConfirm={onConfirmComplete}>
+                        <ScreenP>This can't be undone.</ScreenP>
+                    </ModalScreen>
+                </Modal>
+            ) : null}
+        </>
     );
 }
