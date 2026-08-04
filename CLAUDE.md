@@ -335,11 +335,11 @@ one per task, updated rather than duplicated on a re-run.
 - ⚠️ **Deterministic at both ends:** the schema forces production, the hook forces delivery.
   That is what separates it from `owner-manifest`, which asked a model to leave a
   machine-readable block and got one across nine epics exactly once.
-- **Writer once per epic, Tester once per story.** Docs describe the state a reader arrives
-  at, so one pass from one branch is both cheaper and the thing that stops two roles editing
-  the same file on parallel branches. Tests stay next to the work: written later from a cold
-  read of several merged diffs, they are further from the behaviour, which is the distance
-  the role exists to close. The Architect cuts both.
+- **Tester and Writer are cut per story**, as tasks ordered after the authoring ones, so
+  tests and docs land in the story's PR beside the code. ⚠️ An epic-wide Writer was tried
+  and dropped: the merge-conflict argument for it does not hold here, because stories merge
+  one at a time, so a later story already carries the previous one's docs. Deferring would
+  only put the explanation further from the change.
 
 - ⚠️ **Both keys are required, and `[]` is a real answer** — "I looked, there is nothing".
   A consumer that cannot tell that from "forgot" is the exact failure that killed

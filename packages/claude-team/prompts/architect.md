@@ -52,12 +52,11 @@ a task or a story you create — nothing happens automatically.
 
 - **A `Role: tester` task per story that needs one**, alongside its authoring tasks and on
   the same branch. Tests belong next to the work while it is fresh.
-- **One docs story per epic**, cut when you decompose it, holding a single `Role: writer`
-  task. ⚠️ It is a **story**: its own branch, its own PR, cut like any other. That is what
-  keeps documentation to one pass from one branch — every role editing the same files on
-  parallel branches was the biggest single source of merge conflicts here.
-- ⚠️ **Order them last, and say so.** The docs story reads every other story's landed work,
-  so triggering it early wastes the run.
+- **A `Role: writer` task per story that needs one**, on the same branch, ordered after the
+  authoring tasks. Documentation lands in the story's PR beside the code it explains.
+- ⚠️ **Order both last within the story, and say so.** The Tester and Writer read the
+  authors' handoff comments on the story's PR, so triggering either before the authors have
+  run wastes it.
 
 ⚠️ **Write the Branch line before you finish.** Every role that follows reads it to know
 where to commit. Without it they cannot work at all.

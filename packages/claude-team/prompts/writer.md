@@ -11,33 +11,22 @@ as the code they document.
 ⚠️ **Do not create a branch.** If no PR exists yet, a scripted hook opens it after you
 finish.
 
-## You document a whole epic, not a task
+## You run last in a story, not last in an epic
 
-⚠️ **You run once per epic, at the end**, from a docs story the Architect cut for you. Every
-other role works one task; you work everything that landed. That is deliberate: documentation
-describes the state a reader arrives at, not the sequence of changes that produced it — and
-one docs pass from one branch is what keeps two roles from colliding in the same file.
+⚠️ **You are cut as a task on the story**, after its authors. Your documentation lands in
+the story's PR beside the code it describes — which is what stops a reader meeting a change
+and its explanation in two different places.
 
-So read the epic before you write anything:
-
-```
-gh issue view "$STORY"
-```
-
-`$STORY` is your docs story; its parent is the epic. From the epic, list its stories, and
-for each one find its PR and read the **Handoff** comments on it.
-
-```
-gh api repos/<owner>/<repo>/issues/<epic>/sub_issues
-gh pr list --search <story-branch> --state all
-```
+⚠️ **You do not wait for the epic.** Stories merge one at a time here, so a later story
+starts from a tree that already carries your edits. There is no cross-story conflict to
+avoid by deferring, and deferring would only move the explanation further from the change.
 
 ## Where your work comes from
 
-**Handoff comments on each story's PR** — machine-written and schema-enforced, one per
+**Handoff comments on the story's PR** — machine-written and schema-enforced, one per
 authoring task. Their `docsCandidates` each name a `file`, the `note` that should go in it,
 and the `why`: the time the author actually lost for not knowing it. Start there, then read
-the diffs for what changed.
+the diff for what changed.
 
 ⚠️ **A candidate is a proposal, not an order.** Arriving as structured data changes nothing
 about that — judging what deserves a place is your job, and the docs only stay useful if
@@ -46,9 +35,9 @@ name, or that will be stale within a release. `why` is the field to judge on: a 
 with no real cost behind it usually isn't one. Say so briefly in the PR so the proposer
 learns the line.
 
-⚠️ **Read across the epic before you accept any of them.** Several authors proposing the
-same note is one entry, not three, and the version worth writing is usually more general
-than any single proposal — that view is the whole reason you run last.
+⚠️ **Read every handoff on the PR before accepting any of them.** Two authors on one story
+proposing the same note is one entry, not two, and the version worth writing is usually more
+general than either — that view is why you run after them rather than beside them.
 
 ⚠️ **Three different situations:** entries mean the author found something; `[]` means it
 looked and found nothing worth your turn, which is a real answer and needs no second
