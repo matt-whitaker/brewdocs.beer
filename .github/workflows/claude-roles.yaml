@@ -245,14 +245,15 @@ jobs:
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          # ⚠️ track_progress forces the action's TAG MODE. That mode re-checks the
-          # trigger phrase independently of our `if:` — but checkContainsTrigger() returns
-          # early on `if (prompt) return true`, and we always pass a prompt, so the phrase
-          # is inert at v1 (verified at v1.0.183). It is "@claude" rather than
-          # "@claude/architect" because a LABEL trigger carries no comment for a per-role
-          # phrase to match: if that short-circuit ever goes away, "@claude" still matches
-          # the comment path and a per-role phrase would fail every role at once.
-          trigger_phrase: "@claude"
+          # ⚠️ THE EXACT HANDLE, and this is load-bearing. trigger_phrase does NOT gate
+          # anything for us — checkContainsTrigger() returns early on `if (prompt) return
+          # true` and we always pass a prompt. Its ONLY effect is that the action extracts
+          # everything AFTER this phrase as "the user request" and yields it as the final
+          # content block, which the CLI scans for a SLASH COMMAND. Set to a bare "@claude",
+          # the comment "@claude/architect do X" extracts as "/architect do X" — dispatched as an
+          # unknown slash command, so the run returns success in ~150ms having never called
+          # the model. Every comment-triggered role was dead this way between #485 and #488.
+          trigger_phrase: "@claude/architect"
           track_progress: true
           prompt: ${{ steps.prompt.outputs.body }}
           # Read-and-write-issues only; no build tools needed for shaping an epic.
@@ -456,7 +457,15 @@ jobs:
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          trigger_phrase: "@claude"
+          # ⚠️ THE EXACT HANDLE, and this is load-bearing. trigger_phrase does NOT gate
+          # anything for us — checkContainsTrigger() returns early on `if (prompt) return
+          # true` and we always pass a prompt. Its ONLY effect is that the action extracts
+          # everything AFTER this phrase as "the user request" and yields it as the final
+          # content block, which the CLI scans for a SLASH COMMAND. Set to a bare "@claude",
+          # the comment "@claude/implementor do X" extracts as "/implementor do X" — dispatched as an
+          # unknown slash command, so the run returns success in ~150ms having never called
+          # the model. Every comment-triggered role was dead this way between #485 and #488.
+          trigger_phrase: "@claude/implementor"
           track_progress: true
           prompt: ${{ steps.p_implementor.outputs.body }}
           # Allowlist by *family*, not per-subcommand. Deliberately NOT bare `Bash`: this
@@ -504,7 +513,15 @@ jobs:
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          trigger_phrase: "@claude"
+          # ⚠️ THE EXACT HANDLE, and this is load-bearing. trigger_phrase does NOT gate
+          # anything for us — checkContainsTrigger() returns early on `if (prompt) return
+          # true` and we always pass a prompt. Its ONLY effect is that the action extracts
+          # everything AFTER this phrase as "the user request" and yields it as the final
+          # content block, which the CLI scans for a SLASH COMMAND. Set to a bare "@claude",
+          # the comment "@claude/designer do X" extracts as "/designer do X" — dispatched as an
+          # unknown slash command, so the run returns success in ~150ms having never called
+          # the model. Every comment-triggered role was dead this way between #485 and #488.
+          trigger_phrase: "@claude/designer"
           track_progress: true
           prompt: ${{ steps.p_designer.outputs.body }}
           claude_args: |
@@ -539,7 +556,15 @@ jobs:
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          trigger_phrase: "@claude"
+          # ⚠️ THE EXACT HANDLE, and this is load-bearing. trigger_phrase does NOT gate
+          # anything for us — checkContainsTrigger() returns early on `if (prompt) return
+          # true` and we always pass a prompt. Its ONLY effect is that the action extracts
+          # everything AFTER this phrase as "the user request" and yields it as the final
+          # content block, which the CLI scans for a SLASH COMMAND. Set to a bare "@claude",
+          # the comment "@claude/tester do X" extracts as "/tester do X" — dispatched as an
+          # unknown slash command, so the run returns success in ~150ms having never called
+          # the model. Every comment-triggered role was dead this way between #485 and #488.
+          trigger_phrase: "@claude/tester"
           track_progress: true
           # ⚠️ The handoff arrives as prompt CONTEXT, not as something to go and find.
           # Implementor OR Designer, whichever authored — they are alternatives and emit the
@@ -587,7 +612,15 @@ jobs:
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          trigger_phrase: "@claude"
+          # ⚠️ THE EXACT HANDLE, and this is load-bearing. trigger_phrase does NOT gate
+          # anything for us — checkContainsTrigger() returns early on `if (prompt) return
+          # true` and we always pass a prompt. Its ONLY effect is that the action extracts
+          # everything AFTER this phrase as "the user request" and yields it as the final
+          # content block, which the CLI scans for a SLASH COMMAND. Set to a bare "@claude",
+          # the comment "@claude/writer do X" extracts as "/writer do X" — dispatched as an
+          # unknown slash command, so the run returns success in ~150ms having never called
+          # the model. Every comment-triggered role was dead this way between #485 and #488.
+          trigger_phrase: "@claude/writer"
           track_progress: true
           # The Writer sees the author's candidates directly — Implementor or Designer,
           # whichever ran. ⚠️ Still a proposal, not
