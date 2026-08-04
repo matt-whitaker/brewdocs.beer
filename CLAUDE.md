@@ -408,6 +408,17 @@ Bash(git add:*), Bash(git commit:*), Bash(git rm:*), Bash(git-push.sh:*)
   change it is judging. `Bash(gh:*)` plus `pull-requests: write` would let a successful
   prompt injection run `gh pr review --approve` on the very PR the maintainer asked it to
   distrust. `gh api` is deliberately absent — it reaches every endpoint the token has.
+  - The rule the list is built on is **no mutating form**, which is why `git branch` and
+    `git remote` are out despite being useful.
+  - ⚠️ **Too narrow starves it, and that failure is silent** (#494). Cut to only the
+    playbook's own commands, the next run spent 5 of 6 turns denied and reported nothing —
+    and a clean merge review posts nothing, so "found nothing" and "could do nothing" are
+    indistinguishable from outside. The read-only orientation commands a review opens with
+    (`git status`, `git rev-parse`, `gh pr list`, `gh issue list`) are as load-bearing as
+    the ones that do the work.
+  - ⚠️ Judge a denial count as a **rate over a whole run**, and distrust it when the run is
+    short: across three runs the absolute counts moved 8 → 4 → 5 while the rates read
+    62% → 25% → 83%.
 - ⚠️ **An allowlist has a floor no role can go below.** `Bash(git add|commit|rm:*)` and
   `git-push.sh` union in from the action's base set and cannot be removed. What stops
   Security pushing is `contents: read`, not its allowlist.
