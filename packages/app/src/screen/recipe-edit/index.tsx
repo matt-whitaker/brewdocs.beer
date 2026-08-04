@@ -5,7 +5,7 @@ import Screen from "@/component/screen";
 import Brewable from "@/model/brewable";
 import BrewableEdit from "@/screen/brewable-edit";
 import RecipeEditDetails from "@/screen/recipe-edit/details";
-import {patchRecipe, useRecipe} from "@/state/recipes";
+import {usePatchRecipe, useRecipe} from "@/state/recipes";
 
 // A name/brewer header, then BrewableEdit for the Ingredients/Equipment/Phases
 // tabs. The recipe-specific "Details" panel is injected as panelsBefore, so this
@@ -13,10 +13,9 @@ import {patchRecipe, useRecipe} from "@/state/recipes";
 export type RecipeEditProps = { recipeId: string };
 export default function RecipeEdit({ recipeId }: RecipeEditProps) {
     const recipe = useRecipe(recipeId);
+    const patchRecipe = usePatchRecipe(recipeId);
 
-    // save only the slice we own; patchRecipe merges it onto the freshest stored
-    // recipe, so the sibling Details panel's fields aren't clobbered
-    const onChangeBrewable = useCallback((brewable: Brewable) => patchRecipe(recipeId, {brewable}), [recipeId]);
+    const onChangeBrewable = useCallback((brewable: Brewable) => patchRecipe({brewable}), [patchRecipe]);
 
     return (
         <Screen>
