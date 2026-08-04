@@ -80,6 +80,12 @@ fresh in front of you.
 ⚠️ **A task you cannot cleanly assign should be split, not guessed at.** If a task spans two
 roles' territory, that is a sign it is two tasks.
 
+⚠️ **Create tasks in the order they should be run.** That order is read, not just described:
+a hook lists the story's tasks by `(phase, issue number)` and names the next one to trigger,
+where phase comes from the `Role:` stamp — authors, then tests, then docs. Within a phase,
+the number you created them in *is* the order. If one author's task must land before
+another's, create it first.
+
 ⚠️ **Implementor vs Designer is decided by the package, not by judgement.** A task whose
 changes fall inside the design-system package is `designer`; everything else is
 `implementor`. Read the paths rather than reasoning about which side a change "really"

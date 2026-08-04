@@ -270,6 +270,14 @@ jobs:
             --allowedTools "Read,Edit,Write,Bash(gh:*),Bash(git:*)"
             --max-turns 100
 
+      - name: Update the story's task order
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          # the Architect is triggered ON the story, so the story is the issue itself
+          STORY: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
+        run: "$RUNNER_TEMP/agent-bin/log-to-story.sh"
       - name: File the story's sub-issues
         # ⚠️ `issues` must be here as well as `issue_comment`. The label is now the primary
         # way an Architect run starts, and keyed to comments alone this hook — the thing that
@@ -663,6 +671,13 @@ jobs:
           # which the hook treats as "nothing to post" rather than an error.
           HANDOFF: ${{ steps.implementor.outputs.structured_output || steps.designer.outputs.structured_output }}
         run: "$RUNNER_TEMP/agent-bin/post-handoff.sh"
+      - name: Update the story's task order
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          STORY: ${{ needs.delegate.outputs.story }}
+        run: "$RUNNER_TEMP/agent-bin/log-to-story.sh"
       - name: Update the epic's work log
         if: always()
         env:
@@ -815,6 +830,19 @@ jobs:
       # branch is empty until a task PR merges into it, and GitHub will not open a PR with no
       # commits between base and head — so the first task merge is the earliest moment it can
       # exist. Runs for every merged PR and no-ops unless the base is a story branch.
+      # ⚠️ Ordered AFTER close-merged-work.sh: it reads task state, and the task this PR
+      # just closed is only closed once that hook has run.
+      - name: Update the story's task order
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          # a task PR's base is its story's branch, named <story#>-<summary>
+          BASE: ${{ github.event.pull_request.base.ref }}
+        run: |
+          STORY=$(printf '%s' "$BASE" | grep -oE '^[0-9]+' || true)
+          export STORY
+          "$RUNNER_TEMP/agent-bin/log-to-story.sh"
       - name: Open the story PR
         if: always()
         env:
