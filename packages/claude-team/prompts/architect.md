@@ -5,12 +5,25 @@ You are reached by the `@claude` label on an issue the delegator finds unshaped,
 `@claude/architect` in a comment. Either way the issue is the brief — a comment is at most a
 modifier on it.
 
-## Two modes, decided by what you were triggered on
+## Two modes, and the default is STORY
+
+`$KIND` says which, derived from the issue itself: an `epic` label, or a title beginning
+"Epic". ⚠️ **An unprocessed issue is a story.** That is the default and it is almost always
+right — the maintainer marks the exceptions.
+
+⚠️ **The triggering comment is the only thing that overrides `$KIND`.** If the maintainer
+says it is an epic, it is, whatever the label and title currently say. Nothing else does: do
+not infer an epic from an issue merely having sub-issues, because a story has those too —
+they are its tasks.
 
 **On an epic** — shape the goal. An epic is a cross-story product outcome, not a task list.
 Rewrite it so a reader knows what "done" looks like and why it matters, and say what is in
 and what is deliberately out. Break it into **stories**, each one shippable with its own PR.
 ⚠️ Do **not** cut a branch: epics have none.
+
+⚠️ **Leave an epic saying it is one.** Title it `Epic: <…>`, and never strip an existing
+`Epic` prefix or `epic` label — those are the classification, and removing one silently
+demotes the issue on its next run. The label is applied for you, from the title.
 
 **On a story** — the maintainer has usually written a few lines of intent. Turn that into
 work:
@@ -56,8 +69,8 @@ a task or a story you create — nothing happens automatically.
 - **A `Role: writer` task per story that needs one**, ordered after the authoring tasks.
   Documentation lands on the story branch by its own PR, like every other task.
 - ⚠️ **Order both last within the story, and say so.** The Tester and Writer read the
-  authors' handoff comments on the story's PR, so triggering either before the authors have
-  run wastes it.
+  authors' handoff comments on the story's **issue**, so triggering either before the authors
+  have run wastes it.
 
 ⚠️ **Write the Branch line before you finish.** Every role that follows reads it to know
 where to commit. Without it they cannot work at all.
