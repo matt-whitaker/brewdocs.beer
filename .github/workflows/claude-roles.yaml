@@ -27,13 +27,15 @@ run-name: >-
 #
 #   delegate            routes — no model
 #   architect           shapes work and cuts tasks
-#   authors             Implementor|Designer -> Tester -> Writer, sequential STEPS in one job
+#   authors             Implementor | Designer | Tester | Writer — one per run, gated steps
 #   security            on merge, plus on request via @claude/security
 #   merge_housekeeping  on merge — no model
 #
-# The authoring roles share a job so one `@claude` runs the whole chain. Implementor and
-# Designer are alternatives — a task is one or the other, split on the package it touches.
-# See that job's header for why they are steps and not `needs:`.
+# ⚠️ THE AUTHORS JOB IS NOT A CHAIN, and briefly claimed to be (#500). `delegate.sh` emits
+# exactly ONE role, so exactly one of its gated steps ever runs. That is deliberate now:
+# the Architect cuts a `Role: tester` task per story and a docs story per epic, so the
+# Tester and Writer are triggered on their own work rather than dragged behind every author.
+# They share a job to share its setup, not to run in sequence.
 #
 # ⚠️ THE DELEGATOR ROUTES. Two ways in, one router:
 #
@@ -74,6 +76,7 @@ run-name: >-
 #   post  architect       file-sub-issues.sh       parents stories to epics, tasks to stories
 #   post  authors job     finish-pr.sh             labels the PR, appends `Closes #<issue>`
 #   post  authors job     open-story-pr.sh         opens the story's PR if it has none
+#   post  authors job     post-handoff.sh          puts the JSON handoff on the story's PR
 #   post  authors job     log-to-epic.sh           rewrites the epic's rolling work log
 #   merge (no role)       close-merged-work.sh     closes the PR's issues, files them on the board
 #
@@ -277,23 +280,30 @@ jobs:
           REPO: ${{ github.repository }}
           ISSUE: ${{ github.event.issue.number }}
         run: "$RUNNER_TEMP/agent-bin/file-sub-issues.sh"
-  # ── Authors: Implementor | Designer → Tester → Writer ──────────────────────────
-  # The authoring roles as sequential STEPS in one job, so a single `@claude` on a task
-  # runs the whole chain with no further input from the maintainer. Implementor and Designer
-  # are alternatives — a task is one or the other, split on the package it touches.
+  # ── Authors: Implementor | Designer | Tester | Writer ──────────────────────────
+  # The four authoring roles as gated steps in one job. ⚠️ EXACTLY ONE RUNS PER TRIGGER —
+  # `delegate.sh` emits a single role, and each step gates on it. They share a job to share
+  # its setup (checkout, prompts, npm ci), not to run in sequence.
   #
-  # ⚠️ STEPS, NOT `needs:`. #430 reverted role chaining because `needs:` ACROSS JOBS left
-  # the followers queued behind every run, and a job that skips after waiting reports as
-  # cancelled — the history filled with cancelled entries. Sequential steps have no job
-  # graph, so none of that applies. Do not reach for `needs:` here; that is the shape that
-  # failed. (The one `needs:` in this file, on `delegate`, is a different case — see the
-  # header.)
+  # Implementor and Designer are alternatives, split on the package a task touches. The
+  # Tester is triggered by its own `Role: tester` task, cut per story; the Writer by a docs
+  # story cut per epic, so documentation lands in one pass from one branch.
   #
-  # ⚠️ BUDGET. Three model runs back to back — an author at opus 80 turns, then sonnet 80,
-  # then sonnet 60: 220 turns on one runner, plus `npm ci` and a browser install. By a wide
-  # margin the longest job here. Implementor and Designer never both run, so 220 is the
-  # ceiling, not 300. A single-role run is unaffected: the other model steps skip and their
-  # setup skips with them.
+  # ⚠️ DO NOT REACH FOR `needs:` BETWEEN THESE STEPS if the chain idea returns. #430 tried
+  # role chaining across jobs: the followers sat queued behind every run, and a job that
+  # skips after waiting reports as cancelled, so the history filled with cancelled entries.
+  # (The one `needs:` in this file, on `delegate`, is a different case — see the header.)
+  #
+  # ⚠️ AND #500 IS WHY CHAINING DID NOT SIMPLY MOVE HERE. As steps the job graph problem
+  # goes away, but `delegate.sh` emits one role, so the steps never co-fired and the
+  # `structured_output` handoff between them never had a consumer — shipped, closed, and
+  # dead for both #475 and #476. The handoff now travels by comment (`post-handoff.sh`)
+  # precisely so roles do NOT have to share a run to hand off.
+  #
+  # ⚠️ BUDGET is per role, not cumulative, because only one runs: opus 80 for an author,
+  # sonnet 80 for the Tester, sonnet 120 for the Writer. The Writer is the highest because
+  # it reads a whole epic — every story, its PR and its handoff comments — where the others
+  # read one task.
   #
   # ⚠️ EACH ROLE GETS ITS OWN TRACKING COMMENT, because `use_sticky_comment` is not set —
   # the action reuses a comment only when it is. That is what keeps the Implementor's
@@ -567,20 +577,11 @@ jobs:
           # the model. Every comment-triggered role was dead this way between #485 and #488.
           trigger_phrase: "@claude/tester"
           track_progress: true
-          # ⚠️ The handoff arrives as prompt CONTEXT, not as something to go and find.
-          # Implementor OR Designer, whichever authored — they are alternatives and emit the
-          # same schema, so `||` takes the one that ran (an unrun step's output is empty,
-          # which is falsy). Empty when neither ran (a Tester-only trigger) or when the
-          # author's step failed — exactly why `testingNotes: []` and an absent block have
-          # to read differently. The prompt says how to tell them apart.
-          prompt: |
-            ${{ steps.p_tester.outputs.body }}
-
-            ## Handoff from the Implementor
-
-            ```json
-            ${{ steps.implementor.outputs.structured_output || steps.designer.outputs.structured_output }}
-            ```
+          # ⚠️ NO handoff is appended here. Only one role runs per trigger (#500), so an
+          # author's `structured_output` is never available to this step — it would always
+          # render an empty fenced block and contradict the prompt, which sends the Tester to
+          # the Handoff comments on the story's PR instead.
+          prompt: ${{ steps.p_tester.outputs.body }}
           claude_args: |
             --model sonnet
             --allowedTools "Edit,Write,Bash(git:*),Bash(gh:*),Bash(npm:*),Bash(npx:*)"
@@ -623,22 +624,13 @@ jobs:
           # the model. Every comment-triggered role was dead this way between #485 and #488.
           trigger_phrase: "@claude/writer"
           track_progress: true
-          # The Writer sees the author's candidates directly — Implementor or Designer,
-          # whichever ran. ⚠️ Still a proposal, not
-          # an order — a schema must not imply obligation, and rejecting every candidate
-          # stays a correct outcome. writer.md carries that.
-          prompt: |
-            ${{ steps.p_writer.outputs.body }}
-
-            ## Handoff from the Implementor
-
-            ```json
-            ${{ steps.implementor.outputs.structured_output || steps.designer.outputs.structured_output }}
-            ```
+          # ⚠️ NO handoff appended — same reason as the Tester. The Writer reads Handoff
+          # comments across the whole epic, which is why it runs from its own docs story.
+          prompt: ${{ steps.p_writer.outputs.body }}
           claude_args: |
             --model sonnet
             --allowedTools "Read,Edit,Write,Bash(git:*),Bash(gh:*)"
-            --max-turns 60
+            --max-turns 120
 
       # ── Once, for the job ──
       - name: Label and link the PR
@@ -658,6 +650,18 @@ jobs:
           REPO: ${{ github.repository }}
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
         run: "$RUNNER_TEMP/agent-bin/open-story-pr.sh"
+      - name: Persist the author's handoff
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
+          ROLES: ${{ steps.roles.outputs.list }}
+          # whichever author ran — they are alternatives and emit the same schema, so `||`
+          # takes the one that produced output. Empty when neither ran or the step failed,
+          # which the hook treats as "nothing to post" rather than an error.
+          HANDOFF: ${{ steps.implementor.outputs.structured_output || steps.designer.outputs.structured_output }}
+        run: "$RUNNER_TEMP/agent-bin/post-handoff.sh"
       - name: Update the epic's work log
         if: always()
         env:

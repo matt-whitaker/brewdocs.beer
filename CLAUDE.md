@@ -321,11 +321,25 @@ read as "these agents have been here". The maintainer clears them as a check-off
   the link where a human reads it; the hook is the net, because a missing keyword loses the
   close and the board move with nothing to signal it.
 
-**The handoff between authors is a JSON contract**, not prose. The Implementor's step
-carries `--json-schema`, so its final message must match
+**The handoff between authors is a JSON contract**, and it travels by comment. The author's
+step carries `--json-schema`, so its final message must match
 [`packages/claude-team/schemas/handoff.json`](packages/claude-team/schemas/handoff.json) —
 `testingNotes` for the Tester, `docsCandidates` for the Writer. The action exposes it as
-`structured_output`, and the workflow appends it to the other two roles' prompts.
+`structured_output`, and `post-handoff.sh` posts it to the story's PR as a marked comment,
+one per task, updated rather than duplicated on a re-run.
+
+- ⚠️ **The transport was the broken half, not the schema** (#500). It used to be appended to
+  the Tester's and Writer's prompts from the same job — but `delegate.sh` emits ONE role, so
+  those steps never co-fired and no consumer ever saw it. #475 and #476 both closed on
+  criteria that were never met. A comment survives the run; a step output does not.
+- ⚠️ **Deterministic at both ends:** the schema forces production, the hook forces delivery.
+  That is what separates it from `owner-manifest`, which asked a model to leave a
+  machine-readable block and got one across nine epics exactly once.
+- **Writer once per epic, Tester once per story.** Docs describe the state a reader arrives
+  at, so one pass from one branch is both cheaper and the thing that stops two roles editing
+  the same file on parallel branches. Tests stay next to the work: written later from a cold
+  read of several merged diffs, they are further from the behaviour, which is the distance
+  the role exists to close. The Architect cuts both.
 
 - ⚠️ **Both keys are required, and `[]` is a real answer** — "I looked, there is nothing".
   A consumer that cannot tell that from "forgot" is the exact failure that killed
