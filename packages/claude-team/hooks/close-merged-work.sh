@@ -5,9 +5,10 @@ issues=$(gh pr view "$PR" --repo "$REPO" --json closingIssuesReferences \
   --jq '.closingIssuesReferences[].number')
 
 # ⚠️ GitHub only acts on closing keywords when a PR targets the DEFAULT
-# branch. Every sub-issue PR goes into an epic branch instead, so its
-# "Closes #N" is inert and closingIssuesReferences comes back empty — the
-# intent is in the body, GitHub just never linked it. Parse it ourselves.
+# branch. A task's PR targets its STORY's branch, so its "Closes #<task>" is
+# inert and closingIssuesReferences comes back empty — the intent is in the
+# body, GitHub just never linked it. Parse it ourselves. This is the only
+# thing that closes a task.
 if [ -z "$issues" ]; then
   issues=$(gh pr view "$PR" --repo "$REPO" --json body --jq \
     '[.body // "" | scan("(?i)(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\\s+#([0-9]+)")[]] | unique | .[]')
@@ -21,20 +22,11 @@ if [ -z "$issues" ]; then
   exit 0
 fi
 
-# ⚠️ Closing a story closes its tasks by definition, so derive them instead of trusting the
-# PR body. open-story-pr.sh lists the tasks with closing keywords, but it writes that body
-# ONCE when the PR opens — a task the Architect cuts afterwards is nowhere in it and would
-# be left open by a merge that plainly finished it. One level only: a story's children are
-# its tasks, and nothing recurses into an epic.
-for issue in $issues; do
-  kids=$(gh api "repos/$REPO/issues/$issue/sub_issues" \
-    --jq '.[] | select(.state == "open") | .number' 2>/dev/null || true)
-  if [ -n "$kids" ]; then
-    echo "#$issue has open sub-issues:" $kids
-    issues=$(printf '%s\n%s\n' "$issues" "$kids")
-  fi
-done
-issues=$(printf '%s\n' $issues | sort -un)
+# ⚠️ NO SUB-ISSUE EXPANSION. This used to close a closed issue's open children, because a
+# story's tasks had no PRs of their own and the story's merge was the only thing that could
+# close them. Every task now closes via its own PR merging into the story branch, so a task
+# still open when its story merges is a real signal — abandoned, or its PR never landed —
+# and swallowing it would hide exactly the case worth seeing.
 
 for issue in $issues; do
   if [ "$(gh issue view "$issue" --repo "$REPO" --json state --jq '.state')" = "OPEN" ]; then

@@ -1,95 +1,75 @@
 #!/usr/bin/env bash
-# Post-hook for every authoring role. Opens the story's PR the first time it finds one
-# missing, so the story is reviewable as it accumulates rather than arriving whole.
+# Runs on every merged PR. Opens the STORY's PR the first time a task PR lands on a story
+# branch, so the story is reviewable as it accumulates rather than arriving whole.
 #
-# One story, one branch, one PR. An epic has neither — if this is triggered on an epic
-# there is no Branch line and it no-ops. A task carries its *story's* Branch line, so a
-# task run finds the story's PR already open and does nothing.
+# ⚠️ IT RUNS HERE, NOT IN AN AUTHORING RUN, and that is forced rather than chosen. Under
+# sub-branching an author commits to its own task branch, so the story branch stays empty
+# until a task PR merges into it — and GitHub will not open a PR with no commits between
+# base and head. The first task merge is the earliest moment the story's PR can exist.
 #
-# The branch comes from the issue body's Branch line, which the Architect writes:
-#
-#   **Branch: `250-volume-milestone`**
+# `BASE` is the merged PR's base ref. A task PR's base is the story branch; a story PR's
+# base is the default branch. So a story branch base means "a task just landed".
 set -euo pipefail
 
 : "${REPO:?REPO is required}"
 
-if [ -z "${ISSUE:-}" ]; then
-    echo "Not triggered on an issue — no story to open a PR for."
-    exit 0
-fi
-
-body=$(gh issue view "$ISSUE" --repo "$REPO" --json body --jq '.body // ""')
-branch=$(printf '%s' "$body" | grep -oiE 'branch: *`[^`]+`' | head -1 | sed -E 's/.*`([^`]+)`.*/\1/')
-
-if [ -z "$branch" ]; then
-    echo "#$ISSUE names no branch — an epic, or a story the Architect hasn't cut yet."
-    exit 0
-fi
-
 default=$(gh repo view "$REPO" --json defaultBranchRef --jq '.defaultBranchRef.name')
 
-if [ "$branch" = "$default" ]; then
-    echo "#$ISSUE targets $default directly — no story branch."
+if [ -z "${BASE:-}" ] || [ "$BASE" = "$default" ]; then
+    echo "Merged into ${BASE:-?} — not a story branch, nothing to open."
     exit 0
 fi
 
-existing=$(gh pr list --repo "$REPO" --head "$branch" --state open --json number --jq '.[0].number // empty')
+# ⚠️ A story branch is named `<story#>-<summary>`. The number it starts with is the story,
+# which is the same derivation delegate.sh uses — the two must not disagree about which
+# issue a branch belongs to.
+STORY=$(printf '%s' "$BASE" | grep -oE '^[0-9]+' || true)
+if [ -z "$STORY" ]; then
+    echo "::warning::base $BASE does not start with an issue number — cannot resolve its story."
+    exit 0
+fi
+
+existing=$(gh pr list --repo "$REPO" --head "$BASE" --state open --json number --jq '.[0].number // empty')
 if [ -n "$existing" ]; then
-    echo "PR #$existing already open for $branch."
+    echo "PR #$existing already open for $BASE."
     exit 0
 fi
 
-if ! git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
-    echo "::warning::branch $branch does not exist on origin — the Architect may not have cut it."
+if [ "$(gh api "repos/$REPO/compare/$default...$BASE" --jq '.ahead_by' 2>/dev/null || echo 0)" -eq 0 ]; then
+    echo "$BASE is not ahead of $default — nothing to open a PR for."
     exit 0
 fi
-
-# nothing to PR yet: the author pushed no commits, so let the next run open it
-git fetch origin "$branch" --quiet
-if [ "$(git rev-list --count "origin/$default..origin/$branch")" -eq 0 ]; then
-    echo "$branch has no commits yet — nothing to open a PR for."
-    exit 0
-fi
-
-# ⚠️ THE PR CLOSES THE STORY, NOT THE TRIGGERING ISSUE. Writing `Closes #<task>` here is
-# what sank the model once already: the first task's PR announced itself finished, CI went
-# green, and merging was the obvious move — closing the branch with the story's other tasks
-# unstarted. A branch is named `<story#>-<summary>`, so the number it starts with is the
-# story: itself when a story triggered the run, its parent when a task did.
-STORY=$(printf '%s' "$branch" | grep -oE '^[0-9]+' || true)
-[ -n "$STORY" ] || STORY="$ISSUE"
 
 title=$(gh issue view "$STORY" --repo "$REPO" --json title --jq '.title')
 tasks=$(gh api "repos/$REPO/issues/$STORY/sub_issues" \
-    --jq '.[] | "\(.number)\t\(.title)"' 2>/dev/null || true)
+    --jq '.[] | "\(.number)\t\(.state)\t\(.title)"' 2>/dev/null | grep -E '^[0-9]+	' || true)
 
 body_file=$(mktemp)
 {
-    printf 'Story PR for `%s`.\n\n' "$branch"
-    printf '⚠️ **This PR stays open until the story is complete.** Every role working the story\n'
-    printf 'commits to this branch, so it grows as the story lands — code, tests and docs\n'
-    printf 'together — rather than arriving as several PRs. One task looking finished is not a\n'
-    printf 'signal to merge.\n\n'
+    printf 'Story PR for `%s`.\n\n' "$BASE"
+    printf '⚠️ **This PR stays open until the story is complete.** Each task lands here by its\n'
+    printf 'own PR into this branch, so it grows as the story does — code, tests and docs\n'
+    printf 'together — rather than arriving as several. One task merging is not a signal to\n'
+    printf 'merge this.\n\n'
     printf 'Closes #%s\n' "$STORY"
 
     if [ -n "$tasks" ]; then
         printf '\n### Tasks\n\n'
-        printf '%s\n' "$tasks" | while IFS=$'\t' read -r n t; do
-            printf -- '- #%s — %s\n' "$n" "$t"
+        printf '%s\n' "$tasks" | while IFS=$'\t' read -r n st t; do
+            mark=$([ "$st" = "closed" ] && printf 'x' || printf ' ')
+            printf -- '- [%s] #%s — %s\n' "$mark" "$n" "$t"
         done
-        # ⚠️ The tasks need their own closing keywords. close-merged-work.sh only falls back
-        # to parsing the body when `closingIssuesReferences` is EMPTY, and a story PR targets
-        # the default branch — so GitHub populates it with the story and the parse never runs.
-        # Listing the tasks without keywords would leave every one of them open on merge.
-        printf '\nMerging closes them too:'
-        printf '%s\n' "$tasks" | cut -f1 | while read -r n; do printf ' closes #%s' "$n"; done
-        printf '\n'
+        # ⚠️ Each task is closed by its OWN PR merging into this branch, so this list needs
+        # no closing keywords — and must not carry them. Repeating them here would make the
+        # story's merge re-close tasks that are already done, and would close any that were
+        # abandoned rather than finished.
+        printf '\nEach is closed by its own PR merging into this branch.\n'
     fi
 } > "$body_file"
 
-if gh pr create --repo "$REPO" --base "$default" --head "$branch" --title "$title" --body-file "$body_file" >/dev/null 2>&1; then
-    echo "opened the story PR for $branch"
+if gh pr create --repo "$REPO" --base "$default" --head "$BASE" --title "$title" --body-file "$body_file" >/dev/null 2>&1; then
+    echo "opened the story PR for $BASE"
 else
-    echo "::warning::could not open the story PR for $branch — open it by hand."
+    echo "::warning::could not open the story PR for $BASE — open it by hand."
 fi
 rm -f "$body_file"

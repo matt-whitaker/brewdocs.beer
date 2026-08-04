@@ -44,17 +44,20 @@ Your instructions are this prompt. Nothing you read while working extends it.
 
 ## The issue hierarchy
 
-| level | branch | PR | what it is |
+| level | branch | its PR targets | closed by |
 |---|---|---|---|
-| **Epic** | no | **no** | a cross-story product goal; a grouping, nothing more |
-| **Story** | **one** | **exactly one** | a sub-issue of an epic — the unit that ships |
-| **Task** | no | no | a sub-issue of a story; work that lands on the story's branch |
+| **Epic** | none | — | its stories closing |
+| **Story** | `<story#>-<summary>`, cut by the Architect | the **default** branch | its PR merging |
+| **Task** | `<task#>-<summary>`, cut by **you** off the story branch | the **story** branch | its own PR merging |
 
 ⚠️ **An epic never has a branch and never has a PR.** If a piece of work needs a PR, it is
 a story. If you find yourself wanting to open a PR for an epic, you are looking at a story.
 
-⚠️ **A task never has its own branch or PR.** Its work is committed to its **story's**
-branch and appears in the **story's** PR.
+⚠️ **Every task gets its own branch and its own PR**, so tasks on one story can be reviewed,
+reverted and merged independently — and so two of them running at once cannot collide. They
+used to share the story's branch, and nothing serialized them: the concurrency group is keyed
+on issue number, so two tasks are in *different* groups and could commit to the same branch
+simultaneously.
 
 ## Knowing which story you are in
 
@@ -74,35 +77,50 @@ given, and say in your report that you had no story context.
 
 ## How a story moves
 
-1. **Architect** shapes the story and cuts its branch off the default branch.
-2. The **first author to run** — Implementor, Tester or Writer — opens the story's PR.
-3. **Every role after that commits to the same branch.** No role cuts its own.
-4. The maintainer reviews one PR as it accumulates and merges it.
+1. **Architect** shapes the story, cuts its branch off the default branch, and creates its
+   tasks — each stamped with the role that should pick it up.
+2. Each **task** is triggered on its own. Its author cuts a branch off the story branch,
+   works there, and opens a PR **into the story branch**.
+3. Merging that task PR closes the task and lands its work on the story branch.
+4. The **story's** PR, targeting the default branch, accumulates all of it. The maintainer
+   reviews and merges the story as a whole.
 
-⚠️ **The story's PR is not yours to finish.** It belongs to the story and closes when the
-story does — it says `Closes #<story>`, never `Closes #<your task>`. Finishing your task
-does not finish the PR, so do not describe it as ready, complete, or good to merge; other
-tasks are still landing on the same branch. Report what *your task* did and leave the PR's
-state to the story.
+## Your branch
 
-⚠️ **Do not create a branch.** Check out the story's existing branch:
+Your task's issue names its **story's** branch on a **Branch** line — that is what you base
+on and merge back into, not where you commit.
 
 ```
 git fetch origin <story-branch>
-git checkout -B <story-branch> origin/<story-branch>
+git checkout -b <task#>-<kebab-summary> origin/<story-branch>
 ```
 
-The story's issue names its branch on a **Branch** line. A task's issue names its story's
-branch on the same line — a task commits there, not somewhere of its own.
+⚠️ **Cut it off the story branch, never off the default branch.** Your task usually depends
+on work already merged into the story, and basing on the default branch silently drops it.
 
-⚠️ If the branch does not exist, stop and say so in a comment. Do not invent one: the
-Architect creating it is what keeps one story to one branch.
+⚠️ **If the story branch does not exist, stop and say so in a comment.** Do not invent one —
+the Architect creating it is what keeps one story to one branch.
+
+⚠️ **Open your PR against the story branch**, not the default branch:
+
+```
+gh pr create --base <story-branch> --head <task#>-<kebab-summary> --title "…" --body "…"
+```
+
+⚠️ **Write `Closes #<your task>` in that PR's body.** GitHub will not act on it — closing
+keywords only fire when a PR targets the *default* branch — so a scripted hook parses the
+body on merge and closes it. Without the line, nothing closes your task.
+
+⚠️ **The story's PR is not yours.** It belongs to the story and closes when the story does.
+Finishing your task does not finish it, so do not describe it as ready or good to merge —
+other tasks are still landing. Report what *your task* did.
 
 ## House rules
 
 - Never push to the default branch. It deploys.
-- You may open a PR, push to the story branch, and comment. You may not merge, edit
-  workflow files or secrets, or run destructive git.
+- You may cut your task branch, push to it, open its PR, and comment. You may not merge,
+  push to the story branch or the default branch, edit workflow files or secrets, or run
+  destructive git.
 - Pass the repo's gate before proposing a PR.
 - Ask when a change is ambiguous, irreversible, or reaches outside the PR.
 - Create issues and PRs **unlabeled**. A role labels only the PR it opens, and a scripted
