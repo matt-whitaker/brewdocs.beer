@@ -6,7 +6,7 @@ repo consumes it, and the repo-root `CLAUDE.md` for this repo's own application 
 **Purpose.** A portable Claude/GitHub role team: the prompts each role runs on, the scripted
 hooks around them, and the handoff contract between them. Consumed by pointing a workflow at
 these files; extended by a per-role overlay in the consuming repo.
-**Where.** `prompts/_shared.md` + `prompts/<role>.md`, `hooks/*.sh`, `schemas/handoff.json`.
+**Where.** `prompts/_shared.md` + `prompts/<role>.md`, `hooks/*.py`, `schemas/handoff.json`.
 **Invariants.** Nothing here names a consuming repo, its branches, its gate or its packages.
 Routing is a script, never a model. Every hook is deterministic and derives its input from
 state, not from something a model was asked to leave behind.
@@ -61,7 +61,7 @@ does not reach an in-flight story until the default branch is merged into it.
 
 ## Routing
 
-**A label on an issue is the front door.** Applying it starts a run, and `delegate.sh` reads
+**A label on an issue is the front door.** Applying it starts a run, and `delegate.py` reads
 the issue's state to pick the role. The same label named in a comment does the same. A
 `@claude/<role>` handle in a comment names the role outright and skips the inspection — the
 way to override a bad guess.
@@ -169,38 +169,38 @@ forgotten by a model that ran out of turns or simply skipped it.
 
 | hook | when | does |
 |---|---|---|
-| `acknowledge.sh` | the router job, first | reacts 👀 so the trigger is visibly received |
-| `delegate.sh` | the router job | picks the role from issue state — routing is scripted, not judged |
-| `stamp-role-label.sh` | pre, every role | stamps `@claude/<role>` on the triggering issue or PR |
-| `set-issue-status.sh` | pre, authors | sets the issue's board Status; the column is an input |
-| `file-sub-issues.sh` | post, Architect | parents stories to their epic, tasks to their story |
-| `finish-pr.sh` | post, authors | labels the PR and ensures it closes its issue |
-| `post-handoff.sh` | post, authors | posts the JSON handoff to the story's issue |
-| `log-to-story.sh` | post, Architect + authors + on merge | rewrites one comment on the story listing its tasks in trigger order |
-| `log-to-epic.sh` | post, authors | rewrites one rolling work-log comment on the epic |
-| `open-story-pr.sh` | **on merge** | opens the story's PR once a task has landed on its branch |
-| `close-merged-work.sh` | on merge | closes the PR's issues and files them on the board |
+| `acknowledge.py` | the router job, first | reacts 👀 so the trigger is visibly received |
+| `delegate.py` | the router job | picks the role from issue state — routing is scripted, not judged |
+| `stamp-role-label.py` | pre, every role | stamps `@claude/<role>` on the triggering issue or PR |
+| `set-issue-status.py` | pre, authors | sets the issue's board Status; the column is an input |
+| `file-sub-issues.py` | post, Architect | parents stories to their epic, tasks to their story |
+| `finish-pr.py` | post, authors | labels the PR and ensures it closes its issue |
+| `post-handoff.py` | post, authors | posts the JSON handoff to the story's issue |
+| `log-to-story.py` | post, Architect + authors + on merge | rewrites one comment on the story listing its tasks in trigger order |
+| `log-to-epic.py` | post, authors | rewrites one rolling work-log comment on the epic |
+| `open-story-pr.py` | **on merge** | opens the story's PR once a task has landed on its branch |
+| `close-merged-work.py` | on merge | closes the PR's issues and files them on the board |
 
 ⚠️ These were prompt instructions until a model skipped them. A scripted step costs no
 turns and cannot be forgotten.
 
 ### Traps each hook was written around
 
-- ⚠️ **`acknowledge.sh` reacts via `issues/comments/<id>`**, so hand it a comment id only for
+- ⚠️ **`acknowledge.py` reacts via `issues/comments/<id>`**, so hand it a comment id only for
   an issue comment. A *review* comment's id belongs to the **pulls** collection and would
   react to an unrelated comment. Empty falls back to the issue or PR itself.
-- ⚠️ **`delegate.sh` defaults a missing `Role:` stamp and says so.** Wrong is recoverable,
+- ⚠️ **`delegate.py` defaults a missing `Role:` stamp and says so.** Wrong is recoverable,
   silent is not — a run that quietly does nothing is indistinguishable from a broken workflow.
 - ⚠️ **The log hooks rewrite ONE comment each, never one per run.** An epic with ten tasks
   across three roles would otherwise bury itself in thirty comments. They are also derived
   entirely from GitHub state — no model writes any part of them, which is the only reason
   they can be trusted as a status board.
-- ⚠️ **`file-sub-issues.sh` cannot key on prose alone.** Its first version matched a branch
+- ⚠️ **`file-sub-issues.py` cannot key on prose alone.** Its first version matched a branch
   line plus an `epic #N` reference, and adopted a meta-issue that quoted the convention as an
   example. Checking the author is a bot is what makes it sound — with the accepted cost that a
   hand-written sub-issue is never auto-parented.
 - ⚠️ **A role labels only what it opens.** The stamp hook marks the triggering issue or PR;
-  `finish-pr.sh` labels the PR that run created. Nothing labels someone else's work.
+  `finish-pr.py` labels the PR that run created. Nothing labels someone else's work.
 - ⚠️ **`Closes #<issue>` is both a prompt instruction and a hook.** The model writing it puts
   the link where a human reads it; the hook is the net, because a missing keyword loses the
   close with nothing to signal it.
@@ -213,6 +213,9 @@ turns and cannot be forgotten.
 input from something the model must produce for another reason, or from state it cannot
 avoid creating — never from a block it was merely asked to leave behind.
 
-⚠️ **`gh api` prints its error body to stdout**, so `--jq` never runs and a 404 lands in the
-variable. The parent endpoint 404s for anything unparented, which is most issues. Filter
-captures to digits and read anything else as absent.
+⚠️ **`gh api` prints its error body to STDOUT**, so a 404 is indistinguishable from data to
+anything that only checks whether output arrived. The parent endpoint 404s for anything
+unparented, which is most issues, and `compare` 404s for a deleted branch. `team.gh()`
+returns `None` on a non-zero exit and `gh_json()` parses only what succeeded, so an error
+body can no longer reach a caller. ⚠️ Do not add a hook that runs `gh` any other way — this
+trap survived being documented and was written again anyway, twice.

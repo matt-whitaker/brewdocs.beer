@@ -11,8 +11,8 @@ does, it belongs in the consumer's overlay.
 
 - [`prompts/`](prompts/) — [`_shared.md`](prompts/_shared.md) for every role, plus one file
   per role. A role's prompt is the shared file, then its own, then the consumer's equivalents.
-- [`hooks/`](hooks/) — the scripted steps that run around each model step. Each explains
-  itself in its own header.
+- [`hooks/`](hooks/) — the scripted steps that run around each model step, in Python. Each
+  explains itself in its own docstring; [`team.py`](hooks/team.py) holds what they share.
 - [`schemas/handoff.json`](schemas/handoff.json) — the contract one author passes to the next.
 
 ## The model

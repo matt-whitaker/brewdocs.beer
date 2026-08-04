@@ -159,7 +159,7 @@ editing its markdown, not hunting a block scalar; the workflow went 1102 lines t
     maintainer's only window into a run and where handoffs land.
 
 **Routing.** The **`@claude` label** is the front door: applying it to an issue starts a run,
-and `delegate.sh` reads the issue's state to pick the role. A bare `@claude` in a comment does
+and `delegate.py` reads the issue's state to pick the role. A bare `@claude` in a comment does
 the same. A `@claude/<role>` handle in a comment names the role outright and skips the
 inspection (rule 1) — still the way to override a bad guess.
 
@@ -206,7 +206,7 @@ add, so remove-and-re-add re-runs the delegator against current issue state.
 
 ⚠️ **A handle is never blocked by the router.** Each role's `if:` is
 `always() && (router picked me || the comment names me)`, so an explicit handle still routes if
-`delegate.sh` fails outright. Only a *skipped* delegate skips the roles.
+`delegate.py` fails outright. Only a *skipped* delegate skips the roles.
 
 ⚠️ **`trigger_phrase` must be the role's exact handle, `@claude/<role>`.** It does **not** gate
 anything for us — `checkContainsTrigger()` returns early on `if (prompt) return true` and we
@@ -253,7 +253,7 @@ whole session without anyone noticing.
 
 What is BrewDocs-specific:
 
-- ⚠️ **`PROJECTS_TOKEN` appears in `close-merged-work.sh` and `set-issue-status.sh`, and
+- ⚠️ **`PROJECTS_TOKEN` appears in `close-merged-work.py` and `set-issue-status.py`, and
   nowhere else.** It is a long-lived classic PAT needing `project` **and** `read:org` (a
   fine-grained token cannot reach user-owned Projects v2), covering every project the
   maintainer owns. It is safe only because both are *scripted* steps and step env is
@@ -280,7 +280,7 @@ applies it.
 - **Overlays** live in `.github/agent-prompts/` — `_shared.md` plus an optional
   `<role>.md`, appended to the package's prompt of the same name.
 - **Board.** Issues and PRs go on project #4 (`gh project item-add 4 --owner "@me"`);
-  `set-issue-status.sh` and `close-merged-work.sh` move them, and are the only steps holding
+  `set-issue-status.py` and `close-merged-work.py` move them, and are the only steps holding
   `PROJECTS_TOKEN`.
 - **The front door is the `@claude` label.** ⚠️ It and every `@claude/<role>` label must
   exist in the repo — the front door triggers nothing if absent, and a missing role label

@@ -13,3 +13,5 @@ dist
 .nx/cache
 .nx/workspace-data
 .nx/migrate-runs
+# python bytecode from packages/claude-team/hooks
+__pycache__/

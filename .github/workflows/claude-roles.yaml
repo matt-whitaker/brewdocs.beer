@@ -172,8 +172,8 @@ jobs:
       - name: Stash the agent hooks
         run: |
           mkdir -p "$RUNNER_TEMP/agent-bin"
-          cp packages/claude-team/hooks/*.sh "$RUNNER_TEMP/agent-bin/"
-          chmod +x "$RUNNER_TEMP/agent-bin"/*.sh
+          cp packages/claude-team/hooks/*.py "$RUNNER_TEMP/agent-bin/"
+          chmod +x "$RUNNER_TEMP/agent-bin"/*.py
       # First real step of every run: the 👀 lands before anything has thought about it.
       - name: Acknowledge the trigger
         env:
@@ -185,7 +185,7 @@ jobs:
           # here reacts to an unrelated comment or 404s. Empty falls back to the PR itself,
           # which is an issue as far as the reactions API is concerned.
           COMMENT_ID: ${{ github.event_name == 'issue_comment' && github.event.comment.id || '' }}
-        run: "$RUNNER_TEMP/agent-bin/acknowledge.sh"
+        run: "$RUNNER_TEMP/agent-bin/acknowledge.py"
       - id: route
         name: Pick the role
         env:
@@ -198,7 +198,7 @@ jobs:
           # `issues` never fires for a PR (labelling one is a `pull_request` event), so the
           # only PR path in is a comment or review.
           IS_PR: ${{ (github.event.issue.pull_request || github.event_name == 'pull_request_review_comment' || github.event_name == 'pull_request_review') && 'true' || 'false' }}
-        run: "$RUNNER_TEMP/agent-bin/delegate.sh"
+        run: "$RUNNER_TEMP/agent-bin/delegate.py"
 
   # ── Architect ────────────────────────────────────────────────────────────────
   # Shapes work so the others can act on it. On an epic it defines the goal and cuts
@@ -234,8 +234,8 @@ jobs:
       - name: Stash the agent hooks
         run: |
           mkdir -p "$RUNNER_TEMP/agent-bin"
-          cp packages/claude-team/hooks/*.sh "$RUNNER_TEMP/agent-bin/"
-          chmod +x "$RUNNER_TEMP/agent-bin"/*.sh
+          cp packages/claude-team/hooks/*.py "$RUNNER_TEMP/agent-bin/"
+          chmod +x "$RUNNER_TEMP/agent-bin"/*.py
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -246,7 +246,7 @@ jobs:
           ROLE: architect
           REPO: ${{ github.repository }}
           NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
-        run: "$RUNNER_TEMP/agent-bin/stamp-role-label.sh"
+        run: "$RUNNER_TEMP/agent-bin/stamp-role-label.py"
       - uses: anthropics/claude-code-action@v1
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -277,7 +277,7 @@ jobs:
           REPO: ${{ github.repository }}
           # the Architect is triggered ON the story, so the story is the issue itself
           STORY: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
-        run: "$RUNNER_TEMP/agent-bin/log-to-story.sh"
+        run: "$RUNNER_TEMP/agent-bin/log-to-story.py"
       - name: File the story's sub-issues
         # ⚠️ `issues` must be here as well as `issue_comment`. The label is now the primary
         # way an Architect run starts, and keyed to comments alone this hook — the thing that
@@ -291,7 +291,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           ISSUE: ${{ github.event.issue.number }}
-        run: "$RUNNER_TEMP/agent-bin/file-sub-issues.sh"
+        run: "$RUNNER_TEMP/agent-bin/file-sub-issues.py"
   # ── Authors: Implementor | Designer | Tester | Writer ──────────────────────────
   # The four authoring roles as gated steps in one job. ⚠️ EXACTLY ONE RUNS PER TRIGGER —
   # `delegate.sh` emits a single role, and each step gates on it. They share a job to share
@@ -381,8 +381,8 @@ jobs:
       - name: Stash the agent hooks
         run: |
           mkdir -p "$RUNNER_TEMP/agent-bin"
-          cp packages/claude-team/hooks/*.sh "$RUNNER_TEMP/agent-bin/"
-          chmod +x "$RUNNER_TEMP/agent-bin"/*.sh
+          cp packages/claude-team/hooks/*.py "$RUNNER_TEMP/agent-bin/"
+          chmod +x "$RUNNER_TEMP/agent-bin"/*.py
 
       # The handoff contract lives in packages/claude-team so a second repo gets it
       # unchanged, but `--json-schema` takes INLINE JSON, not a path — so the file is
@@ -454,7 +454,7 @@ jobs:
           PROJECT_OWNER: "@me"
           PROJECT_NUMBER: "4"
           STATUS: "In Progress"
-        run: "$RUNNER_TEMP/agent-bin/set-issue-status.sh"
+        run: "$RUNNER_TEMP/agent-bin/set-issue-status.py"
 
       # ── Implementor ──
       # The main engineer. Executes issues and handles follow-up engineering (bug fixes,
@@ -468,7 +468,7 @@ jobs:
           ROLE: implementor
           REPO: ${{ github.repository }}
           NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
-        run: "$RUNNER_TEMP/agent-bin/stamp-role-label.sh"
+        run: "$RUNNER_TEMP/agent-bin/stamp-role-label.py"
       - name: Implementor
         id: implementor
         if: contains(steps.roles.outputs.list, 'implementor')
@@ -524,7 +524,7 @@ jobs:
           ROLE: designer
           REPO: ${{ github.repository }}
           NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
-        run: "$RUNNER_TEMP/agent-bin/stamp-role-label.sh"
+        run: "$RUNNER_TEMP/agent-bin/stamp-role-label.py"
       - name: Designer
         id: designer
         if: contains(steps.roles.outputs.list, 'designer')
@@ -568,7 +568,7 @@ jobs:
           ROLE: tester
           REPO: ${{ github.repository }}
           NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
-        run: "$RUNNER_TEMP/agent-bin/stamp-role-label.sh"
+        run: "$RUNNER_TEMP/agent-bin/stamp-role-label.py"
       - name: Tester
         if: contains(steps.roles.outputs.list, 'tester')
         uses: anthropics/claude-code-action@v1
@@ -615,7 +615,7 @@ jobs:
           ROLE: writer
           REPO: ${{ github.repository }}
           NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
-        run: "$RUNNER_TEMP/agent-bin/stamp-role-label.sh"
+        run: "$RUNNER_TEMP/agent-bin/stamp-role-label.py"
       - name: Writer
         if: contains(steps.roles.outputs.list, 'writer')
         uses: anthropics/claude-code-action@v1
@@ -655,7 +655,7 @@ jobs:
           ROLES: ${{ steps.roles.outputs.list }}
           REPO: ${{ github.repository }}
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
-        run: "$RUNNER_TEMP/agent-bin/finish-pr.sh"
+        run: "$RUNNER_TEMP/agent-bin/finish-pr.py"
       - name: Persist the author's handoff
         if: always()
         env:
@@ -670,14 +670,14 @@ jobs:
           # takes the one that produced output. Empty when neither ran or the step failed,
           # which the hook treats as "nothing to post" rather than an error.
           HANDOFF: ${{ steps.implementor.outputs.structured_output || steps.designer.outputs.structured_output }}
-        run: "$RUNNER_TEMP/agent-bin/post-handoff.sh"
+        run: "$RUNNER_TEMP/agent-bin/post-handoff.py"
       - name: Update the story's task order
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           STORY: ${{ needs.delegate.outputs.story }}
-        run: "$RUNNER_TEMP/agent-bin/log-to-story.sh"
+        run: "$RUNNER_TEMP/agent-bin/log-to-story.py"
       - name: Update the epic's work log
         if: always()
         env:
@@ -685,7 +685,7 @@ jobs:
           REPO: ${{ github.repository }}
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
           ROLES: ${{ steps.roles.outputs.list }}
-        run: "$RUNNER_TEMP/agent-bin/log-to-epic.sh"
+        run: "$RUNNER_TEMP/agent-bin/log-to-epic.py"
 
   # ── Security ───────────────────────────────────────────────────────────────────
   # Reviews what just landed on mainline and files issues for what it finds. Runs on
@@ -812,8 +812,8 @@ jobs:
       - name: Stash the agent hooks
         run: |
           mkdir -p "$RUNNER_TEMP/agent-bin"
-          cp packages/claude-team/hooks/*.sh "$RUNNER_TEMP/agent-bin/"
-          chmod +x "$RUNNER_TEMP/agent-bin"/*.sh
+          cp packages/claude-team/hooks/*.py "$RUNNER_TEMP/agent-bin/"
+          chmod +x "$RUNNER_TEMP/agent-bin"/*.py
       - name: Close and file the PR's issues
         env:
           # Two tokens on purpose. GITHUB_TOKEN reads the PR and closes issues;
@@ -825,7 +825,7 @@ jobs:
           REPO: ${{ github.repository }}
           PROJECT_OWNER: "@me"
           PROJECT_NUMBER: "4"
-        run: "$RUNNER_TEMP/agent-bin/close-merged-work.sh"
+        run: "$RUNNER_TEMP/agent-bin/close-merged-work.py"
       # ⚠️ The story's PR opens HERE, not in an authoring run. Under sub-branching the story
       # branch is empty until a task PR merges into it, and GitHub will not open a PR with no
       # commits between base and head — so the first task merge is the earliest moment it can
@@ -842,11 +842,11 @@ jobs:
         run: |
           STORY=$(printf '%s' "$BASE" | grep -oE '^[0-9]+' || true)
           export STORY
-          "$RUNNER_TEMP/agent-bin/log-to-story.sh"
+          "$RUNNER_TEMP/agent-bin/log-to-story.py"
       - name: Open the story PR
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           BASE: ${{ github.event.pull_request.base.ref }}
-        run: "$RUNNER_TEMP/agent-bin/open-story-pr.sh"
+        run: "$RUNNER_TEMP/agent-bin/open-story-pr.py"
