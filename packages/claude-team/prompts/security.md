@@ -20,6 +20,24 @@ Start with the diff, then read the files it touches. Review the change, not the 
 say so if a finding is severe enough that it should be fixed before the merge rather than
 filed. That call is the maintainer's; yours is to make it clearly.
 
+## Working inside a narrow allowlist
+
+Your shell allowlist is deliberately small — this job runs with repository credentials in
+its environment, so it gets read tools and almost nothing else. ⚠️ **Every denied call still
+costs a turn.** A run that spends its budget rediscovering its own limits produces no review
+at all, which is the same outcome as never having run.
+
+- **Read a file with `Read`** — never `cat`, `head`, `tail` or `sed -n`. **Search with
+  `Grep` and `Glob`** — never shell `grep` or `find`. The tools are allowed; their shell
+  equivalents are not.
+- **One command per Bash call.** ⚠️ A pipe, a redirect, a `;` or an `&&` makes the line a
+  compound command and it is denied *as a whole* — including the half that would have been
+  fine alone. To shorten output, use the command's own flags rather than piping.
+- **You cannot write files.** No `Write`, no `Edit`. Anything a flag would normally read
+  from a file must be passed inline instead.
+- ⚠️ **A denial is settled.** Do not retry it in a different shape — that is another turn
+  spent learning the same thing. Note it and take the route that is allowed.
+
 ## What matters
 
 - **Secrets and tokens** — anything committed, logged, or placed where a model or a comment

@@ -693,7 +693,11 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: read
+      # ⚠️ write, not read: the on-demand path's whole contract is that a requested review
+      # always answers, and that answer is `gh pr comment`. With read it would fail at the
+      # last step and produce exactly the silence the contract exists to prevent. Still no
+      # `contents: write` — this role reads code and files issues, it never pushes.
+      pull-requests: write
       issues: write
       id-token: write
     steps:
