@@ -72,7 +72,10 @@ resolve_pr_story() {
 }
 
 # ---- 1. an explicit handle wins, with no further inspection
-for r in architect implementor tester writer designer; do
+# ⚠️ `security` is here but nowhere else: it has no `Role:` stamp and no state the router
+# could infer it from. It runs automatically on merge, and this handle is the only way to
+# ask for one *before* merging.
+for r in architect implementor tester writer designer security; do
     case "${COMMENT_BODY:-}" in
         *"@claude/$r"*)
             ROLES="$r"; REASON="handle @claude/$r in the comment"

@@ -175,9 +175,17 @@ inspection (rule 1) — still the way to override a bad guess.
   reach across. Implementor and Designer never both run for one task.
 - `@claude/tester` — issue or PR. Owns `packages/e2e`.
 - `@claude/writer` — issue or PR. Owns every `CLAUDE.md` and `.claude/skills/`.
-- **Security** — no handle. Runs on merge to `mainline` and files issues, labelled
-  `@claude/security`. ⚠️ The one exception to "create issues unlabeled": it marks
-  provenance so a finding stands out in a queue.
+- `@claude/security` — PR. Runs **automatically on every merge** to `mainline`, and the
+  handle asks for the same review *before* merging — the only role with both. It files
+  issues labelled `@claude/security`. ⚠️ The one exception to "create issues unlabeled": it
+  marks provenance so a finding stands out in a queue.
+  ⚠️ `$TRIGGER` tells it which it is, and they end differently: a clean **merge** review
+  posts nothing (a routine "no problems found" on every merge is noise), while a clean
+  **requested** review always answers — silence is a non-answer to a direct question and
+  reads identically to a failed run.
+  ⚠️ Its job carries `always()` on top of `needs: delegate`, because `delegate` skips on
+  `pull_request` events; without it, adding the handle would have silently removed the
+  automatic review.
 
 ⚠️ `@claude` **and** every `@claude/<role>` label must exist in the repo — `@claude` or nothing
 triggers, and a missing role label makes the stamp hook warn and skip.
