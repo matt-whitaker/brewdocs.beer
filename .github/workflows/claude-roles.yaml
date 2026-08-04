@@ -742,15 +742,26 @@ jobs:
           # unmerged, unreviewed diffs, so its input is written by whoever authored the
           # change it is judging. `Bash(gh:*)` plus `pull-requests: write` would have let a
           # successful prompt injection run `gh pr review --approve` or `gh pr edit` on the
-          # very PR the maintainer asked it to distrust. This list is exactly what
-          # security.md's playbook uses and nothing else — `gh api` is deliberately absent,
-          # since it reaches every endpoint the token can.
+          # very PR the maintainer asked it to distrust.
+          #
+          # ⚠️ EVERY ENTRY HAS NO MUTATING FORM. That is the rule this list is built on, and
+          # why `git branch` and `git remote` are absent despite being useful for
+          # orientation. Deliberately denied, and the whole point of #492: `gh pr review`,
+          # `gh pr edit`, `gh pr merge`, `gh pr close`, `gh issue close`, `gh issue edit`,
+          # and `gh api` — which reaches every endpoint the token has and would undo the
+          # rest of this list on its own.
+          #
+          # ⚠️ TOO NARROW STARVES IT, and that failure is invisible (#494). Cut to only the
+          # playbook's own commands, the first run spent 5 of 6 turns denied and reported
+          # nothing — and on the merge path a clean review is silent, so "found nothing" and
+          # "could do nothing" look identical from outside. The read-only orientation
+          # commands a review opens with are as load-bearing as the ones that do the work.
           # ⚠️ It cannot go lower than the action's base set: `Bash(git add|commit|rm:*)`
           # and `git-push.sh` union in and cannot be removed. `contents: read` is what
           # actually stops a push, not the allowlist.
           claude_args: |
             --model sonnet
-            --allowedTools "Read,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*),Bash(gh issue create:*),Bash(gh project item-add:*),Bash(git log:*),Bash(git show:*),Bash(git diff:*)"
+            --allowedTools "Read,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*),Bash(gh pr checks:*),Bash(gh pr comment:*),Bash(gh issue create:*),Bash(gh issue view:*),Bash(gh issue list:*),Bash(gh repo view:*),Bash(gh project item-add:*),Bash(git log:*),Bash(git show:*),Bash(git diff:*),Bash(git status:*),Bash(git rev-parse:*),Bash(git ls-files:*),Bash(git blame:*)"
             --max-turns 40
 
   # ── Merge housekeeping ─────────────────────────────────────────────────────────
