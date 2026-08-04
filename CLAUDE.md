@@ -244,126 +244,30 @@ chained run's comment says `@claude/implementor`).
 `issue_comment` both always run the workflow from the default branch, so a PR branch's version
 is never the one that fires.
 
-**Backlog work is scripted, never prompted.** Hooks in `packages/claude-team/hooks/` run around each
-model step.
+**The mechanics are in the package.** Hooks and the traps each was written around, the
+handoff contract, labels-as-record, routing and its loop guard all live in
+[`packages/claude-team/README.md`](packages/claude-team/README.md). ⚠️ Do not restate them
+here — two copies drift, and they did: this file documented a sub-issue expansion that #503
+had already removed, and the package README described the pre-#503 branching model for a
+whole session without anyone noticing.
 
-- `stamp-role-label.sh` — pre, every role. Stamps `@claude/<role>` on the issue or PR.
-- `file-sub-issues.sh` — post, Architect. Parents stories to their epic and tasks to their
-  story, and copies its
-  milestone down. **Discovers** them — a bot-authored issue, numbered above the epic, whose
-  body references it as `epic #N` or `story #N`. Honours an old `owner-manifest` comment
-  too, unioned.
-- `acknowledge.sh` — the **delegate** job, first step of every run. Reacts 👀 so a trigger is
-  visibly received before any model runs. ⚠️ It reacts via `issues/comments/<id>`, so it is
-  handed a `COMMENT_ID` only for `issue_comment` — a review comment's id belongs to the
-  *pulls* collection and would react to an unrelated comment. Empty falls back to the issue
-  or PR itself.
-- `delegate.sh` — the **delegate** job, and the gate every role hangs off. Picks the role(s)
-  from issue state and emits them; routing is a shell script, never a model. ⚠️ A missing
-  `Role:` stamp defaults to Implementor and says so — wrong is recoverable, silent is not.
-- `set-issue-status.sh` — pre, Implementor and Tester. Moves the triggering issue to
-  **In Progress** on project #4, so the board reflects reality when work starts rather than
-  only when it merges. Skips a closed issue, so a re-run never resurrects finished work.
-- `finish-pr.sh` — post, Implementor / Tester / Writer. Labels the PR the run opened with
-  its role, and appends `Closes #<issue>` if the model didn't write one.
-- `open-story-pr.sh` — post, every authoring role. Opens the story's PR when its branch has
-  none and has commits. Reads the branch from the issue's **Branch** line.
-- `log-to-epic.sh` — post, authors job. Rewrites **one** rolling work-log comment on the
-  epic: what is open across every story, what just ran, and **what to pick up next** named
-  with its `Role:` stamp so the maintainer can assign without opening anything.
-  ⚠️ Entirely derived from GitHub state — no model writes any part of it, which is the
-  whole reason it can be trusted as a status board. ⚠️ One comment, rewritten, not one per
-  run: an epic with ten tasks × three roles would otherwise bury itself in thirty comments.
-- `close-merged-work.sh` — on merge, for **every** merged PR, not just an agent's. It was
-  gated on a `@claude/*` label or a Bot author and so skipped the maintainer's own PRs,
-  which are unlabeled by convention — eight issues closed via GitHub's native keywords
-  while the board was never updated. Nothing it does needs the PR to be an agent's, and it
-  exits early on one that closes no issue. Closes the PR's issues and files them on the
-  board.
-  ⚠️ It also closes a closed issue's **open sub-issues**: `open-story-pr.sh` lists the
-  tasks with closing keywords, but that body is written once when the PR opens, so a task
-  cut afterwards is nowhere in it.
+What is BrewDocs-specific:
 
-⚠️ **`gh api` prints its error body to STDOUT, so `--jq` never runs and a 404 lands in your
-variable.** `repos/…/issues/<n>/parent` 404s for anything unparented — most issues — so an
-unguarded capture returns `{"message":"No parent issue found",…}` and the caller treats that
-blob as an issue number. `delegate.sh` and `log-to-epic.sh` both filter captures to digits
-and read anything else as absent. Any new hook reading that endpoint must do the same.
+- ⚠️ **`PROJECTS_TOKEN` appears in `close-merged-work.sh` and `set-issue-status.sh`, and
+  nowhere else.** It is a long-lived classic PAT needing `project` **and** `read:org` (a
+  fine-grained token cannot reach user-owned Projects v2), covering every project the
+  maintainer owns. It is safe only because both are *scripted* steps and step env is
+  per-step — the model step in the same job cannot read it. ⚠️ Never add it to a job whose
+  model step holds `Bash(gh:*)`.
+- The board is **project #4**: `gh project item-add 4 --owner "@me" --url <url>`.
+- The handoff schema is
+  [`packages/claude-team/schemas/handoff.json`](packages/claude-team/schemas/handoff.json);
+  a workflow step compacts and inlines it, and **fails the run** if the file ever gains a
+  single quote.
+- ⚠️ **`@claude/security` on issues Security files is this repo's one exception to "create
+  issues unlabeled"** — it marks provenance so a finding stands out in a queue. Every other
+  label is applied by a hook to something a role opened.
 
-⚠️ These were prompt instructions until a model skipped them. A label trail is worthless if
-a run can forget to stamp it, and the merge hook is the only backlog behaviour that worked
-on its first attempt — everything model-driven took three.
-⚠️ **A scripted hook fed by model-written input is still model-driven.** Sub-issue filing
-read a machine-readable manifest the decomposing role was told to leave; across nine epics it
-wrote one exactly once, and the hook logged `No owner-manifest — nothing to file` and did
-nothing. Moving the instruction from "call the API" to "write a JSON block" only moved
-where it got skipped. Derive the input from something the model must produce **for another
-reason** — here the **Branch** line, which the story PR already depends on.
-⚠️ **A prose marker cannot be the only marker in a repo whose issues quote its own
-conventions.** The first version matched a branch line plus `epic #N` and adopted a
-meta-issue that quoted the convention verbatim as an example. The author check
-(`.user.type == "Bot"`) is what makes it sound — with the consequence, accepted, that a
-hand-written sub-issue is never auto-parented.
-⚠️ `PROJECTS_TOKEN` appears only in `close-merged-work.sh` and `set-issue-status.sh`, both scripted steps. Step env is per-step, so a model step in the same job cannot read it. It is a long-lived
-classic PAT (`project` + `read:org`) covering every project the maintainer owns, secret
-masking covers logs only, and a role holding `Bash(gh:*)` could publish it in a comment.
-
-**Labels are a record, not a route.** Each role stamps its own as it starts, so the labels
-read as "these agents have been here". The maintainer clears them as a check-off.
-
-- `stamp-role-label.sh` stamps the issue or PR that **triggered** the run.
-- A role that **opens** a PR labels it itself (`gh pr create --label "@claude/<role>"`) — the
-  triggering stamp cannot reach a PR that did not exist yet.
-- ⚠️ Two carve-outs from "create things unlabeled": a role's PR is labelled by
-  `finish-pr.sh`, and Security labels the issues it files. Nothing else, and never
-  someone else's.
-- ⚠️ `Closes #<issue>` stays a prompt instruction *and* a hook. The model writing it puts
-  the link where a human reads it; the hook is the net, because a missing keyword loses the
-  close and the board move with nothing to signal it.
-
-**The handoff between authors is a JSON contract**, and it travels by comment. The author's
-step carries `--json-schema`, so its final message must match
-[`packages/claude-team/schemas/handoff.json`](packages/claude-team/schemas/handoff.json) —
-`testingNotes` for the Tester, `docsCandidates` for the Writer. The action exposes it as
-`structured_output`, and `post-handoff.sh` posts it to the story's PR as a marked comment,
-one per task, updated rather than duplicated on a re-run.
-
-- ⚠️ **The transport was the broken half, not the schema** (#500). It used to be appended to
-  the Tester's and Writer's prompts from the same job — but `delegate.sh` emits ONE role, so
-  those steps never co-fired and no consumer ever saw it. #475 and #476 both closed on
-  criteria that were never met. A comment survives the run; a step output does not.
-- ⚠️ **Deterministic at both ends:** the schema forces production, the hook forces delivery.
-  That is what separates it from `owner-manifest`, which asked a model to leave a
-  machine-readable block and got one across nine epics exactly once.
-- **Tester and Writer are cut per story**, as tasks ordered after the authoring ones, so
-  tests and docs land in the story's PR beside the code. ⚠️ An epic-wide Writer was tried
-  and dropped: the merge-conflict argument for it does not hold here, because stories merge
-  one at a time, so a later story already carries the previous one's docs. Deferring would
-  only put the explanation further from the change.
-
-- ⚠️ **Both keys are required, and `[]` is a real answer** — "I looked, there is nothing".
-  A consumer that cannot tell that from "forgot" is the exact failure that killed
-  `owner-manifest`: prose sections a later role has to find and parse are optional in
-  practice. A schema is not.
-- ⚠️ **An empty/absent block means no Implementor ran** (a Tester-only trigger, or its step
-  failed) — different again from `[]`. All three prompts spell out the three cases.
-- ⚠️ **The schema lives in `packages/claude-team`, but `--json-schema` takes inline JSON,
-  not a path.** A workflow step compacts the file with `jq -c` and injects it, the same way
-  `load-prompt` carries prompts. That step **fails the run** if the file contains a single
-  quote, since the value is wrapped in single quotes inside `claude_args` — and
-  `claude_args` is parsed line by line, so it must also stay one line.
-- ⚠️ `docsCandidates[].file` is a free string, never an enum of this repo's paths — the
-  roles are portable and must not encode one repository's layout.
-- ⚠️ A candidate is a proposal, not an order; arriving as structured data changes nothing
-  about that. The files only stay useful if the Writer says no to what restates the diff or
-  goes stale within a release, and rejecting every candidate stays a correct outcome.
-- `why` is the field that decides an entry — no real cost behind it, no entry.
-- Documentation is split out because `CLAUDE.md` was the biggest single source of merge
-  conflicts: every role edited it, so parallel branches collided on prose neither was
-  really working on. Testing is split out because an engineer finishing a feature writes
-  the test that passes, and this repo's actual failure mode — a save that throws inside a
-  fire-and-forget call while lint, tsc and build stay green — is only caught by a test
-  written to distrust the change.
 
 **Epic → story → task.** ⚠️ **The model itself lives in
 [`packages/claude-team/README.md`](packages/claude-team/README.md)** — the hierarchy, how a

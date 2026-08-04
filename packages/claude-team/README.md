@@ -93,6 +93,12 @@ only the Architect can cut it in two.
 ⚠️ **The Tester and Writer are tasks the Architect cuts**, ordered after the authoring ones.
 No role chains off another — nothing runs that a maintainer did not trigger.
 
+⚠️ **Per story, not per epic** — for the Writer too. An epic-wide documentation pass sounds
+cheaper, and its usual justification is that one branch touching the docs avoids conflicts.
+That only holds if stories land in parallel; where they merge one at a time, a later story
+already carries the previous one's docs, and deferring only moves the explanation further
+from the change it explains.
+
 ⚠️ **Trigger order is derived, never stamped.** Tasks sort by `(phase, issue number)`: phase
 from the `Role:` stamp — authors, then tests, then docs — and number within a phase, because
 the Architect creates them in the order it intends. A task is ready once everything before it
@@ -115,6 +121,22 @@ one comment per task; the Tester and Writer read it there.
   forces delivery. Neither is a model instruction. Asking a model to leave a
   machine-readable block for a later role is the version that fails.
 - A candidate is a proposal, never an order. Rejecting all of them is a correct outcome.
+- ⚠️ **Three states, not two.** Entries mean the author found something; `[]` means it looked
+  and found nothing; **no handoff comment at all** means no author ran, or its run failed
+  before posting. A consumer that collapses the last two will treat a failed run as a clean
+  one.
+- `docsCandidates[].file` is a **free string**, never an enum of a repo's paths — these roles
+  are portable and must not encode one repository's layout.
+
+⚠️ **The transport is the half that breaks, not the schema.** It was first appended to the
+consuming roles' prompts from the same job — which only works if those roles run in that job.
+They do not, so nothing ever received it and the feature shipped dead. A comment outlives its
+run; a step output does not.
+
+⚠️ **`--json-schema` takes inline JSON, not a path.** The schema is a file in this package, so
+a workflow step has to compact it to one line and inject it. Two hazards worth asserting
+rather than discovering: the value is wrapped in single quotes, so the file must contain none,
+and the argument list is parsed line by line, so it must stay on one line.
 
 ## Prompt composition
 
@@ -158,6 +180,31 @@ forgotten by a model that ran out of turns or simply skipped it.
 
 ⚠️ These were prompt instructions until a model skipped them. A scripted step costs no
 turns and cannot be forgotten.
+
+### Traps each hook was written around
+
+- ⚠️ **`acknowledge.sh` reacts via `issues/comments/<id>`**, so hand it a comment id only for
+  an issue comment. A *review* comment's id belongs to the **pulls** collection and would
+  react to an unrelated comment. Empty falls back to the issue or PR itself.
+- ⚠️ **`delegate.sh` defaults a missing `Role:` stamp and says so.** Wrong is recoverable,
+  silent is not — a run that quietly does nothing is indistinguishable from a broken workflow.
+- ⚠️ **The log hooks rewrite ONE comment each, never one per run.** An epic with ten tasks
+  across three roles would otherwise bury itself in thirty comments. They are also derived
+  entirely from GitHub state — no model writes any part of them, which is the only reason
+  they can be trusted as a status board.
+- ⚠️ **`file-sub-issues.sh` cannot key on prose alone.** Its first version matched a branch
+  line plus an `epic #N` reference, and adopted a meta-issue that quoted the convention as an
+  example. Checking the author is a bot is what makes it sound — with the accepted cost that a
+  hand-written sub-issue is never auto-parented.
+- ⚠️ **A role labels only what it opens.** The stamp hook marks the triggering issue or PR;
+  `finish-pr.sh` labels the PR that run created. Nothing labels someone else's work.
+- ⚠️ **`Closes #<issue>` is both a prompt instruction and a hook.** The model writing it puts
+  the link where a human reads it; the hook is the net, because a missing keyword loses the
+  close with nothing to signal it.
+- ⚠️ **Keep long-lived credentials out of any job a model step shares** unless the workflow
+  puts them in *step* env. Step env is per-step, so a scripted step can hold a token the
+  model step beside it cannot read. Secret masking covers logs only — not an API payload a
+  model could write.
 
 ⚠️ **A scripted hook fed by model-written input is still model-driven.** Derive a hook's
 input from something the model must produce for another reason, or from state it cannot
