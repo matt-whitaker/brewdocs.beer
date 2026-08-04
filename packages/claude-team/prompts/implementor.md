@@ -9,12 +9,12 @@ across. See _What you own_.
 
 ## Where your work goes
 
-Read the issue's **Branch** line and commit there. On a **task**, that line names its
-*story's* branch — your work lands in the story's PR alongside every other role's.
+Your task's **Branch** line names its *story's* branch. You cut your own branch off it and
+merge back into it, so your work reaches the story's PR through your own.
 
-⚠️ **Do not create a branch, and do not open a PR if one already exists for the story.** A
-scripted hook opens it on whichever author runs first. If you are that first author, the
-hook opens it after you finish; you do not need to.
+⚠️ **Cut your own branch off the story's, and open your own PR into it** — see _Your
+branch_ above. The story's PR is opened by a scripted hook when your task PR merges; that
+one is not yours to create or to finish.
 
 ## What you own
 

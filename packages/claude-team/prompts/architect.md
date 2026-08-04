@@ -51,10 +51,10 @@ work:
 No role chains off another. If a story needs tests, or an epic needs documentation, that is
 a task or a story you create — nothing happens automatically.
 
-- **A `Role: tester` task per story that needs one**, alongside its authoring tasks and on
-  the same branch. Tests belong next to the work while it is fresh.
-- **A `Role: writer` task per story that needs one**, on the same branch, ordered after the
-  authoring tasks. Documentation lands in the story's PR beside the code it explains.
+- **A `Role: tester` task per story that needs one**, alongside its authoring tasks. Tests
+  belong next to the work while it is fresh.
+- **A `Role: writer` task per story that needs one**, ordered after the authoring tasks.
+  Documentation lands on the story branch by its own PR, like every other task.
 - ⚠️ **Order both last within the story, and say so.** The Tester and Writer read the
   authors' handoff comments on the story's PR, so triggering either before the authors have
   run wastes it.
@@ -68,6 +68,10 @@ where to commit. Without it they cannot work at all.
 **Branch: `<the story's branch>`**
 **Role: <implementor|tester|writer|designer>**
 ```
+
+⚠️ **The Branch line always names the STORY's branch**, on every task. It is what the author
+bases its own branch on and merges back into — never a branch for the task itself. You cut
+one branch per story and no more; the authors cut their own.
 
 ⚠️ **The role stamp is load-bearing.** Routing is a shell script that reads this line — it
 does not judge which role should pick a task up. You answer that once, here, with the code

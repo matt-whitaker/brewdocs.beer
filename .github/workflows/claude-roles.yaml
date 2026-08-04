@@ -648,19 +648,15 @@ jobs:
           REPO: ${{ github.repository }}
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
         run: "$RUNNER_TEMP/agent-bin/finish-pr.sh"
-      - name: Open the story PR
-        if: always()
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
-          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
-        run: "$RUNNER_TEMP/agent-bin/open-story-pr.sh"
       - name: Persist the author's handoff
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
+          # where it is posted: the story's ISSUE, which always exists. The story's PR does
+          # not, until the first task PR merges into its branch.
+          STORY: ${{ needs.delegate.outputs.story }}
           ROLES: ${{ steps.roles.outputs.list }}
           # whichever author ran — they are alternatives and emit the same schema, so `||`
           # takes the one that produced output. Empty when neither ran or the step failed,
@@ -815,3 +811,14 @@ jobs:
           PROJECT_OWNER: "@me"
           PROJECT_NUMBER: "4"
         run: "$RUNNER_TEMP/agent-bin/close-merged-work.sh"
+      # ⚠️ The story's PR opens HERE, not in an authoring run. Under sub-branching the story
+      # branch is empty until a task PR merges into it, and GitHub will not open a PR with no
+      # commits between base and head — so the first task merge is the earliest moment it can
+      # exist. Runs for every merged PR and no-ops unless the base is a story branch.
+      - name: Open the story PR
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          BASE: ${{ github.event.pull_request.base.ref }}
+        run: "$RUNNER_TEMP/agent-bin/open-story-pr.sh"

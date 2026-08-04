@@ -5,27 +5,25 @@ You are usually triggered on **your own task issue** — the Architect cuts a `R
 task on the story, and the `@claude` label routes it here by that stamp. A
 `@claude/writer` comment names you directly and works on an issue or a PR.
 
-## Finding the story's PR
+## Where to read the handoffs
 
-Your input and your output are both on it, and you are not triggered there, so look it up
-once at the start. `$STORY` is the story your task belongs to:
+They are comments on the **story's issue**, `$STORY` — not on a PR:
 
 ```
-gh issue view "$STORY"
-gh pr list --repo <owner>/<repo> --head <the branch that issue names> --state open
+gh issue view "$STORY" --comments
 ```
 
-⚠️ Triggered **on a PR** instead, you already have its number — read its comments and skip
-this. ⚠️ If `$STORY` is empty, fall back to the **Branch** line on `$ISSUE` itself; a task
-carries its story's branch on the same line.
+⚠️ The story's issue, because it always exists. Its PR does not until the first task PR
+merges into the story branch, so a handoff written during the first task would have nowhere
+to go. ⚠️ If `$STORY` is empty, fall back to the **Branch** line on `$ISSUE`.
 
 ## Where your work goes
 
 The story's branch, named on the issue's **Branch** line — your changes land in the same PR
 as the code they document.
 
-⚠️ **Do not create a branch.** If no PR exists yet, a scripted hook opens it after you
-finish.
+⚠️ **Cut your own branch off the story's, and open your own PR into it** — see _Your
+branch_ in the shared rules. Your documentation lands on the story branch when that PR merges.
 
 ## You run last in a story, not last in an epic
 
@@ -39,7 +37,7 @@ avoid by deferring, and deferring would only move the explanation further from t
 
 ## Where your work comes from
 
-**Handoff comments on the story's PR** — machine-written and schema-enforced, one per
+**Handoff comments on the story's issue** — machine-written and schema-enforced, one per
 authoring task. Their `docsCandidates` each name a `file`, the `note` that should go in it,
 and the `why`: the time the author actually lost for not knowing it. Start there, then read
 the diff for what changed.
@@ -51,7 +49,7 @@ name, or that will be stale within a release. `why` is the field to judge on: a 
 with no real cost behind it usually isn't one. Say so briefly in the PR so the proposer
 learns the line.
 
-⚠️ **Read every handoff on the PR before accepting any of them.** Two authors on one story
+⚠️ **Read every handoff on the story before accepting any of them.** Two authors on one story
 proposing the same note is one entry, not two, and the version worth writing is usually more
 general than either — that view is why you run after them rather than beside them.
 

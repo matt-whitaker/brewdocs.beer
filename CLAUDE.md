@@ -369,24 +369,35 @@ one per task, updated rather than duplicated on a re-run.
 [`packages/claude-team`](packages/claude-team/README.md); this repo extends it with
 per-role overlays in `.github/agent-prompts/`.
 
-| level | branch | PR | is |
+| level | branch | its PR targets | closed by |
 |---|---|---|---|
-| **Epic** | no | **no** | a cross-story product goal; a grouping, nothing more |
-| **Story** | **one** | **exactly one** | a sub-issue of an epic — the unit that ships |
-| **Task** | no | no | a sub-issue of a story; work that lands on the story's branch |
+| **Epic** | none | — | its stories closing |
+| **Story** | `<story#>-…`, cut by the Architect | `mainline` | its PR merging |
+| **Task** | `<task#>-…`, cut by its author off the story branch | the **story** branch | its own PR merging |
 
 - Architect cuts the story's branch off `mainline`, empty, and records it in the story as a
-  **Branch** line.
-- Architect stamps that same line onto every task, plus a **Role** line naming who picks it
-  up — routing is a shell script that reads the stamp rather than judging it.
-- The **first author to run** — Implementor, Tester or Writer — opens the story's PR, via
-  `open-story-pr.sh`. All three carry the hook; whichever runs first wins.
-- Every role after that commits to the same branch. **No role cuts its own.**
+  **Branch** line. It stamps that **same** line onto every task — it always names the
+  *story's* branch, never a branch for the task — plus a **Role** line naming who picks it
+  up. Routing is a shell script that reads the stamp rather than judging it.
+- Each author cuts `<task#>-…` off the story branch, works there, and opens a PR **into**
+  the story branch. Merging that closes the task and lands the work on the story.
+- The **story's** PR opens on the first task merge, via `open-story-pr.sh` — ⚠️ from
+  `merge_housekeeping`, not from an authoring run. The story branch is empty until a task
+  lands on it, and GitHub will not open a PR with no commits between base and head.
 
-⚠️ One PR per story, growing, is the point. The maintainer reviews the story landing as a
-whole — code, tests and docs — instead of one PR per role.
-⚠️ A story PR targets `mainline`, so its `Closes #<story>` works normally. Tasks are closed
-by the merge hook parsing the body, not by GitHub.
+⚠️ **Tasks used to share the story's branch, and that was a race.** The concurrency group is
+keyed on issue number, so two tasks are in *different* groups and could commit to the same
+branch simultaneously. Sub-branching fixes it structurally rather than by triggering runs one
+at a time.
+⚠️ One story PR, growing, is still the point — the maintainer reviews the story landing as a
+whole rather than one PR per role. It just accumulates by merge now, not by direct commit.
+⚠️ A story PR targets `mainline`, so its `Closes #<story>` works normally. **A task PR does
+not** — GitHub ignores closing keywords on a non-default base, so `close-merged-work.sh`
+parsing the body is the only thing that closes a task.
+⚠️ That hook no longer expands a closed issue's open sub-issues. It did when tasks had no
+PRs and a story's merge was the only thing that could close them; now a task still open when
+its story merges is a real signal — abandoned, or its PR never landed — and closing it would
+hide the case worth seeing.
 ⚠️ `pull_request` events run the workflow from the PR's **base** branch, so workflow fixes
 do not reach an in-flight story until `mainline` is merged into it.
 ⚠️ An epic has no branch, so nothing to merge in and nothing to keep current. That was the
@@ -394,7 +405,7 @@ main cost of the old epic-integration-branch model.
 
 
 **Budgets.** `sonnet` throughout except the Implementor, which runs `opus` — it is the only
-role whose output the maintainer must review line by line. Architect 100 turns, Writer 60,
+role whose output the maintainer must review line by line. Architect 100 turns,
 Security 40, the rest 80. Implementor and Tester run `npm ci` as a step; nobody else builds.
 
 **Allowlists union, they don't replace.** A role's `claude_args --allowedTools` is merged with

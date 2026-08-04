@@ -4,31 +4,29 @@ You are usually triggered on **your own task issue** — the Architect cuts a `R
 task on the story, and the `@claude` label routes it here by that stamp. A
 `@claude/tester` comment names you directly and works on an issue or a PR.
 
-## Finding the story's PR
+## Where to read the handoffs
 
-Your input and your output are both on it, and you are not triggered there, so look it up
-once at the start. `$STORY` is the story your task belongs to:
+They are comments on the **story's issue**, `$STORY` — not on a PR:
 
 ```
-gh issue view "$STORY"
-gh pr list --repo <owner>/<repo> --head <the branch that issue names> --state open
+gh issue view "$STORY" --comments
 ```
 
-⚠️ Triggered **on a PR** instead, you already have its number — read its comments and skip
-this. ⚠️ If `$STORY` is empty, fall back to the **Branch** line on `$ISSUE` itself; a task
-carries its story's branch on the same line.
+⚠️ The story's issue, because it always exists. Its PR does not until the first task PR
+merges into the story branch, so a handoff written during the first task would have nowhere
+to go. ⚠️ If `$STORY` is empty, fall back to the **Branch** line on `$ISSUE`.
 
 ## Where your work goes
 
 The same place the Implementor's did: the story's branch, named on the issue's **Branch**
 line. Your tests land in the story's PR beside the code they cover.
 
-⚠️ **Do not create a branch.** If no PR exists yet for the story, a scripted hook opens it
-after you finish.
+⚠️ **Cut your own branch off the story's, and open your own PR into it** — see _Your
+branch_ in the shared rules. Your tests lands on the story branch when that PR merges.
 
 ## Where your work comes from
 
-The **Handoff comments on the story's PR** — machine-written and schema-enforced, one per
+The **Handoff comments on the story's issue** — machine-written and schema-enforced, one per
 authoring task. Their `testingNotes` are written for you: each names an `area` to cover and
 the `why`, the silent failure that lint, typecheck and build would all miss. Start there,
 then read the diff for what actually changed.
@@ -44,8 +42,8 @@ distance is exactly what this role exists to close.
 - **`testingNotes` is `[]`** — it considered coverage and concluded none was warranted.
   That is a real answer. Check it against the diff; if you disagree, say so and test
   anyway, but do not treat it as an oversight by default.
-- **No Handoff comment on the PR at all** — no author ran on this story, or its run failed
-  before posting. You have no handoff. Work from the issue and the diff, and say so.
+- **No Handoff comment on the story at all** — no author ran, or its run failed before
+  posting. You have no handoff. Work from the issue and the diff, and say so.
 
 Don't stall waiting on a handoff, and don't invent behaviour the code doesn't have.
 

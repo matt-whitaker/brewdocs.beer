@@ -128,9 +128,14 @@ fi
 
 # ---- 5. a task or a story with a branch: use the stamped role
 if [ -n "$branch" ]; then
-    # ⚠️ The story is not simply the parent. A task's parent IS its story, but a story's
-    # parent is its epic. A branch is named `<story#>-<summary>`, so the number it starts
-    # with is the story — self for a story, the parent for a task.
+    # ⚠️ THE BRANCH LINE ALWAYS NAMES THE STORY'S BRANCH, on a story and on its tasks alike,
+    # so the number it starts with is the story — self for a story, the parent's for a task.
+    # That holds under sub-branching too: a task's own branch is `<task#>-…`, cut off the
+    # story branch and merged back into it, but the line still records the story's.
+    #
+    # ⚠️ DO NOT "fix" this by walking the issue tree. Deriving a task as "an issue whose
+    # parent has a parent" assumes every story sits under an epic, and they do not — #496 is
+    # parentless, so that walk resolves each of its tasks to itself. Tried, measured, reverted.
     STORY=$(printf '%s' "$branch" | grep -oE '^[0-9]+' || true)
     [ -n "$STORY" ] || STORY="${parent:-$NUMBER}"
 
