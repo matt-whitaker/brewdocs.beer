@@ -52,9 +52,14 @@ test("shows the recipe's target vitals, a fresh batch's zeroed actuals, and the 
 
     // defaultBatch's actuals, unset on a freshly-brewed batch
     await expect(vitalsRow(page, "Actuals", "ABV")).toContainText("0.0%");
-    await expect(vitalsRow(page, "Actuals", "IBU")).toContainText("0");
     await expect(vitalsRow(page, "Actuals", "O.G.")).toContainText("0.00°P");
     await expect(vitalsRow(page, "Actuals", "F.G.")).toContainText("0.00°P");
+
+    // IBU is the exception among the actuals: it is never measured, so it is
+    // derived from the batch's own hop bill rather than left at defaultBatch's
+    // "0". No gravity has been recorded yet, so it falls back to the recipe's
+    // target OG — Tinseth over anchor-steam's three Northern Brewer additions.
+    await expect(vitalsRow(page, "Actuals", "IBU")).toContainText("37");
 
     await expect(page.getByText("German Pils")).toBeVisible();
     await expect(page.getByText("Northern Brewer")).toBeVisible();
