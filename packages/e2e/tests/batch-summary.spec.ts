@@ -126,3 +126,48 @@ test("a single dated gravity reading shows equal Actuals O.G./F.G. and 0.0% ABV"
     await expect(vitalsRow(page, "Actuals", "F.G.")).toContainText("12.5°P");
     await expect(vitalsRow(page, "Actuals", "ABV")).toContainText("0.0%");
 });
+
+async function addUndatedGravityReading(page: Page, phase: string, platoValue: string) {
+    await openSchedulePhase(page, phase);
+    await page.getByLabel("Gravity value to add").fill(platoValue);
+    await page.getByRole("button", {name: "Add reading"}).click();
+    await settleSave(page);
+}
+
+test("an undated gravity reading sorts after a dated one, becoming F.G. regardless of entry order", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Actuals Undated Reading Batch");
+
+    // entered first but never dated — must still sort last (F.G.), not first
+    await addUndatedGravityReading(page, "3. Ferment", "8.5");
+    // entered second but dated — must still sort first (O.G.)
+    await addGravityReading(page, "1. Mash", "12.5", "2026-02-10");
+
+    await page.getByRole("tab", {name: "Summary", exact: true}).click();
+
+    await expect(vitalsRow(page, "Actuals", "O.G.")).toContainText("12.5°P");
+    await expect(vitalsRow(page, "Actuals", "F.G.")).toContainText("8.5°P");
+});
+
+async function addEmptyGravityReading(page: Page, phase: string, label: string) {
+    await openSchedulePhase(page, phase);
+    await page.getByLabel("Gravity name to add").fill(label);
+    await page.getByRole("button", {name: "Add reading"}).click();
+}
+
+test("a gravity reading left without a value, even after its unit is switched, is excluded from Actuals", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Actuals Empty Reading Batch");
+
+    // no value on add -> no tracker entry at all yet; switching its unit then
+    // writes a tracker entry with a present but empty reading.value, per
+    // reading.tsx's onChangeUnit -- this must still be excluded, not render blank
+    await addEmptyGravityReading(page, "1. Mash", "Empty Check");
+    await page.getByLabel("Empty Check reading").locator("xpath=..").getByRole("combobox").selectOption({label: "SG"});
+    await settleSave(page);
+
+    await addGravityReading(page, "3. Ferment", "12.5", "2026-02-10");
+
+    await page.getByRole("tab", {name: "Summary", exact: true}).click();
+
+    await expect(vitalsRow(page, "Actuals", "O.G.")).toContainText("12.5°P");
+    await expect(vitalsRow(page, "Actuals", "F.G.")).toContainText("12.5°P");
+});
