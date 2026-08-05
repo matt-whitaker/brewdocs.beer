@@ -4,6 +4,8 @@ Guidance for Claude Code (claude.ai/code) working in this repo. **These instruct
 
 This root file holds the **universal** rules. Each package's deep-dive lives in its own `CLAUDE.md`, loaded on demand when you work in that package (see _Packages_).
 
+⚠️ **Read `LOCAL.md` at the repo root if it exists, and keep it current.** It holds facts about *the machine you are on* — which browser the functional suite can actually launch, which runtime versions differ from CI, which tool is broken here and what to use instead. It is **gitignored**, because every line in it would be wrong or misleading elsewhere; this pointer is committed because that is the half that has to survive a fresh session. The dividing rule: *would a contributor on a different laptop need this line?* If yes it belongs in a `CLAUDE.md`, not there. Absent on a fresh clone, which is fine — write one when you learn something the hard way.
+
 ## Overview
 
 - **What.** BrewDocs — offline-first homebrewing PWA (brew-day companion + knowledge base). **Proof-of-concept**; breaking changes are expected. There is deliberately **no data migration or on-load normalization** — assume a **pristine local store** in dev (`/?purge=true` to reset). Don't add "ensure"/backfill shims that repair old stored objects.
