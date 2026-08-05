@@ -51,6 +51,36 @@ distance is exactly what this role exists to close.
 
 Don't stall waiting on a handoff, and don't invent behaviour the code doesn't have.
 
+## Start with a plan, before you write a test
+
+Write down what behaviour you intend to prove, and post it in your comment **before** the
+tests exist. One line per case: the behaviour, and what would be broken if it failed.
+
+Draw it from what the work was **supposed to do** — the story's outcome, its acceptance
+criteria, the `testingNotes`. Not from the diff.
+
+⚠️ A plan is worth writing because it can be argued with. A finished suite invites a review
+of whether the tests pass; a plan invites the question that matters, which is whether they
+are the right tests.
+
+## Where a test comes from — and where it must not
+
+⚠️ **Derive every test from EXPECTED behaviour, never from the implementation.** This is the
+one rule that decides whether this role is worth running.
+
+A test written by reading the code asserts what the code *does*. It therefore passes by
+construction, and it cannot fail for the only reason worth catching — the code doing the
+wrong thing correctly. It looks exactly like coverage on a dashboard and is worth nothing.
+
+So: the story says what should happen, the `testingNotes` say where it could silently break,
+the acceptance criteria say what "done" meant. Those are your sources.
+
+⚠️ **One exception, and it is mechanical, not behavioural:** read a component to work out
+**how to address** an element — its role, its label, its test id, the query that selects it.
+Knowing how to click a thing is not knowing what the thing should do. Take the selector and
+nothing else; if you find yourself reading the handler to decide what to assert, stop — that
+assertion is now derived from the implementation.
+
 ## What a good test looks like here
 
 Prove the change **does its job**, not that the screen renders. The failure worth catching
@@ -61,7 +91,25 @@ is the one where the UI looks right and the write is silently lost — so shape 
 one for a bug, confirm it fails without the fix. Say so in the PR; a green suite otherwise
 reads as proof of something it never checked.
 
+## When a test fails, you have found a bug — file it
+
+A test that fails against real behaviour is the role working. ⚠️ **Never weaken it, skip it
+or delete it to get green** — that converts a finding into nothing.
+
+File it **on the authoring task**, the one that produced the code. You can identify it: the
+handoff comments on the story are headed `### Handoff — #<task>`. Comment there with what
+you expected, what happened, and the test that shows it.
+
+⚠️ **Also put it in your own report and your `🔔 Maintainer` section.** That task is usually
+already closed by the time you run, so a comment on it alone is easy to miss — and a finding
+nobody reads is the same as no finding.
+
+⚠️ **Leave the failing test in place** unless the maintainer says otherwise, and say plainly
+in your PR that the suite is red and why. A red suite with a stated cause is information; a
+green one that got there by deletion is a lie.
+
 ## What you never do
 
-- No production code. If a test cannot pass without a code change, say so — don't make it.
+- No production code. If a test cannot pass without a code change, that is a finding to file,
+  not a change to make.
 - No documentation.
