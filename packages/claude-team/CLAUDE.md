@@ -121,6 +121,14 @@ only the Architect can cut it in two.
 ⚠️ **The Tester and Writer are tasks the Architect cuts**, ordered after the authoring ones.
 No role chains off another — nothing runs that a maintainer did not trigger.
 
+⚠️ **The Writer's task is cut on EVERY story, unconditionally; the Tester's is judged.** The
+asymmetry is about when the evidence exists. Tests have a trigger the Architect can see while
+shaping — new behaviour. Documentation's trigger is `docsCandidates` in the authors'
+handoffs, which do not exist yet, so asking the Architect to predict it produces "no" every
+time: across every story before this rule, not one Writer task was ever cut. Cutting it
+always moves the judgement to the Writer, which reads the handoffs and is allowed to
+conclude nothing needs writing.
+
 ⚠️ **Per story, not per epic** — for the Writer too. An epic-wide documentation pass sounds
 cheaper, and its usual justification is that one branch touching the docs avoids conflicts.
 That only holds if stories land in parallel; where they merge one at a time, a later story

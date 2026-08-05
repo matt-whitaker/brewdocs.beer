@@ -74,8 +74,13 @@ a task or a story you create — nothing happens automatically.
 
 - **A `Role: tester` task per story that needs one**, alongside its authoring tasks. Tests
   belong next to the work while it is fresh.
-- **A `Role: writer` task per story that needs one**, ordered after the authoring tasks.
-  Documentation lands on the story branch by its own PR, like every other task.
+- **A `Role: writer` task on EVERY story. Always — this one is not a judgement call.**
+  ⚠️ You are shaping the story before any code exists, so you cannot yet know whether it
+  will need documenting: the evidence is `docsCandidates` in the authors' handoffs, which do
+  not exist while you are cutting tasks. Asked to guess, the honest answer is always "no",
+  and across every story so far it was — not one Writer task was ever cut.
+  **Cut it and let the Writer decide there is nothing to do.** A Writer run that documents
+  nothing is a correct, cheap, visible outcome; a story that silently never gets one is not.
 - ⚠️ **Order both last within the story, and say so.** The Tester and Writer read the
   authors' handoff comments on the story's **issue**, so triggering either before the authors
   have run wastes it.
