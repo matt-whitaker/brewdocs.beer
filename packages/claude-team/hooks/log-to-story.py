@@ -9,7 +9,7 @@ story had no board at all.
 NOTHING HERE IS WRITTEN BY A MODEL. Order is derived from two things the Architect must
 produce for other reasons:
 
-  phase   from the `Role:` stamp — an author precedes the tester, which precedes the writer
+  phase   from the `Role:` stamp — the writer precedes the authors, which precede the tester
   number  within a phase, because it creates tasks in the order it intends them to run
 
 A third stamp naming an order would be a third line it could skip. These two cannot be
@@ -37,9 +37,17 @@ if not tasks:
 
 
 def phase(role: str) -> int:
-    """Authors first, then tests, then docs. An unstamped task sorts with the authors —
-    routing defaults it to an author too, so the two stay consistent."""
-    return {"tester": 2, "writer": 3}.get(role, 1)
+    """The writer first, then the authors, then the tester.
+
+    ⚠️ The writer used to sort LAST. It moved because it owns the product specification, and a
+    specification is only worth anything if it says what the code SHOULD do — which it cannot,
+    if it was written by reading the code that already exists. Running first is what makes
+    "from intent, not from the diff" true by construction rather than by instruction.
+
+    An unstamped task sorts with the authors — routing defaults it to an author too, so the two
+    stay consistent.
+    """
+    return {"writer": 1, "tester": 3}.get(role, 2)
 
 
 rows = []
