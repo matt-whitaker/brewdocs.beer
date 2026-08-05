@@ -1,4 +1,6 @@
+import {useMemo} from "react";
 import {ScreenH2, ScreenH3, ScreenP} from "@brewdocs.beer/design";
+import deriveGravity from "@/actions/deriveGravity";
 import Organics from "@/component/organics";
 import {organicNames} from "@/component/organics/from-brewable";
 import Screen from "@/component/screen";
@@ -10,6 +12,7 @@ export type BatchSummaryProps = { batchId: string; };
 export default function BatchSummary({ batchId }: BatchSummaryProps) {
     const batch = useBatch(batchId);
     const recipe = useRecipeResource(batch.recipeSource ?? "kb", batch.recipeId);
+    const gravity = useMemo(() => deriveGravity(batch.brewable, batch.tracker), [batch.brewable, batch.tracker]);
 
     return (
         <Screen>
@@ -23,7 +26,7 @@ export default function BatchSummary({ batchId }: BatchSummaryProps) {
                 </div>
                 <div className="divider">Measurements</div>
                 {/* Need to refactor this type */}
-                <Vitals className="-mt-2" vitals={[["Target", recipe.targets], ["Actuals", batch.actuals]]} />
+                <Vitals className="-mt-2" vitals={[["Target", recipe.targets], ["Actuals", {...batch.actuals, ...gravity}]]} />
                 <div className="divider">Organics</div>
                 <Organics className="-mt-2" {...organicNames(batch.brewable.assignments)} />
             </div>
