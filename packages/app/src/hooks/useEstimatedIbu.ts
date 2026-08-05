@@ -36,8 +36,10 @@ function convert(scalar: Scalar, factors: Partial<Record<Unit, number>>): number
     return factor ? amount * factor : NaN;
 }
 
-function tinsethIbu(assignments: Assignment[], batchSize: Scalar, og: Scalar): number {
-    if (!assignments?.length) {
+function tinsethIbu(assignments: Assignment[], batchSize: Scalar, og: Scalar): number | null {
+    const hops = resourcesOf(assignments ?? [], "hop");
+
+    if (!hops.length) {
         return 0;
     }
 
@@ -45,12 +47,12 @@ function tinsethIbu(assignments: Assignment[], batchSize: Scalar, og: Scalar): n
     const gravity = amountOf(og);
 
     if (!(batchVolumeLiters > 0) || !(gravity > 0)) {
-        return 0;
+        return null;
     }
 
     const bignessFactor = TINSETH_MAX_UTILIZATION * Math.pow(TINSETH_GRAVITY_BASE, gravity - 1);
 
-    const total = resourcesOf(assignments, "hop").reduce((sum, hop) => {
+    const total = hops.reduce((sum, hop) => {
         const weightGrams = convert(hop.weight, GRAMS_PER_UNIT);
         const alphaDecimal = amountOf(hop.alpha) / 100;
         const boilMinutes = amountOf(hop.boil);
@@ -65,9 +67,9 @@ function tinsethIbu(assignments: Assignment[], batchSize: Scalar, og: Scalar): n
         return sum + bignessFactor * boilTimeFactor * mgPerLiter;
     }, 0);
 
-    return Number.isFinite(total) ? Math.round(total) : 0;
+    return Number.isFinite(total) ? Math.round(total) : null;
 }
 
-export default function useEstimatedIbu(assignments: Assignment[], batchSize: Scalar, og: Scalar): number {
+export default function useEstimatedIbu(assignments: Assignment[], batchSize: Scalar, og: Scalar): number | null {
     return useMemo(() => tinsethIbu(assignments, batchSize, og), [assignments, batchSize, og]);
 }

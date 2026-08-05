@@ -158,7 +158,7 @@ export default function RecipeEditDetails({ recipeId }: RecipeEditDetailsProps) 
             <DataGridRow zebra>
                 <DataGridLabel cols={3}>Estimated IBU</DataGridLabel>
                 <div className="col-start-4 col-span-3 flex items-center justify-end self-center pr-1 text-sm leading-6 lg:leading-8">
-                    {estimatedIbu}
+                    {estimatedIbu ?? "—"}
                 </div>
             </DataGridRow>
             <DataGridRow zebra>

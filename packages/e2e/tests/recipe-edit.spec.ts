@@ -172,10 +172,29 @@ test("adds an ingredient, equipment, and a phase from the recipe side, and all p
     await expect(page.getByText("4. Conditioning")).toBeVisible();
 });
 
+// A recipe with no hops has 0 IBU whatever its gravity, so this asserts the real
+// zero. It only means that because the no-hop case is decided BEFORE the gravity
+// guard — a fresh recipe also has og "0.00°P", so if the order were reversed this
+// would pass for the other reason and could not tell the two apart.
 test("Estimated IBU shows 0 for a freshly-created recipe with no hop assignments", async ({page}) => {
     await createRecipeFromTemplate(page, "E2E Estimated IBU Empty", "Empty");
 
     await expect(estimatedIbuRow(page)).toContainText("0");
+});
+
+// The complement, and the case a brewer actually hits: hops are present, so the
+// answer is not zero — but without a gravity it cannot be computed at all, and
+// saying "0" would read as "your hops contribute nothing".
+test("Estimated IBU shows an em dash when a hopped recipe has no gravity to compute from", async ({page}) => {
+    await editRecipeFromKbTemplate(page, "/kb/recipe/anchor-steam-beer-clone");
+
+    await expect(estimatedIbuRow(page)).not.toContainText("—");
+
+    const og = page.getByLabel("OG", {exact: true});
+    await og.fill("");
+    await og.blur();
+
+    await expect(estimatedIbuRow(page)).toContainText("—");
 });
 
 test("Estimated IBU live-recomputes when a hop's weight changes on the Ingredients panel", async ({page}) => {
