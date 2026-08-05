@@ -28,8 +28,8 @@ is `mainline`. See CLAUDE.md for architecture and conventions.
 
 The overall goal and why, the shared constraints, and a short codebase map of where the
 relevant code lives. This is the review artifact — it's what the maintainer reads to
-decide whether the decomposition is right. Include an **Integration branch** section naming
-the epic's feature branch and the branch-per-epic flow (see §4).
+decide whether the decomposition is right. ⚠️ **No branch section** — an epic has neither a
+branch nor a PR.
 
 ## 3. Decompose into sub-issues sized for a bounded-turn worker
 
@@ -74,59 +74,34 @@ implemented without that context.
 Order them so prerequisites come first, and say plainly which are independent (safe to
 start in parallel) and which are blocked on an earlier child.
 
-## 4. Create the issues and the epic's feature branch
+## 4. Propose the epic — do not create it
 
-Create the **epic first**, cut its feature branch, then each sub-issue, then link them:
+⚠️ **Epics are the maintainer's to create.** You never file one on your own initiative. Put
+the epic body from §2 in your response, say plainly that it is a proposal, and **stop for
+agreement**. If they say go, create it then and not before.
 
-1. **Epic** — `gh issue create --title "<epic title>" --body "<parent body from §2>"` (no
-   labels). Capture its number from the returned URL.
-2. **Cut the epic's feature branch — always.** Every epic gets one integration branch; sub-issue
-   work targets it, not `mainline`, so the whole feature lands together and merges to `mainline`
-   as a single PR. From the epic number:
+⚠️ **An epic has no branch and no PR.** Do not cut one. A story owns a branch and a PR
+against `mainline`; a task cuts its own off the story's and PRs back into it. If you find
+yourself wanting an integration branch, you are looking at the retired model.
+
+Once the maintainer agrees:
+
+1. **Epic** — `gh issue create --title "Epic: <title>" --body "<the body from §2>"`, no
+   labels. ⚠️ The `Epic:` prefix is load-bearing: it is how every later run classifies the
+   issue, and a scripted hook applies the `epic` label from it.
+2. **Stories** — one `gh issue create` per story, no labels, each body built from the
+   `.github/ISSUE_TEMPLATE/claude-task.yml` headings.
+3. **Link each story to the epic** as a native sub-issue. ⚠️ The REST API wants the child's
+   integer database `id`, not its issue number:
    ```
-   git checkout mainline && git pull --ff-only
-   git checkout -b <epic#>-<kebab-summary>
-   git push -u origin <epic#>-<kebab-summary>
+   gh api repos/{owner}/{repo}/issues/<child-number> --jq .id
+   gh api --method POST repos/{owner}/{repo}/issues/<epic-number>/sub_issues -F sub_issue_id=<that-id>
    ```
-   Cut from current `mainline`; it stays empty until the first sub-issue PR merges in. Then give the
-   **epic body** an **Integration branch** section: name the branch, say each sub-issue branches off
-   it and PRs **into** it, land the prerequisite child first, and note that if the `@claude` action
-   opens a sub-issue PR against `mainline` by default, the maintainer retargets the PR's base to the
-   epic branch (GitHub → the PR → Edit → base dropdown).
-3. **Sub-issues** — one `gh issue create` per child (no labels), body built from the
-   `.github/ISSUE_TEMPLATE/claude-task.yml` headings:
-   - **Summary** — what needs to happen and why
-   - **Where the code lives** — specific, verified paths
-   - **What to change** — concrete requirements, bulleted
-   - **Patterns to follow** — an existing file to mirror
-   - **Out of scope** — what not to touch; prevents over-engineering
-   - **Acceptance criteria** — a short checklist
-   - **CLAUDE.md Updates (Optional)** — anything that will need updating in CLAUDE.md
+4. Add the epic and every story to the project:
+   `gh project item-add 4 --owner "@me" --url <url>`.
 
-   ⚠️ Every child body must also carry a **Base branch** note: *branch off `<epic#>-<kebab-summary>`
-   and open your PR against it, not `mainline`; rebase onto it once the prerequisite child has landed
-   there.* A worker sees only its own issue, so this can't be left implicit.
-4. **Link each sub-issue as a native GitHub sub-issue of the epic** so they show in its
-   Sub-issues list — a `Part of #N` text line is *not* sufficient. The REST API wants the
-   child's integer database `id`, **not** its issue number:
-   - `gh api repos/{owner}/{repo}/issues/<child-number> --jq .id` → the child's id
-   - `gh api --method POST repos/{owner}/{repo}/issues/<epic-number>/sub_issues -F sub_issue_id=<that-id>`
-
-   `gh api` fills `{owner}/{repo}` from the current repo. If the sub-issues API is
-   unavailable, fall back to a `Part of #<epic-number>` line in each child body.
-
-⚠️ When the epic body lists its children, reference them by their **real issue numbers** (e.g.
-`#231`), added after the children exist — never as ordinals like "#1…#7". GitHub auto-links `#N` to
-whatever issue/PR already holds that number, so low ordinals silently point at ancient PRs.
-
-Carry these standing constraints into every sub-issue's Out of scope:
-
-- Don't hand-edit generated files (`routeTree.gen.ts`).
-- Don't add lodash; use `packages/app/src/utils/func.ts`.
-- Don't rename anything under `packages/kb/data/**` — it changes derived ids.
-
-Don't ask a worker to run builds. The **Verify** workflow runs the gate on the PR, and
-`npm ci` plus the package builds would eat most of a run's turn budget.
+⚠️ **Do not cut any branch here.** The Architect cuts a story's branch when that story is
+triggered — see `packages/claude-team/prompts/architect.md`.
 
 ### Handoff for cheap follow-ups
 
@@ -152,11 +127,10 @@ cadence is already wired for every run.
 
 ## 5. Close with a plan of attack
 
-After creating them, post the summary in your response: the epic link, the epic's **feature
-branch** name (and the reminder that sub-issue PRs target it, retargeting off `mainline` if
-needed), then each sub-issue's title + link, which are independent vs. blocked and on what, and
-the order to work them. The issues are **unlabeled drafts** — the maintainer reviews and iterates,
-then starts one by **labelling it `@claude/implementor` and commenting `@claude`**. Labels only
+After creating them, post the summary in your response: the epic link, then each story's title
++ link, which are independent vs. blocked and on what, and the order to work them. The issues
+are **unlabeled drafts** — the maintainer reviews and iterates, then starts one by **applying
+the `@claude` label**, which routes it to the Architect. Labels only
 mark ownership; the comment is what starts a run.
 
 ## Boundaries

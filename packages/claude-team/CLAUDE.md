@@ -20,6 +20,17 @@ state, not from something a model was asked to leave behind.
 | **Task** | `<task#>-<summary>`, cut by its author off the story branch | the **story** branch | its own PR merging |
 
 - An epic never has a branch and never has a PR. If something needs a PR, it is a story.
+- ⚠️ **An unprocessed issue is a STORY.** An epic has to say so — by an `epic` label or a
+  title beginning "Epic" — and the Architect leaves both markers behind so nothing re-derives
+  it next run. Deliberately NOT inferred from having sub-issues: a story has those too, they
+  are its tasks. The old inference only held because a shaped story also had a branch, so an
+  unshaped story with tasks read as an epic.
+- ⚠️ **A maintainer's comment is the only override**, and it is judged by the model rather
+  than matched by the script. A regex for the word misfires on an ordinary sentence — "a
+  story under the Claude Team epic" — and a false positive decomposes a story into stories.
+- ⚠️ **Epics are the maintainer's to create.** No role files one on its own initiative and
+  none promotes an issue into one. A role may *propose* an epic and stop; the decision is
+  not delegated. Ambiguity resolves to a story, always.
 - A story owns one branch and one PR against the default branch, and it accumulates.
 - A task is a slice of a story with its own branch and its own PR **into the story branch**.
 
@@ -173,6 +184,7 @@ forgotten by a model that ran out of turns or simply skipped it.
 | `delegate.py` | the router job | picks the role from issue state — routing is scripted, not judged |
 | `stamp-role-label.py` | pre, every role | stamps `@claude/<role>` on the triggering issue or PR |
 | `set-issue-status.py` | pre, authors | sets the issue's board Status; the column is an input |
+| `sync-epic-label.py` | post, Architect | applies the `epic` label to an issue titled as one |
 | `file-sub-issues.py` | post, Architect | parents stories to their epic, tasks to their story |
 | `finish-pr.py` | post, authors | labels the PR and ensures it closes its issue |
 | `post-handoff.py` | post, authors | posts the JSON handoff to the story's issue |

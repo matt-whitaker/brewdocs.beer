@@ -1,10 +1,9 @@
 import {useMemo} from "react";
 import {Scalar} from "@brewdocs.beer/core";
 import Brewable from "@/model/brewable";
-import Measurements from "@/model/measurements";
 import {key, TrackerEntry} from "@/model/tracker";
 
-export type DerivedGravity = Partial<Pick<Measurements, "og" | "fg">>;
+export type Gravity = { og: Scalar; fg: Scalar };
 
 type GravityReading = TrackerEntry & { reading: Scalar };
 
@@ -15,8 +14,8 @@ function readingTime(entry: GravityReading): number {
     return Number.isNaN(time) ? UNDATED_SORTS_LAST : time;
 }
 
-function hasReading(entry?: TrackerEntry): entry is GravityReading {
-    return !!entry?.reading?.value.trim();
+function isGravityReading(entry?: TrackerEntry): entry is GravityReading {
+    return Number.isFinite(parseFloat(entry?.reading?.value ?? ""));
 }
 
 function gravityReadingsInDateOrder(brewable: Brewable, tracker: Record<string, TrackerEntry>): GravityReading[] {
@@ -24,16 +23,16 @@ function gravityReadingsInDateOrder(brewable: Brewable, tracker: Record<string, 
         .flatMap(phase => phase.milestones)
         .filter(milestone => milestone.kind === "gravity")
         .map(milestone => tracker[key({on: "milestone", id: milestone.id})])
-        .filter(hasReading)
+        .filter(isGravityReading)
         .sort((a, b) => readingTime(a) - readingTime(b));
 }
 
-export default function useDerivedGravity(brewable: Brewable, tracker: Record<string, TrackerEntry>): DerivedGravity {
+export default function useGravity(brewable: Brewable, tracker: Record<string, TrackerEntry>): Gravity | undefined {
     return useMemo(() => {
         const readings = gravityReadingsInDateOrder(brewable, tracker);
 
         if (!readings.length) {
-            return {};
+            return undefined;
         }
 
         return {og: readings[0].reading, fg: readings[readings.length - 1].reading};

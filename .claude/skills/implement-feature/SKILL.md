@@ -82,9 +82,9 @@ Make the change, mirroring the pattern you found in §1. Standing rules:
 
 Make the gate green **before** committing (Node-22 PATH prefix):
 
-- **eslint** — `npm test -w packages/<pkg>` (or `-ws` across all).
+- **eslint** — `nx test <pkg>` (or `nx run-many --target=test` across all).
 - **`tsc --noEmit`** — `cd packages/app && ../../node_modules/.bin/tsc --noEmit`.
-- **`vite build`** — `npm run build -w packages/app`.
+- **`vite build`** — `nx build app`.
 - For a **UI change**, check the screen/flow in the browser and capture a screenshot.
 
 If a check fails, fix it and re-run — never commit a red gate.
@@ -115,7 +115,7 @@ PR body:
 
 - **Summary** — what changed and why, with **`Closes #<issue>`** (this links the PR to the
   issue's *Development* section and auto-closes it on squash-merge).
-- **Verification** — `npm test` (lint) ✓, `tsc --noEmit` ✓, `vite build` ✓, and which screens/
+- **Verification** — `nx run-many --target=test` (lint) ✓, `tsc --noEmit` ✓, `nx build app` ✓, and which screens/
   flows you checked. This is the only record the gate ran — don't omit it.
 - **Screenshots** — for any UI change.
 - End the body with: `🤖 Generated with [Claude Code](https://claude.com/claude-code)`.

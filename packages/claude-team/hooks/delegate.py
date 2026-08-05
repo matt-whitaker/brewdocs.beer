@@ -29,7 +29,7 @@ IS_PR = os.environ.get("IS_PR", "false") == "true"
 if not team.REPO:
     team.fail("REPO is required")
 
-ROLES = STORY = REASON = ""
+ROLES = STORY = REASON = KIND = ""
 DEFAULTED = False
 
 
@@ -38,9 +38,13 @@ def emit() -> None:
     if out:
         with open(out, "a", encoding="utf-8") as handle:
             handle.write(
-                f"roles={ROLES}\nstory={STORY}\ndefaulted={str(DEFAULTED).lower()}\nreason={REASON}\n"
+                f"roles={ROLES}\nstory={STORY}\nkind={KIND}\n"
+                f"defaulted={str(DEFAULTED).lower()}\nreason={REASON}\n"
             )
-    print(f"roles={ROLES} story={STORY or 'none'} defaulted={str(DEFAULTED).lower()} — {REASON}")
+    print(
+        f"roles={ROLES} story={STORY or 'none'} kind={KIND or 'n/a'} "
+        f"defaulted={str(DEFAULTED).lower()} — {REASON}"
+    )
 
 
 def unroutable(reason: str) -> None:
@@ -121,14 +125,18 @@ branch = team.branch_line(body)
 kids = len(team.sub_issues(NUMBER))
 parent = team.parent(NUMBER)
 
-# ---- 3 & 4. nothing shaped yet, or an epic holding stories -> architect
+# ---- 3. nothing shaped yet -> architect, told whether to treat it as an epic or a story
+#
+# An unprocessed issue is a STORY. An epic has to say so, by its `epic` label or an "Epic"
+# title — see team.is_epic. This used to infer an epic from having sub-issues, which was
+# wrong: a story has those too, and the inference only held because a shaped story also had
+# a branch.
 if not branch:
     ROLES = "architect"
-    REASON = (
-        f"#{NUMBER} has {kids} sub-issues and no branch — an epic"
-        if kids
-        else f"#{NUMBER} has no branch and no sub-issues — needs shaping"
-    )
+    KIND = "epic" if team.is_epic(NUMBER) else "story"
+    REASON = f"#{NUMBER} has no branch — shaping it as {'an epic' if KIND == 'epic' else 'a story'}"
+    if kids:
+        REASON += f" (it already has {kids} sub-issue(s))"
     emit()
     raise SystemExit(0)
 

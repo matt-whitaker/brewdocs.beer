@@ -11,9 +11,9 @@ The BrewDocs PWA — brew-day companion + knowledge base. Deployed to [app.brewd
 
 ## Commands
 
-- `npm run dev` — dev server
-- `npm run build` — typecheck + build
-- `npm test` — lint (the verification gate)
+- `nx dev app` — dev server
+- `nx build app` — typecheck + build
+- `nx test app` — lint (the verification gate)
 
 ## Stack
 

@@ -112,6 +112,36 @@ def role_stamp(body: str) -> str:
     return found.group(1).lower() if found else ""
 
 
+EPIC_LABEL = "epic"
+
+
+def titled_epic(title: str) -> bool:
+    """True when a title announces itself as an epic — `Epic: …`, `Epic —`, `Epic` alone."""
+    return bool(re.match(r"\s*epic\b", title or "", re.IGNORECASE))
+
+
+def is_epic(number: str | int) -> bool:
+    """Classify an issue. An unprocessed issue is a STORY; an epic has to say so.
+
+    Two markers, either of which is enough: the `epic` label, or a title beginning "Epic".
+    Both are durable — they survive the run, so nothing has to re-derive the classification
+    next time.
+
+    Deliberately NOT inferred from having sub-issues. A story has those too — they are its
+    tasks — so that inference only ever worked because a shaped story also had a branch, and
+    it read an unshaped story with tasks as an epic.
+
+    A maintainer saying "this is an epic" in a comment is not read here. A regex for the word
+    misfires on an ordinary sentence like "a story under the Claude Team epic", and a false
+    positive makes the Architect decompose a story into sub-stories. The model weighs the
+    comment against this default instead.
+    """
+    data = issue(number, "title", "labels")
+    if any((l.get("name") or "").lower() == EPIC_LABEL for l in data.get("labels", [])):
+        return True
+    return titled_epic(data.get("title") or "")
+
+
 def story_from_branch(branch: str) -> str:
     """A story branch is `<story#>-<summary>`, so the leading number names the story.
 

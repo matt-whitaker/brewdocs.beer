@@ -8,8 +8,8 @@ GitHub issue (unlabeled) that an Implementor can pick up and fix without further
 
 The bug: $ARGUMENTS
 
-Bugs skip the Manager and Researcher entirely — there is no epic, no decomposition and no
-integration branch. You do the grounding here, and the issue you file is the whole handoff.
+Bugs skip the Architect entirely — there is no epic and no decomposition. You do the
+grounding here, and the issue you file is the whole handoff.
 
 Do NOT fix the bug. The deliverable is the issue.
 
@@ -19,7 +19,7 @@ This is the rule the rest of the command rests on. A plausible cause is not a ca
 cost of filing the wrong one is an Implementor confidently fixing something that was never
 broken.
 
-- Start the app and drive the failing path (`npm run dev -w packages/app`), or write a
+- Start the app and drive the failing path (`nx dev app`), or write a
   throwaway spec under `packages/e2e/tests/__probe.spec.ts` and run it. Capture `pageerror`
   and `console` — the real cause is usually in there and not on screen.
 - **Measure anything the maintainer describes in adjectives.** "Massive lag" was 2312ms, and
@@ -103,7 +103,7 @@ Half of a good bug report is fencing. Two kinds:
 - Test coverage where step 4 found a gap, in the file it belongs in.
 - A screenshot for anything visual, and say what to screenshot — a case that actually shows
   the difference.
-- The gate: `npm test --ws` (eslint), `tsc --noEmit`, `vite build`; run `npm run build` once
+- The gate: `nx run-many --target=test` (eslint), `tsc --noEmit`, `nx build app`; run it once
   before opening the PR; **don't** run `npm ci`/`install` — deps are pre-installed.
 - **Base branch: `mainline`.** Bugs don't belong to an epic.
 
