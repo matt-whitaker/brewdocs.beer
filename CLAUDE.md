@@ -88,7 +88,7 @@ The **Verify** workflow (`.github/workflows/verify.yaml`) runs `npm ci`, then `n
 
 **Functional tests.** `.github/workflows/functional-test.yaml` runs the Playwright suite (`packages/e2e`) on PRs **to `mainline` only**, independently of Verify — it installs the chromium browser and lets Playwright's `webServer` auto-start the app dev server, uploading the HTML report/traces as an artifact on failure. See `packages/e2e/CLAUDE.md`.
 
-⚠️ **The two differ on purpose, and the axis is base branch.** `pull_request.branches` matches the PR's **base**, so scoping it to `mainline` excludes every task PR — a task's base is its story's branch. Verify carries no filter because it is the cheap half and a red result belongs on the task that caused it, not on a story PR holding several tasks' worth of diff. Functional test keeps the `mainline` scope because it is the expensive half (browser install, a real dev server) and the story PR is the right granularity for it. ⚠️ Consequence: a bot-opened **task** PR now also waits for a maintainer's *Approve and run*.
+⚠️ **The two differ on purpose, and the axis is base branch.** `pull_request.branches` matches the PR's **base**, so scoping it to `mainline` excludes every task PR — a task's base is its story's branch. Verify carries no filter because it is the cheap half and a red result belongs on the task that caused it, not on a story PR holding several tasks' worth of diff. Functional test keeps the `mainline` scope because it is the expensive half (browser install, a real dev server) and the story PR is the right granularity for it. ⚠️ This costs no extra *Approve and run* clicks — a task PR the model opens runs unattended; see _The Claude GitHub roles_ for what an approval prompt actually indicates.
 
 ## Contributing
 
@@ -348,7 +348,14 @@ PR, so a 10-item list spends most of the budget before any code is written.
 ⚠️ `trigger_phrase` must match the handle per job — for the five comment-triggered roles. Security has none and needs none: it fires on `pull_request: closed`, not on a phrase. `track_progress: true` forces the action's
 own tag mode, which gates on that phrase independently of our `if:` — leave it at the default
 `@claude` and the job fires, the action skips in `0s`, and it posts a placeholder comment.
-⚠️ Verify on a bot-opened PR waits for a maintainer to click *Approve and run*.
+⚠️ **An approval prompt tells you a run failed to open its own PR.** Workflows on a PR opened
+with `GITHUB_TOKEN` wait for a maintainer's *Approve and run* — GitHub's guard against
+workflows triggering workflows. That is **not** "bot-opened PRs": a PR the model opens carries
+the `claude[bot]` identity and runs unattended (#564). Only a **hook** opens a PR as
+`github-actions[bot]`, and the only hook that opens one is `finish-pr.py`'s stranded-commit
+recovery — so the click means an authoring run committed and stopped without a PR, and the
+hook rescued it (#566). Read it as a diagnostic, not as friction. ⚠️ The fingerprint on a past
+run is `actor` a bot with `triggering_actor` the maintainer; the click reattributes the trigger.
 
 **House rules.** Never push to a deploy branch. May open PRs, push to feature branches and
 comment; may not merge, edit `.github/workflows/**` or secrets, or run destructive git. Pass
