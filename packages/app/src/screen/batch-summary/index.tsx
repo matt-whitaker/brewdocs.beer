@@ -3,6 +3,7 @@ import Organics from "@/component/organics";
 import {organicNames} from "@/component/organics/from-brewable";
 import Screen from "@/component/screen";
 import Vitals from "@/component/vitals";
+import useDerivedGravity from "@/hooks/useDerivedGravity";
 import {useBatch} from "@/state/batches";
 import {useRecipeResource} from "@/state/disambiguation";
 
@@ -10,6 +11,7 @@ export type BatchSummaryProps = { batchId: string; };
 export default function BatchSummary({ batchId }: BatchSummaryProps) {
     const batch = useBatch(batchId);
     const recipe = useRecipeResource(batch.recipeSource ?? "kb", batch.recipeId);
+    const gravity = useDerivedGravity(batch.brewable, batch.tracker);
 
     return (
         <Screen>
@@ -23,7 +25,7 @@ export default function BatchSummary({ batchId }: BatchSummaryProps) {
                 </div>
                 <div className="divider">Measurements</div>
                 {/* Need to refactor this type */}
-                <Vitals className="-mt-2" vitals={[["Target", recipe.targets], ["Actuals", batch.actuals]]} />
+                <Vitals className="-mt-2" vitals={[["Target", recipe.targets], ["Actuals", {...batch.actuals, ...gravity}]]} />
                 <div className="divider">Organics</div>
                 <Organics className="-mt-2" {...organicNames(batch.brewable.assignments)} />
             </div>
