@@ -1,5 +1,8 @@
 node_modules/
 notes.md
+# machine-specific notes — see the root CLAUDE.md. Every line in it would be
+# wrong somewhere else, which is exactly why it is not committed.
+LOCAL.md
 test-results/
 playwright-report/
 .env.*
