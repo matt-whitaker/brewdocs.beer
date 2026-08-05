@@ -77,6 +77,12 @@ the issue's state to pick the role. The same label named in a comment does the s
 `@claude/<role>` handle in a comment names the role outright and skips the inspection — the
 way to override a bad guess.
 
+⚠️ **A handle skips the role decision, not the context.** It still resolves the story — from
+the PR's head branch on a PR, from the issue's **Branch** line on an issue. It did neither on
+an issue once, so a handled role started with no story and paid turns rediscovering what the
+router already had. Resolve it inside the handle branch; do **not** fall through to the
+state-based rules, which would re-judge the role and could pick a different one.
+
 ⚠️ **Routing is a shell script, never a model.** It is all readable state; the one call that
 needs judgement — which author owns a task — is answered once by the Architect and written
 into the task as a `Role:` line.
