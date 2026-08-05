@@ -11,7 +11,12 @@ one exactly once.
 ONE COMMENT, REWRITTEN — not one per run. An epic with ten tasks and three roles each would
 otherwise accumulate thirty comments. The status table is rebuilt from live state every time,
 so it is never stale; only the Recent lines accumulate, and they are capped.
+
+NO EPIC IS A NORMAL OUTCOME. A story here need not sit under one, and when it does not there is
+nothing for this hook to say — log-to-story covers that case on the story itself. See resolve().
 """
+
+from __future__ import annotations
 
 import datetime as dt
 import os
@@ -32,14 +37,50 @@ if not ISSUE:
     print("Not triggered on an issue — no epic to log against.")
     raise SystemExit(0)
 
-# A task's parent is its story and the story's parent is the epic; a story's parent is the
-# epic directly. Walk up at most two levels and stop at whatever has no parent.
-p1 = team.parent(ISSUE)
-if not p1:
-    print(f"#{ISSUE} has no parent — an epic itself, or unparented work. Nothing to log.")
+def resolve(number: str) -> tuple[str, str] | None:
+    """Which story and which epic this issue belongs to, or None when there is no epic.
+
+    ⚠️ THE EPIC IS IDENTIFIED BY ASKING, NEVER BY ABSENCE OF A PARENT. This walked up until an
+    ancestor had no parent and called that the epic, which is right for a story sitting under
+    one and wrong for a task whose story has no epic at all — and the two arrive identically,
+    as "an issue whose parent has no parent". A parentless story therefore read as an epic and
+    its own tasks read as stories: a work log landed on #537 listing #538 and #539 under a
+    "Stories" heading, telling the maintainer the Architect would shape a task already stamped
+    Role: writer.
+
+    The same assumption was removed from story_from_branch in #502 and survived here.
+    """
+    parent = team.parent(number)
+    if not parent:
+        print(f"#{number} has no parent — an epic itself, or unparented work. Nothing to log.")
+        return None
+
+    if team.is_epic(parent):
+        return number, parent
+
+    story = parent
+    grandparent = team.parent(story)
+    if not grandparent:
+        print(f"story #{story} sits under no epic — nothing to log. (log-to-story covers it.)")
+        return None
+
+    # An ancestor two levels up is where an epic belongs. If it does not say it is one, warn
+    # rather than assume: silence would hide a mislabelled epic, and assuming is this bug.
+    if not team.is_epic(grandparent):
+        team.warn(
+            f"#{grandparent} is where #{number}'s epic should be, but carries neither the "
+            f"'{team.EPIC_LABEL}' label nor an 'Epic' title, so nothing was logged. Mark it if "
+            "it is one."
+        )
+        return None
+
+    return story, grandparent
+
+
+resolved = resolve(ISSUE)
+if not resolved:
     raise SystemExit(0)
-p2 = team.parent(p1)
-STORY, EPIC = (p1, p2) if p2 else (ISSUE, p1)
+STORY, EPIC = resolved
 
 print(f"logging #{ISSUE} (story #{STORY}) against epic #{EPIC}")
 
