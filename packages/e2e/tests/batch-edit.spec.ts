@@ -330,14 +330,21 @@ test("completes the Mash phase, advances the current phase, and keeps its water 
     await expect(page.getByRole("button", {name: "Complete 2. Boil"})).toBeVisible();
 });
 
-test("keeps a batch note after a reload", async ({page}) => {
+test("keeps a batch note and SRM value after a reload", async ({page}) => {
     await brewBatchFromKbRecipe(page, "E2E Notes Batch");
     // Notes is the Brewing tab strip's last entry, alongside the phase tabs
     await openSchedulePhase(page, "Notes");
 
     // the tab and the textarea share the accessible name "Notes"; role disambiguates
     const notes = page.getByRole("textbox", {name: "Notes"});
+    const srm = page.getByRole("textbox", {name: "SRM"});
     await expect(notes).toHaveValue("");
+    await expect(srm).toHaveValue("");
+
+    // SRM first: on a batch that has never had notes, this is the write that
+    // creates batch.notes from nothing rather than adding a key to it
+    await srm.fill("9");
+    await srm.blur();
     await notes.fill("Fermentation smelled great, slightly fruity.");
     await notes.blur();
 
@@ -345,7 +352,32 @@ test("keeps a batch note after a reload", async ({page}) => {
     await page.reload();
     await openSchedulePhase(page, "Notes");
 
+    await expect(page.getByRole("textbox", {name: "SRM"})).toHaveValue("9");
     await expect(page.getByRole("textbox", {name: "Notes"})).toHaveValue("Fermentation smelled great, slightly fruity.");
+});
+
+// SrmTag is `aria-hidden` with no text, so locate it structurally like
+// batch-summary.spec.ts's srmRow — the Notes tab's only .data-grid has the SRM row
+test("shows an SRM colour swatch on the Notes tab only for a parseable value", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Notes SRM Swatch Batch");
+    await openSchedulePhase(page, "Notes");
+
+    const srm = page.getByRole("textbox", {name: "SRM"});
+    const swatch = page.locator(".data-grid").filter({hasText: "SRM"}).locator("span.rounded-full");
+    await expect(swatch).toHaveCount(0);
+
+    await srm.fill("12");
+    await expect(swatch).toBeVisible();
+
+    await srm.fill("abc");
+    await expect(swatch).toHaveCount(0);
+
+    // 0 is a valid finite SRM, unlike an empty/whitespace field
+    await srm.fill("0");
+    await expect(swatch).toBeVisible();
+
+    await srm.fill("");
+    await expect(swatch).toHaveCount(0);
 });
 
 /**
