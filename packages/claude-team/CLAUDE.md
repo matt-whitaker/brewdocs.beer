@@ -121,6 +121,16 @@ only the Architect can cut it in two.
 ⚠️ **The Tester and Writer are tasks the Architect cuts**, ordered after the authoring ones.
 No role chains off another — nothing runs that a maintainer did not trigger.
 
+⚠️ **A test derived from the implementation is worthless, and looks exactly like coverage.**
+It asserts what the code does, so it passes by construction and cannot fail for the only
+reason worth catching. The Tester derives from *expected* behaviour — the story's outcome,
+the `testingNotes`, the acceptance criteria — and may read a component for one thing only:
+how to **address** an element. Knowing how to click a thing is not knowing what it should do.
+
+⚠️ **A failing test is a finding, not a chore.** It is filed on the authoring task, carried in
+the Tester's own report, and left failing. Weakening or deleting it to get green converts a
+finding into nothing, and a green suite that got there by deletion is worse than a red one.
+
 ⚠️ **The Writer's task is cut on EVERY story, unconditionally; the Tester's is judged.** The
 asymmetry is about when the evidence exists. Tests have a trigger the Architect can see while
 shaping — new behaviour. Documentation's trigger is `docsCandidates` in the authors'
