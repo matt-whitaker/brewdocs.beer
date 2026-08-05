@@ -469,8 +469,13 @@ jobs:
       - if: contains(steps.roles.outputs.list, 'tester')
         run: npx playwright install --with-deps chromium
 
+      # ⚠️ ANY role that ran, not the three that build. This shared the `npm ci` gate, which
+      # is correct there — the Writer compiles nothing — and wrong here: a Writer's task is as
+      # much in progress as any other, so it sat in its original column for the whole run and
+      # then jumped to Done on merge. The two conditions look alike and mean different things;
+      # "does this role build" is not "is this role working". Keep them separate.
       - name: Move the issue to In Progress
-        if: contains(steps.roles.outputs.list, 'implementor') || contains(steps.roles.outputs.list, 'designer') || contains(steps.roles.outputs.list, 'tester')
+        if: steps.roles.outputs.list != ''
         env:
           # ⚠️ PROJECTS_TOKEN is safe here and only here: step env is per-step, so the model
           # steps below cannot read it. See the Owner post-mortem in CLAUDE.md.
