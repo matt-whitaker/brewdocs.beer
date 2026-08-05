@@ -57,10 +57,10 @@ if not pr:
     # So before accepting "nothing to finish", check whether this run actually produced
     # commits. If it did, say so loudly and leave the recovery command on the issue.
     stranded = ""
+    default = (
+        team.gh_json("repo", "view", team.REPO, "--json", "defaultBranchRef") or {}
+    ).get("defaultBranchRef", {}).get("name") or ""
     if branch and branch != "HEAD":
-        default = (
-            team.gh_json("repo", "view", team.REPO, "--json", "defaultBranchRef") or {}
-        ).get("defaultBranchRef", {}).get("name") or ""
         if default:
             ahead = subprocess.run(
                 ["git", "rev-list", "--count", f"origin/{default}..HEAD"],
@@ -73,22 +73,54 @@ if not pr:
         print("This run opened no PR — nothing to finish.")
         raise SystemExit(0)
 
-    team.warn(
-        f"This run produced {stranded} but opened no PR. The work is not lost — it is on a "
-        f"branch the process does not expect."
-    )
+    # ⚠️ OPEN THE PR, do not describe how to. This used to warn and leave a recovery
+    # command, which is better than the silence it replaced but still left real work
+    # sitting where nobody looks until someone read the comment.
+    #
+    # ⚠️ A PR, never a push. In the case that prompted this the branches had diverged, so
+    # a push would have failed or needed force. A PR is non-destructive, reviewable, and
+    # the shape the process wants anyway — work reaches a story branch through one.
+    #
+    # Base: the story branch the issue names, when it exists and is not what we are on;
+    # otherwise the default branch. The host action generates its own branch name from
+    # the issue title, which can never match a name the Architect already chose, so this
+    # is the case prevention cannot reach.
+    base = ""
     if ISSUE:
-        team.gh(
-            "issue", "comment", ISSUE, "--repo", team.REPO,
-            "--body",
-            f"🔔 **This run produced {stranded} but opened no PR.**\n\n"
-            f"The work is not lost. It is on `{branch}`, which is not where the process "
-            f"looks — see #530.\n\n"
-            f"To recover it onto a branch that is:\n\n"
-            f"```\ngit fetch origin {branch}\n"
-            f"git push origin origin/{branch}:refs/heads/<the-branch-you-wanted>\n```",
+        named = team.branch_line(team.issue_body(ISSUE))
+        if named and named != branch and team.gh(
+            "api", f"repos/{team.REPO}/branches/{named}"
+        ) is not None:
+            base = named
+    if not base:
+        base = default
+
+    title = (team.issue(ISSUE, "title").get("title") if ISSUE else "") or f"Work from {branch}"
+    body = (
+        f"Opened automatically: this run left {stranded} with no PR of its own.\n\n"
+        f"The host action generates its own branch name, which cannot match a branch the "
+        f"Architect already named — see #530. The work is sound; only its PR was missing.\n"
+        + (f"\nCloses #{ISSUE}\n" if ISSUE else "")
+    )
+
+    if team.gh(
+        "pr", "create", "--repo", team.REPO, "--base", base, "--head", branch,
+        "--title", title, "--body", body,
+    ) is None:
+        team.warn(
+            f"This run produced {stranded} and I could not open a PR for it. "
+            f"Recover with: git push origin origin/{branch}:refs/heads/<the-branch-you-wanted>"
         )
-    raise SystemExit(0)
+        raise SystemExit(0)
+
+    found = team.gh_json(
+        "pr", "list", "--repo", team.REPO, "--head", branch, "--state", "open", "--json", "number"
+    )
+    if not found:
+        team.warn(f"Opened a PR from {branch} but could not read it back to finish it.")
+        raise SystemExit(0)
+    pr = str(found[0]["number"])
+    print(f"opened PR #{pr} from {branch} into {base} — it had {stranded} and none of its own")
 
 for role in ROLES.split():
     if team.gh("pr", "edit", pr, "--repo", team.REPO, "--add-label", f"@claude/{role}") is not None:
