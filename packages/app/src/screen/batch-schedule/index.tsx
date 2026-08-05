@@ -1,6 +1,5 @@
 import {ReactNode, useCallback, useMemo} from "react";
 import {SrmTag, Textarea} from "@brewdocs.beer/design";
-import deriveSchedule from "@/actions/deriveSchedule";
 import {putEntry} from "@/actions/tracker";
 import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
@@ -12,6 +11,7 @@ import PanelSwitcher from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
 import Screen from "@/component/screen";
 import useJsonEdit from "@/hooks/useJsonEdit";
+import useSchedule from "@/hooks/useSchedule";
 import Batch, {ScheduleKind} from "@/model/batch";
 import {phaseLabel} from "@/model/brewable";
 import {key, Ref, TrackerEntry} from "@/model/tracker";
@@ -51,6 +51,7 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
     const batch = useBatch(batchId);
 
     const [data, update, , , add, remove, , mutate] = useJsonEdit<Batch>(batch, onChange);
+    const schedule = useSchedule(data.brewable);
 
     const updateDate = useCallback((value: string) => update("brewDate", value), [update]);
     const updatePackaging = useCallback((value: string) => update("packaging", value || undefined), [update]);
@@ -80,10 +81,6 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
     }, [mutate]);
 
     const panels = useMemo(() => {
-        // a pure view of the brewable, like equipment and gravity below — the batch
-        // stores no schedule copy, so this memo is the whole cache story
-        const schedule = deriveSchedule(data.brewable);
-
         // one panel per phase *instance* — a second Boil is its own tab with its own
         // ingredients, equipment and readings, never merged into the first
         return data.brewable.schedule.phases.map((phase, index) => {
@@ -105,7 +102,7 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
 
             return { phase, index, groups, equipment: phase.equipment, milestones: phase.milestones };
         });
-    }, [data.brewable]);
+    }, [data.brewable, schedule]);
 
     return (
         <Screen>
