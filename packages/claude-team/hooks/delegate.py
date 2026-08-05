@@ -97,9 +97,27 @@ for role in ("architect", "implementor", "tester", "writer", "designer", "securi
     if f"@claude/{role}" in COMMENT_BODY:
         ROLES = role
         REASON = f"handle @claude/{role} in the comment"
-        if IS_PR and NUMBER:
-            STORY = resolve_pr_story()
-            REASON += f"; PR #{NUMBER} belongs to story #{STORY or 'unknown'}"
+        # A handle names the role outright, but it should not cost the role its context.
+        # ⚠️ Resolve the story HERE rather than falling through to rule 5 — the
+        # short-circuit is the point of a handle, and rule 5 would re-judge the role
+        # against issue state and could pick a different one.
+        if NUMBER:
+            if IS_PR:
+                STORY = resolve_pr_story()
+                REASON += f"; PR #{NUMBER} belongs to story #{STORY or 'unknown'}"
+            else:
+                # The Branch line names the STORY's branch on a story and on its tasks
+                # alike, so its leading number is the story — the same read rule 5 does.
+                # Without this a handle on an issue emitted no story at all while the
+                # label path on the very same issue resolved one, and the role paid turns
+                # rediscovering what the router already had.
+                #
+                # No fallback to the issue's own number: an issue with no Branch line is
+                # not part of a story, and claiming it is its own would be worse than
+                # empty, which every prompt already handles.
+                STORY = team.story_from_branch(team.branch_line(team.issue_body(NUMBER)))
+                if STORY:
+                    REASON += f"; #{NUMBER} belongs to story #{STORY}"
         emit()
         raise SystemExit(0)
 
