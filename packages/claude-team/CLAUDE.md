@@ -28,6 +28,9 @@ state, not from something a model was asked to leave behind.
 - ⚠️ **A maintainer's comment is the only override**, and it is judged by the model rather
   than matched by the script. A regex for the word misfires on an ordinary sentence — "a
   story under the Claude Team epic" — and a false positive decomposes a story into stories.
+- ⚠️ **Epics are the maintainer's to create.** No role files one on its own initiative and
+  none promotes an issue into one. A role may *propose* an epic and stop; the decision is
+  not delegated. Ambiguity resolves to a story, always.
 - A story owns one branch and one PR against the default branch, and it accumulates.
 - A task is a slice of a story with its own branch and its own PR **into the story branch**.
 

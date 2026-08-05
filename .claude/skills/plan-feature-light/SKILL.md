@@ -1,6 +1,6 @@
 ---
 name: plan-feature-light
-description: Sketch a feature's proposal and research path, and file it as one GitHub issue for a Researcher agent to decompose in-repo.
+description: Sketch a feature's proposal and research path, and file it as one GitHub issue for the Architect to decompose in-repo.
 ---
 
 Sketch a feature's big-picture proposal and — the part that matters most — a **research
@@ -66,22 +66,11 @@ turn into a sized breakdown — no more.
 - **Proposal** — the high-level shape (§3).
 - **Constraints** — standing + feature-specific.
 - **Research path** — the reading list + questions (§2). *This is the heart of the issue.*
-- **Integration branch** — the epic's feature branch (cut below) and the branch-per-epic flow.
 - **Your task** — the block below, addressed to the assignee agent.
 
-**Then cut the epic's feature branch — always.** This issue *is* the epic (the agent's sub-issues
-link to it as native sub-issues), so it gets one integration branch that all that work targets, not
-`mainline` — the feature lands together and merges as a single PR. Capture the issue number, then:
-
-```
-git checkout mainline && git pull --ff-only
-git checkout -b <issue#>-<kebab-summary>
-git push -u origin <issue#>-<kebab-summary>
-```
-
-The branch is empty (off `mainline`) until the first sub-issue PR merges in. After cutting it,
-`gh issue edit` the issue to fill the concrete branch name into its **Integration branch** section
-and the *Your task* block.
+⚠️ **Do not cut a branch, and do not create an epic on your own initiative.** An epic has
+neither a branch nor a PR, and epics are the maintainer's to create — propose it and stop for
+agreement. A story owns a branch, cut by the Architect when that story is triggered.
 
 ### The "Your task" block (include in the issue, addressed to the GitHub agent)
 
@@ -103,11 +92,9 @@ and the *Your task* block.
 > repo, i.e. `$GITHUB_REPOSITORY`). If that API is unavailable, fall back to a
 > `Part of #<this-issue-number>` line in each body.
 >
-> **Target the epic's feature branch.** A branch `<issue#>-<kebab-summary>` has been cut off
-> `mainline` for this epic (its name is in the *Integration branch* section above). Every sub-issue
-> you create must carry a **Base branch** note telling its worker to *branch off that branch and open
-> the PR against it, not `mainline`; rebase onto it once the prerequisite sub-issue has landed there.*
-> Land the prerequisite sub-issue into the branch first.
+> **Do not cut or reference any branch.** An epic has none. Each **story** you create gets its
+> branch from the Architect when that story is first triggered, and each of its tasks cuts its
+> own off that. Say which stories are blocked on which, and leave branching alone.
 >
 > ⚠️ When your index comment or any issue body references sub-issues by number, use their **real
 > issue numbers** (assigned after creation), never ordinals like #1…#7 — GitHub auto-links `#N` to
@@ -140,7 +127,7 @@ and the *Your task* block.
 ## 5. Close with a one-liner for the maintainer
 
 After creating it, post the issue link **and the epic's feature-branch name** in your response
-and remind the maintainer: review / iterate, then label it **`@claude/researcher`** and comment
+and remind the maintainer: review / iterate, then apply the **`@claude`** label, which routes it to the Architect, and comment
 **`@claude`** to start the research + decomposition — the label tier gets the full turn budget, while an `@claude` comment
 runs on the smaller poke budget and can time out on real research. The agent's sub-issues will
 target the feature branch, not `mainline`. The agent will then **create the sub-issues

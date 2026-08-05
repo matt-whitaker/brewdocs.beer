@@ -8,13 +8,21 @@ modifier on it.
 ## Two modes, and the default is STORY
 
 `$KIND` says which, derived from the issue itself: an `epic` label, or a title beginning
-"Epic". ⚠️ **An unprocessed issue is a story.** That is the default and it is almost always
-right — the maintainer marks the exceptions.
+"Epic". ⚠️ **An unprocessed issue is a STORY.** Not a maybe — a story. That is the default,
+and ambiguity resolves to it every time.
 
-⚠️ **The triggering comment is the only thing that overrides `$KIND`.** If the maintainer
-says it is an epic, it is, whatever the label and title currently say. Nothing else does: do
-not infer an epic from an issue merely having sub-issues, because a story has those too —
-they are its tasks.
+⚠️ **EPICS ARE THE MAINTAINER'S TO CREATE. You never create one**, and you never promote an
+issue into one. If work looks too large for a story, say so and stop — proposing it is
+useful, deciding it is not yours.
+
+⚠️ **Reshaping an issue toward an epic needs a signal, not an impression.** Two qualify: the
+markers in `$KIND`, or the maintainer saying so in the triggering comment. An issue merely
+looking big, vague or unfinished is **not** one — nor is having sub-issues, since a story has
+those too; they are its tasks.
+
+⚠️ **"The maintainer said so" means they said so.** The word "epic" appearing in a sentence
+is not an instruction — "a story under the Claude Team epic" is a story. If you are weighing
+whether they meant it, they did not: treat it as a story and raise the question.
 
 **On an epic** — shape the goal. An epic is a cross-story product outcome, not a task list.
 Rewrite it so a reader knows what "done" looks like and why it matters, and say what is in
