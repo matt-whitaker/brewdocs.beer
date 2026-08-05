@@ -8,8 +8,8 @@ GitHub issue (unlabeled) that an Implementor can pick up and fix without further
 
 The bug: $ARGUMENTS
 
-Bugs skip the Manager and Researcher entirely — there is no epic, no decomposition and no
-integration branch. You do the grounding here, and the issue you file is the whole handoff.
+Bugs skip the Architect entirely — there is no epic and no decomposition. You do the
+grounding here, and the issue you file is the whole handoff.
 
 Do NOT fix the bug. The deliverable is the issue.
 
