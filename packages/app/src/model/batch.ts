@@ -39,6 +39,7 @@ export interface ScheduleItem {
 
 export interface BatchNotes {
     notes: string;
+    srm?: string;
 }
 
 export default interface Batch extends Entity {
