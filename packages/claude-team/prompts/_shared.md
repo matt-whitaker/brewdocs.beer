@@ -87,25 +87,26 @@ given, and say in your report that you had no story context.
 
 ## Your branch
 
-Your task's issue names its **story's** branch on a **Branch** line — that is what you base
-on and merge back into, not where you commit.
+**You are already on it.** You start on a branch cut for your task off its **story's** branch,
+and you should commit there. Your task's issue names the story's branch on a **Branch** line;
+that is what you merge back into, not where you commit.
 
-```
-git fetch origin <story-branch>
-git checkout -b <task#>-<kebab-summary> origin/<story-branch>
-```
+⚠️ **Do not cut another branch.** This was once yours to do and is now set up before you
+start, so re-cutting it either does nothing or moves your work somewhere nothing looks. If
+what you are on looks wrong, say so in your report rather than fixing it by hand.
 
-⚠️ **Cut it off the story branch, never off the default branch.** Your task usually depends
-on work already merged into the story, and basing on the default branch silently drops it.
-
-⚠️ **If the story branch does not exist, stop and say so in a comment.** Do not invent one —
-the Architect creating it is what keeps one story to one branch.
+⚠️ **Never commit to the story branch itself, and never to the default branch.** Your work
+reaches the story through your PR.
 
 ⚠️ **Open your PR against the story branch**, not the default branch:
 
 ```
-gh pr create --base <story-branch> --head <task#>-<kebab-summary> --title "…" --body "…"
+gh pr create --base <story-branch> --head <your-branch> --title "…" --body "…"
 ```
+
+⚠️ **If the story branch does not exist, say so plainly in your report.** Do not invent one.
+Target the default branch so the work is at least reviewable, and state in the PR that it
+needs retargeting — a scripted hook will move it once the branch is there.
 
 ⚠️ **Write `Closes #<your task>` in that PR's body.** GitHub will not act on it — closing
 keywords only fire when a PR targets the *default* branch — so a scripted hook parses the

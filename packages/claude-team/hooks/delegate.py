@@ -32,7 +32,7 @@ IS_PR = os.environ.get("IS_PR", "false") == "true"
 if not team.REPO:
     team.fail("REPO is required")
 
-ROLES = STORY = REASON = KIND = ""
+ROLES = STORY = STORY_BRANCH = REASON = KIND = ""
 DEFAULTED = False
 
 
@@ -41,12 +41,12 @@ def emit() -> None:
     if out:
         with open(out, "a", encoding="utf-8") as handle:
             handle.write(
-                f"roles={ROLES}\nstory={STORY}\nkind={KIND}\n"
+                f"roles={ROLES}\nstory={STORY}\nstory_branch={STORY_BRANCH}\nkind={KIND}\n"
                 f"defaulted={str(DEFAULTED).lower()}\nreason={REASON}\n"
             )
     print(
-        f"roles={ROLES} story={STORY or 'none'} kind={KIND or 'n/a'} "
-        f"defaulted={str(DEFAULTED).lower()} — {REASON}"
+        f"roles={ROLES} story={STORY or 'none'} branch={STORY_BRANCH or 'none'} "
+        f"kind={KIND or 'n/a'} defaulted={str(DEFAULTED).lower()} — {REASON}"
     )
 
 
@@ -118,7 +118,8 @@ for role in ("architect", "implementor", "tester", "writer", "designer", "securi
                 # No fallback to the issue's own number: an issue with no Branch line is
                 # not part of a story, and claiming it is its own would be worse than
                 # empty, which every prompt already handles.
-                STORY = team.story_from_branch(team.branch_line(team.issue_body(NUMBER)))
+                STORY_BRANCH = team.branch_line(team.issue_body(NUMBER))
+                STORY = team.story_from_branch(STORY_BRANCH)
                 if STORY:
                     REASON += f"; #{NUMBER} belongs to story #{STORY}"
         emit()
@@ -172,6 +173,11 @@ if not branch:
 # a parent" assumes every story sits under an epic, and they do not — a parentless story
 # resolves each of its tasks to itself. Tried, measured, reverted.
 STORY = team.story_from_branch(branch) or (parent or NUMBER)
+
+# The branch STRING, not just the number it starts with. The authoring jobs pass it to the host
+# action as `base_branch`, which is what makes the action cut a task's branch off its story's
+# branch instead of the default one. Emitting it here costs nothing — the line is already read.
+STORY_BRANCH = branch
 
 stamped = team.role_stamp(body)
 if stamped in ("implementor", "tester", "writer", "designer"):

@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
-"""Post-hook for every role that opens a PR. Does the two things a prompt kept being asked
+"""Post-hook for every role that opens a PR. Does the three things a prompt kept being asked
 to remember:
 
-  1. labels the PR with the role(s) that worked it
-  2. makes sure the body carries `Closes #<issue>`
+  1. points the PR at its story's branch
+  2. labels the PR with the role(s) that worked it
+  3. makes sure the body carries `Closes #<issue>`
 
-(2) is the one that silently loses work: close-merged-work finds what a PR finished by
-parsing that keyword, so a missing line means the issue never closes and never reaches Done,
-with nothing to signal it.
+(1) and (3) each silently lose work. A PR that targets the default branch takes its task out
+of the story model — it ships to prod on merge and the story never gets a PR. A missing
+closing keyword means close-merged-work finds nothing to close, so the issue never reaches
+Done, with nothing to signal it either way.
 
 ROLES is a space-separated list because the authoring roles are gated steps in ONE job and
 this runs once at the end of it. A single role is a list of one; the PR should carry the
@@ -121,6 +123,31 @@ if not pr:
         raise SystemExit(0)
     pr = str(found[0]["number"])
     print(f"opened PR #{pr} from {branch} into {base} — it had {stranded} and none of its own")
+
+# ⚠️ A TASK PR MUST TARGET ITS STORY'S BRANCH, and `gh pr create --base` is a model
+# instruction like any other. #564 targeted the default branch — correctly, that time, because
+# the story branch was missing — but the same slip with the branch present takes the task out
+# of the story model: it ships straight to the deploy branch and the story never gets a PR at
+# all, since open-story-pr only fires when a merged PR's base is a story branch.
+#
+# ⚠️ Retarget only when the named branch really exists and is not this PR's own head. A story
+# triggered directly resolves its Branch line to the branch the PR is already FROM, and
+# GitHub rejects a PR whose base is its head.
+if ISSUE:
+    named = team.branch_line(team.issue_body(ISSUE))
+    current = (
+        team.gh_json("pr", "view", pr, "--repo", team.REPO, "--json", "baseRefName") or {}
+    ).get("baseRefName") or ""
+    if (
+        named
+        and named != current
+        and named != branch
+        and team.gh("api", f"repos/{team.REPO}/branches/{named}") is not None
+    ):
+        if team.gh("pr", "edit", pr, "--repo", team.REPO, "--base", named) is not None:
+            print(f"PR #{pr} retargeted {current} -> {named}")
+        else:
+            team.warn(f"PR #{pr} targets {current}, not the story branch {named}, and I could not move it")
 
 for role in ROLES.split():
     if team.gh("pr", "edit", pr, "--repo", team.REPO, "--add-label", f"@claude/{role}") is not None:

@@ -38,6 +38,32 @@ state, not from something a model was asked to leave behind.
 its tasks. It is what an author bases on and merges back into, never a branch for the task
 itself. Anything deriving a story from a branch name reads that prefix.
 
+⚠️ **Branch creation is scripted, not prompted** — the last load-bearing thing a model owned,
+and it failed about half the time. The host action mints its own branch for an issue trigger
+and injects *"You are already on the correct branch. Do not create a new branch"*, which
+contradicts any prompt telling a model to cut one. Which instruction wins is the model's call,
+and it went both ways. Three pieces replace it:
+
+- **The story branch** — a **post**-hook reads the `Branch:` line the Architect had to write
+  anyway and creates that ref at the default branch's head. The Architect names it and
+  nothing else.
+- **A task's branch** — the action's own `base_branch` input, set to the story's branch. The
+  branch it creates is then the right one, so its injected instruction becomes true instead of
+  something to argue with. Configure the action rather than fight it.
+- **A task PR's base** — `finish-pr.py` retargets it onto the story branch. The model still
+  writes `--base` for the human-readable reason; the hook is the net.
+
+⚠️ **The story-branch hook must run POST, and this inverts the obvious implementation.**
+`setupBranch` checks whether the name it is about to generate already exists remotely and, if
+so, discards the configured template and falls back to `claude/<entity>-<n>-<timestamp>`. A
+pre-hook pushing the story branch would collide with the very name the action mints from
+`{{entityNumber}}-{{description}}`, stranding the run on a branch nobody looks at. Orphaned
+`claude/*` branches in a consuming repo are this fallback firing on a re-run.
+
+⚠️ **The hook never touches a branch that exists.** Absent is the only case it handles: an
+existing branch may carry an author's commits, and resetting it to the default branch would
+destroy exactly the work the hook exists to protect.
+
 ⚠️ **Tasks must not share one branch.** They did once, and it was a race: if a consumer keys
 its concurrency group on issue number, two tasks are in *different* groups and can commit to
 the same branch at the same time. Sub-branching removes the possibility rather than relying
@@ -45,10 +71,10 @@ on runs being triggered one at a time.
 
 ## How a story moves
 
-1. **Architect** shapes the story, cuts its branch off the default branch, and creates its
-   tasks — each stamped with the role that should pick it up.
-2. Each **task** is triggered on its own. Its author cuts a branch off the story branch,
-   works there, and opens a PR into the story branch.
+1. **Architect** shapes the story, **names** its branch on a `Branch:` line, and creates its
+   tasks — each stamped with the role that should pick it up. A hook creates the branch.
+2. Each **task** is triggered on its own. Its author starts on a branch already cut off the
+   story branch, works there, and opens a PR into the story branch.
 3. Merging that task PR closes the task and lands its work on the story.
 4. The **story's** PR accumulates all of it. The maintainer reviews and merges the story as
    a whole.
@@ -216,6 +242,7 @@ forgotten by a model that ran out of turns or simply skipped it.
 | `delegate.py` | the router job | picks the role from issue state — routing is scripted, not judged |
 | `stamp-role-label.py` | pre, every role | stamps `@claude/<role>` on the triggering issue or PR |
 | `set-issue-status.py` | pre, authors | sets the issue's board Status; the column is an input |
+| `ensure-story-branch.py` | post, Architect | creates the story's branch if it is missing |
 | `sync-epic-label.py` | post, Architect | applies the `epic` label to an issue titled as one |
 | `file-sub-issues.py` | post, Architect | parents stories to their epic, tasks to their story |
 | `finish-pr.py` | post, authors | labels the PR and ensures it closes its issue |
