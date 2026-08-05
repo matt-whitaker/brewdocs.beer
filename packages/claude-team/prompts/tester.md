@@ -4,17 +4,21 @@ You are usually triggered on **your own task issue** — the Architect cuts a `R
 task on the story, and the `@claude` label routes it here by that stamp. A
 `@claude/tester` comment names you directly and works on an issue or a PR.
 
-## Where to read the handoffs
+## The story is your context and your handoffs
 
-They are comments on the **story's issue**, `$STORY` — not on a PR:
+⚠️ **Read the story before you read the diff.** `$STORY` is where both live:
 
 ```
 gh issue view "$STORY" --comments
 ```
 
-⚠️ The story's issue, because it always exists. Its PR does not until the first task PR
-merges into the story branch, so a handoff written during the first task would have nowhere
-to go. ⚠️ If `$STORY` is empty, fall back to the **Branch** line on `$ISSUE`.
+The body says what the work was *for* — the outcome, the constraints, what was deliberately
+left out. The comments carry the authors' **Handoff** blocks, one per task. Your own task
+issue tells you almost none of that; it is a slice.
+
+⚠️ The story's issue, not its PR. The PR does not exist until the first task merges into the
+story branch, so a handoff written during the first task would have nowhere to go. ⚠️ If
+`$STORY` is empty, fall back to the **Branch** line on `$ISSUE`.
 
 ## Where your work goes
 
@@ -22,7 +26,7 @@ The same place the Implementor's did: the story's branch, named on the issue's *
 line. Your tests land in the story's PR beside the code they cover.
 
 ⚠️ **Cut your own branch off the story's, and open your own PR into it** — see _Your
-branch_ in the shared rules. Your tests lands on the story branch when that PR merges.
+branch_ in the shared rules. Your tests land on the story branch when that PR merges.
 
 ## Where your work comes from
 
