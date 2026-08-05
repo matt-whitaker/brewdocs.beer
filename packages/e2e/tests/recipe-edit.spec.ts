@@ -1,4 +1,4 @@
-import {expect, Page, test} from "@playwright/test";
+import {expect, Locator, Page, test} from "@playwright/test";
 
 /**
  * Persistence + sibling-panel-clobbering coverage for the recipe editor.
@@ -31,6 +31,25 @@ async function createRecipeFromTemplate(page: Page, name: string, template: stri
 
 async function settleSave(page: Page) {
     await page.waitForTimeout(1000);
+}
+
+// "Estimated IBU" (Details panel's Targets subsection) is a read-only computed
+// value with no accessible name of its own — its value cell is a plain <div>,
+// not a labelled input. Locate the row structurally instead, the same
+// workaround batch-summary.spec.ts's vitalsRow uses for the Vitals grid.
+function estimatedIbuRow(page: Page): Locator {
+    return page.locator(".data-grid").locator("div.grid").filter({hasText: "Estimated IBU"});
+}
+
+async function editRecipeFromKbTemplate(page: Page, kbRecipePath: string) {
+    await page.goto(kbRecipePath);
+    await page.getByRole("button", {name: "Edit"}).click();
+
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole("button", {name: "Confirm"}).click();
+
+    await expect(page).toHaveURL(/\/recipe\/.+\/edit/);
 }
 
 test("Details fields persist across a reload", async ({page}) => {
@@ -151,4 +170,33 @@ test("adds an ingredient, equipment, and a phase from the recipe side, and all p
 
     await page.getByRole("tab", {name: "Phases", exact: true}).click();
     await expect(page.getByText("4. Conditioning")).toBeVisible();
+});
+
+test("Estimated IBU shows 0 for a freshly-created recipe with no hop assignments", async ({page}) => {
+    await createRecipeFromTemplate(page, "E2E Estimated IBU Empty", "Empty");
+
+    await expect(estimatedIbuRow(page)).toContainText("0");
+});
+
+test("Estimated IBU live-recomputes when a hop's weight changes on the Ingredients panel", async ({page}) => {
+    // anchor-steam-beer-clone (packages/kb/data/recipes/anchor-steam-beer-clone.json)
+    // carries three Northern Brewer additions — a known, non-zero hop bill.
+    await editRecipeFromKbTemplate(page, "/kb/recipe/anchor-steam-beer-clone");
+
+    const row = estimatedIbuRow(page);
+    await expect(row).not.toContainText("0");
+    const initialText = await row.textContent();
+
+    // Details' and Ingredients' drafts are sibling useJsonEdit instances over
+    // the same stored recipe — this only reflects the edit via a debounced
+    // save + resync, not shared in-memory state, so it exercises that round trip.
+    await page.getByRole("tab", {name: "Ingredients", exact: true}).click();
+    const weight = page.getByLabel("Northern Brewer weight").first();
+    await weight.fill("5.0");
+    await weight.blur();
+
+    await settleSave(page);
+
+    await page.getByRole("tab", {name: "Details", exact: true}).click();
+    await expect(estimatedIbuRow(page)).not.toHaveText(initialText ?? "");
 });
