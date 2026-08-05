@@ -20,6 +20,7 @@ This root file holds the **universal** rules. Each package's deep-dive lives in 
 | `app` | The PWA itself: Vite + React + TanStack Router/Query. Deployed to app.brewdocs.beer. |
 | `www` | Astro marketing/info site at brewdocs.beer. |
 | `e2e` | Playwright functional-test harness (config + specs) driving the app dev server. Not part of Verify — its own `functional-test.yaml` CI workflow. |
+| `spec` | The **product specification** — what the app should do, in a brewer's terms. Markdown, **not** an npm workspace; no CI workflow runs for it. The durable source of expected behaviour a story cannot be. |
 
 ## Legend
 
@@ -75,6 +76,7 @@ Each package's deep-dive (Purpose / Where / Surface / Invariants / Gotchas …) 
 - **app** → [`packages/app/CLAUDE.md`](packages/app/CLAUDE.md) — the largest; holds Routing, Breadcrumbs, State, the Kb\*/app _Model boundary_, Derived batch data, BatchSchedule, the `useJsonEdit` editing pattern, PanelSwitcher, _Styling_, kb dev/build serving, and _Linting_.
 - **www** → [`packages/www/CLAUDE.md`](packages/www/CLAUDE.md)
 - **e2e** → [`packages/e2e/CLAUDE.md`](packages/e2e/CLAUDE.md)
+- **spec** → [`packages/spec/CLAUDE.md`](packages/spec/CLAUDE.md) (+ [`packages/spec/README.md`](packages/spec/README.md) for humans). ⚠️ Describes **behaviour**, never mechanism — the moment it explains *how*, it duplicates a `CLAUDE.md` and the two drift.
 
 ## Deployment
 
