@@ -267,6 +267,19 @@ jobs:
           # unknown slash command, so the run returns success in ~150ms having never called
           # the model. Every comment-triggered role was dead this way between #485 and #488.
           trigger_phrase: "@claude/architect"
+          # ⚠️ THE ACTION MAKES ITS OWN BRANCH AND TELLS THE MODEL TO STAY ON IT (#530). For an
+          # issue trigger it always creates one — there is no way to decline in tag mode — and
+          # then injects "You are already on the correct branch. Do not create a new branch",
+          # which contradicts our prompt. Which instruction wins is down to the model, and it
+          # has gone both ways: #497 pushed to the story branch, #514 pushed 44 turns of work
+          # to `claude/issue-514-…` where nothing looks, reporting success.
+          #
+          # Empty prefix + this template makes that branch `<issue#>-<kebab-title>` — our own
+          # shape. For a task that fully resolves it, since an author cuts any `<task#>-…`
+          # branch it likes. It cannot match a story branch the Architect already named, so
+          # finish-pr.py also reports commits stranded on an unexpected branch.
+          branch_prefix: ""
+          branch_name_template: "{{entityNumber}}-{{description}}"
           track_progress: true
           prompt: ${{ steps.prompt.outputs.body }}
           # Read-and-write-issues only; no build tools needed for shaping an epic.
@@ -504,6 +517,19 @@ jobs:
           # unknown slash command, so the run returns success in ~150ms having never called
           # the model. Every comment-triggered role was dead this way between #485 and #488.
           trigger_phrase: "@claude/implementor"
+          # ⚠️ THE ACTION MAKES ITS OWN BRANCH AND TELLS THE MODEL TO STAY ON IT (#530). For an
+          # issue trigger it always creates one — there is no way to decline in tag mode — and
+          # then injects "You are already on the correct branch. Do not create a new branch",
+          # which contradicts our prompt. Which instruction wins is down to the model, and it
+          # has gone both ways: #497 pushed to the story branch, #514 pushed 44 turns of work
+          # to `claude/issue-514-…` where nothing looks, reporting success.
+          #
+          # Empty prefix + this template makes that branch `<issue#>-<kebab-title>` — our own
+          # shape. For a task that fully resolves it, since an author cuts any `<task#>-…`
+          # branch it likes. It cannot match a story branch the Architect already named, so
+          # finish-pr.py also reports commits stranded on an unexpected branch.
+          branch_prefix: ""
+          branch_name_template: "{{entityNumber}}-{{description}}"
           track_progress: true
           prompt: ${{ steps.p_implementor.outputs.body }}
           # Allowlist by *family*, not per-subcommand. Deliberately NOT bare `Bash`: this
@@ -560,6 +586,19 @@ jobs:
           # unknown slash command, so the run returns success in ~150ms having never called
           # the model. Every comment-triggered role was dead this way between #485 and #488.
           trigger_phrase: "@claude/designer"
+          # ⚠️ THE ACTION MAKES ITS OWN BRANCH AND TELLS THE MODEL TO STAY ON IT (#530). For an
+          # issue trigger it always creates one — there is no way to decline in tag mode — and
+          # then injects "You are already on the correct branch. Do not create a new branch",
+          # which contradicts our prompt. Which instruction wins is down to the model, and it
+          # has gone both ways: #497 pushed to the story branch, #514 pushed 44 turns of work
+          # to `claude/issue-514-…` where nothing looks, reporting success.
+          #
+          # Empty prefix + this template makes that branch `<issue#>-<kebab-title>` — our own
+          # shape. For a task that fully resolves it, since an author cuts any `<task#>-…`
+          # branch it likes. It cannot match a story branch the Architect already named, so
+          # finish-pr.py also reports commits stranded on an unexpected branch.
+          branch_prefix: ""
+          branch_name_template: "{{entityNumber}}-{{description}}"
           track_progress: true
           prompt: ${{ steps.p_designer.outputs.body }}
           claude_args: |
@@ -603,6 +642,19 @@ jobs:
           # unknown slash command, so the run returns success in ~150ms having never called
           # the model. Every comment-triggered role was dead this way between #485 and #488.
           trigger_phrase: "@claude/tester"
+          # ⚠️ THE ACTION MAKES ITS OWN BRANCH AND TELLS THE MODEL TO STAY ON IT (#530). For an
+          # issue trigger it always creates one — there is no way to decline in tag mode — and
+          # then injects "You are already on the correct branch. Do not create a new branch",
+          # which contradicts our prompt. Which instruction wins is down to the model, and it
+          # has gone both ways: #497 pushed to the story branch, #514 pushed 44 turns of work
+          # to `claude/issue-514-…` where nothing looks, reporting success.
+          #
+          # Empty prefix + this template makes that branch `<issue#>-<kebab-title>` — our own
+          # shape. For a task that fully resolves it, since an author cuts any `<task#>-…`
+          # branch it likes. It cannot match a story branch the Architect already named, so
+          # finish-pr.py also reports commits stranded on an unexpected branch.
+          branch_prefix: ""
+          branch_name_template: "{{entityNumber}}-{{description}}"
           track_progress: true
           # ⚠️ NO handoff is appended here. Only one role runs per trigger (#500), so an
           # author's `structured_output` is never available to this step — it would always
@@ -650,6 +702,19 @@ jobs:
           # unknown slash command, so the run returns success in ~150ms having never called
           # the model. Every comment-triggered role was dead this way between #485 and #488.
           trigger_phrase: "@claude/writer"
+          # ⚠️ THE ACTION MAKES ITS OWN BRANCH AND TELLS THE MODEL TO STAY ON IT (#530). For an
+          # issue trigger it always creates one — there is no way to decline in tag mode — and
+          # then injects "You are already on the correct branch. Do not create a new branch",
+          # which contradicts our prompt. Which instruction wins is down to the model, and it
+          # has gone both ways: #497 pushed to the story branch, #514 pushed 44 turns of work
+          # to `claude/issue-514-…` where nothing looks, reporting success.
+          #
+          # Empty prefix + this template makes that branch `<issue#>-<kebab-title>` — our own
+          # shape. For a task that fully resolves it, since an author cuts any `<task#>-…`
+          # branch it likes. It cannot match a story branch the Architect already named, so
+          # finish-pr.py also reports commits stranded on an unexpected branch.
+          branch_prefix: ""
+          branch_name_template: "{{entityNumber}}-{{description}}"
           track_progress: true
           # ⚠️ NO handoff appended — same reason as the Tester. The Writer reads the Handoff
           # comments on its own story's PR, on its own trigger.
