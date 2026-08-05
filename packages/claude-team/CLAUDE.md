@@ -58,10 +58,18 @@ authoring run.** The story branch is cut empty, and GitHub will not open a PR wi
 commits between base and head, so the first task landing is the earliest moment it can
 exist.
 
-⚠️ **A task PR's closing keyword does nothing on its own.** GitHub honours `Closes #N` only
-when a PR targets the **default** branch, and a task PR targets the story branch. The merge
-hook parsing the body is the only thing that closes a task — which is why an author must
-write the line even though GitHub ignores it.
+⚠️ **A task PR's closing keyword links but does not close.** Two behaviours, easy to
+conflate — and they were, wrongly, until measured:
+
+- **Linking works at any base.** A keyword in the body populates `closingIssuesReferences`
+  whatever the PR targets: #536 → [521], #542 → [522], #443 → [441], all into story branches.
+- **Auto-closing needs the default branch.** A task PR targets its story's branch, so GitHub
+  never closes it. The merge hook does.
+
+An author writes the line for both reasons, and the hook's body-parse is a net for a keyword
+GitHub did not link — not the mechanism. ⚠️ There is also **no public GraphQL mutation** for
+linking a PR to an issue: introspection shows only `createLinkedBranch` and `addSubIssue`,
+and the UI's "link an issue" control edits the PR body. The keyword *is* the API.
 
 ⚠️ **A task still open when its story merges is a signal, not a gap.** Nothing closes it
 implicitly: it was abandoned, or its PR never landed. An earlier version closed a merged

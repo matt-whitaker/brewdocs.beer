@@ -1,10 +1,18 @@
 #!/usr/bin/env python3
 """Runs on every merged PR. Closes the issues it finished and files them on the board.
 
-GitHub only acts on closing keywords when a PR targets the DEFAULT branch. A task's PR
-targets its STORY's branch, so its `Closes #<task>` is inert and closingIssuesReferences
-comes back empty — the intent is in the body, GitHub just never linked it. Parsing it here
-is the only thing that closes a task.
+TWO BEHAVIOURS, NOT ONE — this said they were the same and was half wrong.
+
+  linking       a closing keyword in the body links the issue at ANY base. Measured on
+                real PRs into story branches: #536 -> [521], #542 -> [522], #443 -> [441].
+                closingIssuesReferences IS populated, so the primary path below finds it.
+  auto-closing  GitHub only CLOSES on merge when the PR targets the DEFAULT branch. A
+                task PR targets its story's branch, so nothing closes it on its own —
+                which is why this hook exists.
+
+The body parse below is a net for a PR whose keyword GitHub did not link, not the
+mechanism. It is currently unreachable here; kept because a missing close is silent and
+costs an issue that never reaches Done.
 
 NO SUB-ISSUE EXPANSION. This used to close a closed issue's open children, because a story's
 tasks had no PRs of their own and the story's merge was the only thing that could close them.
