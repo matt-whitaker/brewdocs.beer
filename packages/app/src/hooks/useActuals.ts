@@ -1,3 +1,4 @@
+import {useMemo} from "react";
 import {estimateAbv, Scalar, UNITS} from "@brewdocs.beer/core";
 import Batch from "@/model/batch";
 import Measurements from "@/model/measurements";
@@ -19,7 +20,7 @@ function gravityReadings(batch: Batch): DatedReading[] {
         .sort((a, b) => a.date.localeCompare(b.date));
 }
 
-export default function deriveActuals(batch: Batch): Measurements {
+function deriveActuals(batch: Batch): Measurements {
     const readings = gravityReadings(batch);
     if (!readings.length) {
         return batch.actuals;
@@ -34,4 +35,8 @@ export default function deriveActuals(batch: Batch): Measurements {
         fg,
         abv: { value: `${estimateAbv(og, fg).toFixed(1)}%`, unit: UNITS.PERCENT }
     };
+}
+
+export default function useActuals(batch: Batch): Measurements {
+    return useMemo(() => deriveActuals(batch), [batch]);
 }

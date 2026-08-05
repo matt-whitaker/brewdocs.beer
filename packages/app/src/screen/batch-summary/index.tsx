@@ -1,10 +1,9 @@
-import {useMemo} from "react";
 import {ScreenH2, ScreenH3, ScreenP} from "@brewdocs.beer/design";
-import deriveActuals from "@/actions/deriveActuals";
 import Organics from "@/component/organics";
 import {organicNames} from "@/component/organics/from-brewable";
 import Screen from "@/component/screen";
 import Vitals from "@/component/vitals";
+import useActuals from "@/hooks/useActuals";
 import {useBatch} from "@/state/batches";
 import {useRecipeResource} from "@/state/disambiguation";
 
@@ -12,7 +11,7 @@ export type BatchSummaryProps = { batchId: string; };
 export default function BatchSummary({ batchId }: BatchSummaryProps) {
     const batch = useBatch(batchId);
     const recipe = useRecipeResource(batch.recipeSource ?? "kb", batch.recipeId);
-    const actuals = useMemo(() => deriveActuals(batch), [batch]);
+    const actuals = useActuals(batch);
 
     return (
         <Screen>
