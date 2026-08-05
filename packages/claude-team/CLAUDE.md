@@ -137,15 +137,16 @@ at all.)
 | Implementor | a task stamped `Role: implementor` | code, outside the design system |
 | Designer | a task stamped `Role: designer` | code, inside the design system |
 | Tester | a task stamped `Role: tester`, one per story | tests |
-| Writer | a task stamped `Role: writer`, one per story | documentation |
+| Writer | a task stamped `Role: writer`, one per story, run **first** | the product specification, then documentation |
 | Security | every merge, plus its handle on a PR | issues it files |
 
 ⚠️ **Implementor and Designer split on the package a change touches, not on judgement**, so
 the boundary can be checked rather than negotiated. A task spanning both is two tasks, and
 only the Architect can cut it in two.
 
-⚠️ **The Tester and Writer are tasks the Architect cuts**, ordered after the authoring ones.
-No role chains off another — nothing runs that a maintainer did not trigger.
+⚠️ **The Tester and Writer are tasks the Architect cuts** — the Writer ahead of the authoring
+tasks, the Tester after them. No role chains off another; nothing runs that a maintainer did
+not trigger.
 
 ⚠️ **A test derived from the implementation is worthless, and looks exactly like coverage.**
 It asserts what the code does, so it passes by construction and cannot fail for the only
@@ -157,13 +158,25 @@ how to **address** an element. Knowing how to click a thing is not knowing what 
 the Tester's own report, and left failing. Weakening or deleting it to get green converts a
 finding into nothing, and a green suite that got there by deletion is worse than a red one.
 
-⚠️ **The Writer's task is cut on EVERY story, unconditionally; the Tester's is judged.** The
-asymmetry is about when the evidence exists. Tests have a trigger the Architect can see while
-shaping — new behaviour. Documentation's trigger is `docsCandidates` in the authors'
-handoffs, which do not exist yet, so asking the Architect to predict it produces "no" every
-time: across every story before this rule, not one Writer task was ever cut. Cutting it
-always moves the judgement to the Writer, which reads the handoffs and is allowed to
-conclude nothing needs writing.
+⚠️ **The Writer owns the product specification, and that is why it runs FIRST.** A
+specification is only worth anything if it says what the code *should* do, and it cannot say
+that if it was written by reading the code that already exists — a consumer deriving from such
+a document is deriving from the implementation at one remove, with the rule against it looking
+satisfied. Ordering the Writer ahead of the authors makes "from intent, not from the diff" true
+by construction rather than by instruction, and hands the authors a sharper brief besides.
+
+⚠️ **Its task is cut on EVERY story, unconditionally; the Tester's is judged.** Every story
+changes what the product does, so there is always something to specify. Before the spec existed
+the argument was weaker — the Architect could not predict `docsCandidates`, and asked to guess
+it answered "no" every time: across every story before that rule, not one Writer task was ever
+cut.
+
+⚠️ **Running first strands `docsCandidates`, and that must be handled rather than left.** The
+authors emit them after the Writer has finished, so nothing consumes them in the same story — a
+channel with no reader, which is the shape that shipped dead twice here. They stay on the
+story's issue, and the maintainer re-triggers `@claude/writer` on the same task once the authors
+land. The Writer's own prompt tells it to say whether it expects to be needed again, because it
+is the only party positioned to know.
 
 ⚠️ **Per story, not per epic** — for the Writer too. An epic-wide documentation pass sounds
 cheaper, and its usual justification is that one branch touching the docs avoids conflicts.
@@ -172,7 +185,8 @@ already carries the previous one's docs, and deferring only moves the explanatio
 from the change it explains.
 
 ⚠️ **Trigger order is derived, never stamped.** Tasks sort by `(phase, issue number)`: phase
-from the `Role:` stamp — authors, then tests, then docs — and number within a phase, because
+from the `Role:` stamp — the writer, then the authors, then the tester — and number within a
+phase, because
 the Architect creates them in the order it intends. A task is ready once everything before it
 is closed, so the first open task is the one to trigger. Both inputs are things the Architect
 must produce for other reasons; a third stamp naming an order would be a third line it could
@@ -182,7 +196,9 @@ skip.
 
 An author's step carries `--json-schema`, so its final message is a contract: `testingNotes`
 for the Tester, `docsCandidates` for the Writer. A hook posts it to the **story's issue** as
-one comment per task; the Tester and Writer read it there.
+one comment per task, where the Tester reads it on its own trigger. ⚠️ The Writer reads it only
+on a **re-trigger** — it runs before the authors, so on its first pass the comments do not exist
+yet.
 
 - ⚠️ **Both keys are required and `[]` is a real answer** — "I looked, there is nothing",
   which a consumer can act on. A missing key says nothing at all. That distinction is the
