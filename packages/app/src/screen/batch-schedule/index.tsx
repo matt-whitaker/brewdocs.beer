@@ -1,5 +1,5 @@
-import {useCallback, useMemo} from "react";
-import {Textarea} from "@brewdocs.beer/design";
+import {ReactNode, useCallback, useMemo} from "react";
+import {SrmTag, Textarea} from "@brewdocs.beer/design";
 import deriveSchedule from "@/actions/deriveSchedule";
 import {putEntry} from "@/actions/tracker";
 import DataGrid from "@/component/data-grid";
@@ -39,6 +39,12 @@ const KIND_LABELS: Record<ScheduleKind, string> = {
 /** within a phase, rows read in the order you'd actually work through them */
 const KIND_ORDER: ScheduleKind[] = ["grains", "hops", "additives", "yeasts"];
 
+function srmTag(srm?: string): ReactNode {
+    const value = srm?.trim() ? Number(srm) : NaN;
+
+    return Number.isFinite(value) ? <SrmTag srm={value} /> : null;
+}
+
 export type BatchScheduleProps = { batchId: string; onChange: (batch: Batch) => void; };
 export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps) {
     const session = useSession();
@@ -49,6 +55,7 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
     const updateDate = useCallback((value: string) => update("brewDate", value), [update]);
     const updatePackaging = useCallback((value: string) => update("packaging", value || undefined), [update]);
     const updateNotes = useCallback((value: string) => update("notes.notes", value), [update]);
+    const updateSrm = useCallback((value: string) => update("notes.srm", value), [update]);
 
     // tracker writes can't go through useJsonEdit's dot-path (a key like
     // "equipment:<uuid>" isn't addressable that way — see CLAUDE.md's Model
@@ -200,6 +207,21 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                 })}
                 <PanelSwitcherContent title="Notes">
                     <div className="pt-2">
+                        <DataGrid className="pb-2">
+                            <DataGridRow>
+                                <DataGridLabel cols={3}>SRM</DataGridLabel>
+                                <div className="col-start-4 flex items-center justify-end self-center">
+                                    {srmTag(data.notes?.srm)}
+                                </div>
+                                <DataGridInput
+                                    colStart={5}
+                                    cols={2}
+                                    label="SRM"
+                                    value={data.notes?.srm ?? ""}
+                                    onChange={updateSrm}
+                                    onBlur={updateSrm} />
+                            </DataGridRow>
+                        </DataGrid>
                         <Textarea
                             label="Notes"
                             value={data.notes?.notes ?? ""}
