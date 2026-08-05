@@ -5,6 +5,7 @@ import DataGridInput from "@/component/data-grid/input";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridRow from "@/component/data-grid/row";
 import DataGridSubheaderRow from "@/component/data-grid/subheader-row";
+import useEstimatedIbu from "@/hooks/useEstimatedIbu";
 import useJsonEdit from "@/hooks/useJsonEdit";
 import Recipe from "@/model/recipe";
 import {usePatchRecipe, useRecipe} from "@/state/recipes";
@@ -52,6 +53,8 @@ export default function RecipeEditDetails({ recipeId }: RecipeEditDetailsProps) 
     const onBlurAbv = useCallback((value: string) => updateScalar("targets.abv", value), [updateScalar]);
     const onChangeIbu = useCallback((value: string) => update("targets.ibu", value), [update]);
     const onChangeSrm = useCallback((value: string) => update("targets.srm", value), [update]);
+
+    const estimatedIbu = useEstimatedIbu(data.brewable.assignments, data.batchSize, data.targets.og);
 
     return (
         <DataGrid>
@@ -151,6 +154,12 @@ export default function RecipeEditDetails({ recipeId }: RecipeEditDetailsProps) 
             <DataGridRow zebra>
                 <DataGridLabel cols={3}>IBU</DataGridLabel>
                 <DataGridInput colStart={4} cols={3} label="IBU" value={data.targets.ibu} onChange={onChangeIbu} />
+            </DataGridRow>
+            <DataGridRow zebra>
+                <DataGridLabel cols={3}>Estimated IBU</DataGridLabel>
+                <div className="col-start-4 col-span-3 flex items-center justify-end self-center pr-1 text-sm leading-6 lg:leading-8">
+                    {estimatedIbu}
+                </div>
             </DataGridRow>
             <DataGridRow zebra>
                 <DataGridLabel cols={3}>SRM</DataGridLabel>
