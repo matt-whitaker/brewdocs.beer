@@ -1,3 +1,4 @@
+import {useMemo} from "react";
 import {isUnit, Scalar, Unit} from "@brewdocs.beer/core";
 import {resourcesOf} from "@/actions/brewableResources";
 import {Assignment} from "@/model/brewable";
@@ -35,7 +36,7 @@ function convert(scalar: Scalar, factors: Partial<Record<Unit, number>>): number
     return factor ? amount * factor : NaN;
 }
 
-export default function calculateIbu(assignments: Assignment[], batchSize: Scalar, og: Scalar): number {
+function tinsethIbu(assignments: Assignment[], batchSize: Scalar, og: Scalar): number {
     if (!assignments?.length) {
         return 0;
     }
@@ -65,4 +66,8 @@ export default function calculateIbu(assignments: Assignment[], batchSize: Scala
     }, 0);
 
     return Number.isFinite(total) ? Math.round(total) : 0;
+}
+
+export default function useEstimatedIbu(assignments: Assignment[], batchSize: Scalar, og: Scalar): number {
+    return useMemo(() => tinsethIbu(assignments, batchSize, og), [assignments, batchSize, og]);
 }

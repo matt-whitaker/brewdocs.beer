@@ -1,11 +1,11 @@
-import {useCallback, useMemo} from "react";
-import calculateIbu from "@/actions/calculateIbu";
+import {useCallback} from "react";
 import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
 import DataGridInput from "@/component/data-grid/input";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridRow from "@/component/data-grid/row";
 import DataGridSubheaderRow from "@/component/data-grid/subheader-row";
+import useEstimatedIbu from "@/hooks/useEstimatedIbu";
 import useJsonEdit from "@/hooks/useJsonEdit";
 import Recipe from "@/model/recipe";
 import {usePatchRecipe, useRecipe} from "@/state/recipes";
@@ -54,10 +54,7 @@ export default function RecipeEditDetails({ recipeId }: RecipeEditDetailsProps) 
     const onChangeIbu = useCallback((value: string) => update("targets.ibu", value), [update]);
     const onChangeSrm = useCallback((value: string) => update("targets.srm", value), [update]);
 
-    const estimatedIbu = useMemo(
-        () => calculateIbu(data.brewable.assignments, data.batchSize, data.targets.og),
-        [data.brewable.assignments, data.batchSize, data.targets.og]
-    );
+    const estimatedIbu = useEstimatedIbu(data.brewable.assignments, data.batchSize, data.targets.og);
 
     return (
         <DataGrid>
