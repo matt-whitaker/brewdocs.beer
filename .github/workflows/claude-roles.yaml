@@ -78,6 +78,7 @@ run-name: >-
 #   delegate job          delegate.py              picks the role from issue state
 #   pre   every role      stamp-role-label.py      stamps @claude/<role> on the issue or PR
 #   pre   authors job     set-issue-status.py      sets the issue's board Status (STATUS input)
+#   post  architect       ensure-story-branch.py   creates the story's branch if it is missing
 #   post  architect       sync-epic-label.py       labels an issue whose title announces an epic
 #   post  architect       file-sub-issues.py       parents stories to epics, tasks to stories
 #   post  authors job     finish-pr.py             labels the PR, appends `Closes #<issue>`
@@ -172,6 +173,9 @@ jobs:
     outputs:
       roles: ${{ steps.route.outputs.roles }}
       story: ${{ steps.route.outputs.story }}
+      # the branch NAME, not the number — passed to the host action as `base_branch` so an
+      # author's task branch is cut off the story's branch instead of the default one
+      story_branch: ${{ steps.route.outputs.story_branch }}
       kind: ${{ steps.route.outputs.kind }}
       defaulted: ${{ steps.route.outputs.defaulted }}
       reason: ${{ steps.route.outputs.reason }}
@@ -295,6 +299,22 @@ jobs:
             --allowedTools "Read,Edit,Write,Bash(gh:*),Bash(git:*)"
             --max-turns 100
 
+      # ⚠️ FIRST of the post-hooks, and the reason branch creation is no longer the model's.
+      # The action mints its branch LOCALLY and never pushes one with no commits — and an
+      # Architect's branch must be empty — so a model obeying the action's "you are already on
+      # the correct branch" left nothing on the remote while reporting the branch as cut.
+      # ⚠️ POST, never pre: the action falls back to `claude/<entity>-<n>-<timestamp>` if the
+      # name it is about to generate already exists remotely, so pushing it up front would
+      # strand the whole run on a branch nobody looks at.
+      - name: Ensure the story's branch exists
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
+          # an epic has no branch, and a missing one there must not warn
+          KIND: ${{ needs.delegate.outputs.kind }}
+        run: "$RUNNER_TEMP/agent-bin/ensure-story-branch.py"
       - name: Update the story's task order
         if: always()
         env:
@@ -365,6 +385,19 @@ jobs:
   #
   # ⚠️ THE POST-HOOKS RUN ONCE, AT THE END. Three copies would relabel and re-check the
   # same PR three times.
+  #
+  # ⚠️ `base_branch` IS WHY THE AUTHORS NO LONGER FIGHT THE ACTION OVER BRANCHES. A task's
+  # branch must be cut off its STORY's branch; left unset the action cuts from the default
+  # branch and then injects "You are already on the correct branch. Do not create a new
+  # branch", contradicting the prompt telling the model to re-cut it — a coin flip we lost
+  # about half the time (#530, #570). Setting it makes the action's own branch the correct
+  # one, so the two instructions agree instead of competing.
+  #
+  # It arrives from `delegate.py`, which already parses the story's Branch line to derive the
+  # story number and now emits the string beside it. Empty is falsy in `setupBranch`
+  # (`if (baseBranch) { sourceBranch = baseBranch }`), so an unresolvable story degrades to
+  # the old behaviour rather than breaking. On a PR trigger the action checks out the PR's own
+  # branch and never reads this at all.
   authors:
     needs: delegate
     if: |
@@ -542,6 +575,9 @@ jobs:
           # shape. For a task that fully resolves it, since an author cuts any `<task#>-…`
           # branch it likes. It cannot match a story branch the Architect already named, so
           # finish-pr.py also reports commits stranded on an unexpected branch.
+          # a task branch is cut off its STORY branch, not the default one — see the job
+          # header. Empty when no story resolves, which falls back to the default branch.
+          base_branch: ${{ needs.delegate.outputs.story_branch }}
           branch_prefix: ""
           branch_name_template: "{{entityNumber}}-{{description}}"
           track_progress: true
@@ -611,6 +647,9 @@ jobs:
           # shape. For a task that fully resolves it, since an author cuts any `<task#>-…`
           # branch it likes. It cannot match a story branch the Architect already named, so
           # finish-pr.py also reports commits stranded on an unexpected branch.
+          # a task branch is cut off its STORY branch, not the default one — see the job
+          # header. Empty when no story resolves, which falls back to the default branch.
+          base_branch: ${{ needs.delegate.outputs.story_branch }}
           branch_prefix: ""
           branch_name_template: "{{entityNumber}}-{{description}}"
           track_progress: true
@@ -667,6 +706,9 @@ jobs:
           # shape. For a task that fully resolves it, since an author cuts any `<task#>-…`
           # branch it likes. It cannot match a story branch the Architect already named, so
           # finish-pr.py also reports commits stranded on an unexpected branch.
+          # a task branch is cut off its STORY branch, not the default one — see the job
+          # header. Empty when no story resolves, which falls back to the default branch.
+          base_branch: ${{ needs.delegate.outputs.story_branch }}
           branch_prefix: ""
           branch_name_template: "{{entityNumber}}-{{description}}"
           track_progress: true
@@ -727,6 +769,9 @@ jobs:
           # shape. For a task that fully resolves it, since an author cuts any `<task#>-…`
           # branch it likes. It cannot match a story branch the Architect already named, so
           # finish-pr.py also reports commits stranded on an unexpected branch.
+          # a task branch is cut off its STORY branch, not the default one — see the job
+          # header. Empty when no story resolves, which falls back to the default branch.
+          base_branch: ${{ needs.delegate.outputs.story_branch }}
           branch_prefix: ""
           branch_name_template: "{{entityNumber}}-{{description}}"
           track_progress: true

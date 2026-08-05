@@ -40,24 +40,20 @@ work:
    you write anything down.
 2. **Rewrite the issue description** into a real story: the outcome, the constraints, what
    is out of scope, and verified paths.
-3. **Cut the branch** off the default branch, empty, and record it — but **check first
-   whether it already exists**:
-   ```
-   git fetch origin
-   git ls-remote --exit-code --heads origin <branch>   # does it exist?
-   git checkout -B <issue#>-<kebab-summary> origin/<default-branch>
-   git push -u origin <issue#>-<kebab-summary>
-   ```
-   Then write it into the issue body on its own line:
+3. **Name the story's branch and record it.** Write it into the issue body on its own line:
    ```
    **Branch: `<issue#>-<kebab-summary>`**
    ```
-   ⚠️ **If the branch exists and has commits of its own, leave it alone.** `checkout -B`
-   from the default branch would reset it, and pushing that would discard an author's work.
-   Say in your comment that it already exists and move on.
-   ⚠️ If it exists with **no** commits of its own, fast-forwarding it to the current default
-   branch is fine and usually helpful — the story then starts from current code. Say that
-   you did it.
+   ⚠️ **Do not create it, and do not push it.** A scripted hook creates it from this line
+   after you finish, at the default branch's head, empty. That is deliberate: you are running
+   on a branch the host action already made for you and told you to stay on, and it never
+   pushes a branch with no commits — so a story branch left to you reached the remote about
+   half the time, and the next author found nothing to base on.
+   ⚠️ **The line is the whole deliverable here**, and the only part of branch handling still
+   yours. Without it nothing downstream can work: the hook has no name to create, routing
+   cannot resolve the story, and every role that follows has nowhere to commit.
+   ⚠️ An existing branch is left untouched by the hook, commits or not — so if a story is
+   re-shaped, its branch keeps whatever an author already put there.
 4. **Cut the story into tasks** if it needs dividing. A story one author can finish should
    not be split — extra issues cost more than they save.
    ⚠️ **Read the existing sub-issues before creating any.** A story you are re-triggered on
@@ -65,7 +61,7 @@ work:
    accurately, do they carry both required lines — and correct or add rather than duplicate.
    Filing a second set of tasks over the top of a good one is worse than doing nothing.
 
-⚠️ Cut the branch **empty**. Do not commit to it; the first author's work is its first commit.
+⚠️ The branch is **empty**. Do not commit to it; the first author's work is its first commit.
 
 ## Testing and documentation are work you cut, not work that follows
 
