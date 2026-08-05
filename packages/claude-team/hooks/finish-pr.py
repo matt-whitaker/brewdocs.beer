@@ -49,7 +49,45 @@ if not pr and ISSUE:
         pr = str(match["number"])
 
 if not pr:
-    print("This run opened no PR — nothing to finish.")
+    # ⚠️ "No PR" is not automatically "nothing happened". The host action creates its own
+    # branch for an issue trigger and tells the model to stay on it, contradicting our
+    # prompt — and when the model obeys it, a run's work lands somewhere nobody looks. It
+    # happened on a 44-turn run that reported success (#530). Silence there cost days.
+    #
+    # So before accepting "nothing to finish", check whether this run actually produced
+    # commits. If it did, say so loudly and leave the recovery command on the issue.
+    stranded = ""
+    if branch and branch != "HEAD":
+        default = (
+            team.gh_json("repo", "view", team.REPO, "--json", "defaultBranchRef") or {}
+        ).get("defaultBranchRef", {}).get("name") or ""
+        if default:
+            ahead = subprocess.run(
+                ["git", "rev-list", "--count", f"origin/{default}..HEAD"],
+                capture_output=True, text=True, check=False,
+            ).stdout.strip()
+            if ahead.isdigit() and int(ahead) > 0:
+                stranded = f"{ahead} commit(s) on `{branch}`"
+
+    if not stranded:
+        print("This run opened no PR — nothing to finish.")
+        raise SystemExit(0)
+
+    team.warn(
+        f"This run produced {stranded} but opened no PR. The work is not lost — it is on a "
+        f"branch the process does not expect."
+    )
+    if ISSUE:
+        team.gh(
+            "issue", "comment", ISSUE, "--repo", team.REPO,
+            "--body",
+            f"🔔 **This run produced {stranded} but opened no PR.**\n\n"
+            f"The work is not lost. It is on `{branch}`, which is not where the process "
+            f"looks — see #530.\n\n"
+            f"To recover it onto a branch that is:\n\n"
+            f"```\ngit fetch origin {branch}\n"
+            f"git push origin origin/{branch}:refs/heads/<the-branch-you-wanted>\n```",
+        )
     raise SystemExit(0)
 
 for role in ROLES.split():
