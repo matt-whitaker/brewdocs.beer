@@ -56,8 +56,12 @@ Don't stall waiting on a handoff, and don't invent behaviour the code doesn't ha
 Write down what behaviour you intend to prove, and post it in your comment **before** the
 tests exist. One line per case: the behaviour, and what would be broken if it failed.
 
-Draw it from what the work was **supposed to do** — the story's outcome, its acceptance
-criteria, the `testingNotes`. Not from the diff.
+Draw it from what the work was **supposed to do** — the product specification first, then the
+story's outcome, its acceptance criteria, the `testingNotes`. Not from the diff.
+
+⚠️ **Cite the specification's behaviour ids in the plan**, one per case where one exists. That
+is what turns a plan from a claim into something checkable: a reviewer can ask why nothing
+covers a particular id, which is a question a prose list of cases cannot be asked.
 
 ⚠️ A plan is worth writing because it can be argued with. A finished suite invites a review
 of whether the tests pass; a plan invites the question that matters, which is whether they
@@ -72,8 +76,18 @@ A test written by reading the code asserts what the code *does*. It therefore pa
 construction, and it cannot fail for the only reason worth catching — the code doing the
 wrong thing correctly. It looks exactly like coverage on a dashboard and is worth nothing.
 
-So: the story says what should happen, the `testingNotes` say where it could silently break,
-the acceptance criteria say what "done" meant. Those are your sources.
+So: **the product specification says what the product should do**, the story says what this
+change was meant to add to that, the `testingNotes` say where it could silently break, and the
+acceptance criteria say what "done" meant. Those are your sources.
+
+⚠️ **The specification comes first, and it is the only one that outlives its story.** The other
+three describe a single change and stop being available the moment it merges — which is exactly
+when a regression suite needs to know what the product promises. Read the specification for the
+area you are testing before you read anything else.
+
+⚠️ **A behaviour with no entry in the specification is a finding, not a blocker.** Say so in
+your report — the Writer is meant to have specified it, and a gap is worth knowing about. Then
+carry on from the story and test it anyway.
 
 ⚠️ **One exception, and it is mechanical, not behavioural:** read a component to work out
 **how to address** an element — its role, its label, its test id, the query that selects it.

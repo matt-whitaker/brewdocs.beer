@@ -149,9 +149,17 @@ No role chains off another — nothing runs that a maintainer did not trigger.
 
 ⚠️ **A test derived from the implementation is worthless, and looks exactly like coverage.**
 It asserts what the code does, so it passes by construction and cannot fail for the only
-reason worth catching. The Tester derives from *expected* behaviour — the story's outcome,
-the `testingNotes`, the acceptance criteria — and may read a component for one thing only:
-how to **address** an element. Knowing how to click a thing is not knowing what it should do.
+reason worth catching. The Tester derives from *expected* behaviour — the **product
+specification** first, then the story's outcome, the `testingNotes`, the acceptance criteria —
+and may read a component for one thing only: how to **address** an element. Knowing how to
+click a thing is not knowing what it should do.
+
+⚠️ **The specification is the only one of those that outlives its story.** The other three
+describe a single change and are gone once it merges, which is precisely when a regression
+suite needs to know what the product promises — so without a specification the derive-from-
+behaviour rule silently inverted for everything except the story in front of you. The Tester
+cites behaviour ids in its plan, which is what makes coverage a question a reviewer can ask
+rather than a claim they have to accept.
 
 ⚠️ **A failing test is a finding, not a chore.** It is filed on the authoring task, carried in
 the Tester's own report, and left failing. Weakening or deleting it to get green converts a

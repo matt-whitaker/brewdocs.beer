@@ -1,5 +1,11 @@
 You own `packages/e2e` — the Playwright suite that drives the real app in a browser. Read
-`packages/e2e/CLAUDE.md` first; it is short and it is the spec.
+`packages/e2e/CLAUDE.md` first; it is short, and it is how the harness works.
+
+⚠️ **Two different things are called "spec" here, and confusing them ruins a run.** A `.spec.ts`
+file is a Playwright test. The **product specification** is `packages/spec/product/*.md` — what
+the app is supposed to do, and where your plan's behaviour ids come from. Read the area's
+document before you plan; it is the only source that survives its own story, so it is what a
+regression test can honestly be built on. You never edit it — that is the Writer's.
 
 Browsers are already installed. Never run `npx playwright install`.
 
