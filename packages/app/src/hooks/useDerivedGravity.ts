@@ -1,3 +1,4 @@
+import {useMemo} from "react";
 import {Scalar} from "@brewdocs.beer/core";
 import Brewable from "@/model/brewable";
 import Measurements from "@/model/measurements";
@@ -27,12 +28,14 @@ function gravityReadingsInDateOrder(brewable: Brewable, tracker: Record<string, 
         .sort((a, b) => readingTime(a) - readingTime(b));
 }
 
-export default function deriveGravity(brewable: Brewable, tracker: Record<string, TrackerEntry>): DerivedGravity {
-    const readings = gravityReadingsInDateOrder(brewable, tracker);
+export default function useDerivedGravity(brewable: Brewable, tracker: Record<string, TrackerEntry>): DerivedGravity {
+    return useMemo(() => {
+        const readings = gravityReadingsInDateOrder(brewable, tracker);
 
-    if (!readings.length) {
-        return {};
-    }
+        if (!readings.length) {
+            return {};
+        }
 
-    return {og: readings[0].reading, fg: readings[readings.length - 1].reading};
+        return {og: readings[0].reading, fg: readings[readings.length - 1].reading};
+    }, [brewable, tracker]);
 }
