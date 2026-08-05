@@ -84,9 +84,11 @@ GitHub Actions, path-filtered on push to `mainline` (the sole deploy branch), al
 - `build-test-deploy.app-kb-prod.yaml` — **kb dist deploys independently** to a dedicated kb bucket behind the app's CloudFront distribution (invalidates `/kb`). This is why `importResource` fetches the relative `/kb/*` — same origin in prod, symlink in dev, and kb data updates ship without an app rebuild.
 - `build-test-deploy.www-prod.yaml` — www dist → www bucket (brewdocs.beer).
 
-The **Verify** workflow (`.github/workflows/verify.yaml`) runs `npm ci`, then `npm test` (lint) and `npm run build` across **all workspaces** (`-ws`), on every PR (no deploy) — the real pre-merge gate; the `build-test-deploy.*` workflows run only *post*-merge on push.
+The **Verify** workflow (`.github/workflows/verify.yaml`) runs `npm ci`, then `npm test` (lint) and `npm run build` across **all workspaces** (`-ws`), on every PR **whatever its base** (no deploy) — the real pre-merge gate; the `build-test-deploy.*` workflows run only *post*-merge on push.
 
-**Functional tests.** `.github/workflows/functional-test.yaml` runs the Playwright suite (`packages/e2e`) on every PR to `mainline`, independently of Verify — it installs the chromium browser and lets Playwright's `webServer` auto-start the app dev server, uploading the HTML report/traces as an artifact on failure. See `packages/e2e/CLAUDE.md`.
+**Functional tests.** `.github/workflows/functional-test.yaml` runs the Playwright suite (`packages/e2e`) on PRs **to `mainline` only**, independently of Verify — it installs the chromium browser and lets Playwright's `webServer` auto-start the app dev server, uploading the HTML report/traces as an artifact on failure. See `packages/e2e/CLAUDE.md`.
+
+⚠️ **The two differ on purpose, and the axis is base branch.** `pull_request.branches` matches the PR's **base**, so scoping it to `mainline` excludes every task PR — a task's base is its story's branch. Verify carries no filter because it is the cheap half and a red result belongs on the task that caused it, not on a story PR holding several tasks' worth of diff. Functional test keeps the `mainline` scope because it is the expensive half (browser install, a real dev server) and the story PR is the right granularity for it. ⚠️ Consequence: a bot-opened **task** PR now also waits for a maintainer's *Approve and run*.
 
 ## Contributing
 

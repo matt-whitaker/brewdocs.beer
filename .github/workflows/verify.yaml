@@ -2,9 +2,13 @@ name: Verify
 run-name: "Verify"
 
 on:
+  # ⚠️ NO `branches:` FILTER, deliberately — it matches the PR's BASE, and a task PR's base is
+  # its story's branch. Scoped to `mainline` this gate never ran on a task at all: it first
+  # fired on the story's PR, after every task had already merged into it, so a red result
+  # arrived buried in an accumulated diff instead of on the one task that caused it. Verify is
+  # the cheap half of the gate; run it everywhere. Functional test keeps the `mainline` scope
+  # — see the root CLAUDE.md's _Deployment_ section for why the two differ.
   pull_request:
-    branches:
-      - mainline
     paths:
       # Only code changes need the gate. Docs, agent prompts, hooks and workflow-adjacent
       # files don't compile, lint or build, so a PR touching only those skips this entirely.
