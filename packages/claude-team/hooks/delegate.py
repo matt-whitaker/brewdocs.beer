@@ -7,14 +7,17 @@ the pattern this repo has been bitten by most — a model asked to produce data 
 depends on. Putting it in front of every role makes a bad decision here cost the whole run.
 Almost none of this needs judgement: it is all readable state. The one call that does —
 Implementor vs Designer — is answered by the Architect at task-creation time and written into
-the task as a `Role:` line, which rule 5 reads.
+the task as a `Role:` line, which rule 4 reads.
 
 Precedence:
   1. a @claude/<role> handle in the comment wins outright
-  2. a PR         -> resolve its story, default to implementor
-  3. no Branch line and no sub-issues -> architect
-  4. sub-issues that are stories      -> architect (an epic)
-  5. a Branch line and a parent       -> the role stamped on the task
+  2. a PR            -> resolve its story, default to implementor
+  3. no Branch line  -> architect, told whether it is an epic or a story
+  4. a Branch line   -> the role stamped on the task
+
+There is no rule keyed on sub-issues. One existed and read "sub-issues that are stories -> an
+epic"; #528 removed it, because a story has sub-issues too — they are its tasks. Rule 3 now
+asks team.is_epic(), which wants a durable marker and does not infer.
 """
 
 import os
@@ -98,8 +101,8 @@ for role in ("architect", "implementor", "tester", "writer", "designer", "securi
         ROLES = role
         REASON = f"handle @claude/{role} in the comment"
         # A handle names the role outright, but it should not cost the role its context.
-        # ⚠️ Resolve the story HERE rather than falling through to rule 5 — the
-        # short-circuit is the point of a handle, and rule 5 would re-judge the role
+        # ⚠️ Resolve the story HERE rather than falling through to rule 4 — the
+        # short-circuit is the point of a handle, and rule 4 would re-judge the role
         # against issue state and could pick a different one.
         if NUMBER:
             if IS_PR:
@@ -107,7 +110,7 @@ for role in ("architect", "implementor", "tester", "writer", "designer", "securi
                 REASON += f"; PR #{NUMBER} belongs to story #{STORY or 'unknown'}"
             else:
                 # The Branch line names the STORY's branch on a story and on its tasks
-                # alike, so its leading number is the story — the same read rule 5 does.
+                # alike, so its leading number is the story — the same read rule 4 does.
                 # Without this a handle on an issue emitted no story at all while the
                 # label path on the very same issue resolved one, and the role paid turns
                 # rediscovering what the router already had.
@@ -158,7 +161,7 @@ if not branch:
     emit()
     raise SystemExit(0)
 
-# ---- 5. a task or a story with a branch: use the stamped role
+# ---- 4. a task or a story with a branch: use the stamped role
 #
 # THE BRANCH LINE ALWAYS NAMES THE STORY'S BRANCH, on a story and on its tasks alike, so the
 # number it starts with is the story — self for a story, the parent's for a task. That holds
@@ -175,7 +178,7 @@ if stamped in ("implementor", "tester", "writer", "designer"):
     ROLES = stamped
     REASON = f"#{NUMBER} is stamped Role: {stamped}"
 else:
-    # A missing stamp is a failure moved one step upstream: rule 5 depends on the Architect
+    # A missing stamp is a failure moved one step upstream: rule 4 depends on the Architect
     # having written it. Default rather than stall — an author on the wrong kind of task is
     # recoverable, nothing running is not — but say so.
     ROLES = "implementor"

@@ -21,7 +21,7 @@ run-name: >-
   · #${{ github.event.issue.number || github.event.pull_request.number }}
   ${{ github.event.issue.title || github.event.pull_request.title }}
 
-# ONE WORKFLOW, FIVE JOBS, SEVEN ROLES. Kept in one file so the Actions history stays
+# ONE WORKFLOW, FIVE JOBS, SIX ROLES. Kept in one file so the Actions history stays
 # readable: one run per trigger, with whatever was not selected skipping inside it rather
 # than filling the list with skipped runs.
 #
@@ -31,21 +31,22 @@ run-name: >-
 #   security            on merge, plus on request via @claude/security
 #   merge_housekeeping  on merge — no model
 #
-# ⚠️ THE AUTHORS JOB IS NOT A CHAIN, and briefly claimed to be (#500). `delegate.sh` emits
+# ⚠️ THE AUTHORS JOB IS NOT A CHAIN, and briefly claimed to be (#500). `delegate.py` emits
 # exactly ONE role, so exactly one of its gated steps ever runs. That is deliberate: the
 # Architect cuts `Role: tester` and `Role: writer` tasks per story, ordered after the
 # authoring ones, so every role is triggered on its own work rather than dragged behind
 # another. They share a job to share its setup, not to run in sequence.
 #
 # ⚠️ WHICH IS WHY THE HANDOFF TRAVELS BY COMMENT. Roles that do not share a run cannot share
-# a step output — `post-handoff.sh` puts the author's JSON on the story's PR, where the
-# Tester and Writer read it on their own triggers.
+# a step output — `post-handoff.py` puts the author's JSON on the story's ISSUE, where the
+# Tester and Writer read it on their own triggers. The issue, not the PR: the story's PR does
+# not exist until a task has merged into its branch.
 #
 # ⚠️ THE DELEGATOR ROUTES. Two ways in, one router:
 #
-#   label "@claude" on an issue  -> delegate.sh reads issue state and picks the role
+#   label "@claude" on an issue  -> delegate.py reads issue state and picks the role
 #   "@claude" in a comment       -> same
-#   "@claude/<role>" in a comment-> delegate.sh rule 1 returns that role outright
+#   "@claude/<role>" in a comment-> delegate.py rule 1 returns that role outright
 #
 # Every model job carries `needs: delegate` and gates on `needs.delegate.outputs.roles`.
 # A job cannot gate on a step inside itself, which is why the router is its own job.
@@ -53,12 +54,12 @@ run-name: >-
 # ⚠️ THIS IS NOT THE `needs:` SHAPE #430 REVERTED. There, roles needed `implementor`, which
 # itself skipped most runs — and a job needing a skipped job reports cancelled, which was
 # the noise. `delegate` always RUNS whenever the workflow triggers, so dependents reach
-# their own `if:` and skip cleanly. The alternative (delegate as a step in all six jobs)
-# spins six runners to check out a repo and then do nothing.
+# their own `if:` and skip cleanly. The alternative — delegate as a step inside every job
+# that needs it — spins a runner per job to check out a repo and then do nothing.
 #
 # ⚠️ A HANDLE MUST NEVER BE BLOCKED BY THE ROUTER. Each role's `if:` is
 # `always() && (router picked me || the comment names me)`, so an explicit handle still
-# routes when delegate.sh fails outright. Only a *skipped* delegate skips the roles.
+# routes when delegate.py fails outright. Only a *skipped* delegate skips the roles.
 #
 # ⚠️ THE LOOP GUARD IS THE EXACT LABEL NAME. Roles stamp "@claude/<role>", and every stamp
 # is another `issues: labeled` event. The delegate job requires
@@ -73,21 +74,27 @@ run-name: >-
 # ⚠️ BACKLOG WORK IS SCRIPTED, NOT PROMPTED. Every role carries hard-coded hooks around
 # its model step, from `packages/claude-team/hooks/`:
 #
-#   delegate job          acknowledge.sh           reacts 👀 so the trigger is visibly received
-#   delegate job          delegate.sh              picks the role(s) from issue state
-#   pre   every role      stamp-role-label.sh      stamps @claude/<role> on the issue or PR
-#   pre   authors job     set-issue-status.sh      sets the issue's board Status (STATUS input)
-#   post  architect       file-sub-issues.sh       parents stories to epics, tasks to stories
-#   post  authors job     finish-pr.sh             labels the PR, appends `Closes #<issue>`
-#   post  authors job     open-story-pr.sh         opens the story's PR if it has none
-#   post  authors job     post-handoff.sh          puts the JSON handoff on the story's PR
-#   post  authors job     log-to-epic.sh           rewrites the epic's rolling work log
-#   merge (no role)       close-merged-work.sh     closes the PR's issues, files them on the board
+#   delegate job          acknowledge.py           reacts 👀 so the trigger is visibly received
+#   delegate job          delegate.py              picks the role from issue state
+#   pre   every role      stamp-role-label.py      stamps @claude/<role> on the issue or PR
+#   pre   authors job     set-issue-status.py      sets the issue's board Status (STATUS input)
+#   post  architect       sync-epic-label.py       labels an issue whose title announces an epic
+#   post  architect       file-sub-issues.py       parents stories to epics, tasks to stories
+#   post  authors job     finish-pr.py             labels the PR, appends `Closes #<issue>`
+#   post  authors job     post-handoff.py          puts the JSON handoff on the story's ISSUE
+#   post  arch + authors  log-to-story.py          rewrites the story's task list in trigger order
+#   post  authors job     log-to-epic.py           rewrites the epic's rolling work log
+#   merge (no role)       close-merged-work.py     closes the PR's issues, files them on the board
+#   merge (no role)       log-to-story.py          the same list, now the merged task has closed
+#   merge (no role)       open-story-pr.py         opens the story's PR once a task has landed
 #
-# ⚠️ The authors job's post-hooks run ONCE at the end of the job, not once per role — three
-# copies would relabel and re-check the same PR three times. The stamps are the exception:
-# each role stamps before its own model step, so a chain that dies partway reads as how far
-# it actually got.
+# ⚠️ `open-story-pr.py` runs ON MERGE, not in an authoring run, and it moved there for a
+# reason: the story branch is cut empty and GitHub will not open a PR with no commits between
+# base and head, so the first task PR merging is the earliest moment the story's PR can exist.
+#
+# ⚠️ The authors job's post-hooks run ONCE at the end of the job, not once per role. The
+# stamps are the exception: each role stamps immediately before its own model step, so a run
+# that dies in the model reads as "this role was here" rather than as nothing at all.
 #
 # These used to be prompt instructions, and a model could skip them — the label trail is
 # worthless if a run can forget to stamp it. They cost no turns and cannot be forgotten.
@@ -108,7 +115,7 @@ run-name: >-
 # A prompt file cannot hold `${{ }}` — Actions never evaluates inside a file — so anything
 # dynamic goes in the model step's env instead (Security's `PR` is the only one today).
 #
-# ⚠️ PROJECTS_TOKEN appears in `close-merged-work.sh` and `set-issue-status.sh`, and
+# ⚠️ PROJECTS_TOKEN appears in `close-merged-work.py` and `set-issue-status.py`, and
 # nowhere else. It is a long-lived classic PAT covering every project the maintainer owns,
 # and secret masking covers logs only — not an API payload a model could write — so it
 # stays out of any environment a prompt can read. Step env is per-step, which is what makes
@@ -147,7 +154,7 @@ jobs:
   # model producing data a consumer depends on" is the pattern this repo has been bitten by
   # most. Sitting in front of every role makes a bad decision here cost the whole run;
   # almost none of it needs judgement. See the header for the loop guard and the `needs:`
-  # note, and delegate.sh for the precedence rules.
+  # note, and delegate.py for the precedence rules.
   delegate:
     if: |
       github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]' && (
@@ -182,7 +189,7 @@ jobs:
           REPO: ${{ github.repository }}
           NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
           # ⚠️ issue_comment only. A review comment's id belongs to the *pulls* comments
-          # collection, and acknowledge.sh reacts via `issues/comments/<id>` — passing one
+          # collection, and acknowledge.py reacts via `issues/comments/<id>` — passing one
           # here reacts to an unrelated comment or 404s. Empty falls back to the PR itself,
           # which is an issue as far as the reactions API is concerned.
           COMMENT_ID: ${{ github.event_name == 'issue_comment' && github.event.comment.id || '' }}
@@ -193,7 +200,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
-          # empty on a label trigger — that is what sends delegate.sh past rule 1 into
+          # empty on a label trigger — that is what sends delegate.py past rule 1 into
           # reading issue state, which is the whole point of the label path
           COMMENT_BODY: ${{ github.event.comment.body || github.event.review.body }}
           # `issues` never fires for a PR (labelling one is a `pull_request` event), so the
@@ -321,12 +328,14 @@ jobs:
         run: "$RUNNER_TEMP/agent-bin/file-sub-issues.py"
   # ── Authors: Implementor | Designer | Tester | Writer ──────────────────────────
   # The four authoring roles as gated steps in one job. ⚠️ EXACTLY ONE RUNS PER TRIGGER —
-  # `delegate.sh` emits a single role, and each step gates on it. They share a job to share
+  # `delegate.py` emits a single role, and each step gates on it. They share a job to share
   # its setup (checkout, prompts, npm ci), not to run in sequence.
   #
   # Implementor and Designer are alternatives, split on the package a task touches. The
-  # Tester is triggered by its own `Role: tester` task, cut per story; the Writer by a docs
-  # story cut per epic, so documentation lands in one pass from one branch.
+  # Tester and the Writer are each triggered by their own task, cut PER STORY and ordered
+  # after the authoring ones — the Tester's when the story warrants it, the Writer's always,
+  # because the evidence for needing one (`docsCandidates`) does not exist yet when the
+  # Architect is shaping tasks (#555).
   #
   # ⚠️ DO NOT REACH FOR `needs:` BETWEEN THESE STEPS if the chain idea returns. #430 tried
   # role chaining across jobs: the followers sat queued behind every run, and a job that
@@ -334,9 +343,9 @@ jobs:
   # (The one `needs:` in this file, on `delegate`, is a different case — see the header.)
   #
   # ⚠️ AND #500 IS WHY CHAINING DID NOT SIMPLY MOVE HERE. As steps the job graph problem
-  # goes away, but `delegate.sh` emits one role, so the steps never co-fired and the
+  # goes away, but `delegate.py` emits one role, so the steps never co-fired and the
   # `structured_output` handoff between them never had a consumer — shipped, closed, and
-  # dead for both #475 and #476. The handoff now travels by comment (`post-handoff.sh`)
+  # dead for both #475 and #476. The handoff now travels by comment (`post-handoff.py`)
   # precisely so roles do NOT have to share a run to hand off.
   #
   # ⚠️ BUDGET is per role, not cumulative, because only one runs: opus 80 for an author,
@@ -664,7 +673,7 @@ jobs:
           # ⚠️ NO handoff is appended here. Only one role runs per trigger (#500), so an
           # author's `structured_output` is never available to this step — it would always
           # render an empty fenced block and contradict the prompt, which sends the Tester to
-          # the Handoff comments on the story's PR instead.
+          # the Handoff comments on the story's ISSUE instead.
           prompt: ${{ steps.p_tester.outputs.body }}
           claude_args: |
             --model sonnet
@@ -722,7 +731,7 @@ jobs:
           branch_name_template: "{{entityNumber}}-{{description}}"
           track_progress: true
           # ⚠️ NO handoff appended — same reason as the Tester. The Writer reads the Handoff
-          # comments on its own story's PR, on its own trigger.
+          # comments on its own story's ISSUE, on its own trigger.
           prompt: ${{ steps.p_writer.outputs.body }}
           claude_args: |
             --model sonnet
@@ -914,7 +923,7 @@ jobs:
       # branch is empty until a task PR merges into it, and GitHub will not open a PR with no
       # commits between base and head — so the first task merge is the earliest moment it can
       # exist. Runs for every merged PR and no-ops unless the base is a story branch.
-      # ⚠️ Ordered AFTER close-merged-work.sh: it reads task state, and the task this PR
+      # ⚠️ Ordered AFTER close-merged-work.py: it reads task state, and the task this PR
       # just closed is only closed once that hook has run.
       - name: Update the story's task order
         if: always()
