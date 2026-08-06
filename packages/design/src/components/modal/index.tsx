@@ -1,4 +1,5 @@
 import {forwardRef, PropsWithChildren} from "react";
+import {createPortal} from "react-dom";
 
 export * from "./footer";
 export * from "./screen";
@@ -7,12 +8,13 @@ export * from "./useModal";
 
 export type ModalProps = PropsWithChildren & { open?: boolean; };
 export const Modal = forwardRef<HTMLDialogElement, ModalProps>(({ children }, ref) => {
-    return(
+    return createPortal(
         <dialog className="modal" ref={ref}>
             <div className="modal-box">
                 {children}
             </div>
-        </dialog>
+        </dialog>,
+        document.body
     );
 });
 

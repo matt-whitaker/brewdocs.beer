@@ -104,6 +104,36 @@ async function settleSave(page: Page) {
     await page.waitForTimeout(1000);
 }
 
+// The confirm dialog is a top-layer <dialog>, so its box is measured straight against the
+// viewport. Centred means equal margins on both axes; the width threshold is deliberately
+// loose — it guards the ~185px shrink-wrapped regression (#591) without pinning to a pixel
+// value that a wording change would break.
+async function expectConfirmDialogCentred(page: Page) {
+    const box = await page.getByRole("dialog").locator(".modal-box").boundingBox();
+    if (!box) throw new Error("the confirm dialog has no bounding box");
+    const size = page.viewportSize();
+    if (!size) throw new Error("no viewport size");
+
+    const left = box.x, right = size.width - (box.x + box.width);
+    const top = box.y, bottom = size.height - (box.y + box.height);
+
+    expect(Math.abs(left - right), `horizontally centred (left ${left}, right ${right})`).toBeLessThanOrEqual(2);
+    expect(Math.abs(top - bottom), `vertically centred (top ${top}, bottom ${bottom})`).toBeLessThanOrEqual(2);
+    expect(box.width, "wide enough not to be shrink-wrapped").toBeGreaterThan(400);
+}
+
+test("the recipe delete confirmation renders centred, not shrink-wrapped in a corner", async ({ page }) => {
+    await createRecipeFromTemplate(page, "E2E Centred Confirm Recipe", "Empty");
+
+    await page.goto("/recipes");
+    await page.getByRole("tab", { name: "My Recipes" }).click();
+    const row = page.getByRole("listitem").filter({ hasText: "E2E Centred Confirm Recipe" });
+    await row.getByRole("button").click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+
+    await expectConfirmDialogCentred(page);
+});
+
 test("deleting a user recipe removes it from the list and it stays gone after reload", async ({ page }) => {
     await createRecipeFromTemplate(page, "E2E Delete Recipe", "Empty");
 
