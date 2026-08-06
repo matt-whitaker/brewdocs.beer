@@ -113,6 +113,13 @@ def role_stamp(body: str) -> str:
 
 
 EPIC_LABEL = "epic"
+BUG_LABEL = "bug"
+
+# The CLASSIFICATION labels — what an issue *is*. Distinct from the routing labels
+# (`@claude`, `@claude/<role>`), which say what should happen to it, belong to the maintainer,
+# and are a record of what has run. Only these two are derivable from a title and safe for
+# whoever files an issue to apply.
+KIND_LABELS = {"epic": EPIC_LABEL, "bug": BUG_LABEL}
 
 
 def titled_epic(title: str) -> bool:
@@ -120,12 +127,24 @@ def titled_epic(title: str) -> bool:
     return bool(re.match(r"\s*epic\b", title or "", re.IGNORECASE))
 
 
-def is_epic(number: str | int) -> bool:
-    """Classify an issue. An unprocessed issue is a STORY; an epic has to say so.
+def titled_bug(title: str) -> bool:
+    """True when a title announces itself as a bug — `Bug: …`.
 
-    Two markers, either of which is enough: the `epic` label, or a title beginning "Epic".
-    Both are durable — they survive the run, so nothing has to re-derive the classification
-    next time.
+    `\\b` after the word, so `Bugfix …` does not match: a title that starts by naming the fix
+    is describing work, not reporting a defect.
+    """
+    return bool(re.match(r"\s*bug\b", title or "", re.IGNORECASE))
+
+
+def kind(number: str | int) -> str:
+    """Classify an issue as `epic`, `bug` or `story`. An unprocessed issue is a STORY.
+
+    Each classification needs a durable marker — its label, or a title that announces it.
+    Durable is the point: it survives the run, so nothing has to re-derive it next time.
+
+    ⚠️ EPIC WINS over bug, so an issue carrying both markers resolves one way every time. The
+    two mean different things — epic is a size, bug is an origin — and nothing sensible happens
+    if a run has to guess which it is.
 
     Deliberately NOT inferred from having sub-issues. A story has those too — they are its
     tasks — so that inference only ever worked because a shaped story also had a branch, and
@@ -137,9 +156,18 @@ def is_epic(number: str | int) -> bool:
     comment against this default instead.
     """
     data = issue(number, "title", "labels")
-    if any((l.get("name") or "").lower() == EPIC_LABEL for l in data.get("labels", [])):
-        return True
-    return titled_epic(data.get("title") or "")
+    names = {(l.get("name") or "").lower() for l in data.get("labels", [])}
+    title = data.get("title") or ""
+
+    if EPIC_LABEL in names or titled_epic(title):
+        return "epic"
+    if BUG_LABEL in names or titled_bug(title):
+        return "bug"
+    return "story"
+
+
+def is_epic(number: str | int) -> bool:
+    return kind(number) == "epic"
 
 
 def story_from_branch(branch: str) -> str:
