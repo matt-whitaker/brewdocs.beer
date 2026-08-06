@@ -22,3 +22,4 @@ The BrewDocs PWA — brew-day companion + knowledge base. Deployed to [app.brewd
 - [Vite](https://vite.dev/) + `vite-plugin-pwa`
 
 See the [`app` section of CLAUDE.md](/CLAUDE.md#packagesapp) for detail.
+
