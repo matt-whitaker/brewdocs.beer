@@ -2,6 +2,12 @@ name: Build, Test, and Deploy (WWW Prod)
 run-name: "Build, Test, and Deploy (WWW Prod)"
 
 on:
+  # ⚠️ Manual trigger, and it is a recovery mechanism rather than a convenience. A push is
+  # otherwise the only way to deploy, so a deploy that fails — or one that never fires — can
+  # only be retried by producing another commit. Both have happened: a transient ECONNRESET in
+  # download-artifact left prod a commit behind (#587-era), and a design-only change deployed
+  # Storybook but not the app. Pick the branch in the Actions tab and run it.
+  workflow_dispatch:
   push:
     branches:
       - mainline
@@ -17,6 +23,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: List changed files
+        # ⚠️ push only — a manual run has no github.event.commits to summarise, and the
+        # first step of the mechanism that rescues a broken deploy must not be the thing
+        # that breaks it.
+        if: github.event_name == 'push'
         env:
           # passed via env (not inlined) so commit/file names cannot inject into the shell
           COMMITS: ${{ toJSON(github.event.commits) }}
