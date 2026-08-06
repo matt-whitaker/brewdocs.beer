@@ -31,6 +31,24 @@ state, not from something a model was asked to leave behind.
 - ⚠️ **Epics are the maintainer's to create.** No role files one on its own initiative and
   none promotes an issue into one. A role may *propose* an epic and stop; the decision is
   not delegated. Ambiguity resolves to a story, always.
+- ⚠️ **A `bug` is a story in shape but not in handling.** One branch, one PR, usually one task
+  — but its body is the deliverable of an investigation that already happened, so the Architect
+  **appends and never rewrites**. A report's reproduction, its measurements and especially its
+  "what I could not determine" section are the only grounding the fixer has; a story-shaped
+  rewrite replaces evidence with an opinion. `team.kind()` returns `epic | bug | story`, and
+  **epic wins** when an issue carries both markers, so it resolves the same way every time.
+
+⚠️ **Two kinds of label, and only one is the maintainer's.** "Create issues unlabeled" reads as
+covering both, and it does not:
+
+| kind | labels | who applies | what it means |
+|---|---|---|---|
+| **routing** | the front-door label, `@claude/<role>` | the maintainer; hooks stamp the trail | what should *happen* to this issue, and what has already run |
+| **classification** | `epic`, `bug` | anyone filing; a hook derives it from the title | what this issue *is* |
+
+A classification label is durable and derivable, so it survives a run and nothing has to
+re-derive it. ⚠️ A plain story carries **no** classification label — that absence is what says
+so, which is why `sync-kind-label.py` only ever adds and never removes.
 - A story owns one branch and one PR against the default branch, and it accumulates.
 - A task is a slice of a story with its own branch and its own PR **into the story branch**.
 
@@ -267,7 +285,7 @@ forgotten by a model that ran out of turns or simply skipped it.
 | `stamp-role-label.py` | pre, every role | stamps `@claude/<role>` on the triggering issue or PR |
 | `set-issue-status.py` | pre, authors | sets the issue's board Status; the column is an input |
 | `ensure-story-branch.py` | post, Architect | creates the story's branch if it is missing |
-| `sync-epic-label.py` | post, Architect | applies the `epic` label to an issue titled as one |
+| `sync-kind-label.py` | post, Architect | applies the `epic`/`bug` label an issue title announces |
 | `file-sub-issues.py` | post, Architect | parents stories to their epic, tasks to their story |
 | `finish-pr.py` | post, authors | labels the PR and ensures it closes its issue |
 | `post-handoff.py` | post, authors | posts the JSON handoff to the story's issue |

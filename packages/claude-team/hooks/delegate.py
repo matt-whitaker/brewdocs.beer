@@ -12,12 +12,12 @@ the task as a `Role:` line, which rule 4 reads.
 Precedence:
   1. a @claude/<role> handle in the comment wins outright
   2. a PR            -> resolve its story, default to implementor
-  3. no Branch line  -> architect, told whether it is an epic or a story
+  3. no Branch line  -> architect, told whether it is an epic, a bug or a story
   4. a Branch line   -> the role stamped on the task
 
 There is no rule keyed on sub-issues. One existed and read "sub-issues that are stories -> an
 epic"; #528 removed it, because a story has sub-issues too — they are its tasks. Rule 3 now
-asks team.is_epic(), which wants a durable marker and does not infer.
+asks team.kind(), which wants a durable marker and does not infer.
 """
 
 import os
@@ -147,16 +147,20 @@ branch = team.branch_line(body)
 kids = len(team.sub_issues(NUMBER))
 parent = team.parent(NUMBER)
 
-# ---- 3. nothing shaped yet -> architect, told whether to treat it as an epic or a story
+# ---- 3. nothing shaped yet -> architect, told what it is looking at
 #
-# An unprocessed issue is a STORY. An epic has to say so, by its `epic` label or an "Epic"
-# title — see team.is_epic. This used to infer an epic from having sub-issues, which was
-# wrong: a story has those too, and the inference only held because a shaped story also had
-# a branch.
+# An unprocessed issue is a STORY. An epic or a bug has to say so, by its label or its title —
+# see team.kind. This used to infer an epic from having sub-issues, which was wrong: a story
+# has those too, and the inference only held because a shaped story also had a branch.
+#
+# A bug is still a story in shape — one branch, one PR — but it is shaped differently: its body
+# is a report someone already grounded, and the Architect is told to preserve it rather than
+# rewrite it into a story.
 if not branch:
     ROLES = "architect"
-    KIND = "epic" if team.is_epic(NUMBER) else "story"
-    REASON = f"#{NUMBER} has no branch — shaping it as {'an epic' if KIND == 'epic' else 'a story'}"
+    KIND = team.kind(NUMBER)
+    article = "an epic" if KIND == "epic" else f"a {KIND}"
+    REASON = f"#{NUMBER} has no branch — shaping it as {article}"
     if kids:
         REASON += f" (it already has {kids} sub-issue(s))"
     emit()

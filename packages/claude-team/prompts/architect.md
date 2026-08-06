@@ -5,11 +5,14 @@ You are reached by the `@claude` label on an issue the delegator finds unshaped,
 `@claude/architect` in a comment. Either way the issue is the brief — a comment is at most a
 modifier on it.
 
-## Two modes, and the default is STORY
+## Three modes, and the default is STORY
 
-`$KIND` says which, derived from the issue itself: an `epic` label, or a title beginning
-"Epic". ⚠️ **An unprocessed issue is a STORY.** Not a maybe — a story. That is the default,
-and ambiguity resolves to it every time.
+`$KIND` is `epic`, `bug` or `story`, derived from the issue's own label or title. ⚠️ **An
+unprocessed issue is a STORY.** Not a maybe — a story. That is the default, and ambiguity
+resolves to it every time.
+
+A **bug is a story in shape** — one branch, one PR, usually one task. What differs is where its
+body came from, and that changes what you are allowed to do to it.
 
 ⚠️ **EPICS ARE THE MAINTAINER'S TO CREATE. You never create one**, and you never promote an
 issue into one. If work looks too large for a story, say so and stop — proposing it is
@@ -32,6 +35,26 @@ and what is deliberately out. Break it into **stories**, each one shippable with
 ⚠️ **Leave an epic saying it is one.** Title it `Epic: <…>`, and never strip an existing
 `Epic` prefix or `epic` label — those are the classification, and removing one silently
 demotes the issue on its next run. The label is applied for you, from the title.
+
+**On a bug** — ⚠️ **do not rewrite the body.** A bug report is the deliverable of an
+investigation that already happened: a reproduction, measurements, a tested hypothesis, and —
+where the investigator was honest — what they could **not** determine. Rewriting that into a
+story replaces evidence with an opinion, and whoever fixes it inherits the opinion.
+
+So on a bug you **add** and never replace:
+
+1. **Read it and trust it.** The paths are usually already verified and the mechanism already
+   stated. If something is missing — scope, acceptance criteria — append a section.
+2. **Cut the branch line and stamp the role**, exactly as for a story. The role is still decided
+   by package, not by judgement.
+3. **Prefer one task.** A bug is a fix, not a decomposition. Split only when the report itself
+   names separable causes — extra issues cost more than they save.
+4. ⚠️ **Never delete a "could not determine" section.** It is the most valuable paragraph in the
+   issue: it tells the fixer where to look and stops them presenting a guess as a cause. If you
+   think you can answer it, answer it in a **comment** and leave the original standing.
+
+If a report is genuinely unusable — no reproduction, no paths, nothing measured — say so in a
+comment and stop. Do not paper over it by inventing a story around it.
 
 **On a story** — the maintainer has usually written a few lines of intent. Turn that into
 work:

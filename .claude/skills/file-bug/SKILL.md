@@ -4,12 +4,15 @@ description: Research a bug the maintainer describes, verify what is actually wr
 ---
 
 Research a bug the maintainer describes, **verify what's actually wrong**, and file **one**
-GitHub issue (unlabeled) that an Implementor can pick up and fix without further research.
+GitHub issue (labelled `bug`, nothing else) that an Implementor can pick up and fix without
+further research.
 
 The bug: $ARGUMENTS
 
-Bugs skip the Architect entirely — there is no epic and no decomposition. You do the
-grounding here, and the issue you file is the whole handoff.
+There is no epic and no decomposition. You do the grounding here, and the issue you file is the
+whole handoff. If the maintainer later labels it for the team, the Architect **appends** to what
+you wrote — a branch line, a role stamp, usually one task — and is told not to rewrite your
+body. That protection is what the `bug` label buys, so apply it.
 
 Do NOT fix the bug. The deliverable is the issue.
 
@@ -109,13 +112,19 @@ Half of a good bug report is fencing. Two kinds:
 
 ## 8. File it, then clean up after yourself
 
-- `gh issue create --title … --body-file …` — **unlabeled**. A role label is the
-  maintainer's routing call, and (since labels became a record of what has run) it would
-  also be a lie.
+- `gh issue create --title … --body-file … --label bug`. ⚠️ **`bug` and no other label.** It is
+  a *classification* — what the issue is — and it is load-bearing: the Architect reads it and
+  switches to appending rather than rewriting the body, which is what stops your reproduction
+  and measurements being replaced by a story-shaped summary. Titling it `Bug: …` does the same
+  job, and a hook keeps the two in sync.
+- ⚠️ **Never a `@claude/*` label.** Those are *routing* — the maintainer's call about what
+  should happen — and since labels became a record of what has run, applying one would also be
+  a lie.
 - Add it to the BrewDocs project: `gh project item-add 4 --owner "@me" --url <issue-url>`.
-- ⚠️ **Delete any probe spec and revert any file you touched while investigating** —
-  `packages/e2e/playwright.config.ts` especially, if you flipped the browser channel. Leave
-  the tree clean and confirm it with `git status`.
+- ⚠️ **Delete any probe spec, screenshot and `test-results/` directory, and revert any file you
+  touched while investigating.** Leave the tree clean and confirm it with `git status`.
+  (`playwright.config.ts` no longer needs flipping — the browser channel comes from the
+  environment now.)
 
 ## 9. Report back
 
