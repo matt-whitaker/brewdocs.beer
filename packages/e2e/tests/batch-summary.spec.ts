@@ -50,22 +50,36 @@ test("shows the recipe's target vitals, a fresh batch's zeroed actuals, and the 
     await expect(vitalsRow(page, "Target", "O.G.")).toContainText("1.05°P");
     await expect(vitalsRow(page, "Target", "F.G.")).toContainText("1.014°P");
 
-    // defaultBatch's actuals, unset on a freshly-brewed batch
+    // defaultBatch's actuals, unset on a freshly-brewed batch. IBU is deliberately
+    // absent here — it is the one actual that is derived rather than zeroed, and it
+    // has its own test below.
     await expect(vitalsRow(page, "Actuals", "ABV")).toContainText("0.0%");
     await expect(vitalsRow(page, "Actuals", "O.G.")).toContainText("0.00°P");
     await expect(vitalsRow(page, "Actuals", "F.G.")).toContainText("0.00°P");
-
-    // IBU is the exception among the actuals: it is never measured, so it is
-    // derived from the batch's own hop bill rather than left at defaultBatch's
-    // "0". No gravity has been recorded yet, so it falls back to the recipe's
-    // target OG — Tinseth over anchor-steam's three Northern Brewer additions.
-    await expect(vitalsRow(page, "Actuals", "IBU")).toContainText("37");
 
     await expect(page.getByText("German Pils")).toBeVisible();
     await expect(page.getByText("Northern Brewer")).toBeVisible();
     await expect(page.getByText("Wyeast 2112")).toBeVisible();
     await expect(page.getByText("Yeast Nutrients")).toBeVisible();
     await expect(page.getByText("Irish Moss")).toBeVisible();
+});
+
+// IBU is the one actual a brewer never measures, so Summary derives it from the
+// batch's own hop bill instead of leaving it at defaultBatch's "0". A freshly
+// brewed batch has no gravity reading, which also makes this the fallback case:
+// the estimate uses the recipe's target OG.
+//
+// anchor-steam-beer-clone's three Northern Brewer additions over its 5gal batch
+// at 1.05 OG come to 37 by Tinseth, against a hand-authored target of 35.
+//
+// ⚠️ Anchored rather than `toContainText("37")`, which also passes on 137 and 371.
+// An IBU wrong by an order of magnitude is the failure most worth catching here,
+// and a substring match cannot see it.
+test("Summary derives a non-zero Actuals IBU from the batch's own hop bill", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Summary IBU Batch");
+    await page.getByRole("tab", {name: "Summary", exact: true}).click();
+
+    await expect(vitalsRow(page, "Actuals", "IBU")).toHaveText(/^IBU\s*37$/);
 });
 
 // mirrors batch-edit.spec.ts's own copy — this file drives the Brewing tab
