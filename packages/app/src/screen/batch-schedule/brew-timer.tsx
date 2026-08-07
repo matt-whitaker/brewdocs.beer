@@ -1,5 +1,5 @@
 import {useCallback, useMemo} from "react";
-import {BrewTimer, BrewTimerMarker, ScreenP} from "@brewdocs.beer/design";
+import {BrewTimer, BrewTimerMarker, QuickActionTab, QuickActionTabState, ScreenP} from "@brewdocs.beer/design";
 import {putEntry} from "@/actions/tracker";
 import Modal from "@/component/modal";
 import ModalScreen from "@/component/modal/screen";
@@ -8,10 +8,11 @@ import useElapsedSeconds from "@/hooks/useElapsedSeconds";
 import {MutateFn} from "@/hooks/useJsonEdit";
 import Batch from "@/model/batch";
 import {currentPhaseIndex} from "@/model/batchProgress";
-import {Milestone, phaseLabel} from "@/model/brewable";
+import {Milestone, phaseLabel, ResourceType} from "@/model/brewable";
+import {incompleteEquipment, incompleteResourceTypes, nextIncompleteAssignment} from "@/model/scheduleProgress";
 import {isRunning} from "@/model/timer";
 import {TimerEventType} from "@/model/timer";
-import {key, TrackerEntry} from "@/model/tracker";
+import {key, ResourceActuals, ResourceScalarField, TrackerEntry} from "@/model/tracker";
 import {READING_KINDS, readingKindsForPhase, WATER_PARAMETERS} from "@/screen/batch-schedule/reading-kinds";
 import {scalarFromNumberWithUnit} from "@/utils/formatting";
 import {newId} from "@/utils/id";
@@ -19,6 +20,13 @@ import {newId} from "@/utils/id";
 const TICK_MS = 1000;
 
 const readingKind = (kind: string) => READING_KINDS.find(candidate => candidate.kind === kind);
+
+const QUICK_SCHEDULE_KINDS: Record<ResourceType, { label: string; field: ResourceScalarField; valueLabel?: string }> = {
+    grain: { label: "Grain", field: "weight", valueLabel: "Weight" },
+    hop: { label: "Hop", field: "weight", valueLabel: "Weight" },
+    additive: { label: "Additive", field: "weight", valueLabel: "Weight" },
+    yeast: { label: "Yeast", field: "temp" }
+};
 
 export type BatchScheduleBrewTimerProps = {
     batch: Batch;
@@ -72,8 +80,39 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
         }, true);
     }, [mutate]);
 
+    const onQuickSchedule = useCallback((kind: string, value?: string) => {
+        mutate(draft => {
+            const index = currentPhaseIndex(draft.brewable.schedule.phases, draft.tracker);
+            const phase = draft.brewable.schedule.phases[index];
+            if (!phase) return draft;
+
+            const resourceType = kind as ResourceType;
+            const assignment = nextIncompleteAssignment(draft.brewable, phase.id, resourceType, draft.tracker);
+            if (!assignment?.id) return draft;
+
+            const {field} = QUICK_SCHEDULE_KINDS[resourceType];
+            const typed = value?.trim();
+            const planned: ResourceActuals = assignment.resource;
+            const unit = planned[field]?.unit;
+            const entry: TrackerEntry = {completed: true};
+
+            if (typed && unit) entry.resource = {[field]: scalarFromNumberWithUnit(typed, unit)};
+
+            return {...draft, tracker: putEntry(draft.tracker, {on: "assignment", id: assignment.id}, entry)};
+        }, true);
+    }, [mutate]);
+
+    const onQuickEquipment = useCallback((id: string) => {
+        if (!id) return;
+        mutate(draft => ({
+            ...draft,
+            tracker: putEntry(draft.tracker, {on: "equipment", id}, {completed: true})
+        }), true);
+    }, [mutate]);
+
     const currentIndex = useMemo(() => currentPhaseIndex(phases, batch.tracker), [phases, batch.tracker]);
     const currentPhaseLabel = phases[currentIndex] ? phaseLabel(phases, currentIndex) : "";
+    const currentPhaseId = phases[currentIndex]?.id;
 
     const onConfirmComplete = useCallback(() => {
         const phase = phases[currentIndex];
@@ -88,6 +127,40 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
     const milestoneParameterOptions = useMemo(
         () => ({ water: WATER_PARAMETERS.map(({ key: name, label }) => ({ name: label, value: name })) }),
         []);
+
+    const incompleteTypes = useMemo(
+        () => incompleteResourceTypes(batch.brewable, currentPhaseId, batch.tracker),
+        [batch.brewable, currentPhaseId, batch.tracker]);
+
+    const scheduleKindOptions = useMemo(
+        () => incompleteTypes.map(type => ({ name: QUICK_SCHEDULE_KINDS[type].label, value: type })),
+        [incompleteTypes]);
+
+    const scheduleValueLabels = useMemo(
+        () => Object.fromEntries(incompleteTypes
+            .map(type => [type, QUICK_SCHEDULE_KINDS[type].valueLabel])
+            .filter(([, label]) => !!label)),
+        [incompleteTypes]);
+
+    const equipmentOptions = useMemo(
+        () => incompleteEquipment(batch.brewable, currentPhaseId, batch.tracker)
+            .map(({ id, name }) => ({ name, value: id ?? "" })),
+        [batch.brewable, currentPhaseId, batch.tracker]);
+
+    const quickActionTabs = useMemo<Record<QuickActionTab, QuickActionTabState>>(() => ({
+        ingredients: {
+            available: scheduleKindOptions.length > 0,
+            unavailableReason: "Nothing left to add on this phase"
+        },
+        reading: {
+            available: milestoneKindOptions.length > 0,
+            unavailableReason: "No readings apply to this phase"
+        },
+        equipment: {
+            available: equipmentOptions.length > 0,
+            unavailableReason: "Nothing left to check off on this phase"
+        }
+    }), [scheduleKindOptions, milestoneKindOptions, equipmentOptions]);
 
     const sessionStart = batch.timer?.find(({ type }) => type === "start")?.date;
 
@@ -133,12 +206,19 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
                 elapsedSeconds={elapsed}
                 markers={markers}
                 markerTransitionMs={TICK_MS}
+                quickActionTabs={quickActionTabs}
+                defaultQuickActionTab="reading"
                 milestoneKindOptions={milestoneKindOptions}
                 milestoneParameterOptions={milestoneParameterOptions}
+                scheduleKindOptions={scheduleKindOptions}
+                scheduleValueLabels={scheduleValueLabels}
+                equipmentOptions={equipmentOptions}
                 phaseLabel={currentPhaseLabel}
                 completeLabel={currentPhaseLabel}
                 onPlayPause={onPlayPause}
                 onQuickMilestone={onQuickMilestone}
+                onQuickSchedule={onQuickSchedule}
+                onQuickEquipment={onQuickEquipment}
                 onComplete={toggleCompleteModal} />
             {currentPhaseLabel ? (
                 <Modal ref={completeModalRef}>

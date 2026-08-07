@@ -66,6 +66,8 @@ export default interface Brewable {
     assignments: Assignment[];
 }
 
+export const RESOURCE_TYPES: ResourceType[] = ["grain", "hop", "yeast", "additive"];
+
 export const PHASE_TYPES: PhaseType[] = ["mash", "boil", "ferment"];
 export const OPTIONAL_PHASE_TYPES: PhaseType[] = ["carbonation", "conditioning"];
 

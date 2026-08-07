@@ -102,11 +102,12 @@ test("logs a quick milestone that lands on the timeline and in the phase's readi
     await expect(page.getByLabel("Reading reading")).toBeVisible();
 });
 
-// BREW-TIMER-01/05: one entry point opens a tab panel ordered Ingredients/Reading/Equipment,
-// with the unavailable tabs reading as disabled rather than silently no-opping. The screen
-// only wires onQuickMilestone today (#603 wires the other two), so Ingredients/Equipment are
-// unconditionally disabled here — this proves "disabled", not yet "disabled because empty".
-test("quick action modal opens on Reading with Ingredients and Equipment unavailable", async ({page}) => {
+// BREW-TIMER-01/05, BATCH-SCHEDULE-04: one entry point opens a tab panel ordered
+// Ingredients/Reading/Equipment,
+// with unavailable tabs reading as disabled rather than silently no-opping. Since #651 wired
+// all three, "disabled" now means "nothing left on this phase" — which is what this asserts,
+// and what the earlier version of this test was explicitly waiting to be able to assert.
+test("quick action modal opens on Reading with every applicable tab enabled", async ({page}) => {
     await brewBatchFromKbRecipe(page, "E2E Quick Action Tabs Batch");
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
@@ -114,10 +115,160 @@ test("quick action modal opens on Reading with Ingredients and Equipment unavail
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
 
+    // 1. Mash has grains to add and equipment to check off, so all three apply
     await expect(dialog.getByRole("tab")).toHaveText(["Ingredients", "Reading", "Equipment"]);
-    await expect(dialog.getByRole("tab", {name: "Ingredients"})).toBeDisabled();
+    await expect(dialog.getByRole("tab", {name: "Ingredients"})).toBeEnabled();
     await expect(dialog.getByRole("tab", {name: "Reading"})).toHaveAttribute("aria-selected", "true");
-    await expect(dialog.getByRole("tab", {name: "Equipment"})).toBeDisabled();
+    await expect(dialog.getByRole("tab", {name: "Equipment"})).toBeEnabled();
+});
+
+// BATCH-SCHEDULE-04, and the other half of the same behaviour: a tab goes unavailable once
+// its phase is exhausted, carrying the reason rather than just greying out.
+//
+// ⚠️ This is also the regression guard for the modal-stays-open bug (#651). Confirming the
+// check-off that exhausts a tab used to unmount the panel — and its method="dialog" form —
+// before the browser ran the submit, so the dialog never closed. Asserting only that the
+// check-off landed passes straight through that; the dialog count is what catches it.
+test("a quick-action tab goes unavailable, with its reason, once the phase is exhausted", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Quick Action Exhaust Batch");
+    await page.getByRole("tab", {name: "Brewing", exact: true}).click();
+
+    const dialog = page.getByRole("dialog");
+    const ingredients = dialog.getByRole("tab", {name: "Ingredients"});
+
+    // the kb recipe's mash phase has a bounded number of grains; check off until it runs dry
+    for (let i = 0; i < 10; i++) {
+        await page.getByRole("button", {name: "Quick actions"}).click();
+        await expect(dialog).toBeVisible();
+        if (!await ingredients.isEnabled()) break;
+
+        await ingredients.click();
+        await dialog.getByRole("button", {name: "Confirm"}).click();
+        await expect(dialog).not.toBeVisible();
+        await settleSave(page);
+    }
+
+    await expect(ingredients).toBeDisabled();
+    await expect(ingredients).toHaveAttribute("title", "Nothing left to add on this phase");
+    await expect(dialog.getByRole("tab", {name: "Reading"})).toHaveAttribute("aria-selected", "true");
+});
+
+// BATCH-SCHEDULE-01/-07: each use of the Ingredients quick action checks off one more item of
+// that kind, and never the one it just checked. Three grains in the kb recipe's mash phase, so
+// this proves *advance*, not merely *checks one off*.
+//
+// ⚠️ Deliberately asserts the SET of checked names, never a particular one. Which item a use
+// picks is BATCH-SCHEDULE-01's "earliest", and the grid renders rows in a different order than
+// the quick action walks (see the finding on #618) — pinning a name here would bake today's
+// implementation into the assertion, which is the one thing a spec-derived test must not do.
+test("the ingredients quick action advances through a phase, never re-checking an item", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Quick Action Advance Batch");
+    await page.getByRole("tab", {name: "Brewing", exact: true}).click();
+
+    const GRAINS = ["Crystal Malt 40L", "German Pils", "Special Robust"];
+    const checkedNames = async () => {
+        const out: string[] = [];
+        for (const name of GRAINS) {
+            if (await page.getByRole("checkbox", {name}).isChecked()) out.push(name);
+        }
+        return out;
+    };
+
+    expect(await checkedNames()).toEqual([]);
+
+    for (let expected = 1; expected <= GRAINS.length; expected++) {
+        await page.getByRole("button", {name: "Quick actions"}).click();
+        const dialog = page.getByRole("dialog").filter({hasText: "Quick action"});
+        await dialog.getByRole("tab", {name: "Ingredients"}).click();
+        await dialog.getByRole("button", {name: "Confirm"}).click();
+        await expect(dialog).not.toBeVisible();
+        await settleSave(page);
+
+        // exactly one more each time — a re-check would leave the count flat
+        expect(await checkedNames()).toHaveLength(expected);
+    }
+
+    expect((await checkedNames()).sort()).toEqual([...GRAINS].sort());
+});
+
+// BATCH-SCHEDULE-01: "If the brewer also enters a value, that value is recorded against the
+// same item." Asserted against whichever item the action chose, for the reason above.
+test("a value typed into the ingredients quick action is recorded against the item it checked off", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Quick Action Value Batch");
+    await page.getByRole("tab", {name: "Brewing", exact: true}).click();
+
+    await page.getByRole("button", {name: "Quick actions"}).click();
+    const dialog = page.getByRole("dialog").filter({hasText: "Quick action"});
+    await dialog.getByRole("tab", {name: "Ingredients"}).click();
+    await dialog.getByLabel("Ingredient weight").fill("9.99");
+    await dialog.getByRole("button", {name: "Confirm"}).click();
+    await expect(dialog).not.toBeVisible();
+    await settleSave(page);
+
+    const GRAINS = ["Crystal Malt 40L", "German Pils", "Special Robust"];
+    const checked: string[] = [];
+    for (const name of GRAINS) {
+        if (await page.getByRole("checkbox", {name}).isChecked()) checked.push(name);
+    }
+    expect(checked).toHaveLength(1);
+
+    // the value lands on the item that was checked, and on no other
+    await expect(page.getByLabel(`${checked[0]} weight`)).toHaveValue(/9\.99/);
+    for (const other of GRAINS.filter(n => n !== checked[0])) {
+        await expect(page.getByLabel(`${other} weight`)).not.toHaveValue(/9\.99/);
+    }
+});
+
+// BATCH-SCHEDULE-06: equipment is NAMED by the brewer, not resolved for them. The test names a
+// deliberately non-first item — an "earliest incomplete" resolver could never satisfy this,
+// which is the point: it is what distinguishes the behaviour from the one it replaced.
+test("the equipment quick action checks off the item the brewer names", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Quick Action Equipment Batch");
+    await page.getByRole("tab", {name: "Brewing", exact: true}).click();
+
+    await page.getByRole("button", {name: "Quick actions"}).click();
+    const dialog = page.getByRole("dialog").filter({hasText: "Quick action"});
+    await dialog.getByRole("tab", {name: "Equipment"}).click();
+    await dialog.getByLabel("Equipment item").selectOption({label: "Digital Hydrometer"});
+    await dialog.getByRole("button", {name: "Confirm"}).click();
+    await expect(dialog).not.toBeVisible();
+    await settleSave(page);
+
+    await expect(page.getByRole("checkbox", {name: "Digital Hydrometer"})).toBeChecked();
+    await expect(page.getByRole("checkbox", {name: "Mash Tun - 10gal"})).not.toBeChecked();
+
+    // and it is no longer on offer
+    await page.getByRole("button", {name: "Quick actions"}).click();
+    await dialog.getByRole("tab", {name: "Equipment"}).click();
+    const left = await dialog.getByLabel("Equipment item").locator("option").allTextContents();
+    expect(left).not.toContain("Digital Hydrometer");
+    expect(left).toContain("Mash Tun - 10gal");
+});
+
+// BATCH-SCHEDULE-07: "never reaches into a later phase while the current phase still has one
+// left." The mash phase has grains and no hops; the boil phase has hops. While mash grains
+// remain, Hop must not be on offer and the boil's hops must stay untouched.
+test("a quick action never reaches into a later phase", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Quick Action Phase Scope Batch");
+    await page.getByRole("tab", {name: "Brewing", exact: true}).click();
+
+    await page.getByRole("button", {name: "Quick actions"}).click();
+    const dialog = page.getByRole("dialog").filter({hasText: "Quick action"});
+    await dialog.getByRole("tab", {name: "Ingredients"}).click();
+
+    const kinds = await dialog.getByLabel("Ingredient kind").locator("option").allTextContents();
+    expect(kinds).toContain("Grain");
+    expect(kinds).not.toContain("Hop");
+
+    await dialog.getByRole("button", {name: "Confirm"}).click();
+    await expect(dialog).not.toBeVisible();
+    await settleSave(page);
+
+    // the boil phase's hops are untouched
+    await openSchedulePhase(page, "2. Boil");
+    for (const box of await page.getByRole("checkbox", {name: /Northern Brewer/}).all()) {
+        await expect(box).not.toBeChecked();
+    }
 });
 
 // Covers the marker overlay's 24px hit target + popover work (#380): each
