@@ -48,7 +48,7 @@ body = (
     f"```json\n{HANDOFF}\n```\n"
 )
 
-if team.upsert_comment(target, marker, body):
+if team.upsert_comment(target, marker, body + team.run_footer()):
     print(f"posted the handoff for #{ISSUE} on story #{target}")
 else:
     team.warn(f"could not post the handoff on #{target}")

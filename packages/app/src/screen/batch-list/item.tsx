@@ -1,16 +1,16 @@
 import {Link} from "@tanstack/react-router";
 import {useMemo} from "react";
-import {ScreenH2, ScreenP} from "@brewdocs.beer/design";
-import {batchProgress} from "@/actions/batchProgress";
-import ConfirmDeleteButton from "@/component/confirm-delete-button";
+import {ScreenH2, ScreenP, Trash} from "@brewdocs.beer/design";
+import Action from "@/component/action";
 import Batch from "@/model/batch";
+import {batchProgress} from "@/model/batchProgress";
 import {phaseLabel} from "@/model/brewable";
+import BatchDeleteModal from "@/screen/batch-delete-modal";
 
 export type BatchListItemProps = {
     batch: Batch;
     recipeName: string;
     brewer: string;
-    onDelete: () => void;
 };
 
 function progressLabel(batch: Batch): string {
@@ -20,7 +20,7 @@ function progressLabel(batch: Batch): string {
     return phaseLabel(phases, currentIndex);
 }
 
-export default function BatchListItem({ batch, recipeName, brewer, onDelete }: BatchListItemProps) {
+export default function BatchListItem({ batch, recipeName, brewer }: BatchListItemProps) {
     const status = useMemo(() => progressLabel(batch), [batch]);
 
     return (
@@ -31,7 +31,13 @@ export default function BatchListItem({ batch, recipeName, brewer, onDelete }: B
                 <ScreenP>by {brewer}</ScreenP>
                 <ScreenP>Status: {status}</ScreenP>
             </Link>
-            <ConfirmDeleteButton label={`Delete ${batch.name}`} title={`Delete ${batch.name}?`} onConfirm={onDelete} />
+            <Action
+                label={`Delete ${batch.name}`}
+                icon={Trash}
+                iconOnly
+                className="btn-xs text-error absolute top-1.5 right-1.5"
+                modalContent={<BatchDeleteModal batchId={batch.id} name={batch.name} />}
+            />
         </li>
     );
 }

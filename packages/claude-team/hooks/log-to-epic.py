@@ -115,7 +115,32 @@ else:
         note = " — label it `@claude` and the Architect will shape it"
     next_line = f"**#{nxt['number']} — {nxt.get('title','')}**  \nnext open {scope}{note}"
 
-table = ["| story | state | tasks |", "|---|---|---|"]
+def landed(number: str | int) -> str:
+    """Whether a story's work is actually IN the default branch, which is not the same question
+    as whether its tasks are closed.
+
+    ⚠️ THIS COLUMN EXISTS BECAUSE THE TASK COUNT WAS READ AS "DONE". An epic showed
+    `#602 … | ⬜ open | 2/2` — every task closed — while its PR was still open, so the props a
+    dependent story needed existed on no branch that story could see. The dependent story was
+    started anyway and its Tester found nothing to test. Task completeness and landedness are
+    different facts; only one of them was on the board.
+
+    Derived from the story's own Branch line and GitHub's PR state — never from prose.
+    """
+    branch = team.branch_line(team.issue_body(number))
+    if not branch:
+        return "no branch"
+    prs = team.gh_json(
+        "pr", "list", "--repo", team.REPO, "--head", branch, "--state", "all",
+        "--json", "number,state",
+    ) or []
+    if not prs:
+        return "no PR yet"
+    pr = prs[0]
+    return f"PR #{pr['number']} {(pr.get('state') or '').lower()}"
+
+
+table = ["| story | state | tasks | landed |", "|---|---|---|---|"]
 for story in team.sub_issues(EPIC):
     kids = team.sub_issues(story["number"])
     if not kids:
@@ -125,7 +150,10 @@ for story in team.sub_issues(EPIC):
         open_ns = " ".join(f"#{k['number']}" for k in kids if k.get("state") == "open")
         counts = f"{done}/{len(kids)}" + (f" · open: {open_ns}" if open_ns else "")
     mark = "✅" if story.get("state") == "closed" else "⬜"
-    table.append(f"| #{story['number']} {story.get('title','')} | {mark} {story.get('state','')} | {counts} |")
+    table.append(
+        f"| #{story['number']} {story.get('title','')} | {mark} {story.get('state','')} "
+        f"| {counts} | {landed(story['number'])} |"
+    )
 
 # carry the previous Recent lines forward
 previous: list[str] = []
@@ -165,7 +193,7 @@ body = "\n".join(
     ]
 ) + "\n"
 
-if team.upsert_comment(EPIC, MARKER, body):
+if team.upsert_comment(EPIC, MARKER, body + team.run_footer()):
     print(f"updated the work log on epic #{EPIC}")
 else:
     team.warn(f"could not update the work log comment on epic #{EPIC}")

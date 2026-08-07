@@ -47,7 +47,7 @@ async function brewBatchFromKbRecipe(page: Page, batchName: string) {
     await expect(page).toHaveURL(/\/batch\//);
 }
 
-// delete is fire-and-forget (ConfirmDeleteButton's onConfirm isn't awaited),
+// delete is fire-and-forget (the delete Action's onConfirm isn't awaited),
 // so a reload needs the same bounded wait batch-edit.spec.ts's settleSave uses
 // for a debounced save — here for the delete's own storage write + invalidation.
 async function settleSave(page: Page) {

@@ -1,6 +1,7 @@
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
 import {useCallback, useMemo} from "react";
 import {Pencil, Plus} from "@brewdocs.beer/design";
+import requireRecord from "@/actions/requireRecord";
 import Action from "@/component/action";
 import {Crumb, dynamicCrumb, useBreadcrumbs} from "@/component/breadcrumbs/context";
 import PanelSwitcher from "@/component/panel-switcher";
@@ -9,10 +10,12 @@ import Batch from "@/model/batch";
 import BatchCreateModal from "@/screen/batch-create-modal";
 import BatchList from "@/screen/batch-list";
 import RecipeOverview from "@/screen/recipe-overview";
-import {useRecipeResource} from "@/state/disambiguation";
+import {findRecipeResource, useRecipeResource} from "@/state/disambiguation";
 
 export const Route = createFileRoute("/recipe/$recipeId")({
-    component: RecipePage
+    component: RecipePage,
+    beforeLoad: ({params: {recipeId}}) =>
+        requireRecord({find: () => findRecipeResource("user", recipeId), to: "/recipes"})
 });
 
 function RecipePage() {

@@ -1,5 +1,28 @@
 import {expect, Page, test} from "@playwright/test";
 
+// BATCH-LIST-03 (packages/spec/product/batch-list.md): a bad batch id returns the
+// brewer to /batches, with the page's normal navigation intact, instead of RootError.
+test("a bad batch id redirects to /batches with the breadcrumb trail and tab bar intact", async ({page}) => {
+    await page.goto("/batch/not-a-real-id");
+
+    await expect(page).toHaveURL(/\/batches$/);
+    await expect(page.locator(".breadcrumbs").getByText("Batches")).toBeVisible();
+    await expect(page.getByRole("tab", {name: "Ready"})).toHaveAttribute("aria-selected", "true");
+});
+
+// Per #607's handoff testing notes: the redirect uses replace semantics, so the bad
+// URL never becomes its own history entry — Back from /batches goes to whatever
+// preceded the bad link, not back onto /batch/not-a-real-id.
+test("a bad batch id does not leave the bad URL in browser history", async ({page}) => {
+    await page.goto("/");
+    await page.goto("/batch/not-a-real-id");
+    await expect(page).toHaveURL(/\/batches$/);
+
+    await page.goBack();
+    await expect(page).not.toHaveURL(/\/batch\/not-a-real-id/);
+    await expect(page).toHaveURL(/\/$/);
+});
+
 // A fresh context has no batches, so every test here drives the Brew flow
 // itself: /kb/recipe/<id> -> Brew action -> modal (name + Confirm) -> navigates
 // to /batch/<id> on the Planning tab. This re-drives the same flow the

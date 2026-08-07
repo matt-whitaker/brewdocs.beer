@@ -6,9 +6,10 @@ import {Pause, Play, Plus} from "@/components/svg";
 import {Timeline} from "@/components/timeline";
 import {formatElapsed} from "./format";
 import {BrewTimerMarker, BrewTimerMarkerOverlay} from "./marker-overlay";
-import {QuickMilestoneModal} from "./quick-milestone";
+import {QuickActionModal} from "./quick-action";
 
 export type {BrewTimerMarker} from "./marker-overlay";
+export type {QuickActionTab} from "./quick-action";
 
 export type BrewTimerProps = PropsWithClass & {
     isRunning: boolean;
@@ -16,6 +17,8 @@ export type BrewTimerProps = PropsWithClass & {
     markers?: BrewTimerMarker[];
     milestoneKindOptions: InputSelectOption[];
     milestoneParameterOptions?: Record<string, InputSelectOption[]>;
+    scheduleKindOptions?: InputSelectOption[];
+    scheduleValueLabels?: Record<string, string>;
     phaseLabel: string;
     height?: number;
     markerSize?: number;
@@ -24,6 +27,8 @@ export type BrewTimerProps = PropsWithClass & {
     completeLabel?: string;
     onPlayPause: () => void;
     onQuickMilestone: (kind: string, value: string, parameter?: string) => void;
+    onQuickSchedule?: (kind: string, value?: string) => void;
+    onQuickEquipment?: () => void;
     onComplete?: () => void;
 };
 
@@ -33,6 +38,8 @@ export function BrewTimer({
     markers = [],
     milestoneKindOptions,
     milestoneParameterOptions,
+    scheduleKindOptions,
+    scheduleValueLabels,
     phaseLabel,
     height = 24,
     markerSize = 10,
@@ -41,6 +48,8 @@ export function BrewTimer({
     completeLabel,
     onPlayPause,
     onQuickMilestone,
+    onQuickSchedule,
+    onQuickEquipment,
     onComplete,
     className
 }: BrewTimerProps) {
@@ -69,9 +78,9 @@ export function BrewTimer({
                         <button type="button" className="btn btn-xs sm:btn-sm join-item btn-active" aria-pressed={true}>Global</button>
                         <button type="button" className="btn btn-xs sm:btn-sm join-item" title="Coming soon" disabled>Phase</button>
                     </div>
-                    <button type="button" className="btn btn-xs sm:btn-sm" aria-label="Log reading" onClick={toggleModal}>
+                    <button type="button" className="btn btn-xs sm:btn-sm" aria-label="Quick actions" onClick={toggleModal}>
                         <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
-                        Reading
+                        Log
                     </button>
                 </div>
             </div>
@@ -101,12 +110,16 @@ export function BrewTimer({
                     </div>
                 )
                 : null}
-            <QuickMilestoneModal
+            <QuickActionModal
                 ref={modalRef}
-                kindOptions={milestoneKindOptions}
-                parameterOptions={milestoneParameterOptions}
+                milestoneKindOptions={milestoneKindOptions}
+                milestoneParameterOptions={milestoneParameterOptions}
+                scheduleKindOptions={scheduleKindOptions}
+                scheduleValueLabels={scheduleValueLabels}
                 phaseLabel={phaseLabel}
-                onSubmit={onQuickMilestone} />
+                onQuickMilestone={onQuickMilestone}
+                onQuickSchedule={onQuickSchedule}
+                onQuickEquipment={onQuickEquipment} />
         </div>
     );
 }
