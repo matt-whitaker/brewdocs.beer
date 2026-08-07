@@ -1,24 +1,33 @@
 import {useCallback, useMemo} from "react";
-import {BrewTimer, BrewTimerMarker, ScreenP} from "@brewdocs.beer/design";
-import {currentPhaseIndex} from "@/actions/batchProgress";
-import {isRunning} from "@/actions/brewTimer";
+import {BrewTimer, BrewTimerMarker, BrewTimerScope, ScreenP} from "@brewdocs.beer/design";
+import {currentPhaseIndex, phaseStartDate} from "@/actions/batchProgress";
+import {isRunning, phaseElapsedSeconds} from "@/actions/brewTimer";
 import {putEntry} from "@/actions/tracker";
 import Modal from "@/component/modal";
 import ModalScreen from "@/component/modal/screen";
 import useModal from "@/component/modal/useModal";
-import useElapsedSeconds from "@/hooks/useElapsedSeconds";
+import useElapsedSeconds, {usePhaseElapsedSeconds} from "@/hooks/useElapsedSeconds";
 import {MutateFn} from "@/hooks/useJsonEdit";
 import Batch from "@/model/batch";
 import {Milestone, phaseLabel} from "@/model/brewable";
 import {TimerEventType} from "@/model/timer";
 import {key, TrackerEntry} from "@/model/tracker";
 import {READING_KINDS, readingKindsForPhase, WATER_PARAMETERS} from "@/screen/batch-schedule/reading-kinds";
+import {saveSession, useSession} from "@/state/session";
 import {scalarFromNumberWithUnit} from "@/utils/formatting";
 import {newId} from "@/utils/id";
 
 const TICK_MS = 1000;
+const SCOPE_SESSION_KEY = "schedule.timerScope";
 
 const readingKind = (kind: string) => READING_KINDS.find(candidate => candidate.kind === kind);
+
+const milestoneMarker = (milestone: Milestone, offsetSeconds: number): BrewTimerMarker => ({
+    id: milestone.id,
+    offsetSeconds,
+    label: milestone.label,
+    kind: readingKind(milestone.kind)?.headerLabel ?? milestone.kind
+});
 
 export type BatchScheduleBrewTimerProps = {
     batch: Batch;
@@ -27,7 +36,6 @@ export type BatchScheduleBrewTimerProps = {
 };
 
 export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }: BatchScheduleBrewTimerProps) {
-    const elapsed = useElapsedSeconds(batch.timer);
     const phases = batch.brewable.schedule.phases;
     const [completeModalRef, toggleCompleteModal] = useModal();
 
@@ -90,8 +98,16 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
         []);
 
     const sessionStart = batch.timer?.find(({ type }) => type === "start")?.date;
+    const phaseStart = phaseStartDate(phases, batch.tracker, currentIndex, sessionStart);
 
-    const markers = useMemo<BrewTimerMarker[]>(() => {
+    const session = useSession();
+    const scope: BrewTimerScope = session[SCOPE_SESSION_KEY] === "phase" ? "phase" : "global";
+    const onScopeChange = useCallback((next: BrewTimerScope) => { saveSession(SCOPE_SESSION_KEY, next); }, []);
+
+    const globalElapsed = useElapsedSeconds(batch.timer);
+    const phaseElapsed = usePhaseElapsedSeconds(batch.timer, phaseStart);
+
+    const globalMarkers = useMemo<BrewTimerMarker[]>(() => {
         const startedAt = sessionStart ? new Date(sessionStart).getTime() : NaN;
         if (Number.isNaN(startedAt)) return [];
 
@@ -103,14 +119,7 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
         return phases.flatMap((phase, index) => {
             const milestoneMarkers = phase.milestones.flatMap(milestone => {
                 const offsetSeconds = at(batch.tracker[key({ on: "milestone", id: milestone.id })]?.date);
-                if (offsetSeconds === null) return [];
-
-                return [{
-                    id: milestone.id,
-                    offsetSeconds,
-                    label: milestone.label,
-                    kind: readingKind(milestone.kind)?.headerLabel ?? milestone.kind
-                }];
+                return offsetSeconds === null ? [] : [milestoneMarker(milestone, offsetSeconds)];
             });
 
             const completedAt = at(batch.tracker[key({ on: "phase", id: phase.id })]?.date);
@@ -125,19 +134,34 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
         });
     }, [sessionStart, phases, batch.tracker]);
 
+    const phaseMarkers = useMemo<BrewTimerMarker[]>(() => {
+        const phase = phases[currentIndex];
+        if (!phase || !phaseStart) return [];
+
+        return phase.milestones.flatMap(milestone => {
+            const recorded = batch.tracker[key({ on: "milestone", id: milestone.id })]?.date;
+            const recordedAt = recorded ? new Date(recorded).getTime() : NaN;
+            if (Number.isNaN(recordedAt)) return [];
+
+            return [milestoneMarker(milestone, phaseElapsedSeconds(batch.timer, phaseStart, new Date(recordedAt)))];
+        });
+    }, [phases, currentIndex, phaseStart, batch.timer, batch.tracker]);
+
     return (
         <>
             <BrewTimer
                 className="mb-2"
                 isRunning={isRunning(batch.timer)}
-                elapsedSeconds={elapsed}
-                markers={markers}
+                elapsedSeconds={scope === "phase" ? phaseElapsed : globalElapsed}
+                scope={scope}
+                markers={scope === "phase" ? phaseMarkers : globalMarkers}
                 markerTransitionMs={TICK_MS}
                 milestoneKindOptions={milestoneKindOptions}
                 milestoneParameterOptions={milestoneParameterOptions}
                 phaseLabel={currentPhaseLabel}
                 completeLabel={currentPhaseLabel}
                 onPlayPause={onPlayPause}
+                onScopeChange={onScopeChange}
                 onQuickMilestone={onQuickMilestone}
                 onComplete={toggleCompleteModal} />
             {currentPhaseLabel ? (
