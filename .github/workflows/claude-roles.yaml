@@ -385,12 +385,13 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       # ⚠️ contents READ, unlike every authoring role and unlike the Architect. A spike ships
-      # nothing and has no branch to cut, so write access would only ever be a way for this run
-      # to leave something behind. It is also the role that reads the open web, which makes it
-      # the one where a narrower blast radius is worth the most.
+      # nothing and has no branch to cut.
       contents: read
       issues: write
-      id-token: write
+      # ⚠️ NO `id-token`, unlike every other role here. Nothing in this job federates, and
+      # `base-action/src/parse-sdk-options.ts` deletes ACTIONS_ID_TOKEN_REQUEST_URL/_TOKEN from
+      # the environment it hands the agent anyway — so the permission bought nothing and only
+      # widened what a compromised run could reach (#665).
     steps:
       - uses: actions/checkout@v4
         with:
@@ -407,11 +408,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      # ⚠️ It DOES build, unlike the Architect. A spike is answered by measuring, and the
-      # difference between "the docs say handles persist" and "I stored one and it survived a
-      # reload" is the entire value of the role.
-      - name: Install dependencies
-        run: npm ci
+      # ⚠️ NO `npm ci`, and no build of any kind. See the tool grant below: this role holds no
+      # shell, so there is nothing for installed dependencies to be run by.
+      - id: findings-schema
+        name: Load the findings schema
+        run: |
+          # same constraints as the handoff schema: one line, and no single quote, because it is
+          # inlined into a single-quoted claude_args flag
+          body=$(jq -c . packages/claude-team/schemas/findings.json)
+          case "$body" in
+            *"'"*) echo "::error::findings.json contains a single quote; it cannot be inlined into claude_args"; exit 1 ;;
+          esac
+          echo "body=$body" >> "$GITHUB_OUTPUT"
+          echo "findings schema loaded (${#body} chars)"
       - name: Stamp the role label
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -419,9 +428,9 @@ jobs:
           REPO: ${{ github.repository }}
           NUMBER: ${{ github.event.issue.number }}
         run: "$RUNNER_TEMP/agent-bin/stamp-role-label.py"
-      - uses: anthropics/claude-code-action@v1
+      - id: research
+        uses: anthropics/claude-code-action@v1
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
           KIND: ${{ needs.delegate.outputs.kind }}
         with:
@@ -437,15 +446,46 @@ jobs:
           # something costs, what changed last year — so without them this role can only report
           # what is already known, which is the half nobody needed a run for.
           #
-          # ⚠️ The cost is that this is the one role whose input includes text the maintainer did
-          # not write. Its prompt says web content is data and never instruction, and `contents:
-          # read` above means a successful injection still cannot push. Do not widen either
-          # without re-reading that pairing — they are the mitigation, together.
+          # ⚠️ WHICH IS WHY IT HAS NO SHELL. This is the only role whose input is arbitrary
+          # third-party web content, so it is the only one where a prompt injection has an author.
+          # It shipped briefly with Bash(npm|npx|gh|git:*) and that was a live token-exfiltration
+          # path (#665): `npx <anything>` runs third-party code, and WebFetch is itself the egress.
+          #
+          # ⚠️ TAKING THE SECRET AWAY IS NOT AVAILABLE — the first fix attempted, and it does not
+          # work. The action re-injects it whatever this step declares:
+          #     src/entrypoints/run.ts        process.env.GITHUB_TOKEN = githubToken
+          #                                   process.env.GH_TOKEN     = githubToken
+          #     base-action/parse-sdk-options handed the agent as {...process.env}
+          # so GH_TOKEN *and* CLAUDE_CODE_OAUTH_TOKEN — an account credential, not a repo-scoped
+          # one — are both reachable by anything the agent can execute. What can be removed is the
+          # ability to execute. No shell, no read, and the credentials sit inert.
+          #
+          # ⚠️ Narrowing rather than removing would not have held either: `Write` plus any runner
+          # is agent-authored code, so a probe spec IS arbitrary execution. There is no `Write`
+          # here for the same reason.
+          #
+          # ⚠️ The residual, written down rather than claimed away: the action's base allowlist
+          # unions in Bash(git add|commit|rm:*) and git-push.sh and they cannot be removed from
+          # here. `contents: read` is what neuters them — a commit that cannot be pushed reaches
+          # nobody. That permission is now load-bearing for security, not just tidiness.
           claude_args: |
             --model sonnet
-            --allowedTools "Read,Edit,Write,WebSearch,WebFetch,Bash(gh:*),Bash(git:*),Bash(npm:*),Bash(npx:*)"
+            --allowedTools "Read,WebSearch,WebFetch"
+            --json-schema '${{ steps.findings-schema.outputs.body }}'
             --max-turns 80
 
+      # ⚠️ THE ONLY WAY THE FINDINGS REACH ANYONE. The role has no shell, so it cannot run `gh`
+      # and cannot write its own results anywhere. Deterministic at both ends, the same shape as
+      # post-handoff.py: the schema forces the model to produce it, this forces delivery.
+      # ⚠️ Step env is per-step, so the token here is not the one the model step held.
+      - name: Post the findings to the spike
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
+          FINDINGS: ${{ steps.research.outputs.structured_output }}
+        run: "$RUNNER_TEMP/agent-bin/post-findings.py"
       # A spike has no branch, so nothing creates one — the hook is here only to say so out loud
       # rather than leave a silent gap where every other kind gets one.
       - name: Confirm the spike needs no branch

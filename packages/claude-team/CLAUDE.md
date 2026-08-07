@@ -191,7 +191,7 @@ at all.)
 | role | picked up from | writes |
 |---|---|---|
 | Architect | an epic or an unshaped story | the issue, a story's branch, and its tasks |
-| Researcher | a spike | findings and a recommendation, appended to the issue |
+| Researcher | a spike | findings and a recommendation, appended to the issue by a hook — it holds no shell |
 | Implementor | a task stamped `Role: implementor` | code, outside the design system |
 | Designer | a task stamped `Role: designer` | code, inside the design system |
 | Tester | a task stamped `Role: tester`, one per story | tests |
@@ -210,10 +210,31 @@ already weighed and which constraint they called non-negotiable, and replacing i
 thing that was asked.
 
 ⚠️ **It is the only role that reads the open web, and the only one whose input the maintainer did
-not write.** That is deliberate — most spikes turn on facts a repository does not contain — and
-it is why the role is paired with `contents: read`: a successful prompt injection still cannot
-push. Its prompt states that web content is data and never instruction. Do not widen the
-permission or narrow the citation rule without re-reading that pairing; they are one mitigation.
+not write** — which is exactly why **it holds no shell**. No `Bash` of any kind, no `Write`, no
+`npm ci`, no build. It reads (`Read`/`Glob`/`Grep`), it fetches, and it returns JSON.
+
+⚠️ **Taking the secret away instead is not available, and that was the first fix attempted.**
+`claude-code-action` re-injects it whatever the workflow step declares —
+`src/entrypoints/run.ts` sets `process.env.GITHUB_TOKEN` and `GH_TOKEN`, and
+`base-action/src/parse-sdk-options.ts` hands the agent `{...process.env}` — so `GH_TOKEN` **and
+`CLAUDE_CODE_OAUTH_TOKEN`**, an account credential rather than a repo-scoped one, are readable by
+anything the agent can execute. The credential cannot be removed; the ability to read it can.
+⚠️ Narrowing rather than removing would not have held either: `Write` plus any runner is
+agent-authored code, so a probe spec *is* arbitrary execution. That is why probing was dropped
+from this role and a measurement it needs becomes someone else's task (#665).
+
+⚠️ **`WebFetch` is itself an egress channel**, so a narrower `Bash` grant was never the fix —
+exfiltration needs no shell if the agent can be induced to fetch a URL. Only the absence of a way
+to *read* the environment closes it.
+
+⚠️ **It carries no `id-token`**, unlike every other role. `parse-sdk-options.ts` deletes
+`ACTIONS_ID_TOKEN_REQUEST_URL`/`_TOKEN` from the agent's environment anyway, so the permission
+bought nothing and only widened what a compromised run could reach.
+
+⚠️ **The residual, written down rather than claimed away:** the action's base allowlist unions in
+`Bash(git add|commit|rm:*)` and `git-push.sh`, and a role cannot remove them. `contents: read` is
+what neuters them — a commit nobody can push reaches nobody — so that permission is load-bearing
+for security here, not housekeeping.
 
 ⚠️ **A spike that reports only what it settled is not finished.** What it could *not* determine is
 the section under the most pressure to skip and the most valuable to keep — without it the next
@@ -392,6 +413,7 @@ forgotten by a model that ran out of turns or simply skipped it.
 | `sync-kind-label.py` | post, Architect + Researcher | applies the `epic`/`spike`/`bug`/`story` label `kind()` derives |
 | `file-sub-issues.py` | post, Architect | parents stories to their epic, tasks to their story |
 | `finish-pr.py` | post, authors | labels the PR, and ensures it closes its issue — or, when the author reported work `remaining`, that it does not |
+| `post-findings.py` | post, Researcher | renders its schema-forced findings onto the spike — the role has no shell, so this is the only way they reach anyone |
 | `post-handoff.py` | post, authors | posts the JSON handoff to the story's issue, and appends its `decisions` to one running log there |
 | `log-to-story.py` | post, Architect + authors + on merge | rewrites one comment on the story listing its tasks in trigger order |
 | `log-to-epic.py` | post, authors | rewrites one rolling work-log comment on the epic |
