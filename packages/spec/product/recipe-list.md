@@ -18,6 +18,14 @@ list it interrupts.
 **RECIPE-LIST-03** — Catalogue recipes offer no delete affordance at all. Only a brewer's own
 recipes can be deleted.
 
+**RECIPE-LIST-04** — Following a link to a recipe that no longer exists — a deleted recipe, a
+stale bookmark, a mistyped id, a link shared after a purge — returns the brewer to this list,
+with the page's normal navigation intact, rather than an error screen. This holds whether the
+link was to view the recipe or to edit it.
+
+> *Why:* a recipe stops existing by ordinary means — it was deleted, or the store was purged —
+> so meeting a link to it should read as the app staying usable, not as something broken.
+
 ## Known gaps
 
 _None._
