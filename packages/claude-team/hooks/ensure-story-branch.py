@@ -77,9 +77,10 @@ if not ISSUE:
     print("Not triggered on an issue — no story branch to ensure.")
     raise SystemExit(0)
 
-# An epic has no branch by design, so a missing one is correct and must not warn.
-if KIND == "epic":
-    print(f"#{ISSUE} is an epic — epics have no branch.")
+# An epic has no branch by design, and neither has a spike — a spike answers a question and
+# ships nothing, so a missing branch is correct for both and must not warn.
+if KIND in ("epic", "spike"):
+    print(f"#{ISSUE} is {'an epic' if KIND == 'epic' else 'a spike'} — it has no branch.")
     raise SystemExit(0)
 
 named = team.branch_line(team.issue_body(ISSUE))

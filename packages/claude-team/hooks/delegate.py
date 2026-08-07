@@ -12,7 +12,7 @@ the task as a `Role:` line, which rule 4 reads.
 Precedence:
   1. a @claude/<role> handle in the comment wins outright
   2. a PR            -> resolve its story, default to implementor
-  3. no Branch line  -> architect, told whether it is an epic, a bug or a story
+  3. no Branch line  -> researcher for a spike, otherwise architect, told what it is
   4. a Branch line   -> the role stamped on the task
 
 There is no rule keyed on sub-issues. One existed and read "sub-issues that are stories -> an
@@ -96,7 +96,7 @@ def resolve_pr_story() -> str:
 
 
 # ---- 1. an explicit handle wins, with no further inspection
-for role in ("architect", "implementor", "tester", "writer", "designer", "security"):
+for role in ("architect", "researcher", "implementor", "tester", "writer", "designer", "security"):
     if f"@claude/{role}" in COMMENT_BODY:
         ROLES = role
         REASON = f"handle @claude/{role} in the comment"
@@ -157,12 +157,20 @@ parent = team.parent(NUMBER)
 # is a report someone already grounded, and the Architect is told to preserve it rather than
 # rewrite it into a story.
 if not branch:
-    ROLES = "architect"
     KIND = team.kind(NUMBER)
     article = "an epic" if KIND == "epic" else f"a {KIND}"
-    REASON = f"#{NUMBER} has no branch — shaping it as {article}"
-    if kids:
-        REASON += f" (it already has {kids} sub-issue(s))"
+    # ⚠️ A SPIKE IS THE ONE UNSHAPED ISSUE THE ARCHITECT MUST NOT TAKE. Its answer is not known
+    # yet, so there is nothing to decompose — handed one, the Architect cuts implementation tasks
+    # for a solution nobody has chosen. The Researcher answers it first; the maintainer then
+    # decides, and only then is there a story to shape.
+    if KIND == "spike":
+        ROLES = "researcher"
+        REASON = f"#{NUMBER} is a spike — researching it before anything is shaped"
+    else:
+        ROLES = "architect"
+        REASON = f"#{NUMBER} has no branch — shaping it as {article}"
+        if kids:
+            REASON += f" (it already has {kids} sub-issue(s))"
     emit()
     raise SystemExit(0)
 

@@ -16,6 +16,7 @@ state, not from something a model was asked to leave behind.
 | level | branch | its PR targets | closed by |
 |---|---|---|---|
 | **Epic** | none | — | its stories closing |
+| **Spike** | none | — | the maintainer, once they have decided |
 | **Story** | `<story#>-<summary>`, cut by the Architect | the **default** branch | its PR merging |
 | **Task** | `<task#>-<summary>`, cut by its author off the story branch | the **story** branch | its own PR merging |
 
@@ -31,6 +32,13 @@ state, not from something a model was asked to leave behind.
 - ⚠️ **Epics are the maintainer's to create.** No role files one on its own initiative and
   none promotes an issue into one. A role may *propose* an epic and stop; the decision is
   not delegated. Ambiguity resolves to a story, always.
+- ⚠️ **A `spike` is a question, and it is the one unshaped issue the Architect must not take.**
+  Its answer is not known yet, so there is nothing to decompose — handed one, the Architect cuts
+  implementation tasks for a solution nobody has chosen, which reads like progress and is worse
+  than nothing because the tasks then get worked. `delegate.py` rule 3 routes it to the
+  **Researcher** instead. Like an epic it has no branch, no PR and ships no code; unlike an epic
+  it is not a container, so it has no children either. `team.kind()` detects it from a `Spike:`
+  title or the `spike` label, and **epic still wins** when an issue carries both.
 - ⚠️ **A `bug` is a story in shape but not in handling.** One branch, one PR, usually one task
   — but its body is the deliverable of an investigation that already happened, so the Architect
   **appends and never rewrites**. A report's reproduction, its measurements and especially its
@@ -44,7 +52,7 @@ covering both, and it does not:
 | kind | labels | who applies | what it means |
 |---|---|---|---|
 | **routing** | the front-door label, `@claude/<role>` | the maintainer; hooks stamp the trail | what should *happen* to this issue, and what has already run |
-| **classification** | `epic`, `bug`, `story` | anyone filing; a hook applies it after the Architect runs | what this issue *is* |
+| **classification** | `epic`, `spike`, `bug`, `story` | anyone filing; a hook applies it after the Architect runs | what this issue *is* |
 
 A classification label is durable and derivable, so it survives a run and nothing has to
 re-derive it. ⚠️ **Every kind gets one, `story` included.** An earlier version left a story
@@ -183,11 +191,33 @@ at all.)
 | role | picked up from | writes |
 |---|---|---|
 | Architect | an epic or an unshaped story | the issue, a story's branch, and its tasks |
+| Researcher | a spike | findings and a recommendation, appended to the issue |
 | Implementor | a task stamped `Role: implementor` | code, outside the design system |
 | Designer | a task stamped `Role: designer` | code, inside the design system |
 | Tester | a task stamped `Role: tester`, one per story | tests |
 | Writer | a task stamped `Role: writer`, one per story, run **first** | the product specification, then documentation |
 | Security | every merge, plus its handle on a PR | issues it files |
+
+⚠️ **The Researcher answers; it does not shape.** It appends findings to the spike and stops —
+it creates no story, cuts no branch and starts no author. The maintainer decides, and only then
+is there something for the Architect to shape. A research run that quietly starts building has
+committed to an answer nobody approved.
+
+⚠️ **It appends to the issue and never rewrites the question**, for the same reason the Architect
+must not rewrite a bug report, inverted: there the body is an investigation that already
+happened, here it is the question itself. The maintainer's framing carries which options they
+already weighed and which constraint they called non-negotiable, and replacing it destroys the
+thing that was asked.
+
+⚠️ **It is the only role that reads the open web, and the only one whose input the maintainer did
+not write.** That is deliberate — most spikes turn on facts a repository does not contain — and
+it is why the role is paired with `contents: read`: a successful prompt injection still cannot
+push. Its prompt states that web content is data and never instruction. Do not widen the
+permission or narrow the citation rule without re-reading that pairing; they are one mitigation.
+
+⚠️ **A spike that reports only what it settled is not finished.** What it could *not* determine is
+the section under the most pressure to skip and the most valuable to keep — without it the next
+person re-derives the gap without knowing it was one.
 
 ⚠️ **Implementor and Designer split on the package a change touches, not on judgement**, so
 the boundary can be checked rather than negotiated. A task spanning both is two tasks, and
@@ -338,8 +368,8 @@ forgotten by a model that ran out of turns or simply skipped it.
 | `delegate.py` | the router job | picks the role from issue state — routing is scripted, not judged |
 | `stamp-role-label.py` | pre, every role | stamps `@claude/<role>` on the triggering issue or PR |
 | `set-issue-status.py` | pre, authors + post, Architect | puts an issue **on** the board and sets its Status; column and flags are inputs |
-| `ensure-story-branch.py` | post, Architect | creates the story's branch if it is missing |
-| `sync-kind-label.py` | post, Architect | applies the `epic`/`bug` label an issue title announces |
+| `ensure-story-branch.py` | post, Architect + Researcher | creates the story's branch if it is missing; an epic and a spike have none, and it says so rather than warning |
+| `sync-kind-label.py` | post, Architect + Researcher | applies the `epic`/`spike`/`bug`/`story` label `kind()` derives |
 | `file-sub-issues.py` | post, Architect | parents stories to their epic, tasks to their story |
 | `finish-pr.py` | post, authors | labels the PR and ensures it closes its issue |
 | `post-handoff.py` | post, authors | posts the JSON handoff to the story's issue, and appends its `decisions` to one running log there |
