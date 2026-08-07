@@ -75,7 +75,7 @@ Each package's deep-dive (Purpose / Where / Surface / Invariants / Gotchas …) 
 - **core** → [`packages/core/CLAUDE.md`](packages/core/CLAUDE.md)
 - **kb** → [`packages/kb/CLAUDE.md`](packages/kb/CLAUDE.md)
 - **design** → [`packages/design/CLAUDE.md`](packages/design/CLAUDE.md) (+ long-form [`packages/design/DESIGN.md`](packages/design/DESIGN.md))
-- **app** → [`packages/app/CLAUDE.md`](packages/app/CLAUDE.md) — the largest; holds Routing, Breadcrumbs, State, the Kb\*/app _Model boundary_, Derived batch data, BatchSchedule, the `useJsonEdit` editing pattern, PanelSwitcher, _Styling_, kb dev/build serving, and _Linting_.
+- **app** → [`packages/app/CLAUDE.md`](packages/app/CLAUDE.md) — the largest; holds Routing, Breadcrumbs, State, the Kb\*/app _Model boundary_, _Actions_ vs _Live computation_, BatchSchedule, the `useJsonEdit` editing pattern, PanelSwitcher, _Styling_, kb dev/build serving, and _Linting_.
 - **www** → [`packages/www/CLAUDE.md`](packages/www/CLAUDE.md)
 - **e2e** → [`packages/e2e/CLAUDE.md`](packages/e2e/CLAUDE.md)
 - **spec** → [`packages/spec/CLAUDE.md`](packages/spec/CLAUDE.md) (+ [`packages/spec/README.md`](packages/spec/README.md) for humans). ⚠️ Describes **behaviour**, never mechanism — the moment it explains *how*, it duplicates a `CLAUDE.md` and the two drift.

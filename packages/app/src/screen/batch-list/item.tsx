@@ -1,9 +1,9 @@
 import {Link} from "@tanstack/react-router";
 import {useMemo} from "react";
 import {ScreenH2, ScreenP} from "@brewdocs.beer/design";
-import {batchProgress} from "@/actions/batchProgress";
 import ConfirmDeleteButton from "@/component/confirm-delete-button";
 import Batch from "@/model/batch";
+import {batchProgress} from "@/model/batchProgress";
 import {phaseLabel} from "@/model/brewable";
 
 export type BatchListItemProps = {

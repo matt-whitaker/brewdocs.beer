@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import {elapsedSeconds, isRunning} from "@/actions/brewTimer";
+import {elapsedSeconds, isRunning} from "@/model/timer";
 import {TimerEvent} from "@/model/timer";
 
 export default function useElapsedSeconds(events?: TimerEvent[]): number {
