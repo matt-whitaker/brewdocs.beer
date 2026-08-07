@@ -1,6 +1,6 @@
 import type {Meta, StoryObj} from "@storybook/react-vite";
 import {useEffect, useState} from "react";
-import {BrewTimer, BrewTimerMarker} from "./index";
+import {BrewTimer, BrewTimerMarker, BrewTimerScope} from "./index";
 
 const MILESTONE_KIND_OPTIONS = [
     {name: "Gravity reading", value: "gravity"},
@@ -34,13 +34,16 @@ const meta: Meta<typeof BrewTimer> = {
         elapsedSeconds: {control: {type: "number", min: 0}},
         height: {control: {type: "number", min: 8, max: 64}},
         markerSize: {control: {type: "number", min: 4, max: 24}},
+        scope: {control: {type: "inline-radio"}, options: ["global", "phase"]},
         onPlayPause: {action: "playPause"},
+        onScopeChange: {action: "scopeChange"},
         onQuickMilestone: {action: "quickMilestone"},
         onComplete: {action: "complete"}
     },
     args: {
         isRunning: false,
         elapsedSeconds: 0,
+        scope: "global",
         markers: MARKERS,
         milestoneKindOptions: MILESTONE_KIND_OPTIONS,
         phaseLabel: "2. Boil",
@@ -49,7 +52,7 @@ const meta: Meta<typeof BrewTimer> = {
     parameters: {
         docs: {
             description: {
-                component: "The brew-day timer shell. It is fully controlled and holds no timer state of its own — `elapsedSeconds` and `isRunning` come from the consumer, which owns the ticking and any persistence. Reading markers are drawn by `Timeline` and given a `Popover` hit target apiece, since a `Popover` renders a `<div>` and cannot live inside the `<svg>`. The quick-reading button opens a `Modal` asking for a kind and a phase — quick-add always asks for the phase, because nothing yet signals the current one. The Global/Phase scope toggle is present for shape only; Phase is disabled until phases are automated. The public word is \"Reading\"; the model behind it is still a `Milestone`, which is why the props and handlers say `milestone`. `completeLabel` + `onComplete` add the card's primary action on its own right-aligned row below the timeline; `onComplete` fires on click and any confirmation is the consumer's, since only it knows what completing a phase costs."
+                component: "The brew-day timer shell. It is fully controlled and holds no timer state of its own — `elapsedSeconds` and `isRunning` come from the consumer, which owns the ticking and any persistence. Reading markers are drawn by `Timeline` and given a `Popover` hit target apiece, since a `Popover` renders a `<div>` and cannot live inside the `<svg>`. The quick-reading button opens a `Modal` asking for a kind and a phase — quick-add always asks for the phase, because nothing yet signals the current one. The Global/Phase scope toggle is controlled the same way play/pause is: `scope` says which half reads as pressed and `onScopeChange` reports the click, while the consumer decides what `elapsedSeconds` and `markers` mean for each scope. The public word is \"Reading\"; the model behind it is still a `Milestone`, which is why the props and handlers say `milestone`. `completeLabel` + `onComplete` add the card's primary action on its own right-aligned row below the timeline; `onComplete` fires on click and any confirmation is the consumer's, since only it knows what completing a phase costs."
             }
         }
     }
@@ -67,6 +70,58 @@ export const Idle: Story = {
 export const Running: Story = {
     name: "Running (static elapsed)",
     args: {isRunning: true, elapsedSeconds: 5460}
+};
+
+export const PhaseScope: Story = {
+    name: "Phase scope selected",
+    args: {isRunning: true, elapsedSeconds: 5460, scope: "phase"},
+    parameters: {
+        docs: {
+            description: {
+                story: "`scope=\"phase\"` moves `btn-active` and `aria-pressed` onto Phase. Neither half is ever disabled — both are real toggle buttons, and the counter and markers are unchanged because the component computes nothing from `scope`; it only reports the click."
+            }
+        }
+    }
+};
+
+const PHASE_MARKERS = MARKERS.filter(marker => marker.offsetSeconds >= 5100);
+const PHASE_ELAPSED = 900;
+const GLOBAL_ELAPSED = 9000;
+
+function ScopeDemo() {
+    const [scope, setScope] = useState<BrewTimerScope>("global");
+
+    return (
+        <div className="flex flex-col gap-4">
+            <BrewTimer
+                isRunning
+                scope={scope}
+                elapsedSeconds={scope === "phase" ? PHASE_ELAPSED : GLOBAL_ELAPSED}
+                markers={scope === "phase" ? PHASE_MARKERS : MARKERS}
+                milestoneKindOptions={MILESTONE_KIND_OPTIONS}
+                phaseLabel="2. Boil"
+                onPlayPause={() => undefined}
+                onScopeChange={setScope}
+                onQuickMilestone={(kind, value) => window.console.log("quick reading", kind, value)} />
+            <p className="text-sm">
+                The story owns what each scope means — it swaps in a shorter counter and the boil&apos;s own markers
+                when Phase is pressed, exactly as the app layer will. `BrewTimer` itself does no filtering and no
+                elapsed-time math; it renders the `scope` it is given and calls `onScopeChange` on a click.
+            </p>
+        </div>
+    );
+}
+
+export const ScopeToggle: Story = {
+    name: "Scope toggle (controlled)",
+    parameters: {
+        docs: {
+            description: {
+                story: "The controlled pair in the shape a consumer uses it: the story holds `scope` in state and passes `setScope` as `onScopeChange`, the same way `Ticking` holds `isRunning` and passes `onPlayPause`."
+            }
+        }
+    },
+    render: () => <ScopeDemo/>
 };
 
 const TICK_MS = 1000;
