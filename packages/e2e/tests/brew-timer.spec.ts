@@ -153,30 +153,26 @@ test("a quick-action tab goes unavailable, with its reason, once the phase is ex
     await expect(dialog.getByRole("tab", {name: "Reading"})).toHaveAttribute("aria-selected", "true");
 });
 
-// BATCH-SCHEDULE-01/-07: each use of the Ingredients quick action checks off one more item of
-// that kind, and never the one it just checked. Three grains in the kb recipe's mash phase, so
-// this proves *advance*, not merely *checks one off*.
+// BATCH-SCHEDULE-01/-07/-08: each use of the Ingredients quick action checks off the next item
+// *as the phase lists it*, top to bottom, and never one it already checked.
 //
-// ⚠️ Deliberately asserts the SET of checked names, never a particular one. Which item a use
-// picks is BATCH-SCHEDULE-01's "earliest", and the grid renders rows in a different order than
-// the quick action walks (see the finding on #618) — pinning a name here would bake today's
-// implementation into the assertion, which is the one thing a spec-derived test must not do.
-test("the ingredients quick action advances through a phase, never re-checking an item", async ({page}) => {
+// ⚠️ The expected order is read from the SCREEN, never hardcoded. That is the whole promise of
+// BATCH-SCHEDULE-01 — "first" means the same thing in the grid and in the action — and asserting
+// it against the rendered order is what makes the test able to fail if they diverge again (#656,
+// where the second row shown was the one that ticked). A hardcoded name would pass either way.
+test("the ingredients quick action works down the phase in the order it lists them", async ({page}) => {
     await brewBatchFromKbRecipe(page, "E2E Quick Action Advance Batch");
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
     const GRAINS = ["Crystal Malt 40L", "German Pils", "Special Robust"];
-    const checkedNames = async () => {
-        const out: string[] = [];
-        for (const name of GRAINS) {
-            if (await page.getByRole("checkbox", {name}).isChecked()) out.push(name);
-        }
-        return out;
-    };
+    const displayed = (await page.getByRole("checkbox").evaluateAll(boxes => boxes.map(box => {
+        const el = box as HTMLInputElement;
+        const label = el.closest("label") ?? document.querySelector(`label[for="${el.id}"]`);
+        return label?.textContent?.trim() ?? "";
+    }))).filter(name => GRAINS.includes(name));
+    expect(displayed).toHaveLength(GRAINS.length);
 
-    expect(await checkedNames()).toEqual([]);
-
-    for (let expected = 1; expected <= GRAINS.length; expected++) {
+    for (let done = 1; done <= displayed.length; done++) {
         await page.getByRole("button", {name: "Quick actions"}).click();
         const dialog = page.getByRole("dialog").filter({hasText: "Quick action"});
         await dialog.getByRole("tab", {name: "Ingredients"}).click();
@@ -184,11 +180,34 @@ test("the ingredients quick action advances through a phase, never re-checking a
         await expect(dialog).not.toBeVisible();
         await settleSave(page);
 
-        // exactly one more each time — a re-check would leave the count flat
-        expect(await checkedNames()).toHaveLength(expected);
+        // the first `done` rows as rendered are checked, and nothing below them is
+        for (const [i, name] of displayed.entries()) {
+            const box = page.getByRole("checkbox", {name});
+            if (i < done) await expect(box, `${name} (row ${i + 1}) after ${done}`).toBeChecked();
+            else await expect(box, `${name} (row ${i + 1}) after ${done}`).not.toBeChecked();
+        }
     }
+});
 
-    expect((await checkedNames()).sort()).toEqual([...GRAINS].sort());
+// BATCH-SCHEDULE-08: a phase lists boil-timed additions longest-boil first, which is the order
+// they actually go in.
+//
+// ⚠️ WEAKER THAN IT LOOKS, and worth knowing before trusting it. The kb recipe already stores
+// its three Northern Brewer additions in descending boil order, so this passes whether the
+// screen sorts or merely preserves that order — it was green against the #656 defect. It catches
+// a *wrong* sort (ascending, or by name), not the absence of one. The real guard for #656 is the
+// test above, which reads the rendered order and was verified to fail when the sort is reverted.
+// A fixture whose stored order disagrees with its boil order would need the planning screen's
+// boil input to carry an accessible name; it does not yet.
+test("a phase lists its boil additions in the order they go in", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Brew Order Batch");
+    await openSchedulePhase(page, "2. Boil");
+
+    const boils = await page.getByLabel(/Northern Brewer boil/).evaluateAll(
+        inputs => inputs.map(i => parseFloat((i as HTMLInputElement).value)));
+
+    expect(boils.length).toBeGreaterThan(1);
+    expect(boils).toEqual([...boils].sort((a, b) => b - a));
 });
 
 // BATCH-SCHEDULE-01: "If the brewer also enters a value, that value is recorded against the
