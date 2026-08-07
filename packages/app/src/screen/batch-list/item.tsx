@@ -1,7 +1,7 @@
 import {Link} from "@tanstack/react-router";
 import {useMemo} from "react";
-import {ScreenH2, ScreenP} from "@brewdocs.beer/design";
-import ConfirmDeleteButton from "@/component/confirm-delete-button";
+import {ModalScreen, ScreenH2, ScreenP, Trash} from "@brewdocs.beer/design";
+import Action from "@/component/action";
 import Batch from "@/model/batch";
 import {batchProgress} from "@/model/batchProgress";
 import {phaseLabel} from "@/model/brewable";
@@ -31,7 +31,17 @@ export default function BatchListItem({ batch, recipeName, brewer, onDelete }: B
                 <ScreenP>by {brewer}</ScreenP>
                 <ScreenP>Status: {status}</ScreenP>
             </Link>
-            <ConfirmDeleteButton label={`Delete ${batch.name}`} title={`Delete ${batch.name}?`} onConfirm={onDelete} />
+            <Action
+                label={`Delete ${batch.name}`}
+                icon={Trash}
+                iconOnly
+                className="btn-xs text-error absolute top-1.5 right-1.5"
+                modalContent={
+                    <ModalScreen title={`Delete ${batch.name}?`} onConfirm={onDelete}>
+                        <ScreenP>This can&apos;t be undone.</ScreenP>
+                    </ModalScreen>
+                }
+            />
         </li>
     );
 }
