@@ -6,8 +6,31 @@ const MILESTONE_KIND_OPTIONS = [
     {name: "Gravity reading", value: "gravity"},
     {name: "Temperature", value: "temperature"},
     {name: "Volume", value: "volume"},
+    {name: "Water", value: "water"},
     {name: "Note", value: "note"}
 ];
+
+const MILESTONE_PARAMETER_OPTIONS = {
+    water: [
+        {name: "pH", value: "ph"},
+        {name: "Calcium", value: "calcium"},
+        {name: "Sulfate", value: "sulfate"},
+        {name: "Chloride", value: "chloride"}
+    ]
+};
+
+const SCHEDULE_KIND_OPTIONS = [
+    {name: "Grain", value: "grain"},
+    {name: "Hop", value: "hop"},
+    {name: "Yeast", value: "yeast"},
+    {name: "Additive", value: "additive"}
+];
+
+const SCHEDULE_VALUE_LABELS = {
+    grain: "Weight",
+    hop: "Weight",
+    additive: "Weight"
+};
 
 const MARKERS: BrewTimerMarker[] = [
     {id: "mash-in", offsetSeconds: 0, label: "Mash in", kind: "temperature"},
@@ -36,6 +59,8 @@ const meta: Meta<typeof BrewTimer> = {
         markerSize: {control: {type: "number", min: 4, max: 24}},
         onPlayPause: {action: "playPause"},
         onQuickMilestone: {action: "quickMilestone"},
+        onQuickSchedule: {action: "quickSchedule"},
+        onQuickEquipment: {action: "quickEquipment"},
         onComplete: {action: "complete"}
     },
     args: {
@@ -43,13 +68,16 @@ const meta: Meta<typeof BrewTimer> = {
         elapsedSeconds: 0,
         markers: MARKERS,
         milestoneKindOptions: MILESTONE_KIND_OPTIONS,
+        milestoneParameterOptions: MILESTONE_PARAMETER_OPTIONS,
+        scheduleKindOptions: SCHEDULE_KIND_OPTIONS,
+        scheduleValueLabels: SCHEDULE_VALUE_LABELS,
         phaseLabel: "2. Boil",
         completeLabel: "2. Boil"
     },
     parameters: {
         docs: {
             description: {
-                component: "The brew-day timer shell. It is fully controlled and holds no timer state of its own — `elapsedSeconds` and `isRunning` come from the consumer, which owns the ticking and any persistence. Reading markers are drawn by `Timeline` and given a `Popover` hit target apiece, since a `Popover` renders a `<div>` and cannot live inside the `<svg>`. The quick-reading button opens a `Modal` asking for a kind and a phase — quick-add always asks for the phase, because nothing yet signals the current one. The Global/Phase scope toggle is present for shape only; Phase is disabled until phases are automated. The public word is \"Reading\"; the model behind it is still a `Milestone`, which is why the props and handlers say `milestone`. `completeLabel` + `onComplete` add the card's primary action on its own right-aligned row below the timeline; `onComplete` fires on click and any confirmation is the consumer's, since only it knows what completing a phase costs."
+                component: "The brew-day timer shell. It is fully controlled and holds no timer state of its own — `elapsedSeconds` and `isRunning` come from the consumer, which owns the ticking and any persistence. Reading markers are drawn by `Timeline` and given a `Popover` hit target apiece, since a `Popover` renders a `<div>` and cannot live inside the `<svg>`. One \"Log\" button opens one `Modal` holding a `[Ingredients, Reading, Equipment]` tab panel — only the active tab is mounted, so switching tabs clears the fields the other one held. Each tab hands its selection back through its own callback and asks nothing about the phase: the consumer resolves the current phase and passes `phaseLabel` for display. `scheduleKindOptions`/`onQuickSchedule` and `onQuickEquipment` are optional, and their tabs render disabled when a consumer supplies neither. The Global/Phase scope toggle is present for shape only; Phase is disabled until phases are automated. The public word is \"Reading\"; the model behind it is still a `Milestone`, which is why the props and handlers say `milestone`. `completeLabel` + `onComplete` add the card's primary action on its own right-aligned row below the timeline; `onComplete` fires on click and any confirmation is the consumer's, since only it knows what completing a phase costs."
             }
         }
     }
@@ -161,7 +189,7 @@ export const Narrow: Story = {
     parameters: {
         docs: {
             description: {
-                story: "Constrained to a 360px-wide phone viewport. Below `sm` the whole bar steps down together — the counter one type size, every button to `btn-xs`, the card to a tighter padding — and the controls drop to their own row, the scope toggle to the left and \"Reading\" to the right, so nothing bleeds past the edge. \"Complete 2. Boil\" keeps a row of its own rather than joining that already-tight row, so a long phase label has the full card width to run into before it wraps."
+                story: "Constrained to a 360px-wide phone viewport. Below `sm` the whole bar steps down together — the counter one type size, every button to `btn-xs`, the card to a tighter padding — and the controls drop to their own row, the scope toggle to the left and \"Log\" to the right, so nothing bleeds past the edge. \"Complete 2. Boil\" keeps a row of its own rather than joining that already-tight row, so a long phase label has the full card width to run into before it wraps."
             }
         }
     },
@@ -184,8 +212,9 @@ export const NoCompleteAction: Story = {
     }
 };
 
-function QuickMilestoneDemo() {
+function QuickActionDemo({optionalTabs = true}: {optionalTabs?: boolean}) {
     const [logged, setLogged] = useState<string[]>([]);
+    const log = (entry: string) => setLogged(current => [...current, entry]);
 
     return (
         <div className="flex flex-col gap-4">
@@ -194,9 +223,17 @@ function QuickMilestoneDemo() {
                 elapsedSeconds={5460}
                 markers={MARKERS}
                 milestoneKindOptions={MILESTONE_KIND_OPTIONS}
+                milestoneParameterOptions={MILESTONE_PARAMETER_OPTIONS}
+                scheduleKindOptions={optionalTabs ? SCHEDULE_KIND_OPTIONS : undefined}
+                scheduleValueLabels={optionalTabs ? SCHEDULE_VALUE_LABELS : undefined}
                 phaseLabel="2. Boil"
                 onPlayPause={() => undefined}
-                onQuickMilestone={(kind, value) => setLogged(current => [...current, `${kind} · ${value}`])} />
+                onQuickMilestone={(kind, value, parameter) =>
+                    log(`reading · ${kind}${parameter ? ` · ${parameter}` : ""} · ${value}`)}
+                onQuickSchedule={optionalTabs
+                    ? (kind, value) => log(`ingredient · ${kind}${value ? ` · ${value}` : ""}`)
+                    : undefined}
+                onQuickEquipment={optionalTabs ? () => log("equipment · checked off") : undefined} />
             <ul className="text-sm list-disc pl-5">
                 {logged.map((entry, i) => <li key={`${entry}-${i}`}>{entry}</li>)}
             </ul>
@@ -204,14 +241,26 @@ function QuickMilestoneDemo() {
     );
 }
 
-export const QuickMilestone: Story = {
-    name: "Quick-reading modal flow",
+export const QuickAction: Story = {
+    name: "Quick-action modal — all three tabs",
     parameters: {
         docs: {
             description: {
-                story: "\"Reading\" opens the modal, which defaults to the first kind and records against the current phase — the consumer resolves it and passes `phaseLabel`, so the modal never asks. Confirm calls `onQuickMilestone(kind, value, parameter?)` and the modal closes natively — `ModalFooter` submits a `method=\"dialog\"` form. Submissions are listed below the timer."
+                story: "\"Log\" opens the one modal. **Ingredients** picks a kind from `scheduleKindOptions` and shows a value field only for the kinds `scheduleValueLabels` names (Grain/Hop/Additive here, not Yeast), submitting `onQuickSchedule(kind, value?)`. **Reading** is the former standalone quick-reading modal verbatim — kind, the optional measurement dropdown `milestoneParameterOptions` adds for Water, and a value — submitting `onQuickMilestone(kind, value, parameter?)`. **Equipment** is checkoff-only with no fields, submitting `onQuickEquipment()`. Only the active tab is mounted, so switching tabs discards what the last one held. Every tab records against the current phase, which the consumer resolves and passes as `phaseLabel`. Confirm closes the modal natively — `ModalFooter` submits a `method=\"dialog\"` form. Submissions are listed below the timer."
             }
         }
     },
-    render: () => <QuickMilestoneDemo/>
+    render: () => <QuickActionDemo/>
+};
+
+export const QuickActionReadingOnly: Story = {
+    name: "Quick-action modal — reading only (degraded)",
+    parameters: {
+        docs: {
+            description: {
+                story: "The same modal with `scheduleKindOptions`, `onQuickSchedule` and `onQuickEquipment` all omitted — which is exactly what app's existing call site passes today. Ingredients and Equipment render as disabled tabs carrying the reason in their `title`, Reading is the active tab, and the flow is unchanged from before the tabs existed. This is the shape every consumer gets for free: the three new props are optional, so nothing breaks until a consumer opts in."
+            }
+        }
+    },
+    render: () => <QuickActionDemo optionalTabs={false}/>
 };
