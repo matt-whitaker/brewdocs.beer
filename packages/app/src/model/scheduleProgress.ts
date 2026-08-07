@@ -36,8 +36,8 @@ export function incompleteResourceTypes(brewable: Brewable, phaseId: string | un
     return RESOURCE_TYPES.filter(resourceType => !!nextIncompleteAssignment(brewable, phaseId, resourceType, tracker));
 }
 
-export function nextIncompleteEquipment(brewable: Brewable, phaseId: string | undefined, tracker: Tracker): Equipment | undefined {
-    if (!phaseId) return undefined;
+export function incompleteEquipment(brewable: Brewable, phaseId: string | undefined, tracker: Tracker): Equipment[] {
+    if (!phaseId) return [];
     const phase = brewable.schedule.phases.find(({id}) => id === phaseId);
-    return phase?.equipment.find(({id}) => !!id && !isCompleted(tracker, {on: "equipment", id}));
+    return (phase?.equipment ?? []).filter(({id}) => !!id && !isCompleted(tracker, {on: "equipment", id}));
 }

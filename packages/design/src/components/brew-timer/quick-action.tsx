@@ -18,10 +18,11 @@ export type QuickActionModalProps = {
     milestoneParameterOptions?: Record<string, InputSelectOption[]>;
     scheduleKindOptions?: InputSelectOption[];
     scheduleValueLabels?: Record<string, string>;
+    equipmentOptions?: InputSelectOption[];
     phaseLabel: string;
     onQuickMilestone: (kind: string, value: string, parameter?: string) => void;
     onQuickSchedule: (kind: string, value?: string) => void;
-    onQuickEquipment: () => void;
+    onQuickEquipment: (id: string) => void;
 };
 
 type TabDescriptor = {
@@ -166,14 +167,35 @@ function ReadingTab({kindOptions, parameterOptions, phaseLabel, onSubmit}: Readi
     );
 }
 
-function EquipmentTab({phaseLabel, onSubmit}: {phaseLabel: string; onSubmit: () => void}) {
+type EquipmentTabProps = {
+    options: InputSelectOption[];
+    phaseLabel: string;
+    onSubmit: (id: string) => void;
+};
+
+function EquipmentTab({options, phaseLabel, onSubmit}: EquipmentTabProps) {
+    const [selected, setSelected] = useState<string | null>(null);
+    const selectedId = selected ?? firstValue(options);
+
+    const confirm = useCallback(() => {
+        onSubmit(selectedId);
+        setSelected(null);
+    }, [onSubmit, selectedId]);
+
     return (
         <>
             <div className="grid gap-3 py-2">
-                <p className="text-sm">Check off the next equipment item, no value recorded.</p>
+                <Field label="Equipment">
+                    <InputSelect
+                        label="Equipment item"
+                        className="w-full"
+                        data={options}
+                        value={selectedId}
+                        onChange={setSelected} />
+                </Field>
                 <RecordingOn phaseLabel={phaseLabel} />
             </div>
-            <ModalFooter confirm={onSubmit} />
+            <ModalFooter confirm={confirm} />
         </>
     );
 }
@@ -186,6 +208,7 @@ export const QuickActionModal = forwardRef<HTMLDialogElement, QuickActionModalPr
         milestoneParameterOptions,
         scheduleKindOptions = [],
         scheduleValueLabels,
+        equipmentOptions = [],
         phaseLabel,
         onQuickMilestone,
         onQuickSchedule,
@@ -256,7 +279,10 @@ export const QuickActionModal = forwardRef<HTMLDialogElement, QuickActionModalPr
                             onSubmit={onQuickMilestone} />
                     ) : null}
                     {activeTab === "equipment" ? (
-                        <EquipmentTab phaseLabel={phaseLabel} onSubmit={onQuickEquipment} />
+                        <EquipmentTab
+                            options={equipmentOptions}
+                            phaseLabel={phaseLabel}
+                            onSubmit={onQuickEquipment} />
                     ) : null}
                 </div>
             </Modal>

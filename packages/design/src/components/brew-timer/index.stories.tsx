@@ -19,6 +19,12 @@ const MILESTONE_PARAMETER_OPTIONS = {
     ]
 };
 
+const EQUIPMENT_OPTIONS = [
+    {name: "Mash Tun - 10gal", value: "eq-1"},
+    {name: "Stirring Wand", value: "eq-2"},
+    {name: "Digital Hydrometer", value: "eq-3"}
+];
+
 const SCHEDULE_KIND_OPTIONS = [
     {name: "Grain", value: "grain"},
     {name: "Hop", value: "hop"},
@@ -77,6 +83,7 @@ const meta: Meta<typeof BrewTimer> = {
         milestoneParameterOptions: MILESTONE_PARAMETER_OPTIONS,
         scheduleKindOptions: SCHEDULE_KIND_OPTIONS,
         scheduleValueLabels: SCHEDULE_VALUE_LABELS,
+        equipmentOptions: EQUIPMENT_OPTIONS,
         phaseLabel: "2. Boil",
         completeLabel: "2. Boil"
     },
@@ -140,7 +147,7 @@ function TickingDemo({markers = MARKERS, startSeconds = 1200}: {markers?: BrewTi
                 onPlayPause={() => setIsRunning(running => !running)}
                 onQuickMilestone={(kind, value) => window.console.log("quick reading", kind, value)}
                 onQuickSchedule={(kind, value) => window.console.log("quick ingredient", kind, value)}
-                onQuickEquipment={() => window.console.log("quick equipment")} />
+                onQuickEquipment={id => window.console.log("quick equipment", id)} />
             <p className="text-sm">
                 The story owns the clock — one story-minute a second. Play/pause stops the interval; the markers slide
                 left as each one&apos;s share of the elapsed span shrinks, and hovering or tapping one opens its popover.
@@ -246,12 +253,13 @@ function QuickActionDemo({optionalTabs = true}: {optionalTabs?: boolean}) {
                 milestoneParameterOptions={MILESTONE_PARAMETER_OPTIONS}
                 scheduleKindOptions={SCHEDULE_KIND_OPTIONS}
                 scheduleValueLabels={SCHEDULE_VALUE_LABELS}
+                equipmentOptions={optionalTabs ? EQUIPMENT_OPTIONS : []}
                 phaseLabel="2. Boil"
                 onPlayPause={() => undefined}
                 onQuickMilestone={(kind, value, parameter) =>
                     log(`reading · ${kind}${parameter ? ` · ${parameter}` : ""} · ${value}`)}
                 onQuickSchedule={(kind, value) => log(`ingredient · ${kind}${value ? ` · ${value}` : ""}`)}
-                onQuickEquipment={() => log("equipment · checked off")} />
+                onQuickEquipment={id => log(`equipment · ${EQUIPMENT_OPTIONS.find(o => o.value === id)?.name ?? id}`)} />
             <ul className="text-sm list-disc pl-5">
                 {logged.map((entry, i) => <li key={`${entry}-${i}`}>{entry}</li>)}
             </ul>
@@ -264,7 +272,7 @@ export const QuickAction: Story = {
     parameters: {
         docs: {
             description: {
-                story: "\"Log\" opens the one modal. **Ingredients** picks a kind from `scheduleKindOptions` and shows a value field only for the kinds `scheduleValueLabels` names (Grain/Hop/Additive here, not Yeast), submitting `onQuickSchedule(kind, value?)`. **Reading** is the former standalone quick-reading modal verbatim — kind, the optional measurement dropdown `milestoneParameterOptions` adds for Water, and a value — submitting `onQuickMilestone(kind, value, parameter?)`. **Equipment** is checkoff-only with no fields, submitting `onQuickEquipment()`. Only the active tab is mounted, so switching tabs discards what the last one held. Every tab records against the current phase, which the consumer resolves and passes as `phaseLabel`. Confirm closes the modal natively — `ModalFooter` submits a `method=\"dialog\"` form. Submissions are listed below the timer."
+                story: "\"Log\" opens the one modal. **Ingredients** picks a kind from `scheduleKindOptions` and shows a value field only for the kinds `scheduleValueLabels` names (Grain/Hop/Additive here, not Yeast), submitting `onQuickSchedule(kind, value?)`. **Reading** is the former standalone quick-reading modal verbatim — kind, the optional measurement dropdown `milestoneParameterOptions` adds for Water, and a value — submitting `onQuickMilestone(kind, value, parameter?)`. **Equipment** picks the item from `equipmentOptions` and submits `onQuickEquipment(id)` \u2014 ⚠️ it names the item rather than resolving \"the next one\", because equipment carries no boil time and no other intrinsic order, so an auto-advance would be an arbitrary pick presented as a resolution. Only the active tab is mounted, so switching tabs discards what the last one held. Every tab records against the current phase, which the consumer resolves and passes as `phaseLabel`. Confirm closes the modal natively — `ModalFooter` submits a `method=\"dialog\"` form. Submissions are listed below the timer."
             }
         }
     },

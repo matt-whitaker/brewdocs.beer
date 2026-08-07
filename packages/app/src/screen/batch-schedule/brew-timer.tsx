@@ -9,7 +9,7 @@ import {MutateFn} from "@/hooks/useJsonEdit";
 import Batch from "@/model/batch";
 import {currentPhaseIndex} from "@/model/batchProgress";
 import {Milestone, phaseLabel, ResourceType} from "@/model/brewable";
-import {incompleteResourceTypes, nextIncompleteAssignment, nextIncompleteEquipment} from "@/model/scheduleProgress";
+import {incompleteEquipment, incompleteResourceTypes, nextIncompleteAssignment} from "@/model/scheduleProgress";
 import {isRunning} from "@/model/timer";
 import {TimerEventType} from "@/model/timer";
 import {key, ResourceActuals, ResourceScalarField, TrackerEntry} from "@/model/tracker";
@@ -102,15 +102,12 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
         }, true);
     }, [mutate]);
 
-    const onQuickEquipment = useCallback(() => {
-        mutate(draft => {
-            const index = currentPhaseIndex(draft.brewable.schedule.phases, draft.tracker);
-            const phase = draft.brewable.schedule.phases[index];
-            const item = nextIncompleteEquipment(draft.brewable, phase?.id, draft.tracker);
-            if (!item?.id) return draft;
-
-            return {...draft, tracker: putEntry(draft.tracker, {on: "equipment", id: item.id}, {completed: true})};
-        }, true);
+    const onQuickEquipment = useCallback((id: string) => {
+        if (!id) return;
+        mutate(draft => ({
+            ...draft,
+            tracker: putEntry(draft.tracker, {on: "equipment", id}, {completed: true})
+        }), true);
     }, [mutate]);
 
     const currentIndex = useMemo(() => currentPhaseIndex(phases, batch.tracker), [phases, batch.tracker]);
@@ -145,7 +142,10 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
             .filter(([, label]) => !!label)),
         [incompleteTypes]);
 
-    const hasEquipmentLeft = !!nextIncompleteEquipment(batch.brewable, currentPhaseId, batch.tracker);
+    const equipmentOptions = useMemo(
+        () => incompleteEquipment(batch.brewable, currentPhaseId, batch.tracker)
+            .map(({ id, name }) => ({ name, value: id ?? "" })),
+        [batch.brewable, currentPhaseId, batch.tracker]);
 
     const quickActionTabs = useMemo<Record<QuickActionTab, QuickActionTabState>>(() => ({
         ingredients: {
@@ -157,10 +157,10 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
             unavailableReason: "No readings apply to this phase"
         },
         equipment: {
-            available: hasEquipmentLeft,
+            available: equipmentOptions.length > 0,
             unavailableReason: "Nothing left to check off on this phase"
         }
-    }), [scheduleKindOptions, milestoneKindOptions, hasEquipmentLeft]);
+    }), [scheduleKindOptions, milestoneKindOptions, equipmentOptions]);
 
     const sessionStart = batch.timer?.find(({ type }) => type === "start")?.date;
 
@@ -212,6 +212,7 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
                 milestoneParameterOptions={milestoneParameterOptions}
                 scheduleKindOptions={scheduleKindOptions}
                 scheduleValueLabels={scheduleValueLabels}
+                equipmentOptions={equipmentOptions}
                 phaseLabel={currentPhaseLabel}
                 completeLabel={currentPhaseLabel}
                 onPlayPause={onPlayPause}
