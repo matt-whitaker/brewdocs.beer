@@ -153,14 +153,13 @@ test("a quick-action tab goes unavailable, with its reason, once the phase is ex
     await expect(dialog.getByRole("tab", {name: "Reading"})).toHaveAttribute("aria-selected", "true");
 });
 
-// BATCH-SCHEDULE-01/-07/-08: each use of the Ingredients quick action checks off the next item
-// *as the phase lists it*, top to bottom, and never one it already checked.
+// BATCH-SCHEDULE-10/-11: the quick action names the item, and the list is offered in the order
+// the phase lists them with the next one preselected — so working down a phase stays one confirm
+// per addition, and a checked item is never offered again.
 //
-// ⚠️ The expected order is read from the SCREEN, never hardcoded. That is the whole promise of
-// BATCH-SCHEDULE-01 — "first" means the same thing in the grid and in the action — and asserting
-// it against the rendered order is what makes the test able to fail if they diverge again (#656,
-// where the second row shown was the one that ticked). A hardcoded name would pass either way.
-test("the ingredients quick action works down the phase in the order it lists them", async ({page}) => {
+// ⚠️ The expected order is read from the SCREEN, never hardcoded, so this fails if the panel and
+// the picker ever disagree again (#656).
+test("the ingredients quick action works down the phase one confirm at a time", async ({page}) => {
     await brewBatchFromKbRecipe(page, "E2E Quick Action Advance Batch");
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
@@ -176,17 +175,43 @@ test("the ingredients quick action works down the phase in the order it lists th
         await page.getByRole("button", {name: "Quick actions"}).click();
         const dialog = page.getByRole("dialog").filter({hasText: "Quick action"});
         await dialog.getByRole("tab", {name: "Ingredients"}).click();
+
+        // the next one is already selected — no picking needed to work in order
+        await expect(dialog.getByLabel("Ingredient item")).toHaveValue(/.+/);
         await dialog.getByRole("button", {name: "Confirm"}).click();
         await expect(dialog).not.toBeVisible();
         await settleSave(page);
 
-        // the first `done` rows as rendered are checked, and nothing below them is
         for (const [i, name] of displayed.entries()) {
             const box = page.getByRole("checkbox", {name});
             if (i < done) await expect(box, `${name} (row ${i + 1}) after ${done}`).toBeChecked();
             else await expect(box, `${name} (row ${i + 1}) after ${done}`).not.toBeChecked();
         }
     }
+});
+
+// BATCH-SCHEDULE-10: the brewer can name an item OUT of order — the thing a resolver could never
+// do, and the reason grain and additives stopped being auto-advanced at all.
+test("the ingredients quick action checks off the item the brewer names, out of order", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Quick Action Named Batch");
+    await page.getByRole("tab", {name: "Brewing", exact: true}).click();
+
+    await page.getByRole("button", {name: "Quick actions"}).click();
+    const dialog = page.getByRole("dialog").filter({hasText: "Quick action"});
+    await dialog.getByRole("tab", {name: "Ingredients"}).click();
+
+    const offered = await dialog.getByLabel("Ingredient item").locator("option").allTextContents();
+    expect(offered).toEqual(["German Pils", "Crystal Malt 40L", "Special Robust"]);
+
+    // deliberately not the preselected one
+    await dialog.getByLabel("Ingredient item").selectOption({label: "Special Robust"});
+    await dialog.getByRole("button", {name: "Confirm"}).click();
+    await expect(dialog).not.toBeVisible();
+    await settleSave(page);
+
+    await expect(page.getByRole("checkbox", {name: "Special Robust"})).toBeChecked();
+    await expect(page.getByRole("checkbox", {name: "German Pils"})).not.toBeChecked();
+    await expect(page.getByRole("checkbox", {name: "Crystal Malt 40L"})).not.toBeChecked();
 });
 
 // BATCH-SCHEDULE-08/-09: the phase lists boil additions longest-boil first, and Planning is
@@ -294,9 +319,10 @@ test("a quick action never reaches into a later phase", async ({page}) => {
     const dialog = page.getByRole("dialog").filter({hasText: "Quick action"});
     await dialog.getByRole("tab", {name: "Ingredients"}).click();
 
-    const kinds = await dialog.getByLabel("Ingredient kind").locator("option").allTextContents();
-    expect(kinds).toContain("Grain");
-    expect(kinds).not.toContain("Hop");
+    // only this phase's remaining items are on offer — the boil's hops are not among them
+    const offered = await dialog.getByLabel("Ingredient item").locator("option").allTextContents();
+    expect(offered).toContain("German Pils");
+    expect(offered.some(name => name.startsWith("Northern Brewer"))).toBe(false);
 
     await dialog.getByRole("button", {name: "Confirm"}).click();
     await expect(dialog).not.toBeVisible();

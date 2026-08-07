@@ -16,12 +16,12 @@ export type QuickActionModalProps = {
     defaultTab: QuickActionTab;
     milestoneKindOptions: InputSelectOption[];
     milestoneParameterOptions?: Record<string, InputSelectOption[]>;
-    scheduleKindOptions?: InputSelectOption[];
+    scheduleOptions?: InputSelectOption[];
     scheduleValueLabels?: Record<string, string>;
     equipmentOptions?: InputSelectOption[];
     phaseLabel: string;
     onQuickMilestone: (kind: string, value: string, parameter?: string) => void;
-    onQuickSchedule: (kind: string, value?: string) => void;
+    onQuickSchedule: (id: string, value?: string) => void;
     onQuickEquipment: (id: string) => void;
 };
 
@@ -55,41 +55,41 @@ function RecordingOn({phaseLabel}: {phaseLabel: string}) {
 }
 
 type IngredientsTabProps = {
-    kindOptions: InputSelectOption[];
+    options: InputSelectOption[];
     valueLabels?: Record<string, string>;
     phaseLabel: string;
-    onSubmit: (kind: string, value?: string) => void;
+    onSubmit: (id: string, value?: string) => void;
 };
 
-function IngredientsTab({kindOptions, valueLabels, phaseLabel, onSubmit}: IngredientsTabProps) {
-    const [kind, setKind] = useState<string | null>(null);
+function IngredientsTab({options, valueLabels, phaseLabel, onSubmit}: IngredientsTabProps) {
+    const [selected, setSelected] = useState<string | null>(null);
     const [value, setValue] = useState("");
 
-    const selectedKind = kind ?? firstValue(kindOptions);
-    const valueLabel = valueLabels?.[selectedKind];
+    const selectedId = selected ?? firstValue(options);
+    const valueLabel = valueLabels?.[selectedId];
 
-    const chooseKind = useCallback((next: string | null) => {
-        setKind(next);
+    const choose = useCallback((next: string | null) => {
+        setSelected(next);
         setValue("");
     }, []);
 
     const confirm = useCallback(() => {
         const typed = value.trim();
-        onSubmit(selectedKind, typed || undefined);
-        setKind(null);
+        onSubmit(selectedId, typed || undefined);
+        setSelected(null);
         setValue("");
-    }, [onSubmit, selectedKind, value]);
+    }, [onSubmit, selectedId, value]);
 
     return (
         <>
             <div className="grid gap-3 py-2">
                 <Field label="Ingredient">
                     <InputSelect
-                        label="Ingredient kind"
+                        label="Ingredient item"
                         className="w-full"
-                        data={kindOptions}
-                        value={selectedKind}
-                        onChange={chooseKind} />
+                        data={options}
+                        value={selectedId}
+                        onChange={choose} />
                 </Field>
                 {valueLabel ? (
                     <Field label={valueLabel}>
@@ -206,7 +206,7 @@ export const QuickActionModal = forwardRef<HTMLDialogElement, QuickActionModalPr
         defaultTab,
         milestoneKindOptions,
         milestoneParameterOptions,
-        scheduleKindOptions = [],
+        scheduleOptions = [],
         scheduleValueLabels,
         equipmentOptions = [],
         phaseLabel,
@@ -266,7 +266,7 @@ export const QuickActionModal = forwardRef<HTMLDialogElement, QuickActionModalPr
                     aria-labelledby={`${baseId}-tab-${activeTab}`}>
                     {activeTab === "ingredients" ? (
                         <IngredientsTab
-                            kindOptions={scheduleKindOptions}
+                            options={scheduleOptions}
                             valueLabels={scheduleValueLabels}
                             phaseLabel={phaseLabel}
                             onSubmit={onQuickSchedule} />

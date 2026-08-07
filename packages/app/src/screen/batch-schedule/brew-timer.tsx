@@ -8,8 +8,8 @@ import useElapsedSeconds from "@/hooks/useElapsedSeconds";
 import {MutateFn} from "@/hooks/useJsonEdit";
 import Batch from "@/model/batch";
 import {currentPhaseIndex} from "@/model/batchProgress";
-import {Milestone, phaseLabel, ResourceType} from "@/model/brewable";
-import {incompleteEquipment, incompleteResourceTypes, nextIncompleteAssignment} from "@/model/scheduleProgress";
+import {assignmentResourceName, Milestone, phaseLabel, ResourceType} from "@/model/brewable";
+import {incompleteAssignments, incompleteEquipment} from "@/model/scheduleProgress";
 import {isRunning} from "@/model/timer";
 import {TimerEventType} from "@/model/timer";
 import {key, ResourceActuals, ResourceScalarField, TrackerEntry} from "@/model/tracker";
@@ -80,17 +80,13 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
         }, true);
     }, [mutate]);
 
-    const onQuickSchedule = useCallback((kind: string, value?: string) => {
+    const onQuickSchedule = useCallback((id: string, value?: string) => {
+        if (!id) return;
         mutate(draft => {
-            const index = currentPhaseIndex(draft.brewable.schedule.phases, draft.tracker);
-            const phase = draft.brewable.schedule.phases[index];
-            if (!phase) return draft;
+            const assignment = draft.brewable.assignments.find(candidate => candidate.id === id);
+            if (!assignment) return draft;
 
-            const resourceType = kind as ResourceType;
-            const assignment = nextIncompleteAssignment(draft.brewable, phase.id, resourceType, draft.tracker);
-            if (!assignment?.id) return draft;
-
-            const {field} = QUICK_SCHEDULE_KINDS[resourceType];
+            const {field} = QUICK_SCHEDULE_KINDS[assignment.resourceType];
             const typed = value?.trim();
             const planned: ResourceActuals = assignment.resource;
             const unit = planned[field]?.unit;
@@ -98,7 +94,7 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
 
             if (typed && unit) entry.resource = {[field]: scalarFromNumberWithUnit(typed, unit)};
 
-            return {...draft, tracker: putEntry(draft.tracker, {on: "assignment", id: assignment.id}, entry)};
+            return {...draft, tracker: putEntry(draft.tracker, {on: "assignment", id}, entry)};
         }, true);
     }, [mutate]);
 
@@ -128,19 +124,27 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
         () => ({ water: WATER_PARAMETERS.map(({ key: name, label }) => ({ name: label, value: name })) }),
         []);
 
-    const incompleteTypes = useMemo(
-        () => incompleteResourceTypes(batch.brewable, currentPhaseId, batch.tracker),
+    const remaining = useMemo(
+        () => incompleteAssignments(batch.brewable, currentPhaseId, batch.tracker),
         [batch.brewable, currentPhaseId, batch.tracker]);
 
-    const scheduleKindOptions = useMemo(
-        () => incompleteTypes.map(type => ({ name: QUICK_SCHEDULE_KINDS[type].label, value: type })),
-        [incompleteTypes]);
+    const scheduleOptions = useMemo(
+        () => remaining.map(assignment => {
+            const planned: ResourceActuals = assignment.resource;
+            return {
+                name: planned.boil
+                    ? `${assignmentResourceName(assignment)} · ${planned.boil.value}`
+                    : assignmentResourceName(assignment),
+                value: assignment.id ?? ""
+            };
+        }),
+        [remaining]);
 
     const scheduleValueLabels = useMemo(
-        () => Object.fromEntries(incompleteTypes
-            .map(type => [type, QUICK_SCHEDULE_KINDS[type].valueLabel])
+        () => Object.fromEntries(remaining
+            .map(assignment => [assignment.id ?? "", QUICK_SCHEDULE_KINDS[assignment.resourceType].valueLabel])
             .filter(([, label]) => !!label)),
-        [incompleteTypes]);
+        [remaining]);
 
     const equipmentOptions = useMemo(
         () => incompleteEquipment(batch.brewable, currentPhaseId, batch.tracker)
@@ -149,7 +153,7 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
 
     const quickActionTabs = useMemo<Record<QuickActionTab, QuickActionTabState>>(() => ({
         ingredients: {
-            available: scheduleKindOptions.length > 0,
+            available: scheduleOptions.length > 0,
             unavailableReason: "Nothing left to add on this phase"
         },
         reading: {
@@ -160,7 +164,7 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
             available: equipmentOptions.length > 0,
             unavailableReason: "Nothing left to check off on this phase"
         }
-    }), [scheduleKindOptions, milestoneKindOptions, equipmentOptions]);
+    }), [scheduleOptions, milestoneKindOptions, equipmentOptions]);
 
     const sessionStart = batch.timer?.find(({ type }) => type === "start")?.date;
 
@@ -210,7 +214,7 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
                 defaultQuickActionTab="reading"
                 milestoneKindOptions={milestoneKindOptions}
                 milestoneParameterOptions={milestoneParameterOptions}
-                scheduleKindOptions={scheduleKindOptions}
+                scheduleOptions={scheduleOptions}
                 scheduleValueLabels={scheduleValueLabels}
                 equipmentOptions={equipmentOptions}
                 phaseLabel={currentPhaseLabel}

@@ -25,17 +25,24 @@ const EQUIPMENT_OPTIONS = [
     {name: "Digital Hydrometer", value: "eq-3"}
 ];
 
-const SCHEDULE_KIND_OPTIONS = [
-    {name: "Grain", value: "grain"},
-    {name: "Hop", value: "hop"},
-    {name: "Yeast", value: "yeast"},
-    {name: "Additive", value: "additive"}
+// what is left to add on one phase, in brew order — boil-timed additions first by longest
+// boil, then everything with no time of its own. The suffix is what tells three additions of
+// one hop apart, and it is the consumer's to build: this component never parses a name.
+const SCHEDULE_OPTIONS = [
+    {name: "Northern Brewer · 60min", value: "hop-1"},
+    {name: "Northern Brewer · 20min", value: "hop-2"},
+    {name: "Irish Moss · 15min", value: "additive-1"},
+    {name: "German Pils", value: "grain-1"},
+    {name: "Wyeast 2112", value: "yeast-1"}
 ];
 
+// keyed by the option's value, so a kind with nothing worth recording simply has no entry —
+// selecting the yeast here shows no value field
 const SCHEDULE_VALUE_LABELS = {
-    grain: "Weight",
-    hop: "Weight",
-    additive: "Weight"
+    "hop-1": "Weight",
+    "hop-2": "Weight",
+    "additive-1": "Weight",
+    "grain-1": "Weight"
 };
 
 const MARKERS: BrewTimerMarker[] = [
@@ -81,7 +88,7 @@ const meta: Meta<typeof BrewTimer> = {
         defaultQuickActionTab: "reading" as const,
         milestoneKindOptions: MILESTONE_KIND_OPTIONS,
         milestoneParameterOptions: MILESTONE_PARAMETER_OPTIONS,
-        scheduleKindOptions: SCHEDULE_KIND_OPTIONS,
+        scheduleOptions: SCHEDULE_OPTIONS,
         scheduleValueLabels: SCHEDULE_VALUE_LABELS,
         equipmentOptions: EQUIPMENT_OPTIONS,
         phaseLabel: "2. Boil",
@@ -251,7 +258,7 @@ function QuickActionDemo({optionalTabs = true}: {optionalTabs?: boolean}) {
                 defaultQuickActionTab="reading"
                 milestoneKindOptions={MILESTONE_KIND_OPTIONS}
                 milestoneParameterOptions={MILESTONE_PARAMETER_OPTIONS}
-                scheduleKindOptions={SCHEDULE_KIND_OPTIONS}
+                scheduleOptions={SCHEDULE_OPTIONS}
                 scheduleValueLabels={SCHEDULE_VALUE_LABELS}
                 equipmentOptions={optionalTabs ? EQUIPMENT_OPTIONS : []}
                 phaseLabel="2. Boil"
@@ -272,7 +279,7 @@ export const QuickAction: Story = {
     parameters: {
         docs: {
             description: {
-                story: "\"Log\" opens the one modal. **Ingredients** picks a kind from `scheduleKindOptions` and shows a value field only for the kinds `scheduleValueLabels` names (Grain/Hop/Additive here, not Yeast), submitting `onQuickSchedule(kind, value?)`. **Reading** is the former standalone quick-reading modal verbatim — kind, the optional measurement dropdown `milestoneParameterOptions` adds for Water, and a value — submitting `onQuickMilestone(kind, value, parameter?)`. **Equipment** picks the item from `equipmentOptions` and submits `onQuickEquipment(id)` \u2014 ⚠️ it names the item rather than resolving \"the next one\", because equipment carries no boil time and no other intrinsic order, so an auto-advance would be an arbitrary pick presented as a resolution. Only the active tab is mounted, so switching tabs discards what the last one held. Every tab records against the current phase, which the consumer resolves and passes as `phaseLabel`. Confirm closes the modal natively — `ModalFooter` submits a `method=\"dialog\"` form. Submissions are listed below the timer."
+                story: "\"Log\" opens the one modal. **Ingredients** picks the item from `scheduleOptions` \u2014 offered in brew order with the next one already selected \u2014 and shows a value field only for the items `scheduleValueLabels` names, submitting `onQuickSchedule(id, value?)`. ⚠️ It names the item rather than resolving \"the next one\": only hops are reliably chronological, grain goes in all at once, and an additive may or may not carry a boil time, so a resolver would be right for one kind and arbitrary for the other two. **Reading** is the former standalone quick-reading modal verbatim — kind, the optional measurement dropdown `milestoneParameterOptions` adds for Water, and a value — submitting `onQuickMilestone(kind, value, parameter?)`. **Equipment** picks the item from `equipmentOptions` and submits `onQuickEquipment(id)` \u2014 ⚠️ it names the item rather than resolving \"the next one\", because equipment carries no boil time and no other intrinsic order, so an auto-advance would be an arbitrary pick presented as a resolution. Only the active tab is mounted, so switching tabs discards what the last one held. Every tab records against the current phase, which the consumer resolves and passes as `phaseLabel`. Confirm closes the modal natively — `ModalFooter` submits a `method=\"dialog\"` form. Submissions are listed below the timer."
             }
         }
     },

@@ -1,4 +1,4 @@
-import Brewable, {Assignment, RESOURCE_TYPES, ResourceType} from "@/model/brewable";
+import Brewable, {Assignment, ResourceType} from "@/model/brewable";
 import Equipment from "@/model/equipment";
 import {key, Ref, ResourceActuals, TrackerEntry} from "@/model/tracker";
 
@@ -23,21 +23,10 @@ export const byBrewingOrder = (a: BrewOrdered, b: BrewOrdered): number => boilMi
 const inBrewingOrder = (assignments: Assignment[]): Assignment[] =>
     [...assignments].sort(byBrewingOrder);
 
-export function nextIncompleteAssignment(
-    brewable: Brewable,
-    phaseId: string,
-    resourceType: ResourceType,
-    tracker: Tracker
-): Assignment | undefined {
-    const inPhase = brewable.assignments.filter(assignment =>
-        assignment.phaseId === phaseId && assignment.resourceType === resourceType);
-
-    return inBrewingOrder(inPhase).find(({id}) => !!id && !isCompleted(tracker, {on: "assignment", id}));
-}
-
-export function incompleteResourceTypes(brewable: Brewable, phaseId: string | undefined, tracker: Tracker): ResourceType[] {
+export function incompleteAssignments(brewable: Brewable, phaseId: string | undefined, tracker: Tracker): Assignment[] {
     if (!phaseId) return [];
-    return RESOURCE_TYPES.filter(resourceType => !!nextIncompleteAssignment(brewable, phaseId, resourceType, tracker));
+    return inBrewingOrder(brewable.assignments.filter(assignment => assignment.phaseId === phaseId))
+        .filter(({id}) => !!id && !isCompleted(tracker, {on: "assignment", id}));
 }
 
 export function incompleteEquipment(brewable: Brewable, phaseId: string | undefined, tracker: Tracker): Equipment[] {
