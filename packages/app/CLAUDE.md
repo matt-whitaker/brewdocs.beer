@@ -11,6 +11,24 @@ Package-specific guidance. See the repo-root `CLAUDE.md` for universal rules (co
 
 > App is large; each subsystem below follows the same template.
 
+## Layering: `design` → `component/` → `screen/`
+**Purpose.** Three layers, and the boundary between them is **what a file is allowed to know**. Ask this before the subsystem sections below: they say how a thing works, this says where it goes.
+**Where.** `packages/design/src/components/` (primitives) → `src/component/` (app-wide display + behaviour) → `src/screen/` (one per route, tab or modal).
+**How it works.**
+- **`design`** — primitives. Props in, class strings out. Knows nothing of batches, recipes or the kb; if what a prop means can only be said in brewing terms, the primitive is holding someone else's knowledge.
+- **`component/`** — composes primitives into app-shaped UI and owns **interaction** state: which tab is showing, whether a disclosure is open, the half-typed value in a field, clearing it after a confirm. It is told what to render and what to call; it does not decide what is true.
+- **`screen/`** — reads the store, computes, decides policy, and hands the answers down as plain props. The only layer that may know what a batch is.
+
+⚠️ **The test: if answering the question needs the domain — what a batch is, which reading kinds a phase allows, whether anything is left to check off — it belongs in `screen/`.** If it is only about what the user is currently doing to the UI, it belongs to the component. Depth of a file is not the measure; a 200-line component that only renders is correctly placed, and a 20-line one that decides is not.
+
+**Invariants.**
+- ⚠️ **Never infer a capability from prop presence.** `available.ingredients = !!onQuickSchedule && !!scheduleKindOptions?.length` reads as "the caller passed a handler, so the brewer must have ingredients left" — a domain fact arriving implicitly through the shape of the props. The screen knows the answer outright, so pass it. Inferred this way it cannot express *available but empty*, and the caller cannot see that anything was decided.
+- ⚠️ **Precedence, fallbacks and the copy around them are policy, not layout.** Which tab opens when several are available, which wins when none are, and what the disabled one says on hover are product decisions — they read as arrangement and are not.
+- ⚠️ **A component may hold draft state; it may not decide what the draft means.** Per-tab `kind`/`value`/`parameter` are interaction and belong to the component. `valueLabel && typed ? typed : undefined` — ruling that a typed value is meaningless for the selected kind — is the domain.
+
+**Gotchas.** ⚠️ **This drifts silently because a misplaced file works.** It passes the gate, renders correctly for its one caller, and surfaces only when a second caller needs the decision made differently — at which point the component grows a prop to switch on it and the layer is negotiating rather than rendering. Same failure mode as `src/actions/`, which collected three live-only files before _Actions_ stated its membership test; a layer without a stated test accumulates whatever compiles.
+**Example.** `packages/design/src/components/brew-timer/quick-action.tsx` is the standing case, and it is **two** layers off rather than one: the availability inference, the tab precedence with its `unavailableTitle` copy, and the value-meaningfulness rule all sit in **design**, which may know no brewing domain at all. Its form state is right; every decision listed above is not. Correcting it means the screen passes the available tabs and the active one outright, and the primitive renders what it is given.
+
 ## Routing
 **Purpose.** File-based routing (TanStack Router) with a generated route tree.
 **Where.** `src/routes/*` — routes `/`, `/batches`, `/batch/$batchId`, `/recipes`, `/recipe/$recipeId`, `/recipe/$recipeId_/edit` (delisted, nothing links to it), `/knowledge`, `/disclaimer`. `routeTree.gen.ts` (generated); `main.tsx` (`defaultErrorComponent` renders thrown suspense-fetch errors).

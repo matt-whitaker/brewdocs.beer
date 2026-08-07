@@ -128,12 +128,17 @@ def role_stamp(body: str) -> str:
 
 EPIC_LABEL = "epic"
 BUG_LABEL = "bug"
+STORY_LABEL = "story"
 
 # The CLASSIFICATION labels — what an issue *is*. Distinct from the routing labels
 # (`@claude`, `@claude/<role>`), which say what should happen to it, belong to the maintainer,
-# and are a record of what has run. Only these two are derivable from a title and safe for
-# whoever files an issue to apply.
-KIND_LABELS = {"epic": EPIC_LABEL, "bug": BUG_LABEL}
+# and are a record of what has run. These are safe for whoever files an issue to apply.
+#
+# ⚠️ EVERY KIND GETS ONE, INCLUDING `story`. An earlier version left a story unlabelled and
+# called the absence the signal — which reads fine in a hook and badly on a board, where you
+# cannot filter for "the ones with no classification". `kind()` still DERIVES story from the
+# absence of the other markers; the label is what makes that visible.
+KIND_LABELS = {"epic": EPIC_LABEL, "bug": BUG_LABEL, "story": STORY_LABEL}
 
 
 def titled_epic(title: str) -> bool:
@@ -150,7 +155,7 @@ def titled_bug(title: str) -> bool:
     return bool(re.match(r"\s*bug\b", title or "", re.IGNORECASE))
 
 
-def kind(number: str | int) -> str:
+def kind(number: str | int, data: dict | None = None) -> str:
     """Classify an issue as `epic`, `bug` or `story`. An unprocessed issue is a STORY.
 
     Each classification needs a durable marker — its label, or a title that announces it.
@@ -168,8 +173,13 @@ def kind(number: str | int) -> str:
     misfires on an ordinary sentence like "a story under the Claude Team epic", and a false
     positive makes the Architect decompose a story into sub-stories. The model weighs the
     comment against this default instead.
+
+    ⚠️ FALLS BACK TO "story" ON A FAILED READ, because issue() returns {} for both "no such
+    issue" and "the API said no" — and a story is the right default for an issue that exists.
+    A caller that WRITES based on the answer must therefore check the read itself: pass `data`
+    in and confirm it has a title first, or a rate-limited minute relabels an epic as a story.
     """
-    data = issue(number, "title", "labels")
+    data = data if data is not None else issue(number, "title", "labels")
     names = {(l.get("name") or "").lower() for l in data.get("labels", [])}
     title = data.get("title") or ""
 
@@ -216,6 +226,48 @@ def run_footer() -> str:
     if not (repo and run):
         return ""
     return f"\n---\n<sub>Written by [this run](https://github.com/{repo}/actions/runs/{run}).</sub>\n"
+
+
+def append_to_comment(number: str | int, marker: str, section: str, header: str) -> bool:
+    """Add `section` to the marked comment, keeping what is already there.
+
+    ⚠️ THE DIFFERENCE FROM `upsert_comment` IS THE WHOLE POINT, and it is not a style choice.
+    Upserting is right for a derived status board — it is regenerated from GitHub state every
+    run, so replacing it loses nothing. This is for a record of decisions, which is not derived
+    from anything: a PR draws several rounds of review, and round two replacing round one
+    destroys exactly the fact the comment exists to keep.
+
+    Still ONE comment, because thirty on a story is its own failure. Rounds stack inside it.
+    """
+    comments = gh_json("api", f"repos/{REPO}/issues/{number}/comments", "--paginate")
+    existing = None
+    if isinstance(comments, list):
+        for comment in comments:
+            if marker in (comment.get("body") or ""):
+                existing = comment
+
+    if existing is None:
+        return gh(
+            "api", f"repos/{REPO}/issues/{number}/comments",
+            "-f", f"body={marker}\n{header}\n\n{section}",
+        ) is not None
+
+    return gh(
+        "api", "--method", "PATCH", f"repos/{REPO}/issues/comments/{existing['id']}",
+        "-f", f"body={(existing.get('body') or '').rstrip()}\n\n---\n\n{section}",
+    ) is not None
+
+
+def run_link() -> str:
+    """The same run URL as `run_footer`, inline rather than as a trailing block.
+
+    A footer is right for a comment that IS one run's output. The decisions log is not — it
+    accumulates rounds, so each entry carries its own provenance and a trailing rule per section
+    just stacks horizontal lines.
+    """
+    repo = os.environ.get("GITHUB_REPOSITORY") or REPO
+    run = os.environ.get("GITHUB_RUN_ID")
+    return f" · [run](https://github.com/{repo}/actions/runs/{run})" if repo and run else ""
 
 
 def upsert_comment(number: str | int, marker: str, body: str) -> bool:

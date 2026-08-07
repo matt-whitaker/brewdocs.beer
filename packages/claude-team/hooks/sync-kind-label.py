@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Post-hook for the Architect. Applies the CLASSIFICATION label an issue's title announces —
-`epic` or `bug` — and never removes one.
+"""Post-hook for the Architect. Applies the CLASSIFICATION label an issue's kind calls for —
+`epic`, `bug` or `story` — and never removes one.
 
 DERIVED FROM THE TITLE, which the Architect must write anyway. Asking the model to also
 remember a `gh` call is the shape that fails — the manifest it was told to leave got written
@@ -11,9 +11,13 @@ instruction it can skip is not.
 one. The routing labels (`@claude`, `@claude/<role>`) say what should happen to it, belong to
 the maintainer, and are a record of what has already run — nothing here touches those.
 
+⚠️ ASKS team.kind(), NOT THE TITLE. It used to read the title alone, which worked while only
+`epic` and `bug` announced themselves — a story has no title prefix to match, so it would
+never have been labelled. kind() reads label-or-title with the precedence already defined
+once, so an issue already labelled `bug` cannot also be handed `story` as a fallback.
+
 Only ever adds. If the maintainer labelled or titled something, that is the classification and
-this run keeps it. A title announcing nothing leaves the labels alone entirely: a plain story
-carries no classification label, and that absence is what says so.
+this run keeps it.
 """
 
 from __future__ import annotations
@@ -32,16 +36,14 @@ if not ISSUE:
     raise SystemExit(0)
 
 data = team.issue(ISSUE, "title", "labels")
-title = data.get("title") or ""
-
-# Same precedence as team.kind(): epic wins, so an issue titled both ways resolves one way.
-if team.titled_epic(title):
-    wanted = team.EPIC_LABEL
-elif team.titled_bug(title):
-    wanted = team.BUG_LABEL
-else:
-    print(f"#{ISSUE} announces no classification in its title — leaving its labels alone.")
+# ⚠️ Every issue has a title, so its absence means the READ failed, not that the issue is
+# plain. kind() defaults to "story" either way, and writing on that would label an epic
+# `story` for the duration of a rate limit — do nothing instead.
+if not data.get("title"):
+    team.warn(f"could not read #{ISSUE} — leaving its labels alone rather than guessing.")
     raise SystemExit(0)
+
+wanted = team.KIND_LABELS[team.kind(ISSUE, data)]
 
 if any((l.get("name") or "").lower() == wanted for l in data.get("labels", [])):
     print(f"#{ISSUE} is already labelled {wanted}.")
