@@ -103,10 +103,10 @@ test("logs a quick milestone that lands on the timeline and in the phase's readi
 });
 
 // BREW-TIMER-01/05: one entry point opens a tab panel ordered Ingredients/Reading/Equipment,
-// with the unavailable tabs reading as disabled rather than silently no-opping. The screen
-// only wires onQuickMilestone today (#603 wires the other two), so Ingredients/Equipment are
-// unconditionally disabled here — this proves "disabled", not yet "disabled because empty".
-test("quick action modal opens on Reading with Ingredients and Equipment unavailable", async ({page}) => {
+// with unavailable tabs reading as disabled rather than silently no-opping. Since #651 wired
+// all three, "disabled" now means "nothing left on this phase" — which is what this asserts,
+// and what the earlier version of this test was explicitly waiting to be able to assert.
+test("quick action modal opens on Reading with every applicable tab enabled", async ({page}) => {
     await brewBatchFromKbRecipe(page, "E2E Quick Action Tabs Batch");
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
@@ -114,10 +114,42 @@ test("quick action modal opens on Reading with Ingredients and Equipment unavail
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
 
+    // 1. Mash has grains to add and equipment to check off, so all three apply
     await expect(dialog.getByRole("tab")).toHaveText(["Ingredients", "Reading", "Equipment"]);
-    await expect(dialog.getByRole("tab", {name: "Ingredients"})).toBeDisabled();
+    await expect(dialog.getByRole("tab", {name: "Ingredients"})).toBeEnabled();
     await expect(dialog.getByRole("tab", {name: "Reading"})).toHaveAttribute("aria-selected", "true");
-    await expect(dialog.getByRole("tab", {name: "Equipment"})).toBeDisabled();
+    await expect(dialog.getByRole("tab", {name: "Equipment"})).toBeEnabled();
+});
+
+// The other half of the same behaviour: a tab goes unavailable once its phase is exhausted,
+// carrying the reason rather than just greying out.
+//
+// ⚠️ This is also the regression guard for the modal-stays-open bug (#651). Confirming the
+// check-off that exhausts a tab used to unmount the panel — and its method="dialog" form —
+// before the browser ran the submit, so the dialog never closed. Asserting only that the
+// check-off landed passes straight through that; the dialog count is what catches it.
+test("a quick-action tab goes unavailable, with its reason, once the phase is exhausted", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Quick Action Exhaust Batch");
+    await page.getByRole("tab", {name: "Brewing", exact: true}).click();
+
+    const dialog = page.getByRole("dialog");
+    const ingredients = dialog.getByRole("tab", {name: "Ingredients"});
+
+    // the kb recipe's mash phase has a bounded number of grains; check off until it runs dry
+    for (let i = 0; i < 10; i++) {
+        await page.getByRole("button", {name: "Quick actions"}).click();
+        await expect(dialog).toBeVisible();
+        if (!await ingredients.isEnabled()) break;
+
+        await ingredients.click();
+        await dialog.getByRole("button", {name: "Confirm"}).click();
+        await expect(dialog).not.toBeVisible();
+        await settleSave(page);
+    }
+
+    await expect(ingredients).toBeDisabled();
+    await expect(ingredients).toHaveAttribute("title", "Nothing left to add on this phase");
+    await expect(dialog.getByRole("tab", {name: "Reading"})).toHaveAttribute("aria-selected", "true");
 });
 
 // Covers the marker overlay's 24px hit target + popover work (#380): each

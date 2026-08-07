@@ -1,32 +1,39 @@
 import classNames from "classnames";
-import {forwardRef, ReactNode, useCallback, useId, useState} from "react";
+import {forwardRef, ReactNode, useCallback, useEffect, useId, useRef, useState} from "react";
 import {InputSelect, InputSelectOption} from "@/components/input-select";
 import {InputText} from "@/components/input-text";
 import {Modal, ModalFooter, ModalTitle} from "@/components/modal";
 
 export type QuickActionTab = "ingredients" | "reading" | "equipment";
 
+export type QuickActionTabState = {
+    available: boolean;
+    unavailableReason?: string;
+};
+
 export type QuickActionModalProps = {
+    tabs: Record<QuickActionTab, QuickActionTabState>;
+    defaultTab: QuickActionTab;
     milestoneKindOptions: InputSelectOption[];
     milestoneParameterOptions?: Record<string, InputSelectOption[]>;
     scheduleKindOptions?: InputSelectOption[];
     scheduleValueLabels?: Record<string, string>;
+    equipmentOptions?: InputSelectOption[];
     phaseLabel: string;
     onQuickMilestone: (kind: string, value: string, parameter?: string) => void;
-    onQuickSchedule?: (kind: string, value?: string) => void;
-    onQuickEquipment?: () => void;
+    onQuickSchedule: (kind: string, value?: string) => void;
+    onQuickEquipment: (id: string) => void;
 };
 
 type TabDescriptor = {
     id: QuickActionTab;
     label: string;
-    unavailableTitle: string;
 };
 
 const TAB_ORDER: TabDescriptor[] = [
-    {id: "ingredients", label: "Ingredients", unavailableTitle: "Nothing left to add"},
-    {id: "reading", label: "Reading", unavailableTitle: "No readings available"},
-    {id: "equipment", label: "Equipment", unavailableTitle: "Nothing left to check off"}
+    {id: "ingredients", label: "Ingredients"},
+    {id: "reading", label: "Reading"},
+    {id: "equipment", label: "Equipment"}
 ];
 
 function firstValue(options: InputSelectOption[]) {
@@ -61,12 +68,17 @@ function IngredientsTab({kindOptions, valueLabels, phaseLabel, onSubmit}: Ingred
     const selectedKind = kind ?? firstValue(kindOptions);
     const valueLabel = valueLabels?.[selectedKind];
 
+    const chooseKind = useCallback((next: string | null) => {
+        setKind(next);
+        setValue("");
+    }, []);
+
     const confirm = useCallback(() => {
         const typed = value.trim();
-        onSubmit(selectedKind, valueLabel && typed ? typed : undefined);
+        onSubmit(selectedKind, typed || undefined);
         setKind(null);
         setValue("");
-    }, [onSubmit, selectedKind, valueLabel, value]);
+    }, [onSubmit, selectedKind, value]);
 
     return (
         <>
@@ -77,7 +89,7 @@ function IngredientsTab({kindOptions, valueLabels, phaseLabel, onSubmit}: Ingred
                         className="w-full"
                         data={kindOptions}
                         value={selectedKind}
-                        onChange={setKind} />
+                        onChange={chooseKind} />
                 </Field>
                 {valueLabel ? (
                     <Field label={valueLabel}>
@@ -155,24 +167,48 @@ function ReadingTab({kindOptions, parameterOptions, phaseLabel, onSubmit}: Readi
     );
 }
 
-function EquipmentTab({phaseLabel, onSubmit}: {phaseLabel: string; onSubmit: () => void}) {
+type EquipmentTabProps = {
+    options: InputSelectOption[];
+    phaseLabel: string;
+    onSubmit: (id: string) => void;
+};
+
+function EquipmentTab({options, phaseLabel, onSubmit}: EquipmentTabProps) {
+    const [selected, setSelected] = useState<string | null>(null);
+    const selectedId = selected ?? firstValue(options);
+
+    const confirm = useCallback(() => {
+        onSubmit(selectedId);
+        setSelected(null);
+    }, [onSubmit, selectedId]);
+
     return (
         <>
             <div className="grid gap-3 py-2">
-                <p className="text-sm">Check off the next equipment item, no value recorded.</p>
+                <Field label="Equipment">
+                    <InputSelect
+                        label="Equipment item"
+                        className="w-full"
+                        data={options}
+                        value={selectedId}
+                        onChange={setSelected} />
+                </Field>
                 <RecordingOn phaseLabel={phaseLabel} />
             </div>
-            <ModalFooter confirm={onSubmit} />
+            <ModalFooter confirm={confirm} />
         </>
     );
 }
 
 export const QuickActionModal = forwardRef<HTMLDialogElement, QuickActionModalProps>(
     ({
+        tabs,
+        defaultTab,
         milestoneKindOptions,
         milestoneParameterOptions,
-        scheduleKindOptions,
+        scheduleKindOptions = [],
         scheduleValueLabels,
+        equipmentOptions = [],
         phaseLabel,
         onQuickMilestone,
         onQuickSchedule,
@@ -180,22 +216,31 @@ export const QuickActionModal = forwardRef<HTMLDialogElement, QuickActionModalPr
     }, ref) => {
         const baseId = useId();
         const [tab, setTab] = useState<QuickActionTab | null>(null);
+        const dialogRef = useRef<HTMLDialogElement | null>(null);
 
-        const available: Record<QuickActionTab, boolean> = {
-            ingredients: !!onQuickSchedule && !!scheduleKindOptions?.length,
-            reading: true,
-            equipment: !!onQuickEquipment
-        };
+        const attachDialog = useCallback((node: HTMLDialogElement | null) => {
+            dialogRef.current = node;
+            if (typeof ref === "function") ref(node);
+            else if (ref) ref.current = node;
+        }, [ref]);
 
-        const activeTab = tab && available[tab]
-            ? tab
-            : TAB_ORDER.find(({id}) => available[id])?.id ?? "reading";
+        useEffect(() => {
+            const node = dialogRef.current;
+            if (!node) return;
+            const reset = () => setTab(null);
+            node.addEventListener("close", reset);
+            return () => node.removeEventListener("close", reset);
+        }, []);
+
+        const activeTab = tab ?? (tabs[defaultTab].available
+            ? defaultTab
+            : TAB_ORDER.find(({id}) => tabs[id].available)?.id ?? defaultTab);
 
         return (
-            <Modal ref={ref}>
+            <Modal ref={attachDialog}>
                 <ModalTitle>Quick action</ModalTitle>
                 <div role="tablist" aria-label="Quick action kind" className="tabs tabs-box tabs-xs sm:tabs-sm mt-2 w-full flex-nowrap">
-                    {TAB_ORDER.map(({id, label, unavailableTitle}) => (
+                    {TAB_ORDER.map(({id, label}) => (
                         <button
                             key={id}
                             type="button"
@@ -203,13 +248,13 @@ export const QuickActionModal = forwardRef<HTMLDialogElement, QuickActionModalPr
                             id={`${baseId}-tab-${id}`}
                             aria-controls={`${baseId}-panel-${id}`}
                             aria-selected={id === activeTab}
-                            disabled={!available[id]}
-                            title={available[id] ? "" : unavailableTitle}
+                            disabled={!tabs[id].available}
+                            title={tabs[id].available ? "" : tabs[id].unavailableReason ?? ""}
                             onClick={() => setTab(id)}
                             className={classNames("tab flex-1 whitespace-nowrap", {
                                 "bg-primary text-primary-content": id === activeTab,
-                                "text-base-content": available[id] && id !== activeTab,
-                                disabled: !available[id]
+                                "text-base-content": tabs[id].available && id !== activeTab,
+                                disabled: !tabs[id].available
                             })}>
                             {label}
                         </button>
@@ -219,7 +264,7 @@ export const QuickActionModal = forwardRef<HTMLDialogElement, QuickActionModalPr
                     role="tabpanel"
                     id={`${baseId}-panel-${activeTab}`}
                     aria-labelledby={`${baseId}-tab-${activeTab}`}>
-                    {activeTab === "ingredients" && scheduleKindOptions && onQuickSchedule ? (
+                    {activeTab === "ingredients" ? (
                         <IngredientsTab
                             kindOptions={scheduleKindOptions}
                             valueLabels={scheduleValueLabels}
@@ -233,8 +278,11 @@ export const QuickActionModal = forwardRef<HTMLDialogElement, QuickActionModalPr
                             phaseLabel={phaseLabel}
                             onSubmit={onQuickMilestone} />
                     ) : null}
-                    {activeTab === "equipment" && onQuickEquipment ? (
-                        <EquipmentTab phaseLabel={phaseLabel} onSubmit={onQuickEquipment} />
+                    {activeTab === "equipment" ? (
+                        <EquipmentTab
+                            options={equipmentOptions}
+                            phaseLabel={phaseLabel}
+                            onSubmit={onQuickEquipment} />
                     ) : null}
                 </div>
             </Modal>
