@@ -20,6 +20,13 @@ list it interrupts.
 > renders as a small box wedged into a corner reads as part of the page rather than as a
 > question being asked.
 
+**BATCH-LIST-03** — Following a link to a batch that no longer exists — a deleted batch, a
+stale bookmark, a mistyped id, a link shared after a purge — returns the brewer to this list,
+with the page's normal navigation intact, rather than an error screen.
+
+> *Why:* a batch stops existing by ordinary means — it was deleted, or the store was purged —
+> so meeting a link to it should read as the app staying usable, not as something broken.
+
 ## Known gaps
 
 _None._
