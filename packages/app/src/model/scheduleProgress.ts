@@ -1,4 +1,5 @@
 import Brewable, {Assignment, RESOURCE_TYPES, ResourceType} from "@/model/brewable";
+import Equipment from "@/model/equipment";
 import {key, Ref, TrackerEntry} from "@/model/tracker";
 
 type Tracker = Record<string, TrackerEntry>;
@@ -33,4 +34,10 @@ export function nextIncompleteAssignment(
 export function incompleteResourceTypes(brewable: Brewable, phaseId: string | undefined, tracker: Tracker): ResourceType[] {
     if (!phaseId) return [];
     return RESOURCE_TYPES.filter(resourceType => !!nextIncompleteAssignment(brewable, phaseId, resourceType, tracker));
+}
+
+export function nextIncompleteEquipment(brewable: Brewable, phaseId: string | undefined, tracker: Tracker): Equipment | undefined {
+    if (!phaseId) return undefined;
+    const phase = brewable.schedule.phases.find(({id}) => id === phaseId);
+    return phase?.equipment.find(({id}) => !!id && !isCompleted(tracker, {on: "equipment", id}));
 }

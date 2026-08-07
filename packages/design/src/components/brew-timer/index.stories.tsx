@@ -67,6 +67,12 @@ const meta: Meta<typeof BrewTimer> = {
         isRunning: false,
         elapsedSeconds: 0,
         markers: MARKERS,
+        quickActionTabs: {
+            ingredients: {available: true},
+            reading: {available: true},
+            equipment: {available: true}
+        },
+        defaultQuickActionTab: "reading" as const,
         milestoneKindOptions: MILESTONE_KIND_OPTIONS,
         milestoneParameterOptions: MILESTONE_PARAMETER_OPTIONS,
         scheduleKindOptions: SCHEDULE_KIND_OPTIONS,
@@ -77,7 +83,7 @@ const meta: Meta<typeof BrewTimer> = {
     parameters: {
         docs: {
             description: {
-                component: "The brew-day timer shell. It is fully controlled and holds no timer state of its own — `elapsedSeconds` and `isRunning` come from the consumer, which owns the ticking and any persistence. Reading markers are drawn by `Timeline` and given a `Popover` hit target apiece, since a `Popover` renders a `<div>` and cannot live inside the `<svg>`. One \"Log\" button opens one `Modal` holding a `[Ingredients, Reading, Equipment]` tab panel — only the active tab is mounted, so switching tabs clears the fields the other one held. Each tab hands its selection back through its own callback and asks nothing about the phase: the consumer resolves the current phase and passes `phaseLabel` for display. `scheduleKindOptions`/`onQuickSchedule` and `onQuickEquipment` are optional, and their tabs render disabled when a consumer supplies neither. The Global/Phase scope toggle is present for shape only; Phase is disabled until phases are automated. The public word is \"Reading\"; the model behind it is still a `Milestone`, which is why the props and handlers say `milestone`. `completeLabel` + `onComplete` add the card's primary action on its own right-aligned row below the timeline; `onComplete` fires on click and any confirmation is the consumer's, since only it knows what completing a phase costs."
+                component: "The brew-day timer shell. It is fully controlled and holds no timer state of its own — `elapsedSeconds` and `isRunning` come from the consumer, which owns the ticking and any persistence. Reading markers are drawn by `Timeline` and given a `Popover` hit target apiece, since a `Popover` renders a `<div>` and cannot live inside the `<svg>`. One \"Log\" button opens one `Modal` holding a `[Ingredients, Reading, Equipment]` tab panel — only the active tab is mounted, so switching tabs clears the fields the other one held. Each tab hands its selection back through its own callback and asks nothing about the phase: the consumer resolves the current phase and passes `phaseLabel` for display. Which tabs apply is the consumer's to state, via `quickActionTabs` — each tab carries `available` and an `unavailableReason` shown in its `title`. It is deliberately not inferred from whether a handler was passed: that made a consumer which simply forgot to wire a tab indistinguishable from one where the action does not apply, and app shipped for two stories with two dead tabs and no signal. `defaultQuickActionTab` names the tab that opens when several apply. The Global/Phase scope toggle is present for shape only; Phase is disabled until phases are automated. The public word is \"Reading\"; the model behind it is still a `Milestone`, which is why the props and handlers say `milestone`. `completeLabel` + `onComplete` add the card's primary action on its own right-aligned row below the timeline; `onComplete` fires on click and any confirmation is the consumer's, since only it knows what completing a phase costs."
             }
         }
     }
@@ -123,10 +129,18 @@ function TickingDemo({markers = MARKERS, startSeconds = 1200}: {markers?: BrewTi
                 elapsedSeconds={elapsedSeconds}
                 markers={markers}
                 markerTransitionMs={TICK_MS}
+                quickActionTabs={{
+                    ingredients: {available: false, unavailableReason: "Nothing left to add on this phase"},
+                    reading: {available: true},
+                    equipment: {available: false, unavailableReason: "Nothing left to check off on this phase"}
+                }}
+                defaultQuickActionTab="reading"
                 milestoneKindOptions={MILESTONE_KIND_OPTIONS}
                 phaseLabel="2. Boil"
                 onPlayPause={() => setIsRunning(running => !running)}
-                onQuickMilestone={(kind, value) => window.console.log("quick reading", kind, value)} />
+                onQuickMilestone={(kind, value) => window.console.log("quick reading", kind, value)}
+                onQuickSchedule={(kind, value) => window.console.log("quick ingredient", kind, value)}
+                onQuickEquipment={() => window.console.log("quick equipment")} />
             <p className="text-sm">
                 The story owns the clock — one story-minute a second. Play/pause stops the interval; the markers slide
                 left as each one&apos;s share of the elapsed span shrinks, and hovering or tapping one opens its popover.
@@ -222,18 +236,22 @@ function QuickActionDemo({optionalTabs = true}: {optionalTabs?: boolean}) {
                 isRunning
                 elapsedSeconds={5460}
                 markers={MARKERS}
+                quickActionTabs={{
+                    ingredients: {available: optionalTabs, unavailableReason: "Nothing left to add on this phase"},
+                    reading: {available: true},
+                    equipment: {available: optionalTabs, unavailableReason: "Nothing left to check off on this phase"}
+                }}
+                defaultQuickActionTab="reading"
                 milestoneKindOptions={MILESTONE_KIND_OPTIONS}
                 milestoneParameterOptions={MILESTONE_PARAMETER_OPTIONS}
-                scheduleKindOptions={optionalTabs ? SCHEDULE_KIND_OPTIONS : undefined}
-                scheduleValueLabels={optionalTabs ? SCHEDULE_VALUE_LABELS : undefined}
+                scheduleKindOptions={SCHEDULE_KIND_OPTIONS}
+                scheduleValueLabels={SCHEDULE_VALUE_LABELS}
                 phaseLabel="2. Boil"
                 onPlayPause={() => undefined}
                 onQuickMilestone={(kind, value, parameter) =>
                     log(`reading · ${kind}${parameter ? ` · ${parameter}` : ""} · ${value}`)}
-                onQuickSchedule={optionalTabs
-                    ? (kind, value) => log(`ingredient · ${kind}${value ? ` · ${value}` : ""}`)
-                    : undefined}
-                onQuickEquipment={optionalTabs ? () => log("equipment · checked off") : undefined} />
+                onQuickSchedule={(kind, value) => log(`ingredient · ${kind}${value ? ` · ${value}` : ""}`)}
+                onQuickEquipment={() => log("equipment · checked off")} />
             <ul className="text-sm list-disc pl-5">
                 {logged.map((entry, i) => <li key={`${entry}-${i}`}>{entry}</li>)}
             </ul>
@@ -254,11 +272,11 @@ export const QuickAction: Story = {
 };
 
 export const QuickActionReadingOnly: Story = {
-    name: "Quick-action modal — reading only (degraded)",
+    name: "Quick-action modal — reading only (nothing left on this phase)",
     parameters: {
         docs: {
             description: {
-                story: "The same modal with `scheduleKindOptions`, `onQuickSchedule` and `onQuickEquipment` all omitted — which is exactly what app's existing call site passes today. Ingredients and Equipment render as disabled tabs carrying the reason in their `title`, Reading is the active tab, and the flow is unchanged from before the tabs existed. This is the shape every consumer gets for free: the three new props are optional, so nothing breaks until a consumer opts in."
+                story: "The same modal on a phase where only readings apply — `quickActionTabs` marks Ingredients and Equipment unavailable, each carrying its reason in the tab's `title`, and Reading is the active tab. This is a **statement about the batch**, not a consumer that forgot to wire the other two: the handlers are still passed. That distinction is the point of the prop — the earlier shape inferred availability from whether a handler arrived, so a real \"nothing left to add\" and an unwired consumer rendered identically."
             }
         }
     },

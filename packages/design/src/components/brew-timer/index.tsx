@@ -6,15 +6,17 @@ import {Pause, Play, Plus} from "@/components/svg";
 import {Timeline} from "@/components/timeline";
 import {formatElapsed} from "./format";
 import {BrewTimerMarker, BrewTimerMarkerOverlay} from "./marker-overlay";
-import {QuickActionModal} from "./quick-action";
+import {QuickActionModal, QuickActionTab, QuickActionTabState} from "./quick-action";
 
 export type {BrewTimerMarker} from "./marker-overlay";
-export type {QuickActionTab} from "./quick-action";
+export type {QuickActionTab, QuickActionTabState} from "./quick-action";
 
 export type BrewTimerProps = PropsWithClass & {
     isRunning: boolean;
     elapsedSeconds: number;
     markers?: BrewTimerMarker[];
+    quickActionTabs: Record<QuickActionTab, QuickActionTabState>;
+    defaultQuickActionTab: QuickActionTab;
     milestoneKindOptions: InputSelectOption[];
     milestoneParameterOptions?: Record<string, InputSelectOption[]>;
     scheduleKindOptions?: InputSelectOption[];
@@ -27,8 +29,8 @@ export type BrewTimerProps = PropsWithClass & {
     completeLabel?: string;
     onPlayPause: () => void;
     onQuickMilestone: (kind: string, value: string, parameter?: string) => void;
-    onQuickSchedule?: (kind: string, value?: string) => void;
-    onQuickEquipment?: () => void;
+    onQuickSchedule: (kind: string, value?: string) => void;
+    onQuickEquipment: () => void;
     onComplete?: () => void;
 };
 
@@ -36,6 +38,8 @@ export function BrewTimer({
     isRunning,
     elapsedSeconds,
     markers = [],
+    quickActionTabs,
+    defaultQuickActionTab,
     milestoneKindOptions,
     milestoneParameterOptions,
     scheduleKindOptions,
@@ -112,6 +116,8 @@ export function BrewTimer({
                 : null}
             <QuickActionModal
                 ref={modalRef}
+                tabs={quickActionTabs}
+                defaultTab={defaultQuickActionTab}
                 milestoneKindOptions={milestoneKindOptions}
                 milestoneParameterOptions={milestoneParameterOptions}
                 scheduleKindOptions={scheduleKindOptions}
