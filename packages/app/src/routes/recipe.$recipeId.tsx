@@ -12,15 +12,10 @@ import BatchList from "@/screen/batch-list";
 import RecipeOverview from "@/screen/recipe-overview";
 import {findRecipeResource, useRecipeResource} from "@/state/disambiguation";
 
-const recipeCrumbs = (recipeId: string): Crumb[] => [
-    { label: "Recipes", to: "/recipes" },
-    dynamicCrumb(useRecipeResource, ["user", recipeId], ({ name }) => name),
-];
-
 export const Route = createFileRoute("/recipe/$recipeId")({
     component: RecipePage,
     beforeLoad: ({params: {recipeId}}) =>
-        requireRecord({find: () => findRecipeResource("user", recipeId), crumbs: recipeCrumbs(recipeId)})
+        requireRecord({find: () => findRecipeResource("user", recipeId), to: "/recipes"})
 });
 
 function RecipePage() {
@@ -28,7 +23,10 @@ function RecipePage() {
     const navigate = useNavigate();
     const filterBatches = useCallback((batch: Batch) => batch.recipeId === recipeId, [recipeId]);
 
-    const breadcrumbs = useMemo(() => recipeCrumbs(recipeId), [recipeId]);
+    const breadcrumbs = useMemo<Crumb[]>(() => [
+        { label: "Recipes", to: "/recipes" },
+        dynamicCrumb(useRecipeResource, ["user", recipeId], ({ name }) => name),
+    ], [recipeId]);
     useBreadcrumbs(breadcrumbs);
 
     // a user recipe is already editable — Edit goes straight to its editor (unlike

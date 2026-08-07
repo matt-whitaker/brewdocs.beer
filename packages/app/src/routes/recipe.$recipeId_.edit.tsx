@@ -7,22 +7,20 @@ import PanelSwitcherContent from "@/component/panel-switcher/content";
 import RecipeEdit from "@/screen/recipe-edit";
 import {findRecipeResource, useRecipeResource} from "@/state/disambiguation";
 
-const recipeEditCrumbs = (recipeId: string): Crumb[] => [
-    { label: "Recipes", to: "/recipes" },
-    dynamicCrumb(useRecipeResource, ["user", recipeId], ({ name }) => name, { to: "/recipe/$recipeId", params: {recipeId} }),
-    { label: "Edit" },
-];
-
 export const Route = createFileRoute("/recipe/$recipeId_/edit")({
     component: RecipeEditPage,
     beforeLoad: ({params: {recipeId}}) =>
-        requireRecord({find: () => findRecipeResource("user", recipeId), crumbs: recipeEditCrumbs(recipeId)})
+        requireRecord({find: () => findRecipeResource("user", recipeId), to: "/recipes"})
 });
 
 function RecipeEditPage() {
     const {recipeId} = Route.useParams();
 
-    const breadcrumbs = useMemo(() => recipeEditCrumbs(recipeId), [recipeId]);
+    const breadcrumbs = useMemo<Crumb[]>(() => [
+        { label: "Recipes", to: "/recipes" },
+        dynamicCrumb(useRecipeResource, ["user", recipeId], ({ name }) => name, { to: "/recipe/$recipeId", params: {recipeId} }),
+        { label: "Edit" },
+    ], [recipeId]);
     useBreadcrumbs(breadcrumbs);
 
     // Single-tab outer switcher (not compact) so the edit page carries a real page

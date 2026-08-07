@@ -71,13 +71,6 @@ export type Crumb = StaticCrumb | DynamicCrumb;
 
 export const isDynamic = (crumb: Crumb): crumb is DynamicCrumb => "load" in crumb;
 
-export function firstCrumbLink(crumbs: Crumb[]): CrumbLink {
-    for (const { to, params } of crumbs) {
-        if (to) return { to, params };
-    }
-    throw new Error("Breadcrumb trail declares no linked crumb");
-}
-
 export type BreadcrumbContextValue = {
     register: (id: string, crumbs: Crumb[]) => void;
     unregister: (id: string) => void;

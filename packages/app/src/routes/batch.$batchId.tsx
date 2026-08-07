@@ -13,21 +13,10 @@ import BatchSummary from "@/screen/batch-summary";
 import {findBatch, useBatch} from "@/state/batches";
 import {useBatchRecipe} from "@/state/disambiguation";
 
-const batchCrumbs = (batchId: string): Crumb[] => [
-    { label: "Batches", to: "/batches" },
-    dynamicCrumb(useBatchRecipe, [batchId], (r) => r.name, {
-        link: ({source, recipeId}) => ({
-            to: source === "kb" ? "/kb/recipe/$recipeId" : "/recipe/$recipeId",
-            params: {recipeId},
-        }),
-    }),
-    dynamicCrumb(useBatch, [batchId], ({ name }) => name),
-];
-
 export const Route = createFileRoute("/batch/$batchId")({
     component: BatchPage,
     beforeLoad: ({params: {batchId}}) =>
-        requireRecord({find: () => findBatch(batchId), crumbs: batchCrumbs(batchId)})
+        requireRecord({find: () => findBatch(batchId), to: "/batches"})
 });
 
 function BatchPage() {
@@ -37,7 +26,16 @@ function BatchPage() {
     // the freshest stored batch and re-derives.
     const onChange = useCallback((patch: Partial<Batch>) => { updateBatch(batchId, patch); }, [batchId]);
 
-    const breadcrumbs = useMemo(() => batchCrumbs(batchId), [batchId]);
+    const breadcrumbs = useMemo<Crumb[]>(() => [
+        { label: "Batches", to: "/batches" },
+        dynamicCrumb(useBatchRecipe, [batchId], (r) => r.name, {
+            link: ({source, recipeId}) => ({
+                to: source === "kb" ? "/kb/recipe/$recipeId" : "/recipe/$recipeId",
+                params: {recipeId},
+            }),
+        }),
+        dynamicCrumb(useBatch, [batchId], ({ name }) => name),
+    ], [batchId]);
     useBreadcrumbs(breadcrumbs);
 
     return (
