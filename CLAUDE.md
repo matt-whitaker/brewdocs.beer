@@ -126,8 +126,8 @@ Guidance for human contributors **and** for the `@claude` GitHub integration.
 
 ### The Claude GitHub roles
 
-Six roles, one workflow (`.github/workflows/claude-roles.yaml`), so a comment makes one run
-with the unselected roles skipping inside it rather than five skipped runs cluttering the
+Seven roles, one workflow (`.github/workflows/claude-roles.yaml`), so a comment makes one run
+with the unselected roles skipping inside it rather than six skipped runs cluttering the
 history.
 
 **Each role's prompt is a file** — `.github/agent-prompts/<role>.md`. Editing a role means
@@ -174,6 +174,14 @@ inspection (rule 1) — still the way to override a bad guess.
 
 - `@claude/architect` — epic or story. Shapes the issue, cuts a story's branch, and creates
   its tasks — each stamped with the role that should pick it up.
+- `@claude/researcher` — a **spike**: an issue titled `Spike:` or labelled `spike`, whose answer
+  nobody knows yet. Investigates, measures, and appends a recommendation to the issue. Ships no
+  code, cuts no branch, creates no tasks. ⚠️ `delegate.py` routes a spike here rather than to the
+  Architect, because an Architect handed one decomposes a solution nobody has chosen — that is the
+  whole reason the role exists (#659, after #284 sat open with no role that fitted it).
+  ⚠️ **The only role that reads the open web**, which is most of its value on a question about
+  platform support or cost — and why it runs with `contents: read` while every other authoring
+  role gets `write`.
 - `@claude/implementor` — issue or PR. Writes the code and opens the PR. Owns the
   *consumers* of the design system (`packages/app`, `packages/www`), not the system itself.
 - `@claude/designer` — issue or PR. An Implementor whose subject is `packages/design`: the
@@ -196,7 +204,7 @@ inspection (rule 1) — still the way to override a bad guess.
   `pull_request` events; without it, adding the handle would have silently removed the
   automatic review.
 
-⚠️ `@claude` **and** every `@claude/<role>` label must exist in the repo — `@claude` or nothing
+⚠️ `@claude`, every `@claude/<role>` label, and the classification labels (`epic`, `spike`, `bug`, `story`) must exist in the repo — `@claude` or nothing
 triggers, and a missing role label makes the stamp hook warn and skip.
 
 ⚠️ **The delegator is its own job and every role carries `needs: delegate`.** A job cannot gate
@@ -305,7 +313,9 @@ a real reply.
 
 **Budgets.** `sonnet` throughout except the Implementor, which runs `opus` — it is the only
 role whose output the maintainer must review line by line. Architect 100 turns,
-Security 40, the rest 80. Implementor and Tester run `npm ci` as a step; nobody else builds.
+Security 40, the rest 80. Implementor, Tester and Researcher run `npm ci` as a step; nobody else
+builds. ⚠️ The Researcher builds because a spike is answered by **measuring** — the gap between
+"the docs say handles persist" and "I stored one and it survived a reload" is the role's value.
 
 **Allowlists union, they don't replace.** A role's `claude_args --allowedTools` is merged with
 the action's own base set, not substituted for it — `mergedAllowedTools = [...new Set([...

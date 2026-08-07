@@ -127,6 +127,7 @@ def role_stamp(body: str) -> str:
 
 
 EPIC_LABEL = "epic"
+SPIKE_LABEL = "spike"
 BUG_LABEL = "bug"
 STORY_LABEL = "story"
 
@@ -138,12 +139,22 @@ STORY_LABEL = "story"
 # called the absence the signal — which reads fine in a hook and badly on a board, where you
 # cannot filter for "the ones with no classification". `kind()` still DERIVES story from the
 # absence of the other markers; the label is what makes that visible.
-KIND_LABELS = {"epic": EPIC_LABEL, "bug": BUG_LABEL, "story": STORY_LABEL}
+KIND_LABELS = {"epic": EPIC_LABEL, "spike": SPIKE_LABEL, "bug": BUG_LABEL, "story": STORY_LABEL}
 
 
 def titled_epic(title: str) -> bool:
     """True when a title announces itself as an epic — `Epic: …`, `Epic —`, `Epic` alone."""
     return bool(re.match(r"\s*epic\b", title or "", re.IGNORECASE))
+
+
+def titled_spike(title: str) -> bool:
+    """True when a title announces itself as a spike — `Spike: …`.
+
+    A spike asks a question the work cannot start without. It is NOT a small story: nobody
+    knows the answer yet, so there is nothing to decompose, and an Architect handed one shapes
+    implementation tasks for a solution that has not been chosen.
+    """
+    return bool(re.match(r"\s*spike\b", title or "", re.IGNORECASE))
 
 
 def titled_bug(title: str) -> bool:
@@ -161,9 +172,13 @@ def kind(number: str | int, data: dict | None = None) -> str:
     Each classification needs a durable marker — its label, or a title that announces it.
     Durable is the point: it survives the run, so nothing has to re-derive it next time.
 
-    ⚠️ EPIC WINS over bug, so an issue carrying both markers resolves one way every time. The
-    two mean different things — epic is a size, bug is an origin — and nothing sensible happens
-    if a run has to guess which it is.
+    ⚠️ EPIC WINS, then SPIKE, then BUG, so an issue carrying two markers resolves one way every
+    time. They mean different things — epic is a size, spike is a question, bug is an origin —
+    and nothing sensible happens if a run has to guess which it is.
+
+    ⚠️ A SPIKE IS NOT A SMALL STORY, and that is the whole reason it is a kind rather than a
+    judgement. Nobody knows its answer yet, so there is nothing to decompose; an Architect
+    handed one cuts implementation tasks for a solution that has not been chosen.
 
     Deliberately NOT inferred from having sub-issues. A story has those too — they are its
     tasks — so that inference only ever worked because a shaped story also had a branch, and
@@ -185,6 +200,8 @@ def kind(number: str | int, data: dict | None = None) -> str:
 
     if EPIC_LABEL in names or titled_epic(title):
         return "epic"
+    if SPIKE_LABEL in names or titled_spike(title):
+        return "spike"
     if BUG_LABEL in names or titled_bug(title):
         return "bug"
     return "story"

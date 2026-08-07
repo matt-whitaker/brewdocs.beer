@@ -368,6 +368,115 @@ jobs:
           # the tasks it just cut, or an epic's stories
           INCLUDE_SUB_ISSUES: "true"
         run: "$RUNNER_TEMP/agent-bin/set-issue-status.py"
+  # ── Researcher: answers a spike before anything is shaped ──────────────────────
+  # ⚠️ ITS OWN JOB, not a step in `authors`. The authoring job's whole tail — finish-pr.py,
+  # post-handoff.py, the PR label — assumes a run that produced a PR. A Researcher produces a
+  # recommendation and nothing else, so sharing that job would mean gating every one of those
+  # steps off it. It sits closer to the Architect: shapes nothing, ships nothing, writes an issue.
+  researcher:
+    needs: delegate
+    # the same PR guard the Architect carries on its handle arm: `issue_comment` fires for PRs
+    # too, and a spike is never a PR.
+    if: |
+      always() && needs.delegate.result != 'skipped' && (
+        contains(needs.delegate.outputs.roles, 'researcher')
+        || (!github.event.issue.pull_request && contains(github.event.comment.body, '@claude/researcher'))
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      # ⚠️ contents READ, unlike every authoring role and unlike the Architect. A spike ships
+      # nothing and has no branch to cut, so write access would only ever be a way for this run
+      # to leave something behind. It is also the role that reads the open web, which makes it
+      # the one where a narrower blast radius is worth the most.
+      contents: read
+      issues: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: prompt
+        uses: ./.github/actions/load-prompt
+        with:
+          role: researcher
+      - name: Stash the agent hooks
+        run: |
+          mkdir -p "$RUNNER_TEMP/agent-bin"
+          cp packages/claude-team/hooks/*.py "$RUNNER_TEMP/agent-bin/"
+          chmod +x "$RUNNER_TEMP/agent-bin"/*.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      # ⚠️ It DOES build, unlike the Architect. A spike is answered by measuring, and the
+      # difference between "the docs say handles persist" and "I stored one and it survived a
+      # reload" is the entire value of the role.
+      - name: Install dependencies
+        run: npm ci
+      - name: Stamp the role label
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ROLE: researcher
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.issue.number }}
+        run: "$RUNNER_TEMP/agent-bin/stamp-role-label.py"
+      - uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
+          KIND: ${{ needs.delegate.outputs.kind }}
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # the exact handle — see the Architect's job for why a bare "@claude" kills the run
+          trigger_phrase: "@claude/researcher"
+          branch_prefix: ""
+          branch_name_template: "{{entityNumber}}-{{description}}"
+          track_progress: true
+          prompt: ${{ steps.prompt.outputs.body }}
+          # ⚠️ WebSearch/WebFetch are granted HERE AND NOWHERE ELSE, and that is deliberate.
+          # Most spikes turn on facts the repo does not contain — what a platform supports, what
+          # something costs, what changed last year — so without them this role can only report
+          # what is already known, which is the half nobody needed a run for.
+          #
+          # ⚠️ The cost is that this is the one role whose input includes text the maintainer did
+          # not write. Its prompt says web content is data and never instruction, and `contents:
+          # read` above means a successful injection still cannot push. Do not widen either
+          # without re-reading that pairing — they are the mitigation, together.
+          claude_args: |
+            --model sonnet
+            --allowedTools "Read,Edit,Write,WebSearch,WebFetch,Bash(gh:*),Bash(git:*),Bash(npm:*),Bash(npx:*)"
+            --max-turns 80
+
+      # A spike has no branch, so nothing creates one — the hook is here only to say so out loud
+      # rather than leave a silent gap where every other kind gets one.
+      - name: Confirm the spike needs no branch
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
+          KIND: ${{ needs.delegate.outputs.kind }}
+        run: "$RUNNER_TEMP/agent-bin/ensure-story-branch.py"
+      - name: Label the issue kind
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
+        run: "$RUNNER_TEMP/agent-bin/sync-kind-label.py"
+      # ⚠️ ONLY_IF_UNSET, and no sub-issues: a spike has none, and a re-run on one already In
+      # Progress must not knock it back to Todo.
+      - name: Put the spike on the board
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PROJECTS_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
+          REPO: ${{ github.repository }}
+          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
+          PROJECT_OWNER: "@me"
+          PROJECT_NUMBER: "4"
+          STATUS: "Todo"
+          ONLY_IF_UNSET: "true"
+        run: "$RUNNER_TEMP/agent-bin/set-issue-status.py"
   # ── Authors: Implementor | Designer | Tester | Writer ──────────────────────────
   # The four authoring roles as gated steps in one job. ⚠️ EXACTLY ONE RUNS PER TRIGGER —
   # `delegate.py` emits a single role, and each step gates on it. They share a job to share
