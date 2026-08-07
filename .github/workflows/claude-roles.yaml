@@ -964,6 +964,12 @@ jobs:
           ROLES: ${{ steps.roles.outputs.list }}
           REPO: ${{ github.repository }}
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
+          # ⚠️ The same author output post-handoff.py gets, and the reason this step can tell a
+          # finished task from a half-done one. Without it the hook only ever asked whether the
+          # closing keyword was present, never why it was absent — so an author that deliberately
+          # left it off had that decision overwritten, and #617 closed as completed with its
+          # wiring never written.
+          HANDOFF: ${{ steps.implementor.outputs.structured_output || steps.designer.outputs.structured_output }}
         run: "$RUNNER_TEMP/agent-bin/finish-pr.py"
       - name: Persist the author's handoff
         if: always()

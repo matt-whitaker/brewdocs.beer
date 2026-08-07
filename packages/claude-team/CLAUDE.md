@@ -302,8 +302,8 @@ skip.
 
 ## The handoff between authors
 
-An author's step carries `--json-schema`, so its final message is a contract: `decisions` for
-the record, `testingNotes` for the Tester, `docsCandidates` for the Writer. A hook posts it to
+An author's step carries `--json-schema`, so its final message is a contract: `remaining` for
+whether the task is finished at all, `decisions` for the record, `testingNotes` for the Tester, `docsCandidates` for the Writer. A hook posts it to
 the **story's issue** as one comment per task, where the Tester reads it on its own trigger. ⚠️ The Writer reads it only
 on a **re-trigger** — it runs before the authors, so on its first pass the comments do not exist
 yet.
@@ -319,6 +319,26 @@ yet.
   that carries **review feedback** produced a schema-forced handoff and dropped it. A `PR` env
   var is the other half of the same trigger; without it `decisions` has no path on the only
   trigger it exists for.
+- ⚠️ **`remaining` is the only way an author can say it did not finish, and leaving the closing
+  keyword out of the PR body was never one.** `finish-pr.py` put it back — it asked whether the
+  keyword was present, never why it was absent — so the omission an author meant as a signal was
+  overwritten and the task closed as **completed**. Measured: #617's wiring was never written, it
+  closed anyway, and the Tester that ran next found no feature to test. The keyword is now
+  withheld when `remaining` is non-empty, the PR carries a warning block saying so, and the task
+  gets a comment listing what is left.
+- ⚠️ **The schema beats the prose, deliberately.** A body is something a model can write anything
+  into, including a closing keyword contradicting its own report — so a non-empty `remaining`
+  **strips** the keyword rather than warning about the contradiction and letting the task close.
+  The forced channel wins over the skippable one; that is the whole reason there is a schema.
+- ⚠️ **The withheld keyword becomes a bare `#N` reference, not nothing.** That keeps the PR
+  discoverable from the task while leaving `closingIssuesReferences` empty, so
+  `close-merged-work.py` finds nothing to close by either of its two routes. ⚠️ Its fallback is a
+  regex over the body, so the warning block's own wording must never read as a closing keyword —
+  asserted, because "does not close #N" in the wrong phrasing would silently re-close the task the
+  block exists to keep open.
+- ⚠️ **`remaining` is upserted on the task; `decisions` is appended to the story.** Not an
+  inconsistency: what is left is a snapshot that a later run supersedes, while a decision is a
+  record that a later run must not erase.
 - ⚠️ **`decisions` is the antidote to a review that dies in its own thread.** A maintainer
   changes course on a PR; the issue still describes what they rejected, and nothing rewrites it.
   The next agent reads the old plan and rebuilds the rejected thing — measured: a resolver
@@ -392,7 +412,7 @@ forgotten by a model that ran out of turns or simply skipped it.
 | `ensure-story-branch.py` | post, Architect + Researcher | creates the story's branch if it is missing; an epic and a spike have none, and it says so rather than warning |
 | `sync-kind-label.py` | post, Architect + Researcher | applies the `epic`/`spike`/`bug`/`story` label `kind()` derives |
 | `file-sub-issues.py` | post, Architect | parents stories to their epic, tasks to their story |
-| `finish-pr.py` | post, authors | labels the PR and ensures it closes its issue |
+| `finish-pr.py` | post, authors | labels the PR, and ensures it closes its issue — or, when the author reported work `remaining`, that it does not |
 | `post-findings.py` | post, Researcher | renders its schema-forced findings onto the spike — the role has no shell, so this is the only way they reach anyone |
 | `post-handoff.py` | post, authors | posts the JSON handoff to the story's issue, and appends its `decisions` to one running log there |
 | `log-to-story.py` | post, Architect + authors + on merge | rewrites one comment on the story listing its tasks in trigger order |
@@ -422,7 +442,9 @@ turns and cannot be forgotten.
   `finish-pr.py` labels the PR that run created. Nothing labels someone else's work.
 - ⚠️ **`Closes #<issue>` is both a prompt instruction and a hook.** The model writing it puts
   the link where a human reads it; the hook is the net, because a missing keyword loses the
-  close with nothing to signal it.
+  close with nothing to signal it. ⚠️ **Unless the author reported `remaining`** — then the hook
+  withholds the keyword rather than adding it. A forgotten keyword and a deliberately omitted one
+  were indistinguishable, and the deliberate one lost.
 - ⚠️ **Keep long-lived credentials out of any job a model step shares** unless the workflow
   puts them in *step* env. Step env is per-step, so a scripted step can hold a token the
   model step beside it cannot read. Secret masking covers logs only — not an API payload a

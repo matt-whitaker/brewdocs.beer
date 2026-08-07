@@ -4,7 +4,8 @@ to remember:
 
   1. points the PR at its story's branch
   2. labels the PR with the role(s) that worked it
-  3. makes sure the body carries `Closes #<issue>`
+  3. makes sure the body carries `Closes #<issue>` — UNLESS the author reported the task
+     unfinished, in which case it makes sure the body does NOT
 
 (1) and (3) each silently lose work. A PR that targets the default branch takes its task out
 of the story model — it ships to prod on merge and the story never gets a PR. A missing
@@ -16,6 +17,7 @@ this runs once at the end of it. A single role is a list of one; the PR should c
 whole trail, not whichever ran last.
 """
 
+import json
 import os
 import re
 import subprocess
@@ -24,6 +26,7 @@ import team
 
 ROLES = os.environ.get("ROLES") or team.fail("ROLES is required")
 ISSUE = os.environ.get("ISSUE", "")
+HANDOFF = os.environ.get("HANDOFF", "")
 
 if not team.REPO:
     team.fail("REPO is required")
@@ -159,8 +162,63 @@ if not ISSUE:
     print("No triggering issue — nothing to close.")
     raise SystemExit(0)
 
+# ⚠️ AN AUTHOR HAS TO BE ABLE TO SAY "NOT FINISHED", and for a long time it could not. The only
+# gesture available was leaving the keyword out of the PR body, and this hook put it back —
+# it asked whether the keyword was there, never why it was absent. #617 closed as COMPLETED with
+# its wiring never written, and the Tester that ran next found no feature to test.
+#
+# ⚠️ THE SCHEMA WINS OVER THE PROSE, and that is the whole design. `remaining` is forced by
+# `--json-schema`; a body is something a model may write anything into, including a closing
+# keyword that contradicts its own report. So a non-empty `remaining` also STRIPS a keyword the
+# model wrote, rather than warning about the contradiction and letting the task close anyway.
+#
+# ⚠️ ABSENT OR UNPARSABLE HANDOFF STILL CLOSES. That means the author's step failed or never ran,
+# which is not the same as "incomplete" — three states, not two — and the net against a merely
+# forgotten keyword has to stay in place for it.
+remaining = []
+if HANDOFF:
+    try:
+        parsed = json.loads(HANDOFF)
+        if isinstance(parsed.get("remaining"), list):
+            remaining = [str(item).strip() for item in parsed["remaining"] if str(item).strip()]
+    except json.JSONDecodeError:
+        team.warn("could not parse the handoff — treating this task as finished, as before.")
+
+closes = re.compile(rf"(?i)\b(clos|fix|resolv)[a-z]*(\s+)#{ISSUE}\b")
 body = (team.gh_json("pr", "view", pr, "--repo", team.REPO, "--json", "body") or {}).get("body") or ""
-if re.search(rf"(?i)(clos|fix|resolv)[a-z]*\s+#{ISSUE}\b", body):
+
+if remaining:
+    listed = "\n".join(f"- {item}" for item in remaining)
+    # a bare `#N` cross-references without the closing semantics, so the PR stays discoverable
+    # from the task while `close-merged-work.py` finds nothing to close
+    stripped = closes.sub(rf"refs\g<2>#{ISSUE}", body)
+    note = (
+        f"\n\n> [!WARNING]\n"
+        f"> **This does not finish #{ISSUE}, and merging it will not close it.**\n"
+        f"> The author reported the task incomplete. Still to do:\n"
+        + "".join(f"> - {item}\n" for item in remaining)
+    )
+    if team.gh("pr", "edit", pr, "--repo", team.REPO, "--body", stripped + note) is None:
+        team.warn(f"could not mark PR #{pr} as not finishing #{ISSUE} — it may close the task on merge")
+    else:
+        print(f"PR #{pr} -> withheld 'Closes #{ISSUE}': {len(remaining)} item(s) remaining")
+
+    # ⚠️ ON THE TASK TOO. The PR body is where the merge decision happens; the task is where
+    # someone looks afterwards and asks why it is still open. A PR comment is not durable for an
+    # issue — the lesson #654 was filed for.
+    #
+    # Upserted, not appended, unlike the decisions log: this is a snapshot of what is left right
+    # now, and an earlier run's list is superseded rather than part of a record.
+    team.upsert_comment(
+        ISSUE,
+        f"<!-- claude-team:remaining:{ISSUE} -->",
+        f"<!-- claude-team:remaining:{ISSUE} -->\n"
+        f"### Left unfinished\n\n"
+        f"PR #{pr} does not close this. Still to do:\n\n{listed}\n" + team.run_footer(),
+    )
+    raise SystemExit(0)
+
+if closes.search(body):
     print(f"PR #{pr} already closes #{ISSUE}.")
     raise SystemExit(0)
 
