@@ -97,8 +97,22 @@ def parent(number: str | int) -> str | None:
 
 # ── the conventions the Architect writes into an issue ──────────────────────────────────
 
-_BRANCH = re.compile(r"branch:\s*`([^`]+)`", re.IGNORECASE)
-_ROLE = re.compile(r"role:\s*`?([a-z]+)`?", re.IGNORECASE)
+# ⚠️ ANCHORED TO A LINE, and that is the whole point. Unanchored, these matched the first
+# occurrence ANYWHERE in a body — so a task that mentioned a sibling's role in prose routed to
+# the wrong one. #607 is stamped `implementor` and read as `tester`, because two earlier lines
+# said "a separate task (Role: tester) depends on this". The Tester writes no production code,
+# so it would have reported that it could not do the work and the story would have stalled with
+# nothing obviously broken.
+#
+# ⚠️ This gets MORE likely as the Architect gets better: cross-referencing sibling tasks is good
+# issue-writing that happens to poison an unanchored parser.
+#
+# Bold is optional on purpose. Every stamp in practice is written `**Role: x**`, so requiring
+# the markers would work — but the defect is mid-line matching, and anchoring alone cures it.
+# Demanding `**` would be a second, unrelated tightening that turns a bold-less stamp into a
+# silent mis-route instead of a readable one.
+_BRANCH = re.compile(r"^\s*\*{0,2}branch:\s*`([^`]+)`", re.IGNORECASE | re.MULTILINE)
+_ROLE = re.compile(r"^\s*\*{0,2}role:\s*`?([a-z]+)`?", re.IGNORECASE | re.MULTILINE)
 
 
 def branch_line(body: str) -> str:
