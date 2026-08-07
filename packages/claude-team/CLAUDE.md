@@ -56,6 +56,29 @@ so, which is why `sync-kind-label.py` only ever adds and never removes.
 its tasks. It is what an author bases on and merges back into, never a branch for the task
 itself. Anything deriving a story from a branch name reads that prefix.
 
+⚠️ **A story's Branch line carries a compare link**, appended by `ensure-story-branch.py` after
+the closing backtick, so opening its PR is one click instead of a walk through the UI. One link
+serves the branch's whole life — GitHub redirects a compare URL to the existing PR once one is
+open. ⚠️ The link sits **outside** the backticks because `branch_line` is anchored and captures
+only what is between them; that is deliberate, not luck, and trailing text must stay outside.
+
+## Sequencing
+
+⚠️ **Stories are independent; a story's tasks are ordered.** Two different defaults, and each
+must be stated where it can be seen:
+
+- **Between stories** — independent unless the **epic's own body** says otherwise. A dependency
+  written only in the dependent story is not enough: #603's body opened with "Depends on #602
+  landing first", the epic said nothing, #603's tasks were started while #602's PR was open, and
+  its Tester found no feature to test.
+- **Within a story** — its tasks run in order, and the story says so. A hook already derives the
+  order from `(phase, issue number)`; the sentence is for the human deciding what to trigger.
+
+⚠️ **"Depends on" means MERGED.** A story whose tasks are all closed but whose PR is open has
+delivered nothing to any other branch — which is why the epic's work log carries a **landed**
+column beside the task count. `2/2 tasks` and `PR #629 open` are different facts, and only
+showing the first is what allowed this to happen.
+
 ⚠️ **Branch creation is scripted, not prompted** — the last load-bearing thing a model owned,
 and it failed about half the time. The host action mints its own branch for an issue trigger
 and injects *"You are already on the correct branch. Do not create a new branch"*, which
