@@ -77,7 +77,8 @@ run-name: >-
 #   delegate job          acknowledge.py           reacts 👀 so the trigger is visibly received
 #   delegate job          delegate.py              picks the role from issue state
 #   pre   every role      stamp-role-label.py      stamps @claude/<role> on the issue or PR
-#   pre   authors job     set-issue-status.py      sets the issue's board Status (STATUS input)
+#   pre   authors job     set-issue-status.py      board: place + set Status (STATUS input)
+#   post  architect       set-issue-status.py      places the story and its tasks as Todo
 #   post  architect       ensure-story-branch.py   creates the story's branch if it is missing
 #   post  architect       sync-kind-label.py       applies the epic/bug label its title announces
 #   post  architect       file-sub-issues.py       parents stories to epics, tasks to stories
@@ -348,6 +349,25 @@ jobs:
           REPO: ${{ github.repository }}
           ISSUE: ${{ github.event.issue.number }}
         run: "$RUNNER_TEMP/agent-bin/file-sub-issues.py"
+      # ⚠️ AFTER file-sub-issues, which is what makes the children discoverable — this places
+      # them too, and sub_issues() would return nothing if it ran first.
+      # ⚠️ PROJECTS_TOKEN is safe here on the same argument as the authors job: step env is
+      # per-step, so the model step in this job cannot read it.
+      - name: Put the story and its tasks on the board
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PROJECTS_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
+          REPO: ${{ github.repository }}
+          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
+          PROJECT_OWNER: "@me"
+          PROJECT_NUMBER: "4"
+          STATUS: "Todo"
+          # never knock an in-flight story back — a re-shape must not undo In Progress
+          ONLY_IF_UNSET: "true"
+          # the tasks it just cut, or an epic's stories
+          INCLUDE_SUB_ISSUES: "true"
+        run: "$RUNNER_TEMP/agent-bin/set-issue-status.py"
   # ── Authors: Implementor | Designer | Tester | Writer ──────────────────────────
   # The four authoring roles as gated steps in one job. ⚠️ EXACTLY ONE RUNS PER TRIGGER —
   # `delegate.py` emits a single role, and each step gates on it. They share a job to share

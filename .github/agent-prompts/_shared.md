@@ -18,7 +18,9 @@ Read the repo-root `CLAUDE.md` first; each package has its own, loaded when you 
 - ⚠️ **No data migrations and no backfill shims.** Dev assumes a pristine local store
   (`/?purge=true` resets it). A stale stored record may fail to render; it may not take a
   screen down with it. Containment, never repair.
-- Add issues and PRs to the project: `gh project item-add 4 --owner "@me" --url <url>`.
+- ⚠️ **Do not try to add anything to the project board.** You have no token that can reach
+  it — `gh project item-add` fails with *"Could not resolve to a ProjectV2"* and costs you a
+  turn. A scripted hook places what you create.
 - Commit subjects are plain imperative, no Conventional Commits prefix.
 - Run one command per Bash call — chaining trips the permission check. A denied tool call
   is settled; note it and move on.
