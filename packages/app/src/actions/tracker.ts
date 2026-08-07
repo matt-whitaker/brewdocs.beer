@@ -38,7 +38,7 @@ export function pruneTracker(tracker: Record<string, TrackerEntry>, liveKeys: Se
  * assignment (all schedule rows derive from these — see `deriveSchedule`), an
  * `equipment` entry per phase's equipment, a `milestone` entry per reading
  * configured on a phase, and a `phase` entry per phase (its completion — see
- * `actions/batchProgress.ts`). They all come off the **brewable**, which is the
+ * `model/batchProgress.ts`). They all come off the **brewable**, which is the
  * plan's single source of truth — there's no second phase list to reconcile.
  *
  * Ids are assumed already present: phase and milestone ids are minted at

@@ -1,6 +1,6 @@
 import {useMemo} from "react";
 import {isUnit, Scalar, Unit} from "@brewdocs.beer/core";
-import {resourcesOf} from "@/actions/brewableResources";
+import {resourcesOf} from "@/model/brewable";
 import {Assignment} from "@/model/brewable";
 import {parseNumberString} from "@/utils/math";
 
