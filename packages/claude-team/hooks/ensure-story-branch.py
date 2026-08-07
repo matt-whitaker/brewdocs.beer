@@ -29,11 +29,46 @@ them — the failure this hook exists to prevent, inflicted by the fix for it.
 """
 
 import os
+import re
 
 import team
 
 ISSUE = os.environ.get("ISSUE", "")
 KIND = os.environ.get("KIND", "")
+
+
+def link_branch_line(branch: str, default: str) -> None:
+    """Append a compare link to the Branch line, so opening the story's PR is one click.
+
+    ⚠️ AFTER the closing backtick, never inside it. `team.branch_line` is anchored to the start
+    of a line and captures only what sits between the backticks, so trailing text is invisible
+    to it — a property to preserve deliberately, not to rely on by accident.
+
+    Idempotent, because the Architect can be re-run on a story and a second link is noise.
+
+    One link serves the whole life of the branch: GitHub redirects a compare URL to the existing
+    PR once one is open, so this is not replaced when open-story-pr.py opens the story's PR.
+    """
+    body = team.issue_body(ISSUE)
+    if "/compare/" in body:
+        print("the Branch line already carries its link")
+        return
+
+    url = f"https://github.com/{team.REPO}/compare/{default}...{branch}?expand=1"
+    # a function as the replacement, so nothing in the URL is read as a backreference
+    updated, count = re.subn(
+        rf"^(\s*\*{{0,2}}branch:\s*`{re.escape(branch)}`\*{{0,2}})",
+        lambda m: f"{m.group(1)} · [open its PR]({url})",
+        body, count=1, flags=re.IGNORECASE | re.MULTILINE,
+    )
+    if not count:
+        team.warn(f"could not find #{ISSUE}'s Branch line to link")
+        return
+
+    if team.gh("issue", "edit", str(ISSUE), "--repo", team.REPO, "--body", updated) is not None:
+        print(f"linked the Branch line -> {url}")
+    else:
+        team.warn(f"could not write the PR link onto #{ISSUE}'s Branch line")
 
 if not team.REPO:
     team.fail("REPO is required")
@@ -56,15 +91,17 @@ if not named:
     )
     raise SystemExit(0)
 
-if team.gh("api", f"repos/{team.REPO}/branches/{named}") is not None:
-    print(f"branch {named} already exists — leaving it alone")
-    raise SystemExit(0)
-
 default = (
     team.gh_json("repo", "view", team.REPO, "--json", "defaultBranchRef") or {}
 ).get("defaultBranchRef", {}).get("name")
 if not default:
-    team.warn(f"could not read the default branch, so {named} was not created")
+    team.warn(f"could not read the default branch, so nothing could be done for {named}")
+    raise SystemExit(0)
+
+# Resolved BEFORE the exists check, so a re-run on an already-cut story still gets its link.
+if team.gh("api", f"repos/{team.REPO}/branches/{named}") is not None:
+    print(f"branch {named} already exists — leaving it alone")
+    link_branch_line(named, default)
     raise SystemExit(0)
 
 head = team.gh_json("api", f"repos/{team.REPO}/git/ref/heads/{default}") or {}
@@ -84,3 +121,4 @@ if team.gh(
     raise SystemExit(0)
 
 print(f"created branch {named} at {default}@{sha[:7]} — empty, ready for its first task")
+link_branch_line(named, default)

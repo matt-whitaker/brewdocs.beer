@@ -61,7 +61,7 @@ def unroutable(reason: str) -> None:
             "issue", "comment", NUMBER, "--repo", team.REPO,
             "--body",
             f"🔔 I could not work out which role should handle this — {reason}. "
-            "Name one explicitly with `@claude/<role>`.",
+            "Name one explicitly with `@claude/<role>`." + team.run_footer(),
         )
     emit()
     raise SystemExit(0)

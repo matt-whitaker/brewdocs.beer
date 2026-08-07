@@ -198,6 +198,26 @@ def story_from_branch(branch: str) -> str:
 # ── one marked comment, rewritten in place ──────────────────────────────────────────────
 
 
+def run_footer() -> str:
+    """A trailing line linking the Actions run that wrote a comment, or "" outside Actions.
+
+    ⚠️ Every hook-written comment carries this. The model's own tracking comment already links
+    its job, so a run that produced BOTH reads as one story; a status comment without it is a
+    dead end — the maintainer sees what changed and has no way back to why.
+
+    `GITHUB_REPOSITORY` and `GITHUB_RUN_ID` are set for every step, so nothing has to be
+    threaded through the workflow. Empty when run by hand, which keeps local output clean.
+
+    These comments are rewritten in place, so the link always names the run that LAST touched
+    it — which is the run whose reasoning explains what is on screen.
+    """
+    repo = os.environ.get("GITHUB_REPOSITORY") or REPO
+    run = os.environ.get("GITHUB_RUN_ID")
+    if not (repo and run):
+        return ""
+    return f"\n---\n<sub>Written by [this run](https://github.com/{repo}/actions/runs/{run}).</sub>\n"
+
+
 def upsert_comment(number: str | int, marker: str, body: str) -> bool:
     """Create or update the single comment carrying `marker` on an issue or PR.
 
