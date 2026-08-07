@@ -16,6 +16,16 @@ export function currentPhaseIndex(phases: BrewablePhase[], tracker: Record<strin
     return index === -1 ? phases.length : index;
 }
 
+export function phaseStartDate(
+    phases: BrewablePhase[],
+    tracker: Record<string, TrackerEntry>,
+    index: number,
+    sessionStart: string | undefined
+): string | undefined {
+    const previous = phases[index - 1];
+    return previous ? tracker[key({on: "phase", id: previous.id})]?.date : sessionStart;
+}
+
 export interface BatchProgress {
     phases: BrewablePhase[];
     completedCount: number;
