@@ -44,11 +44,19 @@ covering both, and it does not:
 | kind | labels | who applies | what it means |
 |---|---|---|---|
 | **routing** | the front-door label, `@claude/<role>` | the maintainer; hooks stamp the trail | what should *happen* to this issue, and what has already run |
-| **classification** | `epic`, `bug` | anyone filing; a hook derives it from the title | what this issue *is* |
+| **classification** | `epic`, `bug`, `story` | anyone filing; a hook applies it after the Architect runs | what this issue *is* |
 
 A classification label is durable and derivable, so it survives a run and nothing has to
-re-derive it. ⚠️ A plain story carries **no** classification label — that absence is what says
-so, which is why `sync-kind-label.py` only ever adds and never removes.
+re-derive it. ⚠️ **Every kind gets one, `story` included.** An earlier version left a story
+unlabelled and treated the absence as the signal — which reads fine inside a hook and badly on
+a board, where you cannot filter for "the ones with nothing". `team.kind()` still *derives*
+story from the absence of the other markers; the label is what makes that visible.
+
+⚠️ **`sync-kind-label.py` asks `kind()`, not the title.** Keying on the title worked only while
+every kind announced itself — a story has no prefix to match and would never have been labelled.
+⚠️ And it refuses to write when it cannot read the issue: `kind()` falls back to `story` on a
+failed API call exactly as it does for a plain issue, so a rate-limited minute would otherwise
+relabel an epic. It only ever adds, never removes.
 - A story owns one branch and one PR against the default branch, and it accumulates.
 - A task is a slice of a story with its own branch and its own PR **into the story branch**.
 
