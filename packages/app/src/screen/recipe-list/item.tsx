@@ -1,17 +1,17 @@
 import {Link} from "@tanstack/react-router";
-import {ScreenH2, ScreenP} from "@brewdocs.beer/design";
+import {ScreenH2, ScreenP, Trash} from "@brewdocs.beer/design";
 import {KbRecipe} from "@brewdocs.beer/kb";
-import ConfirmDeleteButton from "@/component/confirm-delete-button";
+import Action from "@/component/action";
 import Recipe, {RecipeSource} from "@/model/recipe";
+import RecipeDeleteModal from "@/screen/recipe-delete-modal";
 
 
 export type RecipeListItemProps = {
     recipe: KbRecipe | Recipe;
     source: RecipeSource;
-    onDelete?: () => void;
 };
 
-export default function RecipeListItem({ recipe, source, onDelete }: RecipeListItemProps) {
+export default function RecipeListItem({ recipe, source }: RecipeListItemProps) {
     const to = source === "kb" ? "/kb/recipe/$recipeId" : "/recipe/$recipeId";
     return (
         <li className="odd:bg-base-200 relative">
@@ -21,7 +21,13 @@ export default function RecipeListItem({ recipe, source, onDelete }: RecipeListI
                 <ScreenP>ABV {recipe.targets.abv.value} | IBUs {recipe.targets.ibu} | O.G. {recipe.targets.og.value} | F.G. {recipe.targets.fg.value}</ScreenP>
                 <ScreenP className="pt-2">{recipe.description}</ScreenP>
             </Link>
-            {onDelete && <ConfirmDeleteButton label={`Delete ${recipe.name}`} title={`Delete ${recipe.name}?`} onConfirm={onDelete} />}
+            {source === "user" && <Action
+                label={`Delete ${recipe.name}`}
+                icon={Trash}
+                iconOnly
+                className="btn-xs text-error absolute top-1.5 right-1.5"
+                modalContent={<RecipeDeleteModal recipeId={recipe.id} name={recipe.name} />}
+            />}
         </li>
     );
 }
