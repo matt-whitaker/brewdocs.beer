@@ -1,5 +1,4 @@
-import Brewable, {Assignment, BrewablePhase, RESOURCE_TYPES, ResourceType} from "@/model/brewable";
-import Equipment from "@/model/equipment";
+import Brewable, {Assignment, RESOURCE_TYPES, ResourceType} from "@/model/brewable";
 import {key, Ref, TrackerEntry} from "@/model/tracker";
 
 type Tracker = Record<string, TrackerEntry>;
@@ -18,10 +17,6 @@ const boilMinutes = (assignment: Assignment): number => {
 
 const inBrewingOrder = (assignments: Assignment[]): Assignment[] =>
     [...assignments].sort((a, b) => boilMinutes(b) - boilMinutes(a));
-
-export function nextIncompleteEquipment(phase: BrewablePhase | undefined, tracker: Tracker): Equipment | undefined {
-    return phase?.equipment.find(({id}) => !!id && !isCompleted(tracker, {on: "equipment", id}));
-}
 
 export function nextIncompleteAssignment(
     brewable: Brewable,
