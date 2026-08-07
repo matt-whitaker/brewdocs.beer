@@ -6,21 +6,14 @@ go.
 
 ## Behaviours
 
-**BATCH-SCHEDULE-01** — Using the quick action for an ingredient kind (grain, hop, yeast or
-additive) checks off the **first** not-yet-completed item of that kind in the batch's current
-phase, in the order that phase lists them (BATCH-SCHEDULE-08). If the brewer also enters a
-value, that value is recorded against the same item.
-
-> *Why:* "first" has to mean the same thing on the screen as it does in the action, or the
-> brewer taps once and watches a row they did not choose get ticked, with nothing to explain it.
-> They had two different orders once, and the row that ticked was the second one shown.
+~~**BATCH-SCHEDULE-01**~~ — *retired, superseded by BATCH-SCHEDULE-10.*
 
 ~~**BATCH-SCHEDULE-02**~~ — *retired, superseded by BATCH-SCHEDULE-06.*
 
-~~**BATCH-SCHEDULE-03**~~ — *retired, superseded by BATCH-SCHEDULE-07.*
+~~**BATCH-SCHEDULE-03**~~ — *retired, superseded by BATCH-SCHEDULE-07, itself now BATCH-SCHEDULE-11.*
 
-**BATCH-SCHEDULE-04** — A kind, or equipment, with nothing left to check off in the batch's
-current phase is not offered as a quick action, and says so rather than only appearing inert.
+**BATCH-SCHEDULE-04** — Ingredients, or equipment, with nothing left to check off in the batch's
+current phase are not offered as a quick action, and say so rather than only appearing inert.
 
 **BATCH-SCHEDULE-05** — A quick-action checkoff is indistinguishable from checking the same
 item off the schedule directly: the item shows there, checked, immediately, with no separate
@@ -34,14 +27,7 @@ brewer names**, from those not yet completed in the batch's current phase.
 > so choosing one for them would be an arbitrary pick presented as a resolution, and a brewer
 > who checked off the wrong kettle would have no way to see why.
 
-**BATCH-SCHEDULE-07** — Repeating a quick action for the same ingredient kind advances to the
-next not-yet-completed item. It never re-checks an item already checked off, and never reaches
-into a later phase while the current phase still has one left.
-
-> *Why:* a brewer working through several hops in one phase repeats the same quick action for
-> each addition — if it re-offered the one just checked, or jumped ahead of a phase not yet
-> started, the timer would stop being a faster way to do what the grid already does and become
-> a way to get the schedule wrong.
+~~**BATCH-SCHEDULE-07**~~ — *retired, superseded by BATCH-SCHEDULE-11.*
 
 **BATCH-SCHEDULE-08** — Within a phase, the schedule lists each kind in the order the brewer
 works through it: additions carrying a boil time come first by longest boil, so a 60-minute
@@ -62,6 +48,25 @@ and leaves it where it is in Planning.
 > where the plan is read back as a sequence, and that is the only place an order should be
 > imposed on it.
 
+
+**BATCH-SCHEDULE-10** — Using the quick action for ingredients checks off **the item the brewer
+names**, from those not yet completed in the batch's current phase. If they also enter a value,
+that value is recorded against the same item.
+
+> *Why:* only hops are reliably chronological. Grain goes into the mash all at once, so it has no
+> next; an additive may or may not carry a boil time. A resolver would be right for one kind and
+> an arbitrary pick dressed as a resolution for the other two — the same reason equipment is named
+> (BATCH-SCHEDULE-06). Ingredients and equipment now behave alike, which is one rule for a brewer
+> to hold instead of three.
+
+**BATCH-SCHEDULE-11** — The items are offered in the order the phase lists them
+(BATCH-SCHEDULE-08), with the first not-yet-completed one already selected, and an item that has
+been checked off is not offered again.
+
+> *Why:* naming the item must not cost the brewer the speed that made the quick action worth
+> having. Working down a boil stays one confirm per addition, because the next one is already
+> selected — the brewer only has to intervene when they want something out of order, which is
+> exactly when they should.
 
 ## Known gaps
 
