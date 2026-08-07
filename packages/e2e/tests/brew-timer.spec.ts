@@ -102,7 +102,8 @@ test("logs a quick milestone that lands on the timeline and in the phase's readi
     await expect(page.getByLabel("Reading reading")).toBeVisible();
 });
 
-// BREW-TIMER-01/05: one entry point opens a tab panel ordered Ingredients/Reading/Equipment,
+// BREW-TIMER-01/05, BATCH-SCHEDULE-04: one entry point opens a tab panel ordered
+// Ingredients/Reading/Equipment,
 // with unavailable tabs reading as disabled rather than silently no-opping. Since #651 wired
 // all three, "disabled" now means "nothing left on this phase" — which is what this asserts,
 // and what the earlier version of this test was explicitly waiting to be able to assert.
@@ -121,8 +122,8 @@ test("quick action modal opens on Reading with every applicable tab enabled", as
     await expect(dialog.getByRole("tab", {name: "Equipment"})).toBeEnabled();
 });
 
-// The other half of the same behaviour: a tab goes unavailable once its phase is exhausted,
-// carrying the reason rather than just greying out.
+// BATCH-SCHEDULE-04, and the other half of the same behaviour: a tab goes unavailable once
+// its phase is exhausted, carrying the reason rather than just greying out.
 //
 // ⚠️ This is also the regression guard for the modal-stays-open bug (#651). Confirming the
 // check-off that exhausts a tab used to unmount the panel — and its method="dialog" form —
