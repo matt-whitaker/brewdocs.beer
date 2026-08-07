@@ -80,7 +80,7 @@ test("logs a quick milestone that lands on the timeline and in the phase's readi
 
     // defaults (first kind "Gravity", first phase "1. Mash") match the reading
     // grid's own "Add reading" default label, so no need to touch the selects
-    await page.getByRole("button", {name: "Log reading"}).click();
+    await page.getByRole("button", {name: "Quick actions"}).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
     await dialog.getByRole("button", {name: "Confirm"}).click();
@@ -102,6 +102,24 @@ test("logs a quick milestone that lands on the timeline and in the phase's readi
     await expect(page.getByLabel("Reading reading")).toBeVisible();
 });
 
+// BREW-TIMER-01/05: one entry point opens a tab panel ordered Ingredients/Reading/Equipment,
+// with the unavailable tabs reading as disabled rather than silently no-opping. The screen
+// only wires onQuickMilestone today (#603 wires the other two), so Ingredients/Equipment are
+// unconditionally disabled here — this proves "disabled", not yet "disabled because empty".
+test("quick action modal opens on Reading with Ingredients and Equipment unavailable", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Quick Action Tabs Batch");
+    await page.getByRole("tab", {name: "Brewing", exact: true}).click();
+
+    await page.getByRole("button", {name: "Quick actions"}).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+
+    await expect(dialog.getByRole("tab")).toHaveText(["Ingredients", "Reading", "Equipment"]);
+    await expect(dialog.getByRole("tab", {name: "Ingredients"})).toBeDisabled();
+    await expect(dialog.getByRole("tab", {name: "Reading"})).toHaveAttribute("aria-selected", "true");
+    await expect(dialog.getByRole("tab", {name: "Equipment"})).toBeDisabled();
+});
+
 // Covers the marker overlay's 24px hit target + popover work (#380): each
 // marker gets its own transparent hit box independent of its drawn dot, and
 // only one popover is open at a time. Real wall-clock separation between the
@@ -115,7 +133,7 @@ test("hovering each marker after logging two milestones shows that marker's own 
     await page.waitForTimeout(1000);
 
     // defaults (Gravity kind, "Reading" label) match the first milestone
-    await page.getByRole("button", {name: "Log reading"}).click();
+    await page.getByRole("button", {name: "Quick actions"}).click();
     let dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
     await dialog.getByRole("button", {name: "Confirm"}).click();
@@ -126,7 +144,7 @@ test("hovering each marker after logging two milestones shows that marker's own 
 
     await page.waitForTimeout(4000);
 
-    await page.getByRole("button", {name: "Log reading"}).click();
+    await page.getByRole("button", {name: "Quick actions"}).click();
     dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
     await dialog.getByLabel("Reading kind").selectOption("volume");
@@ -181,7 +199,7 @@ test("places a freshly logged milestone marker without waiting for a tick to cat
     await page.waitForTimeout(100);
     await page.clock.runFor(5600);
 
-    await page.getByRole("button", {name: "Log reading"}).click();
+    await page.getByRole("button", {name: "Quick actions"}).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
     await dialog.getByRole("button", {name: "Confirm"}).click();
@@ -217,7 +235,7 @@ test("keeps a milestone logged during a long pause on the timeline once resumed"
     // a pause much longer than the running time before it
     await page.waitForTimeout(6000);
 
-    await page.getByRole("button", {name: "Log reading"}).click();
+    await page.getByRole("button", {name: "Quick actions"}).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
     await dialog.getByRole("button", {name: "Confirm"}).click();

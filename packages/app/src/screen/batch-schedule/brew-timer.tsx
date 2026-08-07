@@ -1,7 +1,5 @@
 import {useCallback, useMemo} from "react";
 import {BrewTimer, BrewTimerMarker, ScreenP} from "@brewdocs.beer/design";
-import {currentPhaseIndex} from "@/actions/batchProgress";
-import {isRunning} from "@/actions/brewTimer";
 import {putEntry} from "@/actions/tracker";
 import Modal from "@/component/modal";
 import ModalScreen from "@/component/modal/screen";
@@ -9,7 +7,9 @@ import useModal from "@/component/modal/useModal";
 import useElapsedSeconds from "@/hooks/useElapsedSeconds";
 import {MutateFn} from "@/hooks/useJsonEdit";
 import Batch from "@/model/batch";
+import {currentPhaseIndex} from "@/model/batchProgress";
 import {Milestone, phaseLabel} from "@/model/brewable";
+import {isRunning} from "@/model/timer";
 import {TimerEventType} from "@/model/timer";
 import {key, TrackerEntry} from "@/model/tracker";
 import {READING_KINDS, readingKindsForPhase, WATER_PARAMETERS} from "@/screen/batch-schedule/reading-kinds";

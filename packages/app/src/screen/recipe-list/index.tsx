@@ -6,7 +6,7 @@ import SearchBar from "@/component/search-bar";
 import Recipe from "@/model/recipe";
 import RecipeListItem, {RecipeListItemFallback} from "@/screen/recipe-list/item";
 import {useKbRecipes} from "@/state/kbRecipes";
-import {deleteRecipe, useRecipes} from "@/state/recipes";
+import {useRecipes} from "@/state/recipes";
 import {FilterFn} from "@/utils/func";
 
 
@@ -39,7 +39,6 @@ export default function RecipeList({ source = "all",  filterFn }: RecipeListProp
             <RecipeListItem
                 recipe={recipe}
                 source={recipeSource}
-                onDelete={recipeSource === "user" ? () => deleteRecipe(recipe.id) : undefined}
             />
         </ErrorBoundary>
     )), [shownRecipes]);

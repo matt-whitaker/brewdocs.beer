@@ -4,7 +4,7 @@ import SearchBar from "@/component/search-bar";
 import useIndexBy from "@/hooks/useIndexBy";
 import Batch from "@/model/batch";
 import BatchListItem from "@/screen/batch-list/item";
-import {deleteBatch, useBatches} from "@/state/batches";
+import {useBatches} from "@/state/batches";
 import {useKbRecipes} from "@/state/kbRecipes";
 import {useRecipes} from "@/state/recipes";
 
@@ -35,7 +35,6 @@ export default function BatchList({ filter }: BatchListProps) {
             batch={batch}
             recipeName={recipeFor(batch)?.name || ""}
             brewer={batch.brewer || recipeFor(batch)?.brewer || ""}
-            onDelete={() => deleteBatch(batch.id)}
         />
     )), [shownBatches, recipeFor]);
     return (

@@ -32,6 +32,24 @@ Rewrite it so a reader knows what "done" looks like and why it matters, and say 
 and what is deliberately out. Break it into **stories**, each one shippable with its own PR.
 ⚠️ Do **not** cut a branch: epics have none.
 
+⚠️ **Say how the stories are sequenced, in the EPIC's own body.** The default is that they are
+**independent** — any of them can be picked up in any order — and a reader is entitled to assume
+that unless you say otherwise. So when one story genuinely depends on another, that dependency
+is something you must write down, at the top, naming both:
+
+```
+**Sequencing.** #602 must land before #603 — #603 wires the callbacks #602 adds.
+Otherwise independent.
+```
+
+⚠️ **Writing it only in the dependent story is not enough**, and that has already cost a run:
+#603's body opened with "Depends on #602 landing first", the epic said nothing, and #603's tasks
+were started while #602's PR was still open — its Tester found no feature to test.
+
+⚠️ **"Depends on" means MERGED, not "its tasks are closed."** A story whose tasks are all done
+but whose PR is open has delivered nothing to any other branch. Say *landed*, and say which
+branch needs it.
+
 ⚠️ **Leave an epic saying it is one.** Title it `Epic: <…>`, and never strip an existing
 `Epic` prefix or `epic` label — those are the classification, and removing one silently
 demotes the issue on its next run. The label is applied for you, from the title.
@@ -124,6 +142,14 @@ fresh in front of you.
 
 ⚠️ **A task you cannot cleanly assign should be split, not guessed at.** If a task spans two
 roles' territory, that is a sign it is two tasks.
+
+⚠️ **A story's tasks ARE sequenced — that is the default, and the opposite of the story rule.**
+Stories are independent unless the epic says otherwise; a story's tasks are ordered unless you
+say otherwise. Say so in the story body, so nobody has to infer it from the numbering:
+
+```
+**Sequencing.** Its tasks run in order: #606, then #607, then #608.
+```
 
 ⚠️ **Create tasks in the order they should be run.** That order is read, not just described:
 a hook lists the story's tasks by `(phase, issue number)` and names the next one to trigger,

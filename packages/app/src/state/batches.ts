@@ -20,6 +20,9 @@ export const useBatches = (filter?: FilterFn<Batch>): Batch[] => {
     return filter ? data.filter(filter) : data;
 };
 
+export const findBatch = (id: string) =>
+    queryClient.ensureQueryData({queryKey: batchQueryKey(id), queryFn: loadBatch});
+
 export const useBatch = (id: string): Batch => {
     const { data } = useSuspenseQuery({ queryKey: batchQueryKey(id), queryFn: loadBatch });
 

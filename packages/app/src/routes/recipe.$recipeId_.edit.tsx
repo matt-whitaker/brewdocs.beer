@@ -1,13 +1,16 @@
 import {createFileRoute} from "@tanstack/react-router";
 import {useMemo} from "react";
+import requireRecord from "@/actions/requireRecord";
 import {Crumb, dynamicCrumb, useBreadcrumbs} from "@/component/breadcrumbs/context";
 import PanelSwitcher from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
 import RecipeEdit from "@/screen/recipe-edit";
-import {useRecipeResource} from "@/state/disambiguation";
+import {findRecipeResource, useRecipeResource} from "@/state/disambiguation";
 
 export const Route = createFileRoute("/recipe/$recipeId_/edit")({
-    component: RecipeEditPage
+    component: RecipeEditPage,
+    beforeLoad: ({params: {recipeId}}) =>
+        requireRecord({find: () => findRecipeResource("user", recipeId), to: "/recipes"})
 });
 
 function RecipeEditPage() {

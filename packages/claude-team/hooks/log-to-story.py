@@ -95,7 +95,7 @@ lines += [
     "Rewritten automatically whenever a task changes state.",
 ]
 
-if team.upsert_comment(STORY, MARKER, "\n".join(lines) + "\n"):
+if team.upsert_comment(STORY, MARKER, "\n".join(lines) + "\n" + team.run_footer()):
     print(f"updated the task order on story #{STORY}")
 else:
     team.warn(f"could not update the task order on #{STORY}")

@@ -1,8 +1,8 @@
 import {useCallback, useMemo} from "react";
 import {ScreenH3, ScreenP} from "@brewdocs.beer/design";
-import {currentPhaseIndex} from "@/actions/batchProgress";
 import Screen from "@/component/screen";
 import Batch from "@/model/batch";
+import {currentPhaseIndex} from "@/model/batchProgress";
 import Brewable from "@/model/brewable";
 import BrewableEdit from "@/screen/brewable-edit";
 import {useBatch} from "@/state/batches";
