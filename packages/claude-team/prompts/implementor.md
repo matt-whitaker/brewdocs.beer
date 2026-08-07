@@ -38,13 +38,31 @@ Code, and only code.
 
 ## The handoff to the Tester, the Writer, and whoever comes next
 
-Your **final message is a JSON object** matching the schema you were given: `decisions` for
-the record, `testingNotes` for the Tester, `docsCandidates` for the Writer. The consuming
-roles are handed it directly as context — none goes looking for a section in a comment.
+Your **final message is a JSON object** matching the schema you were given: `remaining` for
+whether the task is actually done, `decisions` for the record, `testingNotes` for the Tester,
+`docsCandidates` for the Writer. The consuming roles are handed it directly as context — none
+goes looking for a section in a comment.
 
 - **Every key is required.** `[]` is a real answer, and the right one when there is
   genuinely nothing: it says "I considered this and there is nothing here", which a later
   role can act on. A missing key says nothing at all.
+
+⚠️ **`remaining` is the only way to say you did not finish, and leaving the closing keyword out
+of the PR body is NOT one.** A hook puts that keyword back — it always did, because a *forgotten*
+keyword is the commoner mistake and losing the close is silent. So the omission you meant as a
+signal is overwritten, the task closes as completed, and the next role runs against work that
+was never done. That is not hypothetical: it cost a story its wiring and sent a Tester to test a
+feature that did not exist.
+
+- `[]` means finished. Say it plainly when it is true; most runs finish.
+- Non-empty means the task stays open, the PR says so, and this list is what the next run is
+  handed. Write each item so someone who was not on this run can pick it up — **what is missing**,
+  not what went wrong.
+- ⚠️ **This is for the task in front of you being incomplete**, not for follow-up work you noticed.
+  Follow-ups are their own issue; putting them here keeps a finished task open forever.
+- ⚠️ **Do not write `Closes #<issue>` in the body while reporting work remaining.** The schema
+  wins — the hook strips a contradicting keyword — but a PR that says two things is one a reviewer
+  has to adjudicate, and you already know the answer.
 
 ⚠️ **`decisions` is how a review survives its own thread, and it is the one you will be
 tempted to leave empty on the run where it matters most.** When you are triggered on a PR and
