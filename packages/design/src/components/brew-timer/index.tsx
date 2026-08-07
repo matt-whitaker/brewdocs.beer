@@ -10,9 +10,12 @@ import {QuickMilestoneModal} from "./quick-milestone";
 
 export type {BrewTimerMarker} from "./marker-overlay";
 
+export type BrewTimerScope = "global" | "phase";
+
 export type BrewTimerProps = PropsWithClass & {
     isRunning: boolean;
     elapsedSeconds: number;
+    scope?: BrewTimerScope;
     markers?: BrewTimerMarker[];
     milestoneKindOptions: InputSelectOption[];
     milestoneParameterOptions?: Record<string, InputSelectOption[]>;
@@ -23,6 +26,7 @@ export type BrewTimerProps = PropsWithClass & {
     label?: string;
     completeLabel?: string;
     onPlayPause: () => void;
+    onScopeChange?: (scope: BrewTimerScope) => void;
     onQuickMilestone: (kind: string, value: string, parameter?: string) => void;
     onComplete?: () => void;
 };
@@ -30,6 +34,7 @@ export type BrewTimerProps = PropsWithClass & {
 export function BrewTimer({
     isRunning,
     elapsedSeconds,
+    scope = "global",
     markers = [],
     milestoneKindOptions,
     milestoneParameterOptions,
@@ -40,6 +45,7 @@ export function BrewTimer({
     label = "Brew day elapsed timeline",
     completeLabel,
     onPlayPause,
+    onScopeChange,
     onQuickMilestone,
     onComplete,
     className
@@ -66,8 +72,20 @@ export function BrewTimer({
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-2 sm:ml-auto sm:justify-end sm:gap-3">
                     <div className="join" role="group" aria-label="Timer scope">
-                        <button type="button" className="btn btn-xs sm:btn-sm join-item btn-active" aria-pressed={true}>Global</button>
-                        <button type="button" className="btn btn-xs sm:btn-sm join-item" title="Coming soon" disabled>Phase</button>
+                        <button
+                            type="button"
+                            className={classNames("btn btn-xs sm:btn-sm join-item", {"btn-active": scope === "global"})}
+                            aria-pressed={scope === "global"}
+                            onClick={() => onScopeChange?.("global")}>
+                            Global
+                        </button>
+                        <button
+                            type="button"
+                            className={classNames("btn btn-xs sm:btn-sm join-item", {"btn-active": scope === "phase"})}
+                            aria-pressed={scope === "phase"}
+                            onClick={() => onScopeChange?.("phase")}>
+                            Phase
+                        </button>
                     </div>
                     <button type="button" className="btn btn-xs sm:btn-sm" aria-label="Log reading" onClick={toggleModal}>
                         <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
