@@ -53,6 +53,15 @@ the order the brewer arranged while planning.
 > order the brewer's own arrangement is the best answer available, and re-sorting it — by name,
 > say — would overrule a decision they made deliberately while planning.
 
+**BATCH-SCHEDULE-09** — Planning lists ingredients in the order the brewer put them in, and
+nothing re-orders them there. Changing an addition's boil time moves it on the brew-day schedule
+and leaves it where it is in Planning.
+
+> *Why:* the two screens answer different questions. Planning is where the brewer arranges the
+> recipe, and re-sorting under their hands while they type would fight them. The brew day is
+> where the plan is read back as a sequence, and that is the only place an order should be
+> imposed on it.
+
 
 ## Known gaps
 
