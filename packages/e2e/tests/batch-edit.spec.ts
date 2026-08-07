@@ -428,7 +428,9 @@ test("the phase tab bar stays one row on a phone and keeps every tab reachable",
 
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
-    const bar = page.locator('[role="tablist"]').last();
+    // :visible excludes the brew timer's quick-action tablist, which is always
+    // present (portalled to document.body by Modal) but closed here
+    const bar = page.locator('[role="tablist"]:visible').last();
     await expect(bar).toHaveCount(1);
     expect(await bar.evaluate(el => el.getBoundingClientRect().height)).toBeLessThan(56);
     expect(await bar.evaluate(el => el.scrollWidth > el.clientWidth)).toBe(true);
@@ -476,7 +478,7 @@ test("quick reading records against the current phase, and offers water paramete
     await page.getByRole("button", {name: "Start timer"}).click();
     await settleSave(page);
 
-    await page.getByRole("button", {name: "Log reading"}).click();
+    await page.getByRole("button", {name: "Quick actions"}).click();
     const modal = page.getByRole("dialog");
 
     // no phase picker — the current phase is stated instead
