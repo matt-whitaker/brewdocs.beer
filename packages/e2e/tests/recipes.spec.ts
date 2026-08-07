@@ -1,5 +1,24 @@
 import { expect, Locator, Page, test } from "@playwright/test";
 
+// RECIPE-LIST-04 (packages/spec/product/recipe-list.md): a bad recipe id returns the
+// brewer to /recipes, with the page's normal navigation intact, instead of RootError.
+// Holds for both the view route and the edit route.
+test("a bad recipe id redirects to /recipes with the breadcrumb trail and tab bar intact", async ({ page }) => {
+    await page.goto("/recipe/not-a-real-id");
+
+    await expect(page).toHaveURL(/\/recipes$/);
+    await expect(page.locator(".breadcrumbs").getByText("Recipes")).toBeVisible();
+    await expect(page.getByRole("tab", { name: "All" })).toHaveAttribute("aria-selected", "true");
+});
+
+test("a bad recipe id on the edit route also redirects to /recipes", async ({ page }) => {
+    await page.goto("/recipe/not-a-real-id/edit");
+
+    await expect(page).toHaveURL(/\/recipes$/);
+    await expect(page.locator(".breadcrumbs").getByText("Recipes")).toBeVisible();
+    await expect(page.getByRole("tab", { name: "All" })).toHaveAttribute("aria-selected", "true");
+});
+
 test("recipes page defaults to the All tab, listing the kb catalog", async ({ page }) => {
     await page.goto("/recipes");
     await expect(page.getByRole("tab", { name: "All" })).toBeVisible();
