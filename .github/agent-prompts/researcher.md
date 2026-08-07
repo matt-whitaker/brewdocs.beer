@@ -20,18 +20,15 @@ Facts that shape most spikes in this repo, so you do not have to rediscover them
 - ⚠️ **`packages/app/dist/assets/*.css` is the only reliable answer to "what does this class do"** —
   daisyui is nested per-consumer, so reading `node_modules` at the repo root will mislead you.
 
-For probing:
+⚠️ **You cannot run anything here** — no `nx`, no `npm`, no Playwright, no dev server. Where a
+question needs a measurement, describe it in `unknowns.howToSettle` precisely enough that a
+Tester or Implementor task can be cut from it: which command, against which screen, and what
+result would mean what. `packages/e2e` is a Playwright harness already wired to the app, so
+naming a spec there is usually the most actionable form that brief can take.
 
-- `nx dev app` runs the app; `packages/e2e` is a Playwright harness already wired to it, and a
-  throwaway spec under `packages/e2e/tests/` driven with `npx playwright test` is usually the
-  fastest way to get a real number out of a browser.
-- ⚠️ **Delete every probe and revert every file you touched, then confirm `git status` is clean.**
-  Say so in your findings. An uncommitted scratch file at the repo root is one `git add -A` from
-  shipping.
+You can still **read** everything: the code, the `CLAUDE.md` files, `packages/spec` for what the
+product promises, and `packages/kb/data` for the real shapes. Most of what a spike needs about
+this repo is readable.
 
-Write findings **into the issue**, appended below the maintainer's question — do not rewrite it.
-⚠️ **Write no code comments** anywhere; if something needs explaining it goes in the issue or a
-`CLAUDE.md`, which is where this repo keeps its reasoning.
-
-Do not open a PR, and do not apply labels — a hook stamps `@claude/researcher` for you, and
-classification labels are derived from the title.
+Your findings go into the issue through a scripted hook, appended below the maintainer question.
+⚠️ Do not attempt to edit the issue or open a PR — you have no way to, and trying wastes turns.

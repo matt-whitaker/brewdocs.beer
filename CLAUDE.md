@@ -180,8 +180,10 @@ inspection (rule 1) — still the way to override a bad guess.
   Architect, because an Architect handed one decomposes a solution nobody has chosen — that is the
   whole reason the role exists (#659, after #284 sat open with no role that fitted it).
   ⚠️ **The only role that reads the open web**, which is most of its value on a question about
-  platform support or cost — and why it runs with `contents: read` while every other authoring
-  role gets `write`.
+  platform support or cost — and the reason it holds **no shell at all**: no `Bash`, no `Write`,
+  no `npm ci`. The host action re-injects `GH_TOKEN` and `CLAUDE_CODE_OAUTH_TOKEN` into the
+  agent's environment whatever the workflow declares, so the credential cannot be removed — only
+  the ability to read it (#665). A measurement it needs becomes a separate task someone else runs.
 - `@claude/implementor` — issue or PR. Writes the code and opens the PR. Owns the
   *consumers* of the design system (`packages/app`, `packages/www`), not the system itself.
 - `@claude/designer` — issue or PR. An Implementor whose subject is `packages/design`: the
@@ -313,9 +315,8 @@ a real reply.
 
 **Budgets.** `sonnet` throughout except the Implementor, which runs `opus` — it is the only
 role whose output the maintainer must review line by line. Architect 100 turns,
-Security 40, the rest 80. Implementor, Tester and Researcher run `npm ci` as a step; nobody else
-builds. ⚠️ The Researcher builds because a spike is answered by **measuring** — the gap between
-"the docs say handles persist" and "I stored one and it survived a reload" is the role's value.
+Security 40, the rest 80. Implementor and Tester run `npm ci` as a step; nobody else builds —
+the Researcher deliberately does not, since it holds no shell to run anything with.
 
 **Allowlists union, they don't replace.** A role's `claude_args --allowedTools` is merged with
 the action's own base set, not substituted for it — `mergedAllowedTools = [...new Set([...
