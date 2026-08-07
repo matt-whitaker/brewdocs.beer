@@ -26,6 +26,11 @@ async function openSchedulePhase(page: Page, phase: string) {
     await expect(page.getByRole("tab", {name: phase, exact: true})).toHaveAttribute("aria-selected", "true");
 }
 
+function elapsedSecondsOf(text: string): number {
+    const [hours, minutes, seconds] = text.split(":").map(Number);
+    return hours * 3600 + minutes * 60 + seconds;
+}
+
 test("keeps the timer running across a reload", async ({page}) => {
     await brewBatchFromKbRecipe(page, "E2E Timer Running Batch");
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
@@ -233,4 +238,117 @@ test("keeps a milestone logged during a long pause on the timeline once resumed"
     // resuming alone must jump the counter to the true wall-clock offset and reveal
     // the marker — well inside the 6s pause a regressed implementation would need
     await expect(marker).toBeVisible({timeout: 2500});
+});
+
+test("Phase mode is a real, interactive control that reports its own selection", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Timer Scope Toggle Batch");
+    await page.getByRole("tab", {name: "Brewing", exact: true}).click();
+
+    const globalButton = page.getByRole("button", {name: "Global"});
+    const phaseButton = page.getByRole("button", {name: "Phase"});
+
+    await expect(globalButton).toHaveAttribute("aria-pressed", "true");
+    await expect(phaseButton).toHaveAttribute("aria-pressed", "false");
+    await expect(phaseButton).toBeEnabled();
+
+    await phaseButton.click();
+    await expect(phaseButton).toHaveAttribute("aria-pressed", "true");
+    await expect(globalButton).toHaveAttribute("aria-pressed", "false");
+});
+
+// Global reads wall-clock since the session's first "start", so it jumps to the
+// full pause-inclusive span as soon as it resumes running — but that jump lands
+// on its own render pass, a beat after the "Pause timer" button reappears. Poll
+// for it rather than reading once straight after the click, per this file's own
+// discipline against racing a live counter, then compare Phase's value (read
+// once, immediately after) as a lower/upper pair rather than exact text.
+test("Global includes a pause's duration while Phase excludes it", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Timer Scope Divergence Batch");
+    await page.getByRole("tab", {name: "Brewing", exact: true}).click();
+
+    await page.getByRole("button", {name: "Start timer"}).click();
+    await page.waitForTimeout(2000);
+    await page.getByRole("button", {name: "Pause timer"}).click();
+    await expect(page.getByRole("button", {name: "Start timer"})).toBeVisible();
+
+    // a pause much longer than the running time before it, so the two scopes'
+    // totals diverge by a margin no test-timing jitter can mask
+    await page.waitForTimeout(5000);
+    await page.getByRole("button", {name: "Start timer"}).click();
+
+    const timer = page.getByRole("timer", {name: "Elapsed time"});
+    await expect.poll(async () => elapsedSecondsOf((await timer.textContent()) ?? ""), {timeout: 3000})
+        .toBeGreaterThanOrEqual(6);
+    const globalSeconds = elapsedSecondsOf((await timer.textContent()) ?? "");
+
+    await page.getByRole("button", {name: "Phase"}).click();
+    await expect(page.getByRole("button", {name: "Phase"})).toHaveAttribute("aria-pressed", "true");
+    const phaseSeconds = elapsedSecondsOf((await timer.textContent()) ?? "");
+
+    expect(globalSeconds - phaseSeconds).toBeGreaterThanOrEqual(3);
+});
+
+test("Phase mode's markers are scoped to the active phase", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Timer Marker Scope Batch");
+    await page.getByRole("tab", {name: "Brewing", exact: true}).click();
+
+    await page.getByRole("button", {name: "Start timer"}).click();
+    await page.waitForTimeout(1000);
+
+    await page.getByRole("button", {name: "Log reading"}).click();
+    let dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole("button", {name: "Confirm"}).click();
+    await expect(dialog).not.toBeVisible();
+
+    const marker = page.getByRole("button", {name: /at \d{2}:\d{2}:\d{2}$/});
+    await expect(marker).toHaveCount(1);
+
+    await page.getByRole("button", {name: "Phase"}).click();
+    await expect(page.getByRole("button", {name: "Phase"})).toHaveAttribute("aria-pressed", "true");
+    // still "1. Mash" — the milestone just logged is the active phase's own
+    await expect(marker).toHaveCount(1);
+
+    await page.getByRole("button", {name: "Complete 1. Mash"}).click();
+    dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole("button", {name: "Confirm"}).click();
+    await expect(dialog).not.toBeVisible();
+
+    // the active phase just advanced to Boil — Phase mode's marker set must reset
+    // to that phase's own (currently empty) milestones, not carry the Mash reading
+    await expect(page.getByRole("button", {name: "Complete 2. Boil"})).toBeVisible();
+    await expect(marker).toHaveCount(0);
+
+    await page.getByRole("button", {name: "Global"}).click();
+    await expect(page.getByRole("button", {name: "Global"})).toHaveAttribute("aria-pressed", "true");
+    // Global still carries the Mash reading, plus a marker for the phase it completed
+    await expect(marker).toHaveCount(2);
+
+    await page.getByRole("button", {name: "Log reading"}).click();
+    dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole("button", {name: "Confirm"}).click();
+    await expect(dialog).not.toBeVisible();
+    await expect(marker).toHaveCount(3);
+
+    await page.getByRole("button", {name: "Phase"}).click();
+    await expect(page.getByRole("button", {name: "Phase"})).toHaveAttribute("aria-pressed", "true");
+    // only the Boil reading — not the Mash reading, not the phase-complete marker
+    await expect(marker).toHaveCount(1);
+});
+
+test("remembers the selected scope across a reload", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Timer Scope Persistence Batch");
+    await page.getByRole("tab", {name: "Brewing", exact: true}).click();
+
+    await page.getByRole("button", {name: "Phase"}).click();
+    await expect(page.getByRole("button", {name: "Phase"})).toHaveAttribute("aria-pressed", "true");
+
+    await settleSave(page);
+    await page.reload();
+    await page.getByRole("tab", {name: "Brewing", exact: true}).click();
+
+    await expect(page.getByRole("button", {name: "Phase"})).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByRole("button", {name: "Global"})).toHaveAttribute("aria-pressed", "false");
 });
