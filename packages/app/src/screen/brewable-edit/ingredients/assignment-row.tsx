@@ -74,6 +74,7 @@ function RecipeEditAssignmentRow({ row, assignment, remove, update, updateScalar
                             <DataGridLabel tiny className="ml-6">Alpha %</DataGridLabel>
                             <DataGridInput
                                 colStart={6}
+                                label={`${assignmentResourceName(assignment)} alpha`}
                                 value={assignment.resource.alpha.value}
                                 onChange={onChangeAlphaValue}
                                 onBlur={onBlurAlpha}
@@ -83,6 +84,7 @@ function RecipeEditAssignmentRow({ row, assignment, remove, update, updateScalar
                             <DataGridLabel tiny className="ml-6">Boil</DataGridLabel>
                             <DataGridInput
                                 colStart={6}
+                                label={`${assignmentResourceName(assignment)} boil`}
                                 value={assignment.resource.boil.value}
                                 onChange={onChangeBoilValue}
                                 onBlur={onBlurBoil}
@@ -98,6 +100,7 @@ function RecipeEditAssignmentRow({ row, assignment, remove, update, updateScalar
                             <DataGridLabel tiny className="ml-6">Attenuation %</DataGridLabel>
                             <DataGridInput
                                 colStart={6}
+                                label={`${assignmentResourceName(assignment)} attenuation`}
                                 value={assignment.resource.avg_attn.value}
                                 onChange={onChangeAttnValue}
                                 onBlur={onBlurAttn}
@@ -107,6 +110,7 @@ function RecipeEditAssignmentRow({ row, assignment, remove, update, updateScalar
                             <DataGridLabel tiny className="ml-6">Temp</DataGridLabel>
                             <DataGridInput
                                 colStart={6}
+                                label={`${assignmentResourceName(assignment)} temp`}
                                 value={assignment.resource.temp.value}
                                 onChange={onChangeTempValue}
                                 onBlur={onBlurTemp}
@@ -129,6 +133,7 @@ function RecipeEditAssignmentRow({ row, assignment, remove, update, updateScalar
                             <DataGridLabel tiny className="ml-6">Weight</DataGridLabel>
                             <DataGridInput
                                 colStart={6}
+                                label={`${assignmentResourceName(assignment)} weight`}
                                 value={weight.value}
                                 onChange={onChangeWeightValue}
                                 onBlur={onBlurWeight}
@@ -141,6 +146,7 @@ function RecipeEditAssignmentRow({ row, assignment, remove, update, updateScalar
                             <DataGridLabel tiny className="ml-6">Boil</DataGridLabel>
                             <DataGridInput
                                 colStart={6}
+                                label={`${assignmentResourceName(assignment)} boil`}
                                 value={assignment.resource.boil?.value ?? ""}
                                 onChange={onChangeBoilValue}
                                 onBlur={onBlurBoil}

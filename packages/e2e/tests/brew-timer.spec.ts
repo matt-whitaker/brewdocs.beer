@@ -189,25 +189,44 @@ test("the ingredients quick action works down the phase in the order it lists th
     }
 });
 
-// BATCH-SCHEDULE-08: a phase lists boil-timed additions longest-boil first, which is the order
-// they actually go in.
+// BATCH-SCHEDULE-08/-09: the phase lists boil additions longest-boil first, and Planning is
+// left exactly as the brewer arranged it.
 //
-// ⚠️ WEAKER THAN IT LOOKS, and worth knowing before trusting it. The kb recipe already stores
-// its three Northern Brewer additions in descending boil order, so this passes whether the
-// screen sorts or merely preserves that order — it was green against the #656 defect. It catches
-// a *wrong* sort (ascending, or by name), not the absence of one. The real guard for #656 is the
-// test above, which reads the rendered order and was verified to fail when the sort is reverted.
-// A fixture whose stored order disagrees with its boil order would need the planning screen's
-// boil input to carry an accessible name; it does not yet.
-test("a phase lists its boil additions in the order they go in", async ({page}) => {
+// ⚠️ The edit is what gives this test teeth. The kb recipe already stores its three Northern
+// Brewer additions in descending boil order, so asserting the panel order straight after brewing
+// cannot tell "the screen sorted them" from "they were already sorted" — an earlier version of
+// this test was green against the #656 defect for exactly that reason. Retiming the first-stored
+// addition to 1 min makes the stored order (1, 20, 0) and the brewing order (20, 1, 0) disagree,
+// so only a screen that really sorts can pass.
+test("a phase lists its boil additions in the order they go in, without reordering Planning", async ({page}) => {
     await brewBatchFromKbRecipe(page, "E2E Brew Order Batch");
+
+    await page.getByRole("tab", {name: "Planning", exact: true}).click();
+    await page.getByRole("tab", {name: "Ingredients", exact: true}).click();
+
+    const toggles = page.getByRole("button", {name: "Show assignment details"});
+    for (let guard = 0; guard < 12 && await toggles.count() > 0; guard++) {
+        await toggles.first().click();
+    }
+
+    const boilTimes = (where: Page) => where.getByLabel(/Northern Brewer boil/)
+        .evaluateAll(inputs => inputs.map(i => parseFloat((i as HTMLInputElement).value)));
+
+    const planned = page.getByLabel("Northern Brewer boil");
+    await expect(planned).toHaveCount(3);
+    expect(await boilTimes(page)).toEqual([60, 20, 0]);
+
+    // retime the first one so it now goes in LAST
+    await planned.nth(0).fill("1");
+    await planned.nth(0).blur();
+    await settleSave(page);
+
+    // BATCH-SCHEDULE-09: Planning still reads in the brewer's own arrangement
+    await expect.poll(() => boilTimes(page)).toEqual([1, 20, 0]);
+
+    // BATCH-SCHEDULE-08: the brew-day panel reads chronologically instead
     await openSchedulePhase(page, "2. Boil");
-
-    const boils = await page.getByLabel(/Northern Brewer boil/).evaluateAll(
-        inputs => inputs.map(i => parseFloat((i as HTMLInputElement).value)));
-
-    expect(boils.length).toBeGreaterThan(1);
-    expect(boils).toEqual([...boils].sort((a, b) => b - a));
+    await expect.poll(() => boilTimes(page)).toEqual([20, 1, 0]);
 });
 
 // BATCH-SCHEDULE-01: "If the brewer also enters a value, that value is recorded against the
