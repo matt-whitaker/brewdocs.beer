@@ -1,23 +1,28 @@
 import {createFileRoute} from "@tanstack/react-router";
 import {useMemo} from "react";
+import requireRecord from "@/actions/requireRecord";
 import {Crumb, dynamicCrumb, useBreadcrumbs} from "@/component/breadcrumbs/context";
 import PanelSwitcher from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
 import RecipeEdit from "@/screen/recipe-edit";
-import {useRecipeResource} from "@/state/disambiguation";
+import {findRecipeResource, useRecipeResource} from "@/state/disambiguation";
+
+const recipeEditCrumbs = (recipeId: string): Crumb[] => [
+    { label: "Recipes", to: "/recipes" },
+    dynamicCrumb(useRecipeResource, ["user", recipeId], ({ name }) => name, { to: "/recipe/$recipeId", params: {recipeId} }),
+    { label: "Edit" },
+];
 
 export const Route = createFileRoute("/recipe/$recipeId_/edit")({
-    component: RecipeEditPage
+    component: RecipeEditPage,
+    beforeLoad: ({params: {recipeId}}) =>
+        requireRecord({find: () => findRecipeResource("user", recipeId), crumbs: recipeEditCrumbs(recipeId)})
 });
 
 function RecipeEditPage() {
     const {recipeId} = Route.useParams();
 
-    const breadcrumbs = useMemo<Crumb[]>(() => [
-        { label: "Recipes", to: "/recipes" },
-        dynamicCrumb(useRecipeResource, ["user", recipeId], ({ name }) => name, { to: "/recipe/$recipeId", params: {recipeId} }),
-        { label: "Edit" },
-    ], [recipeId]);
+    const breadcrumbs = useMemo(() => recipeEditCrumbs(recipeId), [recipeId]);
     useBreadcrumbs(breadcrumbs);
 
     // Single-tab outer switcher (not compact) so the edit page carries a real page

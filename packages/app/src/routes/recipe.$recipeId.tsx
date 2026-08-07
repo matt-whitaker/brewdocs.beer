@@ -1,6 +1,7 @@
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
 import {useCallback, useMemo} from "react";
 import {Pencil, Plus} from "@brewdocs.beer/design";
+import requireRecord from "@/actions/requireRecord";
 import Action from "@/component/action";
 import {Crumb, dynamicCrumb, useBreadcrumbs} from "@/component/breadcrumbs/context";
 import PanelSwitcher from "@/component/panel-switcher";
@@ -9,10 +10,17 @@ import Batch from "@/model/batch";
 import BatchCreateModal from "@/screen/batch-create-modal";
 import BatchList from "@/screen/batch-list";
 import RecipeOverview from "@/screen/recipe-overview";
-import {useRecipeResource} from "@/state/disambiguation";
+import {findRecipeResource, useRecipeResource} from "@/state/disambiguation";
+
+const recipeCrumbs = (recipeId: string): Crumb[] => [
+    { label: "Recipes", to: "/recipes" },
+    dynamicCrumb(useRecipeResource, ["user", recipeId], ({ name }) => name),
+];
 
 export const Route = createFileRoute("/recipe/$recipeId")({
-    component: RecipePage
+    component: RecipePage,
+    beforeLoad: ({params: {recipeId}}) =>
+        requireRecord({find: () => findRecipeResource("user", recipeId), crumbs: recipeCrumbs(recipeId)})
 });
 
 function RecipePage() {
@@ -20,10 +28,7 @@ function RecipePage() {
     const navigate = useNavigate();
     const filterBatches = useCallback((batch: Batch) => batch.recipeId === recipeId, [recipeId]);
 
-    const breadcrumbs = useMemo<Crumb[]>(() => [
-        { label: "Recipes", to: "/recipes" },
-        dynamicCrumb(useRecipeResource, ["user", recipeId], ({ name }) => name),
-    ], [recipeId]);
+    const breadcrumbs = useMemo(() => recipeCrumbs(recipeId), [recipeId]);
     useBreadcrumbs(breadcrumbs);
 
     // a user recipe is already editable — Edit goes straight to its editor (unlike
