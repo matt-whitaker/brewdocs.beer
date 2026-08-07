@@ -306,7 +306,7 @@ forgotten by a model that ran out of turns or simply skipped it.
 | `acknowledge.py` | the router job, first | reacts 👀 so the trigger is visibly received |
 | `delegate.py` | the router job | picks the role from issue state — routing is scripted, not judged |
 | `stamp-role-label.py` | pre, every role | stamps `@claude/<role>` on the triggering issue or PR |
-| `set-issue-status.py` | pre, authors | sets the issue's board Status; the column is an input |
+| `set-issue-status.py` | pre, authors + post, Architect | puts an issue **on** the board and sets its Status; column and flags are inputs |
 | `ensure-story-branch.py` | post, Architect | creates the story's branch if it is missing |
 | `sync-kind-label.py` | post, Architect | applies the `epic`/`bug` label an issue title announces |
 | `file-sub-issues.py` | post, Architect | parents stories to their epic, tasks to their story |

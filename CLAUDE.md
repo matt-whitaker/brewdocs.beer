@@ -265,9 +265,11 @@ What is BrewDocs-specific:
 - ⚠️ **`PROJECTS_TOKEN` appears in `close-merged-work.py` and `set-issue-status.py`, and
   nowhere else.** It is a long-lived classic PAT needing `project` **and** `read:org` (a
   fine-grained token cannot reach user-owned Projects v2), covering every project the
-  maintainer owns. It is safe only because both are *scripted* steps and step env is
-  per-step — the model step in the same job cannot read it. ⚠️ Never add it to a job whose
-  model step holds `Bash(gh:*)`.
+  maintainer owns. It is safe because it lives in *step* env on a **scripted** step, and step env is
+  per-step — the model step beside it cannot read it, whatever tools that model holds. ⚠️ Never
+  put it in **job**-level env, and never on a step a model can influence. (An earlier version of
+  this line said "never add it to a job whose model step holds `Bash(gh:*)`" — that never
+  described the repo, since the authors job's Implementor holds exactly that.)
 - The board is **project #4**: `gh project item-add 4 --owner "@me" --url <url>`.
 - The handoff schema is
   [`packages/claude-team/schemas/handoff.json`](packages/claude-team/schemas/handoff.json);
