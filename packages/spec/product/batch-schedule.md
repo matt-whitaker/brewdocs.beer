@@ -7,8 +7,13 @@ go.
 ## Behaviours
 
 **BATCH-SCHEDULE-01** — Using the quick action for an ingredient kind (grain, hop, yeast or
-additive) checks off the earliest not-yet-completed item of that kind in the batch's current
-phase. If the brewer also enters a value, that value is recorded against the same item.
+additive) checks off the **first** not-yet-completed item of that kind in the batch's current
+phase, in the order that phase lists them (BATCH-SCHEDULE-08). If the brewer also enters a
+value, that value is recorded against the same item.
+
+> *Why:* "first" has to mean the same thing on the screen as it does in the action, or the
+> brewer taps once and watches a row they did not choose get ticked, with nothing to explain it.
+> They had two different orders once, and the row that ticked was the second one shown.
 
 ~~**BATCH-SCHEDULE-02**~~ — *retired, superseded by BATCH-SCHEDULE-06.*
 
@@ -37,6 +42,16 @@ into a later phase while the current phase still has one left.
 > each addition — if it re-offered the one just checked, or jumped ahead of a phase not yet
 > started, the timer would stop being a faster way to do what the grid already does and become
 > a way to get the schedule wrong.
+
+**BATCH-SCHEDULE-08** — Within a phase, the schedule lists each kind in the order the brewer
+works through it: additions carrying a boil time come first by longest boil, so a 60-minute
+addition is listed above a 15-minute one. Anything with no boil time — grains, yeasts — stays in
+the order the brewer arranged while planning.
+
+> *Why:* the boil is a countdown, so longest-boil-first *is* chronological, and a brew-day
+> screen read top to bottom should be the order things actually happen. Where there is no such
+> order the brewer's own arrangement is the best answer available, and re-sorting it — by name,
+> say — would overrule a decision they made deliberately while planning.
 
 
 ## Known gaps

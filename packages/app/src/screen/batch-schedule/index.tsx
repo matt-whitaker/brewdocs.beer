@@ -14,6 +14,7 @@ import useJsonEdit from "@/hooks/useJsonEdit";
 import useSchedule from "@/hooks/useSchedule";
 import Batch, {ScheduleKind} from "@/model/batch";
 import {phaseLabel} from "@/model/brewable";
+import {byBrewingOrder} from "@/model/scheduleProgress";
 import {key, Ref, TrackerEntry} from "@/model/tracker";
 import BatchScheduleBrewTimer from "@/screen/batch-schedule/brew-timer";
 import BatchScheduleEquipment from "@/screen/batch-schedule/equipment";
@@ -88,7 +89,7 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                 .filter(item => item.phaseId === phase.id)
                 .sort((a, b) =>
                     (KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind))
-                    || a.name.localeCompare(b.name));
+                    || byBrewingOrder(a, b));
 
             // sorted, so a group is a run of adjacent items sharing a kind; each run
             // becomes its own DataGrid, which is what bounds the collapse rule to it

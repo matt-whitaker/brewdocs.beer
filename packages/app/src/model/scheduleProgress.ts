@@ -1,6 +1,6 @@
 import Brewable, {Assignment, RESOURCE_TYPES, ResourceType} from "@/model/brewable";
 import Equipment from "@/model/equipment";
-import {key, Ref, TrackerEntry} from "@/model/tracker";
+import {key, Ref, ResourceActuals, TrackerEntry} from "@/model/tracker";
 
 type Tracker = Record<string, TrackerEntry>;
 
@@ -8,16 +8,20 @@ const NO_BOIL = -1;
 
 const isCompleted = (tracker: Tracker, ref: Ref): boolean => !!tracker[key(ref)]?.completed;
 
-const boilMinutes = (assignment: Assignment): number => {
-    const boil = assignment.resourceType === "hop" || assignment.resourceType === "additive"
-        ? assignment.resource.boil
+export type BrewOrdered = { resourceType: ResourceType; resource: ResourceActuals };
+
+const boilMinutes = (item: BrewOrdered): number => {
+    const boil = item.resourceType === "hop" || item.resourceType === "additive"
+        ? item.resource.boil
         : undefined;
     const minutes = boil ? parseFloat(boil.value) : NaN;
     return Number.isFinite(minutes) ? minutes : NO_BOIL;
 };
 
+export const byBrewingOrder = (a: BrewOrdered, b: BrewOrdered): number => boilMinutes(b) - boilMinutes(a);
+
 const inBrewingOrder = (assignments: Assignment[]): Assignment[] =>
-    [...assignments].sort((a, b) => boilMinutes(b) - boilMinutes(a));
+    [...assignments].sort(byBrewingOrder);
 
 export function nextIncompleteAssignment(
     brewable: Brewable,
