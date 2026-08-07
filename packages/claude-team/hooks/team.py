@@ -228,6 +228,48 @@ def run_footer() -> str:
     return f"\n---\n<sub>Written by [this run](https://github.com/{repo}/actions/runs/{run}).</sub>\n"
 
 
+def append_to_comment(number: str | int, marker: str, section: str, header: str) -> bool:
+    """Add `section` to the marked comment, keeping what is already there.
+
+    ⚠️ THE DIFFERENCE FROM `upsert_comment` IS THE WHOLE POINT, and it is not a style choice.
+    Upserting is right for a derived status board — it is regenerated from GitHub state every
+    run, so replacing it loses nothing. This is for a record of decisions, which is not derived
+    from anything: a PR draws several rounds of review, and round two replacing round one
+    destroys exactly the fact the comment exists to keep.
+
+    Still ONE comment, because thirty on a story is its own failure. Rounds stack inside it.
+    """
+    comments = gh_json("api", f"repos/{REPO}/issues/{number}/comments", "--paginate")
+    existing = None
+    if isinstance(comments, list):
+        for comment in comments:
+            if marker in (comment.get("body") or ""):
+                existing = comment
+
+    if existing is None:
+        return gh(
+            "api", f"repos/{REPO}/issues/{number}/comments",
+            "-f", f"body={marker}\n{header}\n\n{section}",
+        ) is not None
+
+    return gh(
+        "api", "--method", "PATCH", f"repos/{REPO}/issues/comments/{existing['id']}",
+        "-f", f"body={(existing.get('body') or '').rstrip()}\n\n---\n\n{section}",
+    ) is not None
+
+
+def run_link() -> str:
+    """The same run URL as `run_footer`, inline rather than as a trailing block.
+
+    A footer is right for a comment that IS one run's output. The decisions log is not — it
+    accumulates rounds, so each entry carries its own provenance and a trailing rule per section
+    just stacks horizontal lines.
+    """
+    repo = os.environ.get("GITHUB_REPOSITORY") or REPO
+    run = os.environ.get("GITHUB_RUN_ID")
+    return f" · [run](https://github.com/{repo}/actions/runs/{run})" if repo and run else ""
+
+
 def upsert_comment(number: str | int, marker: str, body: str) -> bool:
     """Create or update the single comment carrying `marker` on an issue or PR.
 
