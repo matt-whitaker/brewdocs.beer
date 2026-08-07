@@ -1,7 +1,30 @@
 {
   "type": "object",
-  "description": "What an authoring role passes to the roles that run after it. Both keys are required. An empty array is a real answer meaning nothing here is worth another role a turn, and is not the same as the step never having run at all.",
+  "description": "What an authoring role passes to the roles that run after it, and to whoever picks the work up next. Every key is required. An empty array is a real answer meaning nothing here is worth another role a turn, and is not the same as the step never having run at all.",
   "properties": {
+    "decisions": {
+      "type": "array",
+      "description": "Decisions reached DURING this run that the issue does not already state - above all one the maintainer made in review. This is the field that stops the next agent rebuilding what was just rejected: a review comment is not a durable artifact, the issue and the code are, and an agent reading a plan that still describes the rejected approach will faithfully rebuild it. Empty when the run only did what the issue already said.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "decision": {
+            "type": "string",
+            "description": "The rule now in force, stated as the rule rather than as a description of the conversation. Someone applying it should not need the thread it came from."
+          },
+          "why": {
+            "type": "string",
+            "description": "What makes it true - the property of the domain or the code that decided it. Reasoning travels; an outcome on its own gets re-litigated or reverted."
+          },
+          "supersedes": {
+            "type": "string",
+            "description": "What this replaces and where that still reads the old way - the acceptance criteria on an issue, a spec id, a function that now contradicts it. Omit only when this is new ground rather than a correction."
+          }
+        },
+        "required": ["decision", "why"],
+        "additionalProperties": false
+      }
+    },
     "testingNotes": {
       "type": "array",
       "description": "For the Tester. Behaviour that a test written to distrust this change should cover — not a description of what was built. Empty when the change genuinely warrants no new coverage.",
@@ -45,6 +68,6 @@
       }
     }
   },
-  "required": ["testingNotes", "docsCandidates"],
+  "required": ["decisions", "testingNotes", "docsCandidates"],
   "additionalProperties": false
 }

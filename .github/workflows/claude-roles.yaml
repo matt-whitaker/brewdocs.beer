@@ -822,6 +822,12 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
+          # ⚠️ The PR half of the same trigger, and it is load-bearing. ISSUE is deliberately
+          # blank on a PR, and the hook used to return on that alone — so a follow-up run, which
+          # is where review feedback arrives, produced a schema-forced handoff and discarded it.
+          # STORY is resolved for a PR too (delegate.py rule 2, off the head branch), so with
+          # this the handoff and its `decisions` reach the story either way.
+          PR: ${{ github.event.issue.pull_request && github.event.issue.number || '' }}
           # where it is posted: the story's ISSUE, which always exists. The story's PR does
           # not, until the first task PR merges into its branch.
           STORY: ${{ needs.delegate.outputs.story }}

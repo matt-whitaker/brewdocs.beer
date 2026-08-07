@@ -251,9 +251,9 @@ skip.
 
 ## The handoff between authors
 
-An author's step carries `--json-schema`, so its final message is a contract: `testingNotes`
-for the Tester, `docsCandidates` for the Writer. A hook posts it to the **story's issue** as
-one comment per task, where the Tester reads it on its own trigger. ⚠️ The Writer reads it only
+An author's step carries `--json-schema`, so its final message is a contract: `decisions` for
+the record, `testingNotes` for the Tester, `docsCandidates` for the Writer. A hook posts it to
+the **story's issue** as one comment per task, where the Tester reads it on its own trigger. ⚠️ The Writer reads it only
 on a **re-trigger** — it runs before the authors, so on its first pass the comments do not exist
 yet.
 
@@ -262,6 +262,29 @@ yet.
   entire reason this is a schema and not a prose section.
 - ⚠️ **The story's issue, not its PR.** The PR does not exist until the first task merges,
   so a handoff written during the first task would have nowhere to go.
+- ⚠️ **A PR follow-up must reach the story too, and for a long time it did not.** The workflow
+  blanks `ISSUE` on a PR trigger and the hook returned on that alone — before ever reading
+  `STORY`, which `delegate.py` rule 2 had already resolved from the head branch. So the one run
+  that carries **review feedback** produced a schema-forced handoff and dropped it. A `PR` env
+  var is the other half of the same trigger; without it `decisions` has no path on the only
+  trigger it exists for.
+- ⚠️ **`decisions` is the antidote to a review that dies in its own thread.** A maintainer
+  changes course on a PR; the issue still describes what they rejected, and nothing rewrites it.
+  The next agent reads the old plan and rebuilds the rejected thing — measured: a resolver
+  deleted on review (#626) was reinstated two PRs later (#651) by an agent reading a story that
+  still asked for it, and its author had done everything right, including leaving two 🔔
+  Maintainer heads-ups that nobody picked up. **A PR comment is not a durable artifact.** The
+  issue, the spec and the code are, and a decision reached in review lands in none of them
+  unless something puts it there.
+- ⚠️ **The decisions log APPENDS; every other hook comment upserts.** That difference is
+  deliberate, not an inconsistency. A status board or a handoff is *derived* — regenerated whole
+  each run, so replacing it loses nothing. A decision is a **record**: a PR draws several rounds
+  of review, and round two replacing round one destroys the fact the comment exists to keep. It
+  is still one comment; rounds stack inside it.
+- ⚠️ **Reporting a decision does not discharge it.** `decisions` records what changed; it does
+  not correct the specification, the acceptance criteria or the sibling task that now read the
+  old way. `supersedes` names them precisely so a human can go and fix them — a role reporting
+  a decision should also raise it where the maintainer will act on it.
 - ⚠️ **Deterministic at both ends:** the schema forces the author to produce it, the hook
   forces delivery. Neither is a model instruction. Asking a model to leave a
   machine-readable block for a later role is the version that fails.
@@ -319,7 +342,7 @@ forgotten by a model that ran out of turns or simply skipped it.
 | `sync-kind-label.py` | post, Architect | applies the `epic`/`bug` label an issue title announces |
 | `file-sub-issues.py` | post, Architect | parents stories to their epic, tasks to their story |
 | `finish-pr.py` | post, authors | labels the PR and ensures it closes its issue |
-| `post-handoff.py` | post, authors | posts the JSON handoff to the story's issue |
+| `post-handoff.py` | post, authors | posts the JSON handoff to the story's issue, and appends its `decisions` to one running log there |
 | `log-to-story.py` | post, Architect + authors + on merge | rewrites one comment on the story listing its tasks in trigger order |
 | `log-to-epic.py` | post, authors | rewrites one rolling work-log comment on the epic |
 | `open-story-pr.py` | **on merge** | opens the story's PR once a task has landed on its branch |
