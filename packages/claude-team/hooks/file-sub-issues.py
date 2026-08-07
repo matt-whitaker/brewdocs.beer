@@ -4,8 +4,14 @@ milestone down.
 
 Children are DISCOVERED, not declared. This used to read a machine-readable manifest the
 model left in a comment; across nine epics it wrote one exactly once, so the hook silently
-filed nothing. The anchor is now the reference the Architect must already put in every
-child's body — `epic #N` or `story #N`.
+filed nothing.
+
+⚠️ THE ANCHOR IS THE `Branch:` LINE, not prose. It replaced an `epic #N`/`story #N` reference
+that read as reliable and was not: no prompt ever required it, so a run that omitted it filed
+nothing and said nothing. A task's Branch line cannot be skipped — routing reads it, so a task
+without one does not work at all — and its leading number is the story. The prose reference is
+still honoured, because it is the only anchor an EPIC has: a story's Branch line names itself,
+not its epic. See claims_parent.
 
 A manifest is still honoured when one exists, unioned with what was discovered, so epics
 decomposed under the old contract keep working.
@@ -46,7 +52,7 @@ if manifests:
 #
 # Three markers, all required:
 #   1. the author is a Bot — the Architect creates sub-issues through the action
-#   2. a reference to this parent, as `epic #<N>` or `story #<N>`
+#   2. the body claims this parent — see claims_parent below
 #   3. a number above the parent's
 #
 # The body markers alone are not enough in a repo that documents its own conventions: a
@@ -64,12 +70,34 @@ listing = team.gh_json(
 ) or []
 # the trailing (non-digit|end) stops `epic #412` from matching `epic #4123`
 refers = re.compile(rf"(?i)(epic|story) +#{ISSUE}([^0-9]|$)")
+
+
+def claims_parent(body: str) -> bool:
+    """Two anchors, unioned. The Branch line is the reliable one.
+
+    ⚠️ THE PROSE REFERENCE IS NOT REQUIRED OF THE ARCHITECT ANYWHERE. Anchoring on it alone is
+    the same mistake one level up from the manifest this hook already abandoned: a model-written
+    marker that no prompt demands. Story #515's four tasks each carried both stamped lines and
+    were all bot-authored, and every filter passed except this one — so nothing was filed,
+    sub_issues came back empty, and log-to-story reported "no tasks" with nothing to signal it.
+
+    The Branch line cannot be skipped: routing itself reads it, so a task without one does not
+    work at all. Its leading number is the story.
+
+    ⚠️ It resolves STORY -> TASK ONLY. A story's own Branch line names *itself*, not its epic,
+    so an epic has nothing but the prose to go on — which is why both anchors stay. That
+    asymmetry also means this can never adopt a story as its own child: the `number > parent`
+    bound already excludes the parent itself.
+    """
+    return team.story_from_branch(team.branch_line(body)) == str(ISSUE) or bool(refers.search(body))
+
+
 discovered = sorted(
     i["number"] for i in listing
     if not i.get("pull_request")
     and i.get("number", 0) > int(ISSUE)
     and (i.get("user") or {}).get("type") == "Bot"
-    and refers.search(i.get("body") or "")
+    and claims_parent(i.get("body") or "")
 )
 if discovered:
     print(f"discovered for #{ISSUE}:", " ".join(str(d) for d in discovered))
