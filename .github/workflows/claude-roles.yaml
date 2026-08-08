@@ -396,6 +396,17 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # ⚠️ THE ONLY CHECKOUT HERE THAT SETS THIS, and it closes a hole the "no shell" rule
+          # does not. `actions/checkout` defaults to `persist-credentials: true`, which leaves the
+          # token in `.git/config` as an `http.<host>.extraheader` — so an agent with nothing but
+          # `Read` can recover a live credential from a FILE, no command execution required, and
+          # then post it anywhere with WebFetch. Removing Bash was necessary and, on its own, not
+          # sufficient (#669).
+          #
+          # Safe to disable here because nothing in this job uses git after checkout: the model
+          # only reads, and the hooks authenticate through `gh` with a token from their own step
+          # env. ⚠️ Do NOT copy this to the authoring jobs — they push, and it would break them.
+          persist-credentials: false
       - id: prompt
         uses: ./.github/actions/load-prompt
         with:

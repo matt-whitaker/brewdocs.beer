@@ -223,6 +223,13 @@ anything the agent can execute. The credential cannot be removed; the ability to
 agent-authored code, so a probe spec *is* arbitrary execution. That is why probing was dropped
 from this role and a measurement it needs becomes someone else's task (#665).
 
+⚠️ **A credential can reach the agent through a FILE, not only through the environment**, and
+removing the shell does nothing about that. `actions/checkout` defaults to
+`persist-credentials: true`, which writes the token into `.git/config` as an
+`http.<host>.extraheader` — so a role holding nothing but `Read` can recover it and post it
+anywhere it can fetch. A web-reading role's checkout therefore needs `persist-credentials: false`.
+⚠️ Only the reading role's: an authoring job pushes, and disabling it there breaks the push.
+
 ⚠️ **`WebFetch` is itself an egress channel**, so a narrower `Bash` grant was never the fix —
 exfiltration needs no shell if the agent can be induced to fetch a URL. Only the absence of a way
 to *read* the environment closes it.
