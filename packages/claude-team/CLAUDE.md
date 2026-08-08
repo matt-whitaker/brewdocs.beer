@@ -227,14 +227,26 @@ from this role and a measurement it needs becomes someone else's task (#665).
 exfiltration needs no shell if the agent can be induced to fetch a URL. Only the absence of a way
 to *read* the environment closes it.
 
-⚠️ **It carries no `id-token`**, unlike every other role. `parse-sdk-options.ts` deletes
-`ACTIONS_ID_TOKEN_REQUEST_URL`/`_TOKEN` from the agent's environment anyway, so the permission
-bought nothing and only widened what a compromised run could reach.
+⚠️ **It carries no `id-token` and passes its own `github_token`, and those two are one change.**
+Removing the permission alone broke the role outright — `setupGitHubToken()` mints an OIDC token
+and exchanges it for a GitHub App token, so with no OIDC and no supplied token the action cannot
+authenticate at all (#668). Passing `github_token` short-circuits that path before OIDC is
+reached.
+
+⚠️ **And it is what makes a `permissions:` block mean anything to the agent.** That block scopes
+`secrets.GITHUB_TOKEN`. It does **not** scope the App token the exchange mints — those grants come
+from the service — and `run.ts` puts whichever token it obtained into `process.env.GH_TOKEN`. So
+without the input, a job's `permissions:` bounds its *hooks* and not its *model*, which is exactly
+backwards: the hooks are the trusted half. ⚠️ **Every other role still takes the App-token path**,
+so their blocks do not bound their agents either. Smaller problem — their input is maintainer-
+shaped issues — but not zero, and not what those blocks look like they say.
 
 ⚠️ **The residual, written down rather than claimed away:** the action's base allowlist unions in
-`Bash(git add|commit|rm:*)` and `git-push.sh`, and a role cannot remove them. `contents: read` is
-what neuters them — a commit nobody can push reaches nobody — so that permission is load-bearing
-for security here, not housekeeping.
+`Bash(git add|commit|rm:*)` and `git-push.sh`, and a role cannot remove them. Two things neuter
+them, and the order matters: there is no `Write`, so the agent cannot author a file worth
+committing; and `contents: read` bounds the token — **but only because `github_token` is passed**.
+That second half was stated without its caveat once, and it was wrong about which token it
+described.
 
 ⚠️ **A spike that reports only what it settled is not finished.** What it could *not* determine is
 the section under the most pressure to skip and the most valuable to keep — without it the next
