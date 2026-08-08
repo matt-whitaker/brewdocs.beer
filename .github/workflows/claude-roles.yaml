@@ -388,14 +388,25 @@ jobs:
       # nothing and has no branch to cut.
       contents: read
       issues: write
-      # ⚠️ NO `id-token`, unlike every other role here. Nothing in this job federates, and
-      # `base-action/src/parse-sdk-options.ts` deletes ACTIONS_ID_TOKEN_REQUEST_URL/_TOKEN from
-      # the environment it hands the agent anyway — so the permission bought nothing and only
-      # widened what a compromised run could reach (#665).
+      # ⚠️ NO `id-token`, unlike every other role here — which is only possible because this job
+      # passes `github_token` below. The action needs OIDC to mint its own App token; removing
+      # the permission without supplying a token broke the role outright (#668). Supplying one
+      # skips that path, and is also what makes the two lines above bound the agent at all.
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # ⚠️ THE ONLY CHECKOUT HERE THAT SETS THIS, and it closes a hole the "no shell" rule
+          # does not. `actions/checkout` defaults to `persist-credentials: true`, which leaves the
+          # token in `.git/config` as an `http.<host>.extraheader` — so an agent with nothing but
+          # `Read` can recover a live credential from a FILE, no command execution required, and
+          # then post it anywhere with WebFetch. Removing Bash was necessary and, on its own, not
+          # sufficient (#669).
+          #
+          # Safe to disable here because nothing in this job uses git after checkout: the model
+          # only reads, and the hooks authenticate through `gh` with a token from their own step
+          # env. ⚠️ Do NOT copy this to the authoring jobs — they push, and it would break them.
+          persist-credentials: false
       - id: prompt
         uses: ./.github/actions/load-prompt
         with:
@@ -435,6 +446,27 @@ jobs:
           KIND: ${{ needs.delegate.outputs.kind }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # ⚠️ THE ONE ROLE THAT PASSES ITS OWN TOKEN, and it does two jobs at once.
+          #
+          # 1. It is what lets this job run without `id-token: write`. Left unset,
+          #    `setupGitHubToken()` mints an OIDC token and exchanges it for a GitHub App token —
+          #    so dropping the permission broke the role outright ("Could not fetch an OIDC
+          #    token"), the first run after #665 (#668). Set, `OVERRIDE_GITHUB_TOKEN` short-
+          #    circuits that path before OIDC is ever reached.
+          #
+          # 2. ⚠️ It is what makes the `permissions:` block above actually govern the agent. That
+          #    block scopes `secrets.GITHUB_TOKEN`; it does NOT scope the App token the exchange
+          #    mints, whose grants come from the service (`DEFAULT_PERMISSIONS` there is
+          #    `contents: write`). And `run.ts` puts whichever token it ended up with into
+          #    `process.env.GH_TOKEN`. So without this input, `contents: read` constrains the
+          #    hooks and not the model — which is the opposite of what it is there for, since the
+          #    hooks are the trusted half.
+          #
+          # ⚠️ Every other role still takes the App-token path, so their `permissions:` blocks do
+          # not bound what their agent holds either. That is a much smaller problem — their input
+          # is issues the maintainer shaped — but it is not zero, and it is not what those blocks
+          # look like they say.
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           # the exact handle — see the Architect's job for why a bare "@claude" kills the run
           trigger_phrase: "@claude/researcher"
           branch_prefix: ""
@@ -466,8 +498,10 @@ jobs:
           #
           # ⚠️ The residual, written down rather than claimed away: the action's base allowlist
           # unions in Bash(git add|commit|rm:*) and git-push.sh and they cannot be removed from
-          # here. `contents: read` is what neuters them — a commit that cannot be pushed reaches
-          # nobody. That permission is now load-bearing for security, not just tidiness.
+          # here. Two things neuter them, and the second is the one that actually holds: there is
+          # no `Write`, so the agent cannot author a file worth committing; and `contents: read`
+          # bounds the token — but ONLY because `github_token` is passed below. Stated without
+          # that caveat once already, and it was wrong about which token it described.
           claude_args: |
             --model sonnet
             --allowedTools "Read,WebSearch,WebFetch"
