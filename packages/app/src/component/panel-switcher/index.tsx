@@ -1,8 +1,8 @@
 import classNames from "classnames";
-import {Children, isValidElement, PropsWithChildren, ReactElement, Suspense, useEffect, useRef} from "react";
+import {Children, forwardRef, isValidElement, PropsWithChildren, ReactElement, Suspense, useEffect, useImperativeHandle, useRef} from "react";
 import {PropsWithClass} from "@brewdocs.beer/core";
 import {PanelSwitcherContentProps} from "@/component/panel-switcher/content";
-import usePanelSwitcher from "@/component/panel-switcher/usePanelSwitcher";
+import usePanelSwitcher, {SwitchFn} from "@/component/panel-switcher/usePanelSwitcher";
 import Loading from "@/screen/loading";
 
 export type PanelSwitcherProps = PropsWithChildren & Partial<PropsWithClass> & {
@@ -12,6 +12,8 @@ export type PanelSwitcherProps = PropsWithChildren & Partial<PropsWithClass> & {
     compact?: boolean;
 };
 
+export type PanelSwitcherHandle = { activate: SwitchFn };
+
 /**
  * A React-controlled tablist/tabpanel that mounts only the active panel. Two
  * layouts, keyed off `compact`: screen-level tabs go full-bleed on mobile
@@ -19,9 +21,14 @@ export type PanelSwitcherProps = PropsWithChildren & Partial<PropsWithClass> & {
  * without escaping its panel; compact stays in flow and leaves the tab padding to
  * daisyui's size modifier (tabs-sm) instead of overriding it with px-*.
  */
-export default function PanelSwitcher({ name, defaultTab, children, className, compact = false }: PanelSwitcherProps) {
+const PanelSwitcher = forwardRef<PanelSwitcherHandle, PanelSwitcherProps>(function PanelSwitcher(
+    { name, defaultTab, children, className, compact = false },
+    ref
+) {
     const [active, change, pending] = usePanelSwitcher(name, defaultTab);
     const tablistRef = useRef<HTMLDivElement>(null);
+
+    useImperativeHandle(ref, () => ({ activate: change }), [change]);
 
     useEffect(() => {
         const list = tablistRef.current;
@@ -112,4 +119,6 @@ export default function PanelSwitcher({ name, defaultTab, children, className, c
             </div>
         </div>
     );
-}
+});
+
+export default PanelSwitcher;
