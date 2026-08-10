@@ -1,13 +1,17 @@
 import {useEffect, useState} from "react";
-import {elapsedSeconds, isRunning} from "@/model/timer";
+import {elapsedSeconds, isRunning, runningSecondsSince} from "@/model/timer";
 import {TimerEvent} from "@/model/timer";
 
-export default function useElapsedSeconds(events?: TimerEvent[]): number {
-    const [seconds, setSeconds] = useState(() => elapsedSeconds(events, new Date()));
+const secondsNow = (events?: TimerEvent[], since?: Date) => since
+    ? runningSecondsSince(events, since, new Date())
+    : elapsedSeconds(events, new Date());
+
+export default function useElapsedSeconds(events?: TimerEvent[], since?: Date): number {
+    const [seconds, setSeconds] = useState(() => secondsNow(events, since));
     const running = isRunning(events);
 
     useEffect(() => {
-        const sync = () => setSeconds(elapsedSeconds(events, new Date()));
+        const sync = () => setSeconds(secondsNow(events, since));
 
         sync();
 
@@ -22,7 +26,7 @@ export default function useElapsedSeconds(events?: TimerEvent[]): number {
             document.removeEventListener("visibilitychange", sync);
             window.removeEventListener("focus", sync);
         };
-    }, [events, running]);
+    }, [events, running, since]);
 
     return seconds;
 }

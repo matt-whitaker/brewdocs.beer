@@ -7,11 +7,10 @@ import useModal from "@/component/modal/useModal";
 import useElapsedSeconds from "@/hooks/useElapsedSeconds";
 import {MutateFn} from "@/hooks/useJsonEdit";
 import Batch from "@/model/batch";
-import {currentPhaseIndex} from "@/model/batchProgress";
-import {assignmentResourceName, Milestone, phaseLabel, ResourceType} from "@/model/brewable";
+import {currentPhaseIndex, phaseStartDate} from "@/model/batchProgress";
+import {assignmentResourceName, BrewablePhase, Milestone, phaseLabel, ResourceType} from "@/model/brewable";
 import {incompleteAssignments, incompleteEquipment} from "@/model/scheduleProgress";
-import {isRunning} from "@/model/timer";
-import {TimerEventType} from "@/model/timer";
+import {isRunning, runningSecondsSince, TimerEventType} from "@/model/timer";
 import {key, ResourceActuals, ResourceScalarField, TrackerEntry} from "@/model/tracker";
 import {READING_KINDS, readingKindsForPhase, WATER_PARAMETERS} from "@/screen/batch-schedule/reading-kinds";
 import {scalarFromNumberWithUnit} from "@/utils/formatting";
@@ -20,6 +19,8 @@ import {newId} from "@/utils/id";
 const TICK_MS = 1000;
 
 const readingKind = (kind: string) => READING_KINDS.find(candidate => candidate.kind === kind);
+
+type MarkerOffset = (recorded?: string) => number | null;
 
 const QUICK_SCHEDULE_KINDS: Record<ResourceType, { label: string; field: ResourceScalarField; valueLabel?: string }> = {
     grain: { label: "Grain", field: "weight", valueLabel: "Weight" },
@@ -35,7 +36,6 @@ export type BatchScheduleBrewTimerProps = {
 };
 
 export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }: BatchScheduleBrewTimerProps) {
-    const elapsed = useElapsedSeconds(batch.timer);
     const phases = batch.brewable.schedule.phases;
     const [scope, setScope] = useState<BrewTimerScope>("global");
     const [completeModalRef, toggleCompleteModal] = useModal();
@@ -111,6 +111,14 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
     const currentPhaseLabel = phases[currentIndex] ? phaseLabel(phases, currentIndex) : "";
     const currentPhaseId = phases[currentIndex]?.id;
 
+    const phaseBoundary = useMemo(
+        () => phaseStartDate(phases, currentIndex, batch.tracker, batch.timer),
+        [phases, currentIndex, batch.tracker, batch.timer]);
+
+    const globalElapsed = useElapsedSeconds(batch.timer);
+    const phaseElapsed = useElapsedSeconds(batch.timer, phaseBoundary);
+    const elapsed = scope === "phase" ? phaseElapsed : globalElapsed;
+
     const onConfirmComplete = useCallback(() => {
         const phase = phases[currentIndex];
         if (phase) completePhase(phase.id);
@@ -170,15 +178,7 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
     const sessionStart = batch.timer?.find(({ type }) => type === "start")?.date;
 
     const markers = useMemo<BrewTimerMarker[]>(() => {
-        const startedAt = sessionStart ? new Date(sessionStart).getTime() : NaN;
-        if (Number.isNaN(startedAt)) return [];
-
-        const at = (recorded: string | undefined) => {
-            const recordedAt = recorded ? new Date(recorded).getTime() : NaN;
-            return Number.isNaN(recordedAt) ? null : Math.floor((recordedAt - startedAt) / 1000);
-        };
-
-        return phases.flatMap((phase, index) => {
+        const markersOf = (phase: BrewablePhase, index: number, at: MarkerOffset): BrewTimerMarker[] => {
             const milestoneMarkers = phase.milestones.flatMap(milestone => {
                 const offsetSeconds = at(batch.tracker[key({ on: "milestone", id: milestone.id })]?.date);
                 if (offsetSeconds === null) return [];
@@ -200,8 +200,33 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
                 label: phaseLabel(phases, index),
                 kind: "Phase complete"
             }];
-        });
-    }, [sessionStart, phases, batch.tracker]);
+        };
+
+        if (scope === "phase") {
+            const phase = phases[currentIndex];
+            if (!phase || !phaseBoundary) return [];
+
+            const runningAt: MarkerOffset = recorded => {
+                const recordedAt = recorded ? new Date(recorded).getTime() : NaN;
+                if (Number.isNaN(recordedAt)) return null;
+
+                const eventsThrough = batch.timer?.filter(({ date }) => new Date(date).getTime() <= recordedAt);
+                return runningSecondsSince(eventsThrough, phaseBoundary, new Date(recordedAt));
+            };
+
+            return markersOf(phase, currentIndex, runningAt);
+        }
+
+        const startedAt = sessionStart ? new Date(sessionStart).getTime() : NaN;
+        if (Number.isNaN(startedAt)) return [];
+
+        const at: MarkerOffset = recorded => {
+            const recordedAt = recorded ? new Date(recorded).getTime() : NaN;
+            return Number.isNaN(recordedAt) ? null : Math.floor((recordedAt - startedAt) / 1000);
+        };
+
+        return phases.flatMap((phase, index) => markersOf(phase, index, at));
+    }, [scope, sessionStart, phaseBoundary, currentIndex, phases, batch.timer, batch.tracker]);
 
     return (
         <>
