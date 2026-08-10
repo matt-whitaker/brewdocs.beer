@@ -1,5 +1,5 @@
-import {useCallback, useMemo} from "react";
-import {BrewTimer, BrewTimerMarker, QuickActionTab, QuickActionTabState, ScreenP} from "@brewdocs.beer/design";
+import {useCallback, useMemo, useState} from "react";
+import {BrewTimer, BrewTimerMarker, BrewTimerScope, QuickActionTab, QuickActionTabState, ScreenP} from "@brewdocs.beer/design";
 import {putEntry} from "@/actions/tracker";
 import Modal from "@/component/modal";
 import ModalScreen from "@/component/modal/screen";
@@ -37,6 +37,7 @@ export type BatchScheduleBrewTimerProps = {
 export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }: BatchScheduleBrewTimerProps) {
     const elapsed = useElapsedSeconds(batch.timer);
     const phases = batch.brewable.schedule.phases;
+    const [scope, setScope] = useState<BrewTimerScope>("global");
     const [completeModalRef, toggleCompleteModal] = useModal();
 
     const onPlayPause = useCallback(() => {
@@ -208,6 +209,7 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
                 className="mb-2"
                 isRunning={isRunning(batch.timer)}
                 elapsedSeconds={elapsed}
+                scope={scope}
                 markers={markers}
                 markerTransitionMs={TICK_MS}
                 quickActionTabs={quickActionTabs}
@@ -220,6 +222,7 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
                 phaseLabel={currentPhaseLabel}
                 completeLabel={currentPhaseLabel}
                 onPlayPause={onPlayPause}
+                onScopeChange={setScope}
                 onQuickMilestone={onQuickMilestone}
                 onQuickSchedule={onQuickSchedule}
                 onQuickEquipment={onQuickEquipment}
