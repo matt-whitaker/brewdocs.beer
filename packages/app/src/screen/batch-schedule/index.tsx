@@ -1,4 +1,4 @@
-import {ReactNode, useCallback, useMemo} from "react";
+import {ReactNode, useCallback, useMemo, useRef} from "react";
 import {SrmTag, Textarea} from "@brewdocs.beer/design";
 import {putEntry} from "@/actions/tracker";
 import DataGrid from "@/component/data-grid";
@@ -7,7 +7,7 @@ import DataGridInput from "@/component/data-grid/input";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridRow from "@/component/data-grid/row";
 import DataGridSelect from "@/component/data-grid/select";
-import PanelSwitcher from "@/component/panel-switcher";
+import PanelSwitcher, {PanelSwitcherHandle} from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
 import Screen from "@/component/screen";
 import useJsonEdit from "@/hooks/useJsonEdit";
@@ -53,6 +53,7 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
 
     const [data, update, , , add, remove, , mutate] = useJsonEdit<Batch>(batch, onChange);
     const schedule = useSchedule(data.brewable);
+    const scheduleTabs = useRef<PanelSwitcherHandle>(null);
 
     const updateDate = useCallback((value: string) => update("brewDate", value), [update]);
     const updatePackaging = useCallback((value: string) => update("packaging", value || undefined), [update]);
@@ -79,7 +80,11 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
 
     const completePhase = useCallback((phaseId: string) => {
         mutate(d => ({ ...d, tracker: putEntry(d.tracker, { on: "phase", id: phaseId }, { completed: true, date: new Date().toISOString() }) }), true);
-    }, [mutate]);
+
+        const phases = data.brewable.schedule.phases;
+        const nextIndex = phases.findIndex(({ id }) => id === phaseId) + 1;
+        if (nextIndex > 0 && nextIndex < phases.length) scheduleTabs.current?.activate(phaseLabel(phases, nextIndex));
+    }, [mutate, data.brewable.schedule.phases]);
 
     const panels = useMemo(() => {
         // one panel per phase *instance* — a second Boil is its own tab with its own
@@ -108,7 +113,7 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
     return (
         <Screen>
             <BatchScheduleBrewTimer batch={data} mutate={mutate} completePhase={completePhase} />
-            <PanelSwitcher compact name="schedule" defaultTab={phaseLabel(data.brewable.schedule.phases, 0)}>
+            <PanelSwitcher ref={scheduleTabs} compact name="schedule" defaultTab={phaseLabel(data.brewable.schedule.phases, 0)}>
                 <PanelSwitcherContent title="Prep">
                     <DataGrid className="pt-2">
                         <DataGridRow>
