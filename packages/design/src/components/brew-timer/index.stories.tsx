@@ -1,6 +1,6 @@
 import type {Meta, StoryObj} from "@storybook/react-vite";
-import {useEffect, useState} from "react";
-import {BrewTimer, BrewTimerMarker} from "./index";
+import {ComponentProps, useEffect, useState} from "react";
+import {BrewTimer, BrewTimerMarker, BrewTimerScope} from "./index";
 
 const MILESTONE_KIND_OPTIONS = [
     {name: "Gravity reading", value: "gravity"},
@@ -71,6 +71,7 @@ const meta: Meta<typeof BrewTimer> = {
         height: {control: {type: "number", min: 8, max: 64}},
         markerSize: {control: {type: "number", min: 4, max: 24}},
         onPlayPause: {action: "playPause"},
+        onScopeChange: {action: "scopeChange"},
         onQuickMilestone: {action: "quickMilestone"},
         onQuickSchedule: {action: "quickSchedule"},
         onQuickEquipment: {action: "quickEquipment"},
@@ -79,6 +80,7 @@ const meta: Meta<typeof BrewTimer> = {
     args: {
         isRunning: false,
         elapsedSeconds: 0,
+        scope: "global" as const,
         markers: MARKERS,
         quickActionTabs: {
             ingredients: {available: true},
@@ -97,7 +99,7 @@ const meta: Meta<typeof BrewTimer> = {
     parameters: {
         docs: {
             description: {
-                component: "The brew-day timer shell. It is fully controlled and holds no timer state of its own — `elapsedSeconds` and `isRunning` come from the consumer, which owns the ticking and any persistence. Reading markers are drawn by `Timeline` and given a `Popover` hit target apiece, since a `Popover` renders a `<div>` and cannot live inside the `<svg>`. One \"Log\" button opens one `Modal` holding a `[Ingredients, Reading, Equipment]` tab panel — only the active tab is mounted, so switching tabs clears the fields the other one held. Each tab hands its selection back through its own callback and asks nothing about the phase: the consumer resolves the current phase and passes `phaseLabel` for display. Which tabs apply is the consumer's to state, via `quickActionTabs` — each tab carries `available` and an `unavailableReason` shown in its `title`. It is deliberately not inferred from whether a handler was passed: that made a consumer which simply forgot to wire a tab indistinguishable from one where the action does not apply, and app shipped for two stories with two dead tabs and no signal. `defaultQuickActionTab` names the tab that opens when several apply. The Global/Phase scope toggle is present for shape only; Phase is disabled until phases are automated. The public word is \"Reading\"; the model behind it is still a `Milestone`, which is why the props and handlers say `milestone`. `completeLabel` + `onComplete` add the card's primary action on its own right-aligned row below the timeline; `onComplete` fires on click and any confirmation is the consumer's, since only it knows what completing a phase costs."
+                component: "The brew-day timer shell. It is fully controlled and holds no timer state of its own — `elapsedSeconds` and `isRunning` come from the consumer, which owns the ticking and any persistence. Reading markers are drawn by `Timeline` and given a `Popover` hit target apiece, since a `Popover` renders a `<div>` and cannot live inside the `<svg>`. One \"Log\" button opens one `Modal` holding a `[Ingredients, Reading, Equipment]` tab panel — only the active tab is mounted, so switching tabs clears the fields the other one held. Each tab hands its selection back through its own callback and asks nothing about the phase: the consumer resolves the current phase and passes `phaseLabel` for display. Which tabs apply is the consumer's to state, via `quickActionTabs` — each tab carries `available` and an `unavailableReason` shown in its `title`. It is deliberately not inferred from whether a handler was passed: that made a consumer which simply forgot to wire a tab indistinguishable from one where the action does not apply, and app shipped for two stories with two dead tabs and no signal. `defaultQuickActionTab` names the tab that opens when several apply. The Global/Phase scope toggle is controlled the same way everything else here is — `scope` in, `onScopeChange` out — and picking a scope changes only which elapsed span the consumer feeds back as `elapsedSeconds`; nothing about it starts, stops or resets the clock. The public word is \"Reading\"; the model behind it is still a `Milestone`, which is why the props and handlers say `milestone`. `completeLabel` + `onComplete` add the card's primary action on its own right-aligned row below the timeline; `onComplete` fires on click and any confirmation is the consumer's, since only it knows what completing a phase costs."
             }
         }
     }
@@ -117,6 +119,32 @@ export const Running: Story = {
     args: {isRunning: true, elapsedSeconds: 5460}
 };
 
+function ScopeDemo(args: ComponentProps<typeof BrewTimer>) {
+    const [scope, setScope] = useState<BrewTimerScope>("global");
+
+    return (
+        <div className="flex flex-col gap-4">
+            <BrewTimer {...args} scope={scope} onScopeChange={setScope} />
+            <p className="text-sm">
+                Scope: <strong>{scope}</strong>
+            </p>
+        </div>
+    );
+}
+
+export const Scope: Story = {
+    name: "Scope toggle (Global / Phase)",
+    args: {isRunning: true, elapsedSeconds: 5460},
+    parameters: {
+        docs: {
+            description: {
+                story: "Both scopes are live buttons in one `role=\"group\"`; the selected one carries `btn-active` and `aria-pressed`, so which is chosen is announced rather than only shaded. `scope` belongs to the consumer — the story holds it in `useState` here — and `onScopeChange` fires with the clicked button's own value. Choosing a scope touches neither `isRunning` nor `elapsedSeconds`: what a phase-scoped elapsed span *is* belongs to the screen hosting the timer, which resolves it and feeds it back through the same `elapsedSeconds` prop."
+            }
+        }
+    },
+    render: args => <ScopeDemo {...args} />
+};
+
 const TICK_MS = 1000;
 const SECONDS_PER_TICK = 60;
 const MAX_SECONDS = 10800;
@@ -124,6 +152,7 @@ const MAX_SECONDS = 10800;
 function TickingDemo({markers = MARKERS, startSeconds = 1200}: {markers?: BrewTimerMarker[]; startSeconds?: number}) {
     const [isRunning, setIsRunning] = useState(true);
     const [elapsedSeconds, setElapsedSeconds] = useState(startSeconds);
+    const [scope, setScope] = useState<BrewTimerScope>("global");
 
     useEffect(() => {
         if (!isRunning) {
@@ -141,6 +170,7 @@ function TickingDemo({markers = MARKERS, startSeconds = 1200}: {markers?: BrewTi
             <BrewTimer
                 isRunning={isRunning}
                 elapsedSeconds={elapsedSeconds}
+                scope={scope}
                 markers={markers}
                 markerTransitionMs={TICK_MS}
                 quickActionTabs={{
@@ -152,12 +182,14 @@ function TickingDemo({markers = MARKERS, startSeconds = 1200}: {markers?: BrewTi
                 milestoneKindOptions={MILESTONE_KIND_OPTIONS}
                 phaseLabel="2. Boil"
                 onPlayPause={() => setIsRunning(running => !running)}
+                onScopeChange={setScope}
                 onQuickMilestone={(kind, value) => window.console.log("quick reading", kind, value)}
                 onQuickSchedule={(kind, value) => window.console.log("quick ingredient", kind, value)}
                 onQuickEquipment={id => window.console.log("quick equipment", id)} />
             <p className="text-sm">
                 The story owns the clock — one story-minute a second. Play/pause stops the interval; the markers slide
                 left as each one&apos;s share of the elapsed span shrinks, and hovering or tapping one opens its popover.
+                Switching scope to {scope === "global" ? "Phase" : "Global"} leaves the clock exactly as it is.
             </p>
         </div>
     );
@@ -249,6 +281,7 @@ function QuickActionDemo({optionalTabs = true}: {optionalTabs?: boolean}) {
             <BrewTimer
                 isRunning
                 elapsedSeconds={5460}
+                scope="global"
                 markers={MARKERS}
                 quickActionTabs={{
                     ingredients: {available: optionalTabs, unavailableReason: "Nothing left to add on this phase"},
@@ -263,6 +296,7 @@ function QuickActionDemo({optionalTabs = true}: {optionalTabs?: boolean}) {
                 equipmentOptions={optionalTabs ? EQUIPMENT_OPTIONS : []}
                 phaseLabel="2. Boil"
                 onPlayPause={() => undefined}
+                onScopeChange={() => undefined}
                 onQuickMilestone={(kind, value, parameter) =>
                     log(`reading · ${kind}${parameter ? ` · ${parameter}` : ""} · ${value}`)}
                 onQuickSchedule={(kind, value) => log(`ingredient · ${kind}${value ? ` · ${value}` : ""}`)}
