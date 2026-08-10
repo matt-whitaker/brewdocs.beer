@@ -222,6 +222,58 @@ def story_from_branch(branch: str) -> str:
     return found.group(1) if found else ""
 
 
+# ── a story's tasks, in the order they should be triggered ──────────────────────────────
+
+
+def task_phase(role: str) -> int:
+    """The writer first, then the authors, then the tester.
+
+    ⚠️ The writer used to sort LAST. It moved because it owns the product specification, and a
+    specification is only worth anything if it says what the code SHOULD do — which it cannot, if
+    it was written by reading the code that already exists. Running first makes "from intent, not
+    from the diff" true by construction rather than by instruction.
+
+    An unstamped task sorts with the authors — routing defaults it to an author too, so the two
+    stay consistent.
+    """
+    return {"writer": 1, "tester": 3}.get(role, 2)
+
+
+def ordered_tasks(story: str | int) -> list[dict]:
+    """A story's tasks in trigger order, each with its `phase`, `role`, `number` and `state`.
+
+    ⚠️ SHARED ON PURPOSE. Two hooks deriving "which task is next" separately is the drift this
+    module exists to prevent — one would be fixed and the other would not, and the two answers
+    are a status comment and an automatic trigger, so a disagreement between them is a task
+    started out of order while the board says otherwise.
+
+    Order comes from two things the Architect must produce for other reasons: the `Role:` stamp,
+    and the number it created them in. A third stamp naming an order would be a third line it
+    could skip.
+    """
+    rows = []
+    for task in sub_issues(story):
+        role = role_stamp(issue_body(task["number"]))
+        rows.append({
+            "phase": task_phase(role),
+            "number": task["number"],
+            "state": task.get("state", ""),
+            "role": role or "—",
+            "title": task.get("title", ""),
+        })
+    rows.sort(key=lambda r: (r["phase"], r["number"]))
+    return rows
+
+
+def next_open_task(rows: list[dict]) -> dict | None:
+    """The task to trigger: the first open one.
+
+    Ready/waiting falls out of the order rather than being tracked separately — a task is ready
+    once everything before it is closed.
+    """
+    return next((r for r in rows if r["state"] == "open"), None)
+
+
 # ── one marked comment, rewritten in place ──────────────────────────────────────────────
 
 

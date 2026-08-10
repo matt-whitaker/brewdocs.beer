@@ -30,43 +30,16 @@ if not STORY:
     print("No story in scope — nothing to order.")
     raise SystemExit(0)
 
-tasks = team.sub_issues(STORY)
-if not tasks:
+if not team.sub_issues(STORY):
     print(f"#{STORY} has no tasks — nothing to order.")
     raise SystemExit(0)
 
 
-def phase(role: str) -> int:
-    """The writer first, then the authors, then the tester.
-
-    ⚠️ The writer used to sort LAST. It moved because it owns the product specification, and a
-    specification is only worth anything if it says what the code SHOULD do — which it cannot,
-    if it was written by reading the code that already exists. Running first is what makes
-    "from intent, not from the diff" true by construction rather than by instruction.
-
-    An unstamped task sorts with the authors — routing defaults it to an author too, so the two
-    stay consistent.
-    """
-    return {"writer": 1, "tester": 3}.get(role, 2)
-
-
-rows = []
-for task in tasks:
-    role = team.role_stamp(team.issue_body(task["number"]))
-    rows.append(
-        {
-            "phase": phase(role),
-            "number": task["number"],
-            "state": task.get("state", ""),
-            "role": role or "—",
-            "title": task.get("title", ""),
-        }
-    )
-rows.sort(key=lambda r: (r["phase"], r["number"]))
-
-# Ready/waiting falls out of the same order rather than being tracked separately: a task is
-# ready when everything before it is closed. So the first open task IS the one to trigger.
-nxt = next((r for r in rows if r["state"] == "open"), None)
+# ⚠️ SHARED WITH trigger-next-task.py via team.ordered_tasks/next_open_task. This used to
+# compute the order here; a second hook now acts on the answer, and two derivations of "which
+# task is next" would mean a status comment and an automatic trigger disagreeing.
+rows = team.ordered_tasks(STORY)
+nxt = team.next_open_task(rows)
 
 lines = [MARKER, "## Tasks, in trigger order", ""]
 if nxt:

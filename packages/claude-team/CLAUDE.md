@@ -264,8 +264,10 @@ the boundary can be checked rather than negotiated. A task spanning both is two 
 only the Architect can cut it in two.
 
 ⚠️ **The Tester and Writer are tasks the Architect cuts** — the Writer ahead of the authoring
-tasks, the Tester after them. No role chains off another; nothing runs that a maintainer did
-not trigger.
+tasks, the Tester after them. ⚠️ **No role chains off another — but a task now chains off a
+MERGE.** Merging a task's PR labels the story's next task, so the whole story runs from one
+decision per task instead of one click per task. The distinction that matters: nothing starts
+because a *role* finished; it starts because the maintainer *merged*, which was already the gate.
 
 ⚠️ **A test derived from the implementation is worthless, and looks exactly like coverage.**
 It asserts what the code does, so it passes by construction and cannot fail for the only
@@ -438,6 +440,7 @@ forgotten by a model that ran out of turns or simply skipped it.
 | `log-to-epic.py` | post, authors | rewrites one rolling work-log comment on the epic |
 | `open-story-pr.py` | **on merge** | opens the story's PR once a task has landed on its branch |
 | `close-merged-work.py` | on merge | closes the PR's issues and files them on the board |
+| `trigger-next-task.py` | on merge | labels the story's next task so it starts — needs a PAT, and says so loudly when it has none |
 
 ⚠️ These were prompt instructions until a model skipped them. A scripted step costs no
 turns and cannot be forgotten.
@@ -468,6 +471,25 @@ turns and cannot be forgotten.
   puts them in *step* env. Step env is per-step, so a scripted step can hold a token the
   model step beside it cannot read. Secret masking covers logs only — not an API payload a
   model could write.
+
+- ⚠️ **`trigger-next-task.py` needs a PAT and cannot be made to work without one.** GitHub will
+  not start a workflow run from an event created with `GITHUB_TOKEN`, and the router's `if:`
+  excludes `github-actions[bot]` besides. Labelling with the default token is **worse than doing
+  nothing**: the front-door label ends up sitting on an issue having triggered nothing, and firing
+  it then needs a remove-and-re-add. So an absent token warns and skips, leaving every task
+  triggered by hand exactly as before.
+- ⚠️ **This is NOT the chaining that was reverted.** That was `needs:` between jobs — followers
+  queued behind every run, and a skipped follower reports as cancelled, so the history filled with
+  them. This is a fresh run from a `labeled` event: no job graph, nothing queued, nothing to
+  cancel. The old revert does not argue against it.
+- ⚠️ **The chain cannot run away, and that is a property of where it is hooked.** It advances only
+  when a PR merges, and no hook merges anything — so there is exactly one human gate per task, the
+  same one that already existed. It is automation of a click, not of a decision.
+- ⚠️ **It must run AFTER `close-merged-work.py`.** Until that has closed the task this PR
+  finished, that task is still open — so it would be selected as its own successor and relabelled
+  in a loop.
+- ⚠️ **Re-applying a label GitHub already has fires no `labeled` event.** A hook that "succeeds" by
+  re-adding a present label has triggered nothing, so this one checks first and says so.
 
 ⚠️ **A scripted hook fed by model-written input is still model-driven.** Derive a hook's
 input from something the model must produce for another reason, or from state it cannot

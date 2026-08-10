@@ -248,7 +248,12 @@ fires for PRs too, and without the guard a PR comment started a role written for
 The router cannot pick it on a PR (rule 2 sends every PR to the Implementor).
 
 ⚠️ Every run is started by hand — a label or a comment — and the delegator picks the role from
-there. No role chains off another. **Tester and Writer briefly chained off the Implementor via
+there. No role chains off another. ⚠️ **A task does chain off a MERGE**, since #677:
+`trigger-next-task.py` labels the story's next task when the previous one's PR merges, so a story
+runs from one decision per task rather than one click per task. Nothing starts because a *role*
+finished — it starts because the maintainer merged, which was already the gate. ⚠️ It needs
+`TRIGGER_TOKEN`, a PAT that can write labels: a label applied with `GITHUB_TOKEN` starts no run at
+all, so without the secret the hook warns and every task is triggered by hand as before. **Tester and Writer briefly chained off the Implementor via
 `needs:` and it was reverted** — the job graph left them queued behind every run, and a role
 that skips after waiting reports as cancelled, so the history filled with cancelled jobs. If
 it is ever retried, the constraint that shaped it still holds: a comment cannot chain the

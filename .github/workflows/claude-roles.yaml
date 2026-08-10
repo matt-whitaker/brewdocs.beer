@@ -1205,3 +1205,22 @@ jobs:
           REPO: ${{ github.repository }}
           BASE: ${{ github.event.pull_request.base.ref }}
         run: "$RUNNER_TEMP/agent-bin/open-story-pr.py"
+      # ⚠️ AFTER close-merged-work.py, and that ordering is load-bearing: until it has run, the
+      # task this PR just finished is still open, so it would be selected as its own successor.
+      #
+      # ⚠️ TRIGGER_TOKEN must be a PAT, not GITHUB_TOKEN. GitHub will not start a workflow run
+      # from an event it created, and `delegate`'s guard excludes `github-actions[bot]` besides —
+      # so labelling with the default token would leave `@claude` sitting on an issue having
+      # triggered nothing, and firing it would then need a remove-and-re-add. The hook warns and
+      # skips when it is unset, which leaves every task triggered by hand exactly as before.
+      #
+      # ⚠️ Safe in this job on the same argument as PROJECTS_TOKEN above: there is no model step
+      # here, and step env is per-step. Never move it to job level.
+      - name: Trigger the story's next task
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TRIGGER_TOKEN: ${{ secrets.TRIGGER_TOKEN }}
+          REPO: ${{ github.repository }}
+          BASE: ${{ github.event.pull_request.base.ref }}
+        run: "$RUNNER_TEMP/agent-bin/trigger-next-task.py"
