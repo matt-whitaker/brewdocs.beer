@@ -68,6 +68,16 @@ been checked off is not offered again.
 > selected — the brewer only has to intervene when they want something out of order, which is
 > exactly when they should.
 
+**BATCH-SCHEDULE-12** — Confirming a phase complete moves the schedule on to the phase that
+follows it, rather than leaving the brewer on the one they just finished.
+
+> *Why:* the next thing a brewer needs after finishing a phase is almost always the next
+> phase's items, not another look at what they just checked off — advancing for them saves a
+> tap they would otherwise make themselves, every time.
+
+**BATCH-SCHEDULE-13** — Completing the last phase leaves the schedule showing that phase: there
+is no phase after it to move on to.
+
 ## Known gaps
 
 _None._
