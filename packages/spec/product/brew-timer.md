@@ -44,10 +44,11 @@ completion marker once it has been completed, each positioned relative to the ph
 Global's timeline is unchanged: every milestone from every phase, positioned relative to the
 whole session's start.
 
-**BREW-TIMER-09** — Logging a reading, ingredient or equipment check-off while Phase is the
-active scope places its marker on the timeline at its elapsed time within the phase — logged 30
-seconds after the phase started, the marker reads `0:30` — rather than at a session-wide time.
-Viewed in Global, the same entry appears at its true position in the whole session.
+**BREW-TIMER-09** — Logging a reading or a hop addition while Phase is the active scope places
+its marker on the timeline at its elapsed time within the phase — logged 30 seconds after the
+phase started, the marker reads `0:30` — rather than at a session-wide time. Viewed in Global,
+the same entry appears at its true position in the whole session. No other ingredient kind, and
+no equipment check-off, places a marker.
 
 > *Why:* the phase-relative number is a display of the same moment, not a separate one —
 > switching scope changes only how that moment is read, never what was recorded.
@@ -55,6 +56,14 @@ Viewed in Global, the same entry appears at its true position in the whole sessi
 **BREW-TIMER-10** — Switching to Global, or resuming the timer while already on Global, always
 shows the session's true elapsed time on the very next tick — never a number carried over from
 what Phase was showing a moment before.
+
+**BREW-TIMER-11** — Checking off any ingredient or piece of equipment — through Quick Actions or
+the schedule grid's own row checkbox — records the real time it happened, in both Global and
+Phase, whether or not anything on screen shows that time yet.
+
+> *Why:* a hop addition's marker (BREW-TIMER-09) is only possible because the moment it happened
+> was captured — the same recording holds for every other kind so a marker for one of them is a
+> display change later, not a data change.
 
 ## Known gaps
 
@@ -75,3 +84,8 @@ what Phase was showing a moment before.
   no phase has a stored planned length for it to count down against.
 - A separate, persisted per-phase timer log — Phase is a display over the same session log
   Global reads, not a second record.
+- Timeline markers for grain, yeast, additive and equipment check-offs — only a hop addition
+  places one (BREW-TIMER-09). This is deliberate, not an oversight yet to be built: it matches
+  the codebase's existing precedent that only hops are reliably chronological — grain goes into
+  the mash all at once and an additive isn't consistently boil-timed, so a marker is right for
+  hops and arbitrary for the rest (#663).
