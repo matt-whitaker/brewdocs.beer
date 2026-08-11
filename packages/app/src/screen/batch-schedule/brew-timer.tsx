@@ -1,5 +1,5 @@
 import {useCallback, useMemo, useState} from "react";
-import {BrewTimer, BrewTimerMarker, BrewTimerScope, QuickActionTab, QuickActionTabState, ScreenP} from "@brewdocs.beer/design";
+import {BrewTimer, BrewTimerMarker, BrewTimerScope, Hop, QuickActionTab, QuickActionTabState, ScreenP} from "@brewdocs.beer/design";
 import {putEntry} from "@/actions/tracker";
 import Modal from "@/component/modal";
 import ModalScreen from "@/component/modal/screen";
@@ -8,7 +8,7 @@ import useElapsedSeconds from "@/hooks/useElapsedSeconds";
 import {MutateFn} from "@/hooks/useJsonEdit";
 import Batch from "@/model/batch";
 import {currentPhaseIndex, phaseStartDate} from "@/model/batchProgress";
-import {assignmentResourceName, BrewablePhase, Milestone, phaseLabel, ResourceType} from "@/model/brewable";
+import {Assignment, assignmentResourceName, BrewablePhase, Milestone, phaseLabel, ResourceType} from "@/model/brewable";
 import {incompleteAssignments, incompleteEquipment} from "@/model/scheduleProgress";
 import {isRunning, runningSecondsSince, TimerEventType} from "@/model/timer";
 import {key, ResourceActuals, ResourceScalarField, TrackerEntry} from "@/model/tracker";
@@ -19,6 +19,13 @@ import {newId} from "@/utils/id";
 const TICK_MS = 1000;
 
 const readingKind = (kind: string) => READING_KINDS.find(candidate => candidate.kind === kind);
+
+const assignmentLabel = (assignment: Assignment) => {
+    const planned: ResourceActuals = assignment.resource;
+    return planned.boil
+        ? `${assignmentResourceName(assignment)} · ${planned.boil.value}`
+        : assignmentResourceName(assignment);
+};
 
 type MarkerOffset = (recorded?: string) => number | null;
 
@@ -91,7 +98,7 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
             const typed = value?.trim();
             const planned: ResourceActuals = assignment.resource;
             const unit = planned[field]?.unit;
-            const entry: TrackerEntry = {completed: true};
+            const entry: TrackerEntry = {completed: true, date: new Date().toISOString()};
 
             if (typed && unit) entry.resource = {[field]: scalarFromNumberWithUnit(typed, unit)};
 
@@ -103,7 +110,7 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
         if (!id) return;
         mutate(draft => ({
             ...draft,
-            tracker: putEntry(draft.tracker, {on: "equipment", id}, {completed: true})
+            tracker: putEntry(draft.tracker, {on: "equipment", id}, {completed: true, date: new Date().toISOString()})
         }), true);
     }, [mutate]);
 
@@ -138,15 +145,7 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
         [batch.brewable, currentPhaseId, batch.tracker]);
 
     const scheduleOptions = useMemo(
-        () => remaining.map(assignment => {
-            const planned: ResourceActuals = assignment.resource;
-            return {
-                name: planned.boil
-                    ? `${assignmentResourceName(assignment)} · ${planned.boil.value}`
-                    : assignmentResourceName(assignment),
-                value: assignment.id ?? ""
-            };
-        }),
+        () => remaining.map(assignment => ({ name: assignmentLabel(assignment), value: assignment.id ?? "" })),
         [remaining]);
 
     const scheduleValueLabels = useMemo(
@@ -191,10 +190,29 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
                 }];
             });
 
-            const completedAt = at(batch.tracker[key({ on: "phase", id: phase.id })]?.date);
-            if (completedAt === null) return milestoneMarkers;
+            const hopMarkers = batch.brewable.assignments.flatMap(assignment => {
+                if (assignment.phaseId !== phase.id || assignment.resourceType !== "hop" || !assignment.id) return [];
 
-            return [...milestoneMarkers, {
+                const entry = batch.tracker[key({ on: "assignment", id: assignment.id })];
+                if (!entry?.completed) return [];
+
+                const offsetSeconds = at(entry.date);
+                if (offsetSeconds === null) return [];
+
+                return [{
+                    id: `assignment:${assignment.id}`,
+                    offsetSeconds,
+                    label: assignmentLabel(assignment),
+                    kind: "Hop",
+                    icon: Hop
+                }];
+            });
+
+            const itemMarkers = [...milestoneMarkers, ...hopMarkers];
+            const completedAt = at(batch.tracker[key({ on: "phase", id: phase.id })]?.date);
+            if (completedAt === null) return itemMarkers;
+
+            return [...itemMarkers, {
                 id: `phase:${phase.id}`,
                 offsetSeconds: completedAt,
                 label: phaseLabel(phases, index),
@@ -226,7 +244,7 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
         };
 
         return phases.flatMap((phase, index) => markersOf(phase, index, at));
-    }, [scope, sessionStart, phaseBoundary, currentIndex, phases, batch.timer, batch.tracker]);
+    }, [scope, sessionStart, phaseBoundary, currentIndex, phases, batch.brewable.assignments, batch.timer, batch.tracker]);
 
     return (
         <>
