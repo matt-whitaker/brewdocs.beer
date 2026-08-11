@@ -2,6 +2,7 @@ import {QueryClientProvider} from "@tanstack/react-query";
 import {createRouter, RouterProvider} from "@tanstack/react-router";
 import ReactDOM from "react-dom/client";
 import {registerSW} from "virtual:pwa-register";
+import MigrationGate from "@/component/migration-gate";
 import RootError from "@/component/root-error";
 import {prefetchKbGrains} from "@/state/kbGrains";
 import {prefetchKbHops} from "@/state/kbHops";
@@ -38,6 +39,8 @@ prefetchKbRecipeTemplates();
 // no StrictMode: mutation actions are fire-and-forget and must not double-fire
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
+        <MigrationGate>
+            <RouterProvider router={router} />
+        </MigrationGate>
     </QueryClientProvider>
 );
