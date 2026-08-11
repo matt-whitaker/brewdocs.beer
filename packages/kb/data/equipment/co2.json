@@ -1,5 +1,4 @@
 {
   "name": "CO2",
-  "use": ["kegging"],
   "notes": "Pressurized carbon dioxide used to force-carbonate and dispense kegged beer."
 }
