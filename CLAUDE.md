@@ -8,7 +8,7 @@ This root file holds the **universal** rules. Each package's deep-dive lives in 
 
 ## Overview
 
-- **What.** BrewDocs — offline-first homebrewing PWA (brew-day companion + knowledge base). **Proof-of-concept**; breaking changes are expected. There is deliberately **no data migration or on-load normalization** — assume a **pristine local store** in dev (`/?purge=true` to reset). Don't add "ensure"/backfill shims that repair old stored objects.
+- **What.** BrewDocs — offline-first homebrewing PWA (brew-day companion + knowledge base). **Proof-of-concept**; breaking changes are expected. Stored data is versioned and carried forward through a dedicated migration framework, not normalized ad hoc — `Entity` carries an optional `version` (missing ⇒ `1`), and a `Migration` up/down pair plus a registry/runner (`packages/app/src/storage/migration/`) apply the chain on read; `batches` is the reference integration today, other domains aren't wired yet. Don't add "ensure"/backfill shims outside that framework — see _Data compatibility_ (`packages/app/CLAUDE.md`).
 - **Layout.** npm-workspaces monorepo; packages named `@brewdocs.beer/<name>`.
 - **Default branch.** `mainline` — also the target for all PRs and the **sole** deploy branch.
 - **Node.** ≥22. ⚠️ Non-interactive shells on this machine resolve `node` to an ancient v10 — if a command fails with syntax errors inside `node_modules`, prefix it: `PATH="$HOME/.nvm/versions/node/v22.23.1/bin:$PATH"`.
