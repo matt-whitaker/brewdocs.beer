@@ -5,7 +5,6 @@ export interface KbBrewablePhase {
     type: string;
     equipment: {
         name: string;
-        use: string[];
         count?: number;
     }[];
 }
