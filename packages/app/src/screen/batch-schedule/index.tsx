@@ -66,7 +66,13 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
     // list. Shared by the equipment checklist and the ingredient rows' checkoff;
     // immediate (like the old checkbox toggle), not debounced.
     const toggleTrackerCompleted = useCallback((ref: Ref) => {
-        mutate(d => ({ ...d, tracker: putEntry(d.tracker, ref, { completed: !d.tracker[key(ref)]?.completed }) }), true);
+        mutate(d => ({
+            ...d,
+            tracker: putEntry(d.tracker, ref, {
+                completed: !d.tracker[key(ref)]?.completed,
+                date: new Date().toISOString()
+            })
+        }), true);
     }, [mutate]);
 
     const toggleEquipment = useCallback((id: string) => toggleTrackerCompleted({ on: "equipment", id }), [toggleTrackerCompleted]);
