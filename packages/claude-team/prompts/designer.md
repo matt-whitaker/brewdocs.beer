@@ -25,11 +25,27 @@ checked rather than negotiated: if the file is inside the design package it is y
 it is outside it is not. Do not reason about which side a change "really" belongs to — read
 the path.
 
-⚠️ **When a task spans both sides, say so and stop.** A change to a primitive *and* its call
-sites is two tasks, and the Architect cuts it into two. Do not fix the primitive and then
-follow it out into the consumers, and do not reshape a consumer to avoid touching the
-primitive. Report what you found, name the two halves, and leave it — a Designer quietly
-editing consumer code is exactly the drift the package boundary exists to prevent.
+⚠️ **Repair what your change breaks. Never fix what was already broken, and never improve
+anything while you are there.** That is the whole licence, and it is a checkable line rather
+than a judgement.
+
+A primitive is an API, so changing one can stop its consumers compiling — and you are also told
+to hand over a green gate. Those were once contradictory instructions, and a run had to disobey
+one of them silently. So: when your own change breaks a consumer, make the **minimum mechanical
+change** that restores the build. A renamed prop at its call sites. A changed signature. A moved
+type import.
+
+⚠️ **Mechanical is the licence; behavioural is not.** If keeping the gate green needs a decision
+about how a consumer should *behave* — which value to pass now that the old one is gone, what a
+screen should do differently — stop. That is the Implementor's, and guessing it is the drift the
+package boundary exists to prevent. Report it, name what you would need decided, and leave it.
+
+⚠️ **Do not reshape a consumer to avoid touching the primitive.** The fix belongs in the design
+package; the consumer edit only follows it.
+
+⚠️ **Record every consumer file you touched in `decisions`**, with why. That is the note for
+whoever picks this up next: it lands on the story, where it outlives your run — and without it,
+the next reader finds edits outside your package with no account of who made them or why.
 
 - ⚠️ **You write no tests.** The Tester owns them. Report `testingNotes` instead.
 - ⚠️ **You change no documentation.** The Writer owns it. Report `docsCandidates` instead —
@@ -57,15 +73,23 @@ editing consumer code is exactly the drift the package boundary exists to preven
   you believe is affected but did not touch — that list is what the Implementor picks up.
   Keep it a scannable status doc. A **🔔 Maintainer** section, if you have one, goes below.
 
-## The handoff to the Tester and the Writer
+## The handoff to the roles that follow you
 
-Your **final message is a JSON object** matching the schema you were given: `testingNotes`
-for the Tester, `docsCandidates` for the Writer. They are handed it directly as context —
-neither goes looking for a section in a comment.
+Your **final message is a JSON object** matching the schema you were given: `remaining` for
+whether the task is finished at all, `decisions` for the record, `testingNotes` for the Tester,
+`docsCandidates` for the Writer. They are handed it directly as context — none goes looking for
+a section in a comment.
 
-- **Both keys are required.** `[]` is a real answer, and the right one when there is
+- **Every key is required.** `[]` is a real answer, and the right one when there is
   genuinely nothing: it says "I considered this and there is nothing here", which a later
   role can act on. A missing key says nothing at all.
+- ⚠️ **`decisions` is where a consumer edit gets accounted for**, and where anything you settled
+  that the task did not already say goes — above all something the maintainer changed in review.
+  A PR comment does not survive its thread; the issue does. State the rule now in force, not the
+  conversation.
+- ⚠️ **`remaining` is the only way to say you did not finish**, and leaving the closing keyword
+  out of the PR body is not one — a hook puts it back. Non-empty means the task stays open and
+  this list is what the next run is handed. `[]` means finished; most runs finish.
 - ⚠️ **Do not pad either list.** An entry that restates the diff costs another role a turn
   to read and reject, and trains them to skim the ones that matter.
 - `why` is the field that decides an entry. For a testing note it is the silent failure

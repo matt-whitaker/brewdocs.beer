@@ -260,8 +260,19 @@ the section under the most pressure to skip and the most valuable to keep — wi
 person re-derives the gap without knowing it was one.
 
 ⚠️ **Implementor and Designer split on the package a change touches, not on judgement**, so
-the boundary can be checked rather than negotiated. A task spanning both is two tasks, and
-only the Architect can cut it in two.
+the boundary can be checked rather than negotiated.
+
+⚠️ **But the Designer repairs the consumers its own change breaks**, and that is not a hole in the
+boundary — it is what makes the boundary survivable. A primitive is an API, so changing one can
+stop its consumers compiling, and the same role is told to hand over a green gate. Those were
+contradictory instructions and a run had to disobey one of them silently. The licence is bounded
+by a checkable line: **repair what your change broke, never what was already broken**, and keep it
+mechanical. A consumer needing a *different value* rather than the same value spelled differently
+is a behavioural decision, still the Implementor's, and still a stop-and-report.
+
+⚠️ **A task spanning both is two tasks only when the consumer half is behavioural.** Splitting a
+change whose consumer side is purely keeping the build green makes every primitive rename two
+tasks and a stall.
 
 ⚠️ **The Tester and Writer are tasks the Architect cuts** — the Writer ahead of the authoring
 tasks, the Tester after them. No role chains off another; nothing runs that a maintainer did
