@@ -17,6 +17,15 @@ export interface MigrationFailure {
     error: string;
 }
 
+export interface MigrationBackup {
+    entityType: string;
+    id?: string;
+    fromVersion: number;
+    toVersion: number;
+    migratedAt: string;
+    data: unknown;
+}
+
 export type MigrationResult<T> =
     | { ok: true; data: T }
     | { ok: false; failure: MigrationFailure };
