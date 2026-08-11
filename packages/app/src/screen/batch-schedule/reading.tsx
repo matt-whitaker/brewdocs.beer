@@ -74,7 +74,7 @@ function BatchScheduleReadingItem({ phaseIndex, row, milestone, entry, onPatch, 
         >
             <DataGridRemoveButton label={removeLabel} onClick={onRemove} />
             <DataGridInput label={`${milestone.label} name`} className="ml-6" colStart={1} cols={3} value={milestone.label} onChange={onChangeLabel} />
-            <DataGridInput label={`${milestone.label} reading`} colStart={4} cols={3} value={entry?.reading?.value ?? ""} onChange={onChangeReading} onBlur={onBlurReading} />
+            <DataGridInput label={`${milestone.label} reading`} colStart={6} cols={1} value={entry?.reading?.value ?? ""} onChange={onChangeReading} onBlur={onBlurReading} />
         </DataGridRow>
     );
 }
@@ -170,8 +170,8 @@ export default function BatchScheduleReading({ phase, phaseIndex, tracker, onPat
                     placeholder={defaultLabel} />
                 <DataGridInput
                     label={`${headerLabel} ${dateOnly ? "date" : "value"} to add`}
-                    colStart={4}
-                    cols={3}
+                    colStart={dateOnly ? 4 : 6}
+                    cols={dateOnly ? 3 : 1}
                     type={dateOnly ? "date" : undefined}
                     value={draftValue}
                     onChange={setDraftValue} />
