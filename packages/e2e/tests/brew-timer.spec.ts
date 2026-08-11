@@ -592,6 +592,10 @@ test("completing a phase while Phase is displayed re-anchors its markers to the 
     await expect(page.getByRole("button", {name: /^1\. Mash at \d{2}:\d{2}:\d{2}$/})).toBeVisible();
 
     await scopeGroup.getByRole("button", {name: "Phase", exact: true}).click();
+    // completing Mash paused the timer (BATCH-SCHEDULE-14); Boil's own phase-relative
+    // clock stays at zero — and plots no markers at all — until it's resumed
+    await page.getByRole("button", {name: "Start timer"}).click();
+    await page.waitForTimeout(1000);
     await page.getByRole("button", {name: "Quick actions"}).click();
     dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
@@ -625,6 +629,9 @@ test("a reading logged while Phase is active lands at its phase-relative offset"
     await expect(dialog).not.toBeVisible();
     await settleSave(page);
 
+    // completing Mash paused the timer (BATCH-SCHEDULE-14) — resume it so Boil's own
+    // phase-relative clock has elapsed time to plot the coming reading against
+    await page.getByRole("button", {name: "Start timer"}).click();
     await scopeGroup.getByRole("button", {name: "Phase", exact: true}).click();
     await page.waitForTimeout(1000);
 
