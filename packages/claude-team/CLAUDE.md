@@ -439,7 +439,7 @@ forgotten by a model that ran out of turns or simply skipped it.
 | `delegate.py` | the router job | picks the role from issue state — routing is scripted, not judged |
 | `stamp-role-label.py` | pre, every role | stamps `@claude/<role>` on the triggering issue or PR |
 | `set-issue-status.py` | pre, authors + post, Architect | puts an issue **on** the board and sets its Status; column and flags are inputs |
-| `ensure-story-branch.py` | post, Architect + Researcher | creates the story's branch if it is missing; an epic and a spike have none, and it says so rather than warning |
+| `ensure-story-branch.py` | post, Architect + Researcher; **pre, authors** | creates the story's branch if it is missing; an epic and a spike have none, and it says so rather than warning |
 | `sync-kind-label.py` | post, Architect + Researcher | applies the `epic`/`spike`/`bug`/`story` label `kind()` derives |
 | `file-sub-issues.py` | post, Architect | parents stories to their epic, tasks to their story |
 | `finish-pr.py` | post, authors | labels the PR, and ensures it closes its issue — or, when the author reported work `remaining`, that it does not |
@@ -468,6 +468,15 @@ turns and cannot be forgotten.
   line plus an `epic #N` reference, and adopted a meta-issue that quoted the convention as an
   example. Checking the author is a bot is what makes it sound — with the accepted cost that a
   hand-written sub-issue is never auto-parented.
+- ⚠️ **`ensure-story-branch.py` runs on the AUTHORS path too, and that is not redundancy.**
+  `delegate.py` rule 4 routes straight to the stamped role whenever a `Branch:` line is present, so
+  an issue filed with both routing lines already written — **which is what a good agent-filed bug
+  looks like** — never reaches the Architect, and so never reached the hook that creates its branch.
+  `setupBranch` resolves the base branch before anything else, so the authoring job then 404s and
+  dies in ~3s, before the model is called (#744, #777).
+  ⚠️ The deeper fault was treating the `Branch:` **line** as proof of the **branch** — a
+  model-written block standing in for state, which is the anti-pattern this file already names.
+  Running the idempotent hook once more is the cheap fix; it only ever handles the absent case.
 - ⚠️ **A role labels only what it opens.** The stamp hook marks the triggering issue or PR;
   `finish-pr.py` labels the PR that run created. Nothing labels someone else's work.
 - ⚠️ **`Closes #<issue>` is both a prompt instruction and a hook.** The model writing it puts

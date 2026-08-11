@@ -716,6 +716,30 @@ jobs:
       - if: contains(steps.roles.outputs.list, 'tester')
         run: npx playwright install --with-deps chromium
 
+      # ⚠️ THE STORY BRANCH MUST EXIST BEFORE ANY MODEL STEP, and until #777 nothing guaranteed
+      # it on this path. `setupBranch` resolves the base branch first of all —
+      #     const sourceBranchRef = await octokits.rest.git.getRef({ ref: `heads/${sourceBranch}` })
+      # — so a `base_branch` naming a missing ref is a 404 and the job dies in ~3s, before the
+      # model is ever called.
+      #
+      # ⚠️ It went missing because the hook that creates it was wired POST-ARCHITECT ONLY, while
+      # `delegate.py` rule 4 routes straight to the stamped role whenever a `Branch:` line is
+      # present. An issue filed with both routing lines already written — which is what a good
+      # agent-filed bug looks like — therefore skips the Architect and never gets a branch (#744).
+      #
+      # Idempotent by construction: the hook only ever handles the absent case and never touches
+      # an existing branch, so this is a guarantee rather than a second creation path.
+      #
+      # ⚠️ KIND is deliberately unset here. `delegate.py` only emits it on the Architect path, and
+      # the hook skips epics and spikes by that value — neither of which ever reaches an author.
+      - name: Ensure the story's branch exists
+        if: steps.roles.outputs.list != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
+        run: "$RUNNER_TEMP/agent-bin/ensure-story-branch.py"
+
       # ⚠️ ANY role that ran, not the three that build. This shared the `npm ci` gate, which
       # is correct there — the Writer compiles nothing — and wrong here: a Writer's task is as
       # much in progress as any other, so it sat in its original column for the whole run and
