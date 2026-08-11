@@ -36,6 +36,12 @@ BrewDocs is an offline homebrewing application and info handbook.
 
 ## Claude Code
 
+### Claude Team
+
+Custom Github / Claude Code AI workforce setup drives a majority of the work, with human oversight supported by frequent check-in phases for course correction and review. I've been having great success with it so far.
+
+### CLAUDE.md
+
 [Claude Code](https://claude.com/claude-code) enabled with [`@claude` integration](.github/workflows/claude.yaml)
 
 See [Claude.md](/CLAUDE.md)
