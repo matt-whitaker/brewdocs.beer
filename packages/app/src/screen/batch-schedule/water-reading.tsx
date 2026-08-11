@@ -133,7 +133,7 @@ export default function BatchScheduleWaterReading({ phase, phaseIndex, tracker, 
                     label={`${headerLabel} name to add`}
                     className="ml-6"
                     colStart={1}
-                    cols={4}
+                    cols={3}
                     value={draftName}
                     onChange={setDraftName}
                     placeholder={defaultLabel} />
