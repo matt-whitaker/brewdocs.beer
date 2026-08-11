@@ -11,6 +11,7 @@ the task as a `Role:` line, which rule 4 reads.
 
 Precedence:
   1. a @claude/<role> handle in the comment wins outright
+  1b. a bare @claude in a COMMENT -> the root role, which answers rather than routes
   2. a PR            -> resolve its story, default to implementor
   3. no Branch line  -> researcher for a spike, otherwise architect, told what it is
   4. a Branch line   -> the role stamped on the task
@@ -152,6 +153,34 @@ for role in ("architect", "researcher", "implementor", "tester", "writer", "desi
                     REASON += f"; #{NUMBER} belongs to story #{STORY}"
         emit()
         raise SystemExit(0)
+
+# ---- 1b. a bare `@claude` in a COMMENT is a conversation, not a route
+#
+# ⚠️ COMMENT ONLY. The `@claude` **label** still routes exactly as it always has — that is the
+# front door and nothing here touches it. The split is worth stating plainly because it is the
+# whole ergonomics of the change: **the label does the work, a comment talks about it.**
+#
+# Reaching here means rule 1 found no `@claude/<role>` handle, so the trigger named `@claude`
+# and nothing more. Previously that fell through to rules 2-4 and started whichever role the
+# state implied — so typing "@claude what happened here?" ran an Implementor. Nothing is lost by
+# ending it: `@claude/<role>` still names a role outright, and re-adding the label is the
+# documented "run again" gesture.
+#
+# ⚠️ An unknown handle lands here too (`@claude/nonsense` matches no role), and that is the right
+# home for it — the root role can say there is no such role, where rule 3 would have silently
+# shaped the issue as a story instead.
+if COMMENT_BODY and "@claude" in COMMENT_BODY:
+    ROLES = "claude"
+    REASON = "@claude named in a comment with no role handle — answering rather than routing"
+    # the same context a handle gets: being conversational is no reason to arrive uninformed
+    if NUMBER:
+        if IS_PR:
+            STORY = resolve_pr_story()
+        else:
+            STORY_BRANCH = team.branch_line(team.issue_body(NUMBER))
+            STORY = team.story_from_branch(STORY_BRANCH)
+    emit()
+    raise SystemExit(0)
 
 # ---- 2. triggered on a PR: resolve its story, default to implementor
 if IS_PR:
