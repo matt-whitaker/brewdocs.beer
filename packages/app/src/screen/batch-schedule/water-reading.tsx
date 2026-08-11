@@ -34,7 +34,7 @@ function BatchScheduleWaterField({ milestoneId, milestoneLabel, parameter, scala
     }, [onPatch, milestoneId, param]);
 
     const onChange = useCallback((next: string) => patch({ value: next, unit }), [patch, unit]);
-    const onBlur = useCallback((next: string) => patch(next ? scalarFromNumberWithUnit(next, unit, true) : { value: "", unit }), [patch, unit]);
+    const onBlur = useCallback((next: string) => patch(scalarFromNumberWithUnit(next, unit, true)), [patch, unit]);
 
     return (
         <DataGridRow zebra={false}>
