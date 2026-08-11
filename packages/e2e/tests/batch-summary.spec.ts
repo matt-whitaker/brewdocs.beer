@@ -173,14 +173,16 @@ async function addEmptyGravityReading(page: Page, phase: string, label: string) 
     await page.getByRole("button", {name: "Add reading"}).click();
 }
 
-test("a gravity reading left without a value, even after its unit is switched, is excluded from Actuals", async ({page}) => {
+test("a gravity reading left without a value, even after being typed then cleared, is excluded from Actuals", async ({page}) => {
     await brewBatchFromKbRecipe(page, "E2E Actuals Empty Reading Batch");
 
-    // no value on add -> no tracker entry at all yet; switching its unit then
-    // writes a tracker entry with a present but empty reading.value, per
-    // reading.tsx's onChangeUnit -- this must still be excluded, not render blank
+    // no value on add -> no tracker entry at all yet; typing a value then
+    // clearing it writes a tracker entry with a present but empty
+    // reading.value, per reading.tsx's onChangeReading -- this must still be
+    // excluded, not render blank
     await addEmptyGravityReading(page, "1. Mash", "Empty Check");
-    await page.getByLabel("Empty Check reading").locator("xpath=..").getByRole("combobox").selectOption({label: "SG"});
+    await page.getByLabel("Empty Check reading").fill("12");
+    await page.getByLabel("Empty Check reading").fill("");
     await settleSave(page);
 
     await addGravityReading(page, "3. Ferment", "12.5", "2026-02-10");
