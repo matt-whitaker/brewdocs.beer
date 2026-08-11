@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
-"""Decides which role handles an event, from issue state. Emits `roles`, `story`, `defaulted`
-and `reason` to $GITHUB_OUTPUT; every role job gates on `roles`.
+"""Decides which role handles an event, from issue state. Emits `roles`, `story`, `defaulted`,
+`reason` and `remedy` to $GITHUB_OUTPUT; every role job gates on `roles`.
+
+⚠️ `defaulted` MEANS "ASK SOMEONE ELSE", not "run this". Where it is true the workflow puts the
+route to the root role before any role job starts, and only falls back to what this script chose
+if that cannot answer. So a default here is a floor, not the decision — which is why nothing in
+this file announces one any more; see `emit`.
 
 THIS IS A SCRIPT ON PURPOSE. Routing was going to be a model step emitting JSON, and that is
 the pattern this repo has been bitten by most — a model asked to produce data a consumer
@@ -37,41 +42,23 @@ ROLES = STORY = STORY_BRANCH = REASON = KIND = REMEDY = ""
 DEFAULTED = False
 
 
-def report_guess() -> None:
-    """Say, where the maintainer looks, that this run routed on a guess.
-
-    ⚠️ `DEFAULTED` was emitted to `$GITHUB_OUTPUT` and declared as a job output for a long time
-    with NOTHING READING IT — so "default rather than stall, but say so" said so only in a log
-    nobody opens. A required channel with no consumer is the shape that shipped dead three times
-    here already (#797).
-
-    ⚠️ UPSERTED, not appended. A re-run that guesses the same way twice is one fact, not two —
-    unlike the decisions log, where each round is a separate record worth keeping.
-
-    ⚠️ Carries the REMEDY, not just the guess. A warning the reader cannot act on is noise, and
-    the whole point is that the stamp or the branch name is a one-line fix.
-    """
-    if not (DEFAULTED and NUMBER):
-        return
-    team.upsert_comment(
-        NUMBER,
-        "<!-- claude-team:routing-guess -->",
-        "<!-- claude-team:routing-guess -->\n"
-        f"🔔 **I guessed the role for this one.** Routed to `{ROLES}` because {REASON}.\n\n"
-        f"{REMEDY}\n\n"
-        "Until then this keeps guessing the same way, which is recoverable but not right."
-        + team.run_footer(),
-    )
-
-
 def emit() -> None:
-    report_guess()
+    """Write the route to `$GITHUB_OUTPUT`. This does NOT announce a default.
+
+    ⚠️ IT USED TO, AND THAT WAS ONE STEP TOO EARLY. Announcing here means announcing before the
+    root role has been asked, so an intercepted route posted "I guessed" and then ran something
+    else — the notice describing a decision that never took effect. `report-route.py` runs after
+    the interception instead, and says whichever of the two actually happened.
+
+    `remedy` rides along for it: the fix for a default outlives the run that hit it, and the hook
+    is where it gets said.
+    """
     out = os.environ.get("GITHUB_OUTPUT")
     if out:
         with open(out, "a", encoding="utf-8") as handle:
             handle.write(
                 f"roles={ROLES}\nstory={STORY}\nstory_branch={STORY_BRANCH}\nkind={KIND}\n"
-                f"defaulted={str(DEFAULTED).lower()}\nreason={REASON}\n"
+                f"defaulted={str(DEFAULTED).lower()}\nreason={REASON}\nremedy={REMEDY}\n"
             )
     print(
         f"roles={ROLES} story={STORY or 'none'} branch={STORY_BRANCH or 'none'} "

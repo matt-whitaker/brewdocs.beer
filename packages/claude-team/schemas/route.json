@@ -1,0 +1,21 @@
+{
+  "type": "object",
+  "description": "The role that should handle an event the router could not settle from state alone. Returned by the root role when delegate.py has fallen back to a default. It is read by a shell step that accepts a known role and ignores anything else, so an answer outside the enum costs nothing but is also worth nothing.",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": ["architect", "researcher", "implementor", "designer", "tester", "writer", "undecided"],
+      "description": "The role to run. Pick undecided when the issue does not tell you - it is a real answer, and the script default runs instead with its guess notice intact. ⚠️ Prefer undecided to a coin flip: the script default is already recoverable, and a confident wrong role is worse because the notice that would have flagged it is suppressed."
+    },
+    "why": {
+      "type": "string",
+      "description": "What in the issue decided it, in one sentence, naming the thing you read rather than the conclusion. The maintainer sees this instead of the guess notice, so it has to stand on its own."
+    },
+    "remedy": {
+      "type": "string",
+      "description": "The one-line change to the issue that would let the script route it next time without asking - usually the Role: stamp it is missing, or which task to trigger instead. ⚠️ Deciding correctly does not repair the issue: the next run reaches the same fallback, so the fix still has to be said out loud."
+    }
+  },
+  "required": ["role", "why", "remedy"],
+  "additionalProperties": false
+}

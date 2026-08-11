@@ -177,6 +177,10 @@ inspection (rule 1) — still the way to override a bad guess.
   a process problem. It writes no code, cuts no branch and starts no role. ⚠️ **The label still
   routes** — the split is that the label does the work and a comment talks about it, which also
   means a bare `@claude` on a PR now answers instead of running an Implementor (#798).
+  ⚠️ **It is also reached without being named**, as a step inside `delegate` whenever the router
+  had to guess: it reads the issue, returns a role, and the script's default becomes the fallback
+  rather than the decision. Its second prompt is `route.md`; the mechanics and the three job shapes
+  that do *not* work are in `packages/claude-team/CLAUDE.md`.
 - `@claude/architect` — epic or story. Shapes the issue, cuts a story's branch, and creates
   its tasks — each stamped with the role that should pick it up.
 - `@claude/researcher` — a **spike**: an issue titled `Spike:` or labelled `spike`, whose answer

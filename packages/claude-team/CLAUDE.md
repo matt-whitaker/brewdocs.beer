@@ -194,6 +194,52 @@ state-based rules, which would re-judge the role and could pick a different one.
 needs judgement — which author owns a task — is answered once by the Architect and written
 into the task as a `Role:` line.
 
+### When the script has to guess
+
+⚠️ **A `defaulted` route means "ask", not "run".** Rules 1-4 decide from state, and where the
+state that should decide is missing they fall back to a default rather than stall. That default is
+now a **floor**: the router job puts the question to the root role first, and runs the fallback
+only if it cannot answer. The choice this adds is not "script or model" — it is "read the issue or
+guess", and guessing was the incumbent.
+
+⚠️ **It is a STEP in the router job, and each alternative is ruled out by something already paid
+for here:**
+
+| shape | why not |
+|---|---|
+| a new workflow run | an event created with the workflow token starts no run, by design |
+| a job the roles `needs:` | a job needing a **skipped** job reports cancelled — the #430 revert, verbatim |
+| a job that `needs:` the router | too late; role jobs gate on the router's outputs and have already started |
+
+A job cannot gate on a step inside itself. It *can* gate on an output that step produced, which is
+what makes the step form work where the job form does not.
+
+⚠️ **The step's answer is filtered by an allowlist, not trusted because it matched a schema.** A
+shell step accepts a known role and discards anything else, so a malformed answer, a failed step, a
+skipped step and `undecided` all arrive as the same thing: the script's default, with its notice
+intact. **A failed interception must never mean nothing runs** — degrading to the old behaviour is
+the correct failure, and the step carries `continue-on-error` so the job reaches the fallback.
+
+⚠️ **`undecided` has to be a real answer, or the schema manufactures a guess.** An enum of roles
+alone leaves no way to say "the issue does not tell me", so a model obliged to pick one produces
+exactly the confident-wrong route this is meant to remove — and worse than the script's, because
+answering suppresses the guess notice that would have flagged it.
+
+⚠️ **It decides the ROLE and nothing else.** The story, its branch and the issue kind stay on the
+script's outputs. They are read from state and are not in doubt; letting a model restate them puts
+two sources on one fact.
+
+⚠️ **Announcing a default belongs AFTER the decision, not inside `delegate.py`.** It was inside,
+and that was one step too early: the script announced its guess before anything had been asked, so
+an intercepted run posted "I guessed" and then ran something else — a notice describing a decision
+that never took effect, which is worse than none because it is a false record of *why* the run did
+what it did. `report-route.py` runs after resolution and says whichever actually happened.
+
+⚠️ **Deciding correctly does not repair the issue.** The missing stamp is still missing and the
+next trigger takes the same detour, so the remedy is carried on **both** outcomes. Only the
+sentence changes: a guess "keeps guessing the same way", an interception "costs a run before any
+of the work starts".
+
 ⚠️ **The role stamp is a record, not a route.** Roles stamp `@claude/<role>` as they start,
 so the labels read as "these agents have been here". Nothing routes off them.
 
@@ -206,7 +252,7 @@ at all.)
 
 | role | picked up from | writes |
 |---|---|---|
-| `@claude` | its name in a **comment**, with no role handle | an answer. No code, no branch, no PR — it is who you talk to |
+| `@claude` | its name in a **comment**, with no role handle; **and** a route the script had to guess | an answer, or a role name. No code, no branch, no PR — it is who you talk to |
 | Architect | an epic or an unshaped story | the issue, a story's branch, and its tasks |
 | Researcher | a spike | findings and a recommendation, appended to the issue by a hook — it holds no shell |
 | Implementor | a task stamped `Role: implementor` | code, outside the design system |
@@ -214,6 +260,20 @@ at all.)
 | Tester | a task stamped `Role: tester`, one per story | tests |
 | Writer | a task stamped `Role: writer`, one per story, run **first** | the product specification, then documentation |
 | Security | every merge, plus its handle on a PR | issues it files |
+
+⚠️ **The root role has two jobs and two prompts.** `claude.md` is the conversation — someone asked
+it something. `route.md` is the interception — nobody asked it anything, and its whole output is a
+role name plus the reason, returned as JSON to a shell step. Splitting them is not tidiness: a
+conversational prompt handed a routing decision answers in prose, and a routing prompt handed a
+question answers with an enum. Same persona, same bounds, different contract.
+
+⚠️ **`route.md` is loaded by a STEP, so it runs in agent mode**, and that is the one place here
+where losing the tag-mode tracking comment is the *better* outcome — the durable record is the
+comment `report-route.py` writes, and a tracking comment beside it would be two comments for one
+sub-second decision. It is also why the prompt is authoritative rather than wrapped in the
+framing that tells a model its instructions are the triggering comment; there is no comment on a
+label event to be confused by. ⚠️ `structured_output` is set after the run in either mode, so the
+schema still binds — checked in the action's source, not assumed.
 
 ⚠️ **The Researcher answers; it does not shape.** It appends findings to the spike and stops —
 it creates no story, cuts no branch and starts no author. The maintainer decides, and only then
@@ -454,6 +514,7 @@ forgotten by a model that ran out of turns or simply skipped it.
 |---|---|---|
 | `acknowledge.py` | the router job, first | reacts 👀 so the trigger is visibly received |
 | `delegate.py` | the router job | picks the role from issue state — routing is scripted, not judged |
+| `report-route.py` | the router job, last | says on the issue that this run did not route from state alone — whether the script guessed or the root role was asked |
 | `stamp-role-label.py` | pre, every role | stamps `@claude/<role>` on the triggering issue or PR |
 | `set-issue-status.py` | pre, authors + post, Architect | puts an issue **on** the board and sets its Status; column and flags are inputs |
 | `ensure-story-branch.py` | post, Architect + Researcher; **pre, authors** | creates the story's branch if it is missing; an epic and a spike have none, and it says so rather than warning |
@@ -477,14 +538,21 @@ turns and cannot be forgotten.
   react to an unrelated comment. Empty falls back to the issue or PR itself.
 - ⚠️ **`delegate.py` defaults a missing `Role:` stamp and says so.** Wrong is recoverable,
   silent is not — a run that quietly does nothing is indistinguishable from a broken workflow.
-  ⚠️ **"Says so" now means on the issue, not only in the log.** `DEFAULTED` was emitted to
+  ⚠️ **"Says so" means on the issue, not only in the log.** `DEFAULTED` was emitted to
   `$GITHUB_OUTPUT` and declared as a job output with **nothing reading it** — a required channel
   with no consumer, the same shape that shipped dead for the #475/#476 handoff, for `decisions` on
-  the PR path, and for `docsCandidates`. It now upserts one comment naming the guess **and its
-  remedy**: the two default paths are a missing `Role:` stamp and a PR whose story cannot be
-  resolved, and each is a one-line fix, so a warning without it would be noise. Upserted rather
-  than appended — a re-run guessing the same way twice is one fact, unlike the decisions log where
-  each round is its own record.
+  the PR path, and for `docsCandidates`. One comment names the route **and its remedy**: the two
+  default paths are a missing `Role:` stamp and a PR whose story cannot be resolved, and each is a
+  one-line fix, so a warning without it would be noise. Upserted rather than appended — a re-run
+  resolving the same way twice is one fact, unlike the decisions log where each round is its own
+  record.
+  ⚠️ **`report-route.py` writes it, not `delegate.py`, because the announcement has to follow the
+  interception** — see *When the script has to guess*. Both outcomes share the comment's marker, so
+  a later interception **replaces** an earlier guess rather than stacking under it.
+  ⚠️ **The same defect one level up: `defaulted` and `reason` were job outputs nobody read.** The
+  fix for the router's dead channel reproduced it at the job boundary. They are step outputs now,
+  consumed inside the router job; a job-level declaration only invites a reader to assume something
+  gates on them.
 - ⚠️ **The log hooks rewrite ONE comment each, never one per run.** An epic with ten tasks
   across three roles would otherwise bury itself in thirty comments. They are also derived
   entirely from GitHub state — no model writes any part of them, which is the only reason
