@@ -49,9 +49,8 @@ export abstract class Forage<T> {
         if (!migration) return items;
 
         const results = items.map((item) => this.migrate(item, migration));
-        const failures = results.flatMap((result) => result.ok ? [] : [result.failure]);
 
-        await Promise.all(failures.map((failure) => this.recordMigrationFailure(failure)));
+        await this.recordMigrationFailures(results);
 
         return results.flatMap((result) => result.ok ? [result.data] : []);
     }
@@ -61,7 +60,15 @@ export abstract class Forage<T> {
         await this._forage.iterate((val: T, key: string) => {
             items[key.replace(`${this._name}#`, "")] = val;
         });
-        return items;
+
+        const migration = this._migration;
+        if (!migration) return items;
+
+        const results = Object.entries(items).map(([id, item]) => [id, this.migrate(item, migration)] as const);
+
+        await this.recordMigrationFailures(results.map(([, result]) => result));
+
+        return Object.fromEntries(results.flatMap(([id, result]) => result.ok ? [[id, result.data] as [string, T]] : []));
     }
 
     async save(id: string, item: T): Promise<T> {
@@ -82,6 +89,12 @@ export abstract class Forage<T> {
 
     private migrate(item: T, migration: ForageMigrationConfig): MigrationResult<T & {version?: number}> {
         return runMigrations<T>(migration.entityType, item as T & {version?: number}, migration.version);
+    }
+
+    private async recordMigrationFailures(results: MigrationResult<unknown>[]): Promise<void> {
+        const failures = results.flatMap((result) => result.ok ? [] : [result.failure]);
+
+        await Promise.all(failures.map((failure) => this.recordMigrationFailure(failure)));
     }
 
     private async recordMigrationFailure(failure: MigrationFailure): Promise<void> {
