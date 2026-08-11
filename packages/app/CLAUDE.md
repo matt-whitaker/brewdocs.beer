@@ -31,7 +31,7 @@ Package-specific guidance. See the repo-root `CLAUDE.md` for universal rules (co
 
 ## Routing
 **Purpose.** File-based routing (TanStack Router) with a generated route tree.
-**Where.** `src/routes/*` — routes `/`, `/batches`, `/batch/$batchId`, `/recipes`, `/recipe/$recipeId`, `/recipe/$recipeId_/edit` (delisted, nothing links to it), `/knowledge`, `/disclaimer`, `/migrations/failed` (unlisted, nothing links to it — see #714). `routeTree.gen.ts` (generated); `main.tsx` (`defaultErrorComponent` renders thrown suspense-fetch errors).
+**Where.** `src/routes/*` — routes `/`, `/batches`, `/batch/$batchId`, `/recipes`, `/recipe/$recipeId`, `/recipe/$recipeId_/edit` (reached from `/recipe/$recipeId`'s own Edit action for a user recipe), `/knowledge`, `/disclaimer`, `/migrations/failed` (unlisted, nothing links to it — see #714). `routeTree.gen.ts` (generated); `main.tsx` (`defaultErrorComponent` renders thrown suspense-fetch errors).
 **Invariants.** ⚠️ Never hand-edit `routeTree.gen.ts` (the router Vite plugin regenerates it). Read path params via `Route.useParams()`.
 **Gotchas.** ⚠️ Param filenames contain `$` (`batch.$batchId.tsx`) → the shell expands it, and under the `@claude` permission layer that's rejected as "shell expansion syntax in paths". Quote just the dollar: `git rm packages/app/src/routes/recipe.'$'recipeId.tsx`. Retrying with different outer quoting will not work.
 **Example.** Rename a param route → write the new file, then `git rm` the old with the `'$'` escape above.
