@@ -1,5 +1,4 @@
 {
   "name": "Scale",
-  "use": ["boil", "starter"],
   "notes": "Digital scale used to weigh hops, grain, and starter ingredients."
 }

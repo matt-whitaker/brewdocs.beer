@@ -144,7 +144,7 @@ _Batch-only: the timer._
 - `isRunning(events)` just tests the last event, so the live counter recomputes correctly after the tab was backgrounded, or closed and reopened.
 - Both are pure and tolerate `undefined` (absent or empty ⇒ never started, 0 elapsed); per _Data compatibility_ there is no backfill for older stored batches without the field.
 
-_No migrations._ The models carry **no `version` field** — a stored batch/recipe from older code is not upgraded on load, so purge (`/?purge=true`) if a shape changes.
+_Versioned entities._ `Entity` (`packages/core/src/models.ts`) carries an optional `version?: number`; a stored record missing one is treated as version `1`. `storage/migration/` holds the `Migration` contract, registry and runner that carry a record forward through that chain — see _Data compatibility_ for how it wires into `Forage<T>` and which domains use it today.
 **Example.** _None._
 
 ## Actions (`src/actions/`) — anything whose result is persisted
@@ -161,7 +161,7 @@ _No migrations._ The models carry **no `version` field** — a stored batch/reci
 **Invariants.** ⚠️ **Nothing lands here that isn't written to storage.** The folder drifted three times before this rule was stated, because the old section called both stored and live values "derived" and the word covered everything. ⚠️ `batch.phases` is **retired** — the BatchSchedule tabs derive from `brewable.schedule.phases` (see _BatchSchedule_).
 **Gotchas.**
 
-- ⚠️ Stored derived fields are **not migrated** (there is no migration framework — dev assumes a pristine store): a batch stored before a derived field existed throws until re-derived or purged (`/?purge=true`).
+- ⚠️ Stored derived fields run through the migration chain when a migration exists for the shape change (see _Data compatibility_) — today that's only `batches`, whose migrations array is empty (nothing to migrate yet). A derived-field change in a domain not yet wired (recipes, etc.) still has no migration path: a stored record throws until re-derived or purged (`/?purge=true`).
 - Equipment checkoff lives on BatchSchedule phases and, since #210, on `batch.tracker` (see _BatchSchedule_); the batch's second tab is `Shopping`.
 **Example.** _None._
 
@@ -183,13 +183,18 @@ _No migrations._ The models carry **no `version` field** — a stored batch/reci
 - Every batch view sources from the brewable: `batch-planning` edits `batch.brewable` directly via `BrewableEdit`; `_updateShopping` and `useSchedule` read ingredients from `brewable.assignments` through `resourcesOf`/`indexedResourcesOf` (the latter also surfacing each assignment's `id`); `batch-summary` goes via `organicNames`; `batch-schedule`'s equipment checklist reads `brewable.schedule.phases[].equipment` directly and live.
 **Example.** _None._
 
-## Data compatibility (no migrations)
-**Purpose.** There is **no migration framework** — it was removed deliberately. Models carry no `version` field, and nothing normalizes stored data on load.
-**How it works.** Dev **assumes a pristine local store**: batches/recipes are read straight from IndexedDB and used as-is. A stored object written by older code is **not** upgraded — if a model shape changes, a stale object throws until re-derived or the store is wiped with `/?purge=true` (`component/db-cleanup` wipes batches + session + kb and redirects home).
-**Invariants.** ⚠️ Don't reintroduce "ensure"/backfill shims that repair old stored objects (the former `state/batches.ts` `ensureIds` / `state/recipes.ts` `ensureBrewable`), and don't add a `version` field or a migration step "just in case" — this is a proof-of-concept with no data to preserve. Per-instance brewable ids are still minted, but only in the batch **write path** (`ensureBrewableIds` at `createBatch`/`updateBatch`) — that's instance creation, not stored-data repair (see _Model boundary_).
-- ⚠️ **"No migrations" makes graceful degradation the requirement instead.** A stale stored record is *allowed* to fail to render — it is **not** allowed to take a screen down with it. Nothing contains a render throw except the router's `defaultErrorComponent`, which replaces the **whole page**, so one legacy row in a list wipes out the tab bar and every unrelated item beside it (#365: a recipe predating `targets`). Anything that maps stored records into a list contains each row — `screen/recipe-list/` wraps every `RecipeListItem` in `component/error-boundary` with an inert `RecipeListItemFallback`, keyed `` `${source}:${id}` `` so a boundary that has tripped isn't reused for a different recipe when the search filter reorders the list. Containment, never repair.
-- A failed record isn't only silently dropped: a brewer (or whoever's helping them) can see and act on it at `/migrations/failed` — see `packages/spec/product/migration-failures.md`.
-**Gotchas.** _None._
+## Data compatibility (versioned entities + migration)
+**Purpose.** A stored record carries a version and can be carried forward through a migration chain on read, instead of a shape change either throwing until re-derived or forcing a full purge.
+**Where.** `packages/app/src/storage/migration/` — the `Migration<T>` contract, a registry keyed by `entityType`, and the runner that walks a record from its stored version to the current one. `Entity` (`packages/core/src/models.ts`) carries the optional `version` the runner reads.
+**How it works.** A `Migration<T>` is `{entityType, from, to, up, down}` — a plain object, callable standalone. `up` is what the runner applies today, one version step at a time; `down` is part of the contract but unused until the rollback spike below is picked up. `Forage<T>.get`/`list` run the chain when the store is constructed with a migration config: a step that throws is caught, the record is written to a `Forage`-backed failure store, and it is dropped from the result (excluded/`null`) rather than re-thrown or repaired in place. `component/db-cleanup`'s purge wipes that failure store too, alongside batches/session/kb. `batches` is the reference integration, wired with an **empty** migrations array today — nothing to migrate yet, so there's no observable behavior change. `recipes`, `kb` and `session` are not wired.
+**Invariants.**
+- ⚠️ A stored record missing `version` is treated as version `1` ("oldest known"), not an error.
+- ⚠️ **Containment, never repair, still holds.** A migration that itself throws is caught and set aside in the failure store — never retried automatically, never re-thrown into the render path. Same instinct as the graceful-degradation rule below, one layer lower: a stale or unmigratable record is allowed to fail to render, never allowed to take a screen down with it.
+- This is still a proof-of-concept with **no historical/rollback backups** — the chain only carries a record forward to the current shape; it doesn't snapshot a prior version or let a brewer revert. That stays a separate future spike, not built here.
+- Per-instance brewable ids are still minted only in the batch **write path** (`ensureBrewableIds` at `createBatch`/`updateBatch`) — that's instance creation, not migration (see _Model boundary_).
+- ⚠️ **Graceful degradation is still the requirement**, independent of the framework above: nothing contains a render throw except the router's `defaultErrorComponent`, which replaces the **whole page**, so one legacy row in a list wipes out the tab bar and every unrelated item beside it (#365: a recipe predating `targets`). Anything that maps stored records into a list contains each row — `screen/recipe-list/` wraps every `RecipeListItem` in `component/error-boundary` with an inert `RecipeListItemFallback`, keyed `` `${source}:${id}` `` so a boundary that has tripped isn't reused for a different recipe when the search filter reorders the list.
+- A set-aside record isn't only silently dropped: a brewer (or whoever's helping them) can see and act on it at `/migrations/failed` — see `packages/spec/product/migration-failures.md`.
+**Gotchas.** ⚠️ Only `batches` is wired — a shape change in `recipes`/`kb`/`session` still has no migration path and behaves as before: a stale record throws until re-derived or the store is wiped with `/?purge=true` (`component/db-cleanup` wipes batches + session + kb and redirects home).
 
 ## BatchSchedule screen: configurable phases
 **Purpose.** A schedule screen driven by `phases` (config), `schedule` (derived), and the brewable's own equipment kit (derived live, checked off through the tracker).

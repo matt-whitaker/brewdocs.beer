@@ -1,5 +1,4 @@
 {
   "name": "Long Thermometer",
-  "use": ["boil", "mash"],
   "notes": "Extended-probe thermometer for checking mash and boil temperatures in deep vessels."
 }

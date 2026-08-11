@@ -592,6 +592,10 @@ test("completing a phase while Phase is displayed re-anchors its markers to the 
     await expect(page.getByRole("button", {name: /^1\. Mash at \d{2}:\d{2}:\d{2}$/})).toBeVisible();
 
     await scopeGroup.getByRole("button", {name: "Phase", exact: true}).click();
+    // completing Mash paused the timer (BATCH-SCHEDULE-14); Boil's own phase-relative
+    // clock stays at zero — and plots no markers at all — until it's resumed
+    await page.getByRole("button", {name: "Start timer"}).click();
+    await page.waitForTimeout(1000);
     await page.getByRole("button", {name: "Quick actions"}).click();
     dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
@@ -625,6 +629,9 @@ test("a reading logged while Phase is active lands at its phase-relative offset"
     await expect(dialog).not.toBeVisible();
     await settleSave(page);
 
+    // completing Mash paused the timer (BATCH-SCHEDULE-14) — resume it so Boil's own
+    // phase-relative clock has elapsed time to plot the coming reading against
+    await page.getByRole("button", {name: "Start timer"}).click();
     await scopeGroup.getByRole("button", {name: "Phase", exact: true}).click();
     await page.waitForTimeout(1000);
 
@@ -643,4 +650,63 @@ test("a reading logged while Phase is active lands at its phase-relative offset"
     // same recorded moment, two readings of it: Global includes the ~2s spent on
     // Mash before Boil's boundary even started, Phase does not
     expect(globalOffset).toBeGreaterThan(phaseOffset);
+});
+
+// BATCH-SCHEDULE-14: confirming a phase complete, while the timer is running, stops it.
+test("confirming a phase complete pauses a running timer", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Complete Pauses Timer Batch");
+    await page.getByRole("tab", {name: "Brewing", exact: true}).click();
+
+    await page.getByRole("button", {name: "Start timer"}).click();
+    await page.waitForTimeout(1000);
+
+    await page.getByRole("button", {name: "Complete 1. Mash"}).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole("button", {name: "Confirm"}).click();
+    await expect(dialog).not.toBeVisible();
+    await settleSave(page);
+
+    await expect(page.getByRole("button", {name: "Start timer"})).toBeVisible();
+    const frozenValue = await page.getByRole("timer", {name: "Elapsed time"}).textContent();
+
+    // genuinely paused, not just a stale UI read: the counter must not move further
+    await page.waitForTimeout(1500);
+    await expect(page.getByRole("timer", {name: "Elapsed time"})).toHaveText(frozenValue ?? "");
+});
+
+// BATCH-SCHEDULE-14: "If the timer was already paused, or the session had not been started at
+// all, completing the phase changes nothing about the timer: it stays exactly as it was."
+test("confirming a phase complete leaves an already-paused or not-yet-started timer untouched", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Complete Timer Untouched Batch");
+    await page.getByRole("tab", {name: "Brewing", exact: true}).click();
+
+    // never started
+    await expect(page.getByRole("button", {name: "Start timer"})).toBeVisible();
+    await page.getByRole("button", {name: "Complete 1. Mash"}).click();
+    let dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole("button", {name: "Confirm"}).click();
+    await expect(dialog).not.toBeVisible();
+    await settleSave(page);
+
+    await expect(page.getByRole("button", {name: "Start timer"})).toBeVisible();
+    await expect(page.getByRole("timer", {name: "Elapsed time"})).toHaveText("00:00:00");
+
+    // already paused
+    await page.getByRole("button", {name: "Start timer"}).click();
+    await page.waitForTimeout(1000);
+    await page.getByRole("button", {name: "Pause timer"}).click();
+    await expect(page.getByRole("button", {name: "Start timer"})).toBeVisible();
+    const frozenValue = await page.getByRole("timer", {name: "Elapsed time"}).textContent();
+
+    await page.getByRole("button", {name: "Complete 2. Boil"}).click();
+    dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole("button", {name: "Confirm"}).click();
+    await expect(dialog).not.toBeVisible();
+    await settleSave(page);
+
+    await expect(page.getByRole("button", {name: "Start timer"})).toBeVisible();
+    await expect(page.getByRole("timer", {name: "Elapsed time"})).toHaveText(frozenValue ?? "");
 });
