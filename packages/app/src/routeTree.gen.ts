@@ -15,6 +15,7 @@ import { Route as DisclaimerRouteImport } from './routes/disclaimer'
 import { Route as KnowledgeRouteImport } from './routes/knowledge'
 import { Route as RecipesRouteImport } from './routes/recipes'
 import { Route as BatchBatchIdRouteImport } from './routes/batch.$batchId'
+import { Route as MigrationsFailedRouteImport } from './routes/migrations.failed'
 import { Route as RecipeRecipeIdRouteImport } from './routes/recipe.$recipeId'
 import { Route as KbGrainGrainIdRouteImport } from './routes/kb.grain.$grainId'
 import { Route as KbHopHopIdRouteImport } from './routes/kb.hop.$hopId'
@@ -50,6 +51,11 @@ const RecipesRoute = RecipesRouteImport.update({
 const BatchBatchIdRoute = BatchBatchIdRouteImport.update({
   id: '/batch/$batchId',
   path: '/batch/$batchId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MigrationsFailedRoute = MigrationsFailedRouteImport.update({
+  id: '/migrations/failed',
+  path: '/migrations/failed',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RecipeRecipeIdRoute = RecipeRecipeIdRouteImport.update({
@@ -90,6 +96,7 @@ export interface FileRoutesByFullPath {
   '/knowledge': typeof KnowledgeRoute
   '/recipes': typeof RecipesRoute
   '/batch/$batchId': typeof BatchBatchIdRoute
+  '/migrations/failed': typeof MigrationsFailedRoute
   '/recipe/$recipeId': typeof RecipeRecipeIdRoute
   '/kb/grain/$grainId': typeof KbGrainGrainIdRoute
   '/kb/hop/$hopId': typeof KbHopHopIdRoute
@@ -104,6 +111,7 @@ export interface FileRoutesByTo {
   '/knowledge': typeof KnowledgeRoute
   '/recipes': typeof RecipesRoute
   '/batch/$batchId': typeof BatchBatchIdRoute
+  '/migrations/failed': typeof MigrationsFailedRoute
   '/recipe/$recipeId': typeof RecipeRecipeIdRoute
   '/kb/grain/$grainId': typeof KbGrainGrainIdRoute
   '/kb/hop/$hopId': typeof KbHopHopIdRoute
@@ -119,6 +127,7 @@ export interface FileRoutesById {
   '/knowledge': typeof KnowledgeRoute
   '/recipes': typeof RecipesRoute
   '/batch/$batchId': typeof BatchBatchIdRoute
+  '/migrations/failed': typeof MigrationsFailedRoute
   '/recipe/$recipeId': typeof RecipeRecipeIdRoute
   '/kb/grain/$grainId': typeof KbGrainGrainIdRoute
   '/kb/hop/$hopId': typeof KbHopHopIdRoute
@@ -135,6 +144,7 @@ export interface FileRouteTypes {
     | '/knowledge'
     | '/recipes'
     | '/batch/$batchId'
+    | '/migrations/failed'
     | '/recipe/$recipeId'
     | '/kb/grain/$grainId'
     | '/kb/hop/$hopId'
@@ -149,6 +159,7 @@ export interface FileRouteTypes {
     | '/knowledge'
     | '/recipes'
     | '/batch/$batchId'
+    | '/migrations/failed'
     | '/recipe/$recipeId'
     | '/kb/grain/$grainId'
     | '/kb/hop/$hopId'
@@ -163,6 +174,7 @@ export interface FileRouteTypes {
     | '/knowledge'
     | '/recipes'
     | '/batch/$batchId'
+    | '/migrations/failed'
     | '/recipe/$recipeId'
     | '/kb/grain/$grainId'
     | '/kb/hop/$hopId'
@@ -178,6 +190,7 @@ export interface RootRouteChildren {
   KnowledgeRoute: typeof KnowledgeRoute
   RecipesRoute: typeof RecipesRoute
   BatchBatchIdRoute: typeof BatchBatchIdRoute
+  MigrationsFailedRoute: typeof MigrationsFailedRoute
   RecipeRecipeIdRoute: typeof RecipeRecipeIdRoute
   KbGrainGrainIdRoute: typeof KbGrainGrainIdRoute
   KbHopHopIdRoute: typeof KbHopHopIdRoute
@@ -228,6 +241,13 @@ declare module '@tanstack/react-router' {
       path: '/batch/$batchId'
       fullPath: '/batch/$batchId'
       preLoaderRoute: typeof BatchBatchIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/migrations/failed': {
+      id: '/migrations/failed'
+      path: '/migrations/failed'
+      fullPath: '/migrations/failed'
+      preLoaderRoute: typeof MigrationsFailedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/recipe/$recipeId': {
@@ -282,6 +302,7 @@ const rootRouteChildren: RootRouteChildren = {
   KnowledgeRoute: KnowledgeRoute,
   RecipesRoute: RecipesRoute,
   BatchBatchIdRoute: BatchBatchIdRoute,
+  MigrationsFailedRoute: MigrationsFailedRoute,
   RecipeRecipeIdRoute: RecipeRecipeIdRoute,
   KbGrainGrainIdRoute: KbGrainGrainIdRoute,
   KbHopHopIdRoute: KbHopHopIdRoute,

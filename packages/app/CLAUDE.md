@@ -31,7 +31,7 @@ Package-specific guidance. See the repo-root `CLAUDE.md` for universal rules (co
 
 ## Routing
 **Purpose.** File-based routing (TanStack Router) with a generated route tree.
-**Where.** `src/routes/*` — routes `/`, `/batches`, `/batch/$batchId`, `/recipes`, `/recipe/$recipeId`, `/recipe/$recipeId_/edit` (delisted, nothing links to it), `/knowledge`, `/disclaimer`. `routeTree.gen.ts` (generated); `main.tsx` (`defaultErrorComponent` renders thrown suspense-fetch errors).
+**Where.** `src/routes/*` — routes `/`, `/batches`, `/batch/$batchId`, `/recipes`, `/recipe/$recipeId`, `/recipe/$recipeId_/edit` (delisted, nothing links to it), `/knowledge`, `/disclaimer`, `/migrations/failed` (unlisted, nothing links to it — see #714). `routeTree.gen.ts` (generated); `main.tsx` (`defaultErrorComponent` renders thrown suspense-fetch errors).
 **Invariants.** ⚠️ Never hand-edit `routeTree.gen.ts` (the router Vite plugin regenerates it). Read path params via `Route.useParams()`.
 **Gotchas.** ⚠️ Param filenames contain `$` (`batch.$batchId.tsx`) → the shell expands it, and under the `@claude` permission layer that's rejected as "shell expansion syntax in paths". Quote just the dollar: `git rm packages/app/src/routes/recipe.'$'recipeId.tsx`. Retrying with different outer quoting will not work.
 **Example.** Rename a param route → write the new file, then `git rm` the old with the `'$'` escape above.
@@ -193,6 +193,7 @@ _Versioned entities._ `Entity` (`packages/core/src/models.ts`) carries an option
 - This is still a proof-of-concept with **no historical/rollback backups** — the chain only carries a record forward to the current shape; it doesn't snapshot a prior version or let a brewer revert. That stays a separate future spike, not built here.
 - Per-instance brewable ids are still minted only in the batch **write path** (`ensureBrewableIds` at `createBatch`/`updateBatch`) — that's instance creation, not migration (see _Model boundary_).
 - ⚠️ **Graceful degradation is still the requirement**, independent of the framework above: nothing contains a render throw except the router's `defaultErrorComponent`, which replaces the **whole page**, so one legacy row in a list wipes out the tab bar and every unrelated item beside it (#365: a recipe predating `targets`). Anything that maps stored records into a list contains each row — `screen/recipe-list/` wraps every `RecipeListItem` in `component/error-boundary` with an inert `RecipeListItemFallback`, keyed `` `${source}:${id}` `` so a boundary that has tripped isn't reused for a different recipe when the search filter reorders the list.
+- A set-aside record isn't only silently dropped: a brewer (or whoever's helping them) can see and act on it at `/migrations/failed` — see `packages/spec/product/migration-failures.md`.
 **Gotchas.** ⚠️ Only `batches` is wired — a shape change in `recipes`/`kb`/`session` still has no migration path and behaves as before: a stale record throws until re-derived or the store is wiped with `/?purge=true` (`component/db-cleanup` wipes batches + session + kb and redirects home).
 
 ## BatchSchedule screen: configurable phases
