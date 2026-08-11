@@ -172,16 +172,30 @@ jobs:
       issues: write
       pull-requests: read
     outputs:
-      roles: ${{ steps.route.outputs.roles }}
+      # ⚠️ FROM `resolve`, NOT `route`. Where the script had to fall back to a default, the root
+      # role is asked inside this job and `resolve` settles which of the two answers wins. Reading
+      # `route` here would run the guess and quietly discard the answer.
+      roles: ${{ steps.resolve.outputs.roles }}
+      # ⚠️ THE REST STILL COME FROM `route`, and that split is deliberate. The interception decides
+      # a ROLE; the story, its branch and the issue kind are read from state and are not in doubt —
+      # a model has no business restating them, and letting it would put two sources on one fact.
       story: ${{ steps.route.outputs.story }}
       # the branch NAME, not the number — passed to the host action as `base_branch` so an
       # author's task branch is cut off the story's branch instead of the default one
       story_branch: ${{ steps.route.outputs.story_branch }}
       kind: ${{ steps.route.outputs.kind }}
-      defaulted: ${{ steps.route.outputs.defaulted }}
-      reason: ${{ steps.route.outputs.reason }}
+      # ⚠️ `defaulted` and `reason` are NOT job outputs. They were, for as long as they existed,
+      # with nothing in any job reading either — which is the exact defect #797 fixed one level
+      # down, reproduced one level up. Both are live *step* outputs feeding `resolve` and
+      # `report-route.py` inside this job; a job-level declaration only invites a reader to assume
+      # something gates on them.
     steps:
       - uses: actions/checkout@v4
+        with:
+          # ⚠️ The custodian step below reads issue bodies, which anyone can file. Same reasoning
+          # as the Researcher: `persist-credentials: true` leaves the token in `.git/config` as an
+          # http extraheader, recoverable by anything holding `Read`. Nothing in this job pushes.
+          persist-credentials: false
       - name: Stash the agent hooks
         run: |
           mkdir -p "$RUNNER_TEMP/agent-bin"
@@ -212,6 +226,153 @@ jobs:
           # only PR path in is a comment or review.
           IS_PR: ${{ (github.event.issue.pull_request || github.event_name == 'pull_request_review_comment' || github.event_name == 'pull_request_review') && 'true' || 'false' }}
         run: "$RUNNER_TEMP/agent-bin/delegate.py"
+
+      # ── The interception ──────────────────────────────────────────────────────────
+      # Where `delegate.py` had to guess, ask the root role before running the guess.
+      #
+      # ⚠️ A STEP IN THIS JOB, and each of the three alternatives is ruled out by something this
+      # repo has already paid for:
+      #   - a new workflow run — an event created with `GITHUB_TOKEN` starts nothing, by design.
+      #   - a job the roles `needs:` — a job needing a SKIPPED job reports cancelled, which is
+      #     exactly the noise #430 reverted; this would skip on every non-defaulted run.
+      #   - a job that `needs: delegate` — too late. The role jobs gate on this job's outputs, so
+      #     by the time it could speak they have already started on the guess.
+      # A job cannot gate on a step inside itself; it CAN gate on an output that step produced.
+      #
+      # ⚠️ THIS DOES NOT MAKE ROUTING A MODEL DECISION. Rules 1-4 are readable state and stay
+      # scripted. This runs only where the state that should have decided is absent — the choice
+      # is not "script or model", it is "read the issue or guess".
+      - id: route-schema
+        name: Load the routing schema
+        if: steps.route.outputs.defaulted == 'true'
+        run: |
+          # same constraints as the handoff and findings schemas: one line, and no single quote,
+          # because it is inlined into a single-quoted claude_args flag
+          body=$(jq -c . packages/claude-team/schemas/route.json)
+          case "$body" in
+            *"'"*) echo "::error::route.json contains a single quote; it cannot be inlined into claude_args"; exit 1 ;;
+          esac
+          echo "body=$body" >> "$GITHUB_OUTPUT"
+          echo "routing schema loaded (${#body} chars)"
+      - id: route-prompt
+        if: steps.route.outputs.defaulted == 'true'
+        uses: ./.github/actions/load-prompt
+        with:
+          role: route
+      - id: custodian
+        name: Ask the root role which role this is
+        if: steps.route.outputs.defaulted == 'true'
+        # ⚠️ A FAILED INTERCEPTION MUST NOT MEAN NOTHING RUNS. The script's default is the floor:
+        # `resolve` falls back to it whenever this step produces no usable answer, and this keeps
+        # the job green so it gets there. Degrading to the old behaviour is the correct failure.
+        continue-on-error: true
+        uses: anthropics/claude-code-action@v1
+        env:
+          ISSUE: ${{ github.event.issue.number }}
+          STORY: ${{ steps.route.outputs.story }}
+          # what the script fell back to and why — the model is correcting a specific guess, not
+          # routing from scratch, and saying which one saves it rediscovering the gap
+          ROUTE_DEFAULT: ${{ steps.route.outputs.roles }}
+          ROUTE_REASON: ${{ steps.route.outputs.reason }}
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # ⚠️ Required, not optional — the same pairing #668 established. It short-circuits
+          # `setupGitHubToken` before OIDC, which is why this job needs no `id-token`; and it is
+          # what makes this job's `permissions:` block bound the agent at all, since the App token
+          # the exchange would otherwise mint is scoped by the service and not by that block.
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # ⚠️ NO `track_progress`, and that is the one place this job differs from every other
+          # model step here. With a prompt supplied and no track_progress the action picks AGENT
+          # mode (`src/modes/detector.ts`), which means: our prompt is authoritative rather than
+          # wrapped in the tag-mode framing that tells a model its instructions are the triggering
+          # comment — and there is no triggering comment on a label event anyway — and no tracking
+          # comment is created. The usual objection to agent mode is that losing the tracking
+          # comment loses the maintainer's window into the run; it does not apply to a routing
+          # decision, whose durable record is the comment `report-route.py` writes below. Two
+          # comments for one sub-second decision would be the worse outcome.
+          # ⚠️ `structured_output` is unaffected — `src/entrypoints/run.ts` sets it after the run,
+          # in either mode. Checked in source rather than assumed.
+          prompt: ${{ steps.route-prompt.outputs.body }}
+          # Reads the issue and answers. No Write/Edit: it must not "helpfully" add the missing
+          # `Role:` stamp — a route that rewrote its own input would leave nothing to notice.
+          claude_args: |
+            --model sonnet
+            --allowedTools "Read,Glob,Grep,Bash(gh:*)"
+            --json-schema '${{ steps.route-schema.outputs.body }}'
+            --max-turns 15
+
+      - id: resolve
+        name: Settle the route
+        # ⚠️ `always()`, because the step above may have failed and this is what falls back.
+        if: always()
+        env:
+          SCRIPT_ROLES: ${{ steps.route.outputs.roles }}
+          SCRIPT_REASON: ${{ steps.route.outputs.reason }}
+          SCRIPT_REMEDY: ${{ steps.route.outputs.remedy }}
+          # empty when the step was skipped, failed, or returned nothing
+          CUSTODIAN: ${{ steps.custodian.outputs.structured_output }}
+        run: |
+          # ⚠️ Reads one field, and CANNOT fail the step. Empty input, unparseable input and a
+          # missing key all come back as the empty string, which is what makes the fallback below
+          # the automatic behaviour rather than something that has to be reached.
+          # ⚠️ jq is captured BEFORE the pipeline rather than inside it. `|| true` at the end of a
+          # pipe guards the last command, not jq — correct today only because the default `run:`
+          # shell is `bash -e` with no `pipefail`, which is not a thing to depend on.
+          # ⚠️ AND IT TRIMS. $GITHUB_OUTPUT is line-oriented so newlines have to go, but a bare
+          # `tr` turns jq's trailing newline into a trailing SPACE — measured: an empty `why` came
+          # back as " ", passed `[ -n ]`, and produced a resolution notice with no reason in it.
+          field() {
+            local raw
+            raw=$(printf '%s' "$CUSTODIAN" | jq -r "$1 // \"\"" 2>/dev/null) || raw=""
+            printf '%s' "$raw" | tr '\n\t' '  ' | sed -e 's/  */ /g' -e 's/^ //' -e 's/ *$//'
+          }
+          role=$(field .role)
+          why=$(field .why)
+          remedy=$(field .remedy)
+
+          # ⚠️ THE ALLOWLIST IS THE SAFETY, not the schema. An enum constrains a well-behaved
+          # model; this constrains the output. `undecided` — the honest answer, and the one the
+          # prompt asks for over a coin flip — falls through here to the script's default, which
+          # is exactly right: it keeps the guess AND the notice that announces it.
+          case "$role" in
+            architect|researcher|implementor|designer|tester|writer) ;;
+            *) role="" ;;
+          esac
+
+          if [ -n "$role" ] && [ -n "$why" ]; then
+            {
+              echo "roles=$role"
+              echo "reason=$why"
+              echo "remedy=${remedy:-$SCRIPT_REMEDY}"
+              echo "resolved_by=custodian"
+            } >> "$GITHUB_OUTPUT"
+            echo "resolved by the custodian: $role — $why"
+          else
+            {
+              echo "roles=$SCRIPT_ROLES"
+              echo "reason=$SCRIPT_REASON"
+              echo "remedy=$SCRIPT_REMEDY"
+              echo "resolved_by=script"
+            } >> "$GITHUB_OUTPUT"
+            echo "resolved by the script: $SCRIPT_ROLES — $SCRIPT_REASON"
+          fi
+
+      # ⚠️ AFTER `resolve`, never inside `delegate.py`, and that ordering is the fix. Announcing a
+      # default at the moment the script picks it announces it before the root role has been
+      # asked — so an intercepted run posted "I guessed" and then ran something else. The notice
+      # has to describe the decision that actually took effect (#798).
+      - name: Say how this run routed
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
+          DEFAULTED: ${{ steps.route.outputs.defaulted }}
+          ROLES: ${{ steps.resolve.outputs.roles }}
+          REASON: ${{ steps.resolve.outputs.reason }}
+          REMEDY: ${{ steps.resolve.outputs.remedy }}
+          RESOLVED_BY: ${{ steps.resolve.outputs.resolved_by }}
+        run: "$RUNNER_TEMP/agent-bin/report-route.py"
 
   # ── Architect ────────────────────────────────────────────────────────────────
   # Shapes work so the others can act on it. On an epic it defines the goal and cuts
