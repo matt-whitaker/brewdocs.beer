@@ -552,16 +552,32 @@ jobs:
           # `.git/config` as an http extraheader, recoverable by anything holding `Read`. This role
           # never pushes, so there is nothing to lose by dropping it.
           persist-credentials: false
+      - name: Stash the agent hooks
+        run: |
+          mkdir -p "$RUNNER_TEMP/agent-bin"
+          cp packages/claude-team/hooks/*.py "$RUNNER_TEMP/agent-bin/"
+          chmod +x "$RUNNER_TEMP/agent-bin"/*.py
       - id: prompt
         uses: ./.github/actions/load-prompt
         with:
           role: claude
+      - id: repairs-schema
+        name: Load the repairs schema
+        run: |
+          # same constraints as every other inlined schema: one line, and no single quote
+          body=$(jq -c . packages/claude-team/schemas/repairs.json)
+          case "$body" in
+            *"'"*) echo "::error::repairs.json contains a single quote; it cannot be inlined into claude_args"; exit 1 ;;
+          esac
+          echo "body=$body" >> "$GITHUB_OUTPUT"
+          echo "repairs schema loaded (${#body} chars)"
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
       # ⚠️ No role-label stamp. The stamp records "this role has been here" on work; a
       # conversation is not work, and there is no `@claude/claude` label for it to write.
-      - uses: anthropics/claude-code-action@v1
+      - id: custodian
+        uses: anthropics/claude-code-action@v1
         env:
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
           STORY: ${{ needs.delegate.outputs.story }}
@@ -577,14 +593,50 @@ jobs:
           # extract as `/architect do X`. It cannot happen here: rule 1b only routes to this job
           # when no role handle matched, so the text after `@claude` is prose.
           trigger_phrase: "@claude"
+          # ⚠️ Load-bearing for the ANSWER, not just for progress. Tag mode gives this role its
+          # tracking comment, and with `--json-schema` below the final message is JSON — so the
+          # comment is the only place a human ever reads a reply. Dropping track_progress here
+          # would leave every question answered into a machine-readable void.
           track_progress: true
           prompt: ${{ steps.prompt.outputs.body }}
-          # Reads and answers. No Edit/Write: this role produces no content, and repairs are a
-          # separate bounded remit that does not exist yet.
+          # ⚠️ THIS LIST IS WHAT MAKES "NEVER TOUCHES CONTENT" TRUE (#799). The remit is process
+          # state only, and the acceptance criterion was that it be enforced by what the role can
+          # *reach* rather than by its prompt — so every verb here is read-only and the repairs go
+          # through `apply-repairs.py`, whose repertoire is a fixed enum.
+          #
+          # ⚠️ `Bash(gh:*)` was the old grant and had to go: `gh issue edit --body` rewrites an
+          # issue, which is content. Allowlisted by SUBCOMMAND now, the same way Security is, and
+          # for the same reason — a family grant cannot express "read but do not write".
+          #
+          # ⚠️ `gh api` is deliberately absent: it reaches every endpoint the token has, including
+          # every mutation. Relationships stay readable without it because `gh issue view` exposes
+          # `parent`, `subIssues` and `subIssuesSummary` — checked before narrowing this, since
+          # Security already taught us that too narrow starves a role *silently* (#494).
+          #
+          # ⚠️ The residual, written down rather than claimed away: the action's base allowlist
+          # unions in `Bash(git add|commit|rm:*)` and `git-push.sh` and cannot be removed. There is
+          # no `Write`/`Edit` here, so there is nothing to author worth committing, and
+          # `contents: read` bounds the token — which holds only because `github_token` is passed.
           claude_args: |
             --model sonnet
-            --allowedTools "Read,Glob,Grep,Bash(gh:*),Bash(git:*)"
+            --allowedTools "Read,Glob,Grep,Bash(gh issue view:*),Bash(gh issue list:*),Bash(gh pr view:*),Bash(gh pr list:*),Bash(gh pr diff:*),Bash(gh run view:*),Bash(gh run list:*),Bash(gh label list:*),Bash(git log:*),Bash(git show:*),Bash(git diff:*),Bash(git status:*),Bash(git ls-remote:*),Bash(git rev-parse:*)"
+            --json-schema '${{ steps.repairs-schema.outputs.body }}'
             --max-turns 40
+
+      # ⚠️ THE MODEL PROPOSES, THIS DISPOSES. Deterministic at both ends, the same shape as
+      # post-handoff/post-findings: the schema forces the report, this forces delivery — and here
+      # it also forces the *bound*, since the hook's enum is the whole of what can change.
+      # ⚠️ Step env is per-step, so PROJECTS_TOKEN here is not readable by the model step above.
+      - name: Apply the process repairs
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PROJECTS_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
+          REPO: ${{ github.repository }}
+          PROJECT_OWNER: "@me"
+          PROJECT_NUMBER: "4"
+          REPAIRS: ${{ steps.custodian.outputs.structured_output }}
+        run: "$RUNNER_TEMP/agent-bin/apply-repairs.py"
 
   # ── Researcher: answers a spike before anything is shaped ──────────────────────
   # ⚠️ ITS OWN JOB, not a step in `authors`. The authoring job's whole tail — finish-pr.py,
