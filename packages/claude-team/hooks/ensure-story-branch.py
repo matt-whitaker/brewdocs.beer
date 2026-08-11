@@ -1,5 +1,16 @@
 #!/usr/bin/env python3
-"""Post-hook for the Architect. Guarantees the story's branch exists on the remote.
+"""Guarantees the story's branch exists on the remote.
+
+⚠️ RUNS IN TWO PLACES, and both are load-bearing: POST on the Architect, and PRE on the authors.
+The Architect half is the original (see the ordering note below). The authors half exists because
+`delegate.py` rule 4 routes straight to the stamped role whenever a `Branch:` line is present — so
+an issue filed with both routing lines already written never reaches the Architect, and until #777
+never got a branch either. `setupBranch` resolves the base branch before anything else
+(`getRef({ref: heads/${sourceBranch}})`), so a missing one is a 404 that kills the job in ~3s,
+before the model is called at all (#744).
+
+⚠️ Idempotence is what makes running it twice safe, and it is not incidental — see the final note:
+absent is the only case this handles.
 
 WHY A HOOK AT ALL. Cutting the branch was the Architect's job and it silently failed about half
 the time, because the host action and our prompt give contradictory instructions and the model
@@ -26,6 +37,15 @@ looks at. Running after the model means the action has already generated its nam
 ⚠️ NEVER TOUCHES AN EXISTING BRANCH. Absent is the only case this handles. A branch that
 exists may carry an author's commits, and resetting it to the default branch would discard
 them — the failure this hook exists to prevent, inflicted by the fix for it.
+
+⚠️ ONE RESIDUAL, ON THE AUTHORS PATH ONLY, and it predates this hook running there. `setupBranch`
+generates the task branch as `{{entityNumber}}-{{description}}`, where `description` is the first
+five words of the title kebab-cased, and falls back to `claude/<entity>-<n>-<timestamp>` if that
+name already exists. For a STORY that can never collide — the story branch carries the story
+number and the task branch the task number. For a BUG, story and task are the same issue, so both
+begin `<issue#>-` and a collision is possible if the Branch line happens to equal those first five
+words. It degrades into the stranded-branch case `finish-pr.py` already reports, and dodging it
+would mean reimplementing the action's own naming rule here — a worse trap than the collision.
 """
 
 import os
