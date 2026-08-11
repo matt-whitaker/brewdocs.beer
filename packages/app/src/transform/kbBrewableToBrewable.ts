@@ -1,12 +1,11 @@
 import {KbBrewable} from "@brewdocs.beer/kb";
 import Brewable, {Assignment, BrewablePhase, PhaseType} from "@/model/brewable";
-import {EquipmentUses} from "@/model/equipment";
 import {newId} from "@/utils/id";
 
 /**
  * kb and app brewable shapes differ in the loose-string unions (`phase.type`,
- * `assignment.resourceType`, a phase equipment's `use`) plus surplus kb-only
- * resource fields (e.g. a hop's `phase`) the cast simply drops.
+ * `assignment.resourceType`) plus surplus kb-only resource fields (e.g. a hop's
+ * `phase`) the cast simply drops.
  *
  * The one real conversion is **phase identity**. Authored kb JSON is
  * type-based — phases carry no ids and an assignment says `phaseType: "boil"` —
@@ -22,11 +21,7 @@ export function kbBrewableToBrewable(kbBrewable: KbBrewable): Brewable {
     const phases = kbBrewable.schedule.phases.map((phase): BrewablePhase => ({
         id: newId(),
         type: phase.type as PhaseType,
-        equipment: phase.equipment.map(({name, use, count}) => ({
-            name,
-            use: use as EquipmentUses[],
-            count,
-        })),
+        equipment: phase.equipment.map(({name, count}) => ({name, count})),
         milestones: []
     }));
 

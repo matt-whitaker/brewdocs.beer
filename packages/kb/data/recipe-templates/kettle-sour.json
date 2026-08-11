@@ -8,34 +8,34 @@
         {
           "type": "mash",
           "equipment": [
-            { "name": "Mash Tun - 10gal", "use": ["mash"] },
-            { "name": "Stirring Wand", "use": ["mash"] },
-            { "name": "Sparge Vessel - 15gal", "use": ["mash"] },
-            { "name": "Star San", "use": ["clean"] },
-            { "name": "PBW", "use": ["clean"] },
-            { "name": "Digital Hydrometer", "use": ["measure"] },
-            { "name": "Long Thermometer", "use": ["boil", "mash"] },
-            { "name": "Burner and stand", "use": ["mash", "boil"] }
+            { "name": "Mash Tun - 10gal" },
+            { "name": "Stirring Wand" },
+            { "name": "Sparge Vessel - 15gal" },
+            { "name": "Star San" },
+            { "name": "PBW" },
+            { "name": "Digital Hydrometer" },
+            { "name": "Long Thermometer" },
+            { "name": "Burner and stand" }
           ]
         },
         {
           "type": "boil",
           "equipment": [
-            { "name": "Boil Kettle - 15gal", "use": ["boil", "sour"] },
-            { "name": "pH Meter", "use": ["sour"] },
-            { "name": "Souring Vessel Lid / Cover", "use": ["sour"] },
-            { "name": "Digital Hydrometer", "use": ["measure"] },
-            { "name": "Long Thermometer", "use": ["boil", "mash", "sour"] },
-            { "name": "Large Stirring Spoon", "use": ["boil"] },
-            { "name": "Racking Cane & Hose", "use": ["transfer"] },
-            { "name": "Burner and stand", "use": ["mash", "boil"] }
+            { "name": "Boil Kettle - 15gal" },
+            { "name": "pH Meter" },
+            { "name": "Souring Vessel Lid / Cover" },
+            { "name": "Digital Hydrometer" },
+            { "name": "Long Thermometer" },
+            { "name": "Large Stirring Spoon" },
+            { "name": "Racking Cane & Hose" },
+            { "name": "Burner and stand" }
           ]
         },
         {
           "type": "ferment",
           "equipment": [
-            { "name": "Glass Carboy - 7gal", "use": ["secondary"] },
-            { "name": "Scale", "use": ["boil", "starter"] }
+            { "name": "Glass Carboy - 7gal" },
+            { "name": "Scale" }
           ]
         }
       ]

@@ -89,3 +89,5 @@ Phase, whether or not anything on screen shows that time yet.
   the codebase's existing precedent that only hops are reliably chronological — grain goes into
   the mash all at once and an additive isn't consistently boil-timed, so a marker is right for
   hops and arbitrary for the rest (#663).
+- Pausing the timer when a phase is completed — a behaviour of confirming completion, specified
+  alongside it on the batch schedule (BATCH-SCHEDULE-14) rather than here.

@@ -58,4 +58,5 @@ export const isCurrency = (value: string): value is Currency => CURRENCY_VALUES.
 
 export interface Entity {
     id: string;
+    version?: number;
 }

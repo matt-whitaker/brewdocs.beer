@@ -751,7 +751,7 @@ test("reading rows lay out without overlapping fields", async ({page}) => {
     expect(overlaps(addName, addValue), "add row: name and value overlap").toBe(false);
     expect(addName.x, "add row: name should start at the left of the grid").toBeLessThan(addValue.x);
 
-    // and an item row, which additionally carries the unit select between them
+    // and an item row
     await page.getByRole("button", {name: "Add reading"}).click();
     await settleSave(page);
 
