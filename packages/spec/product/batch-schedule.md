@@ -78,6 +78,15 @@ follows it, rather than leaving the brewer on the one they just finished.
 **BATCH-SCHEDULE-13** — Completing the last phase leaves the schedule showing that phase: there
 is no phase after it to move on to.
 
+**BATCH-SCHEDULE-14** — Confirming a phase complete, while the timer is running, stops it: the
+Play/Pause control reads Play again and the counter stops advancing. The phase that follows
+(BATCH-SCHEDULE-12) does not start timing on its own — the brewer has to press Play themselves
+before it resumes. If the timer was already paused, or the session had not been started at all,
+completing the phase changes nothing about the timer: it stays exactly as it was.
+
+> *Why:* moving on to the next phase (BATCH-SCHEDULE-12) is not the same as starting work on it
+> — a timer left running would keep counting into a phase the brewer has not actually begun.
+
 ## Known gaps
 
 _None._
