@@ -119,13 +119,6 @@ function BatchScheduleItemRow({ item, entry, onToggle, onPatch }: BatchScheduleI
     // no-op there
     const columns = COLUMNS[item.resourceType].filter(field => item.resource[field] !== undefined);
 
-    // one note per field that came in off-plan, so the intent is never lost
-    const drifts = columns
-        .map(field => ({ planned: item.resource[field]?.value, actual: entry?.resource?.[field]?.value }))
-        .filter(({ planned, actual }) => !!actual && !!planned && actual !== planned)
-        .map(({ planned }) => `plan ${planned}`);
-
-    const note = [item.note, ...drifts].filter(Boolean).join(" · ");
     const completed = entry?.completed ?? false;
 
     return (
@@ -151,7 +144,7 @@ function BatchScheduleItemRow({ item, entry, onToggle, onPatch }: BatchScheduleI
                     checked={completed}
                     onChange={onToggleCompleted} />
                 {item.name}
-                {note ? <DataGridLabelNote>({note})</DataGridLabelNote> : null}
+                {item.note ? <DataGridLabelNote>({item.note})</DataGridLabelNote> : null}
             </DataGridLabel>
             {/* one column per field this resource type exposes — a mash grain gets
                 just its weight, a hop weight + boil time. Both plan and actual are
