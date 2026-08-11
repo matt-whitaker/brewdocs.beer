@@ -8,6 +8,9 @@ export const entityIdOf = (record: unknown): string | undefined => {
     return typeof id === "string" ? id : undefined;
 };
 
+export const entityVersionOf = (record: unknown): number =>
+    (record as { version?: number } | null)?.version ?? DEFAULT_ENTITY_VERSION;
+
 const messageOf = (error: unknown): string => error instanceof Error ? error.message : String(error);
 
 export function runMigrations<T>(entityType: string, record: Versioned<T>, targetVersion: number): MigrationResult<Versioned<T>> {
