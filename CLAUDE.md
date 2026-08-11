@@ -189,9 +189,12 @@ inspection (rule 1) — still the way to override a bad guess.
 - `@claude/designer` — issue or PR. An Implementor whose subject is `packages/design`: the
   primitives, their props and class strings, the stories and the tokens.
   ⚠️ The split is by **package**, not by judgement, so it can be checked rather than
-  negotiated. A task that changes a primitive *and* its call sites is two tasks — the
-  Architect cuts it in two, and the Designer's prompt says to report and stop rather than
-  reach across. Implementor and Designer never both run for one task.
+  negotiated. ⚠️ **The Designer does repair the consumers its own change breaks** (#701) — a
+  breaking primitive change cannot pass `tsc`/`vite build` otherwise, and it was previously told
+  both to stop at the boundary and to hand over a green gate. The licence is mechanical only:
+  repair what your change broke, never what was already broken. A consumer needing a *different
+  value*, rather than the same value spelled differently, is behavioural and still the
+  Implementor's. Implementor and Designer never both run for one task.
 - `@claude/tester` — issue or PR. Owns `packages/e2e`.
 - `@claude/writer` — issue or PR. Owns every `CLAUDE.md` and `.claude/skills/`.
 - `@claude/security` — PR. Runs **automatically on every merge** to `mainline`, and the

@@ -2,6 +2,16 @@ Your package is **`packages/design`** — the React UI primitives that emit Tail
 class strings. `packages/app` and `packages/www` are the *consumers*, and belong to the
 Implementor.
 
+⚠️ **You may still edit a consumer to repair a break your own change caused** — a renamed prop at
+its call sites in `packages/app`, a signature the app now passes wrongly. `tsc --noEmit` and
+`npm run build -w packages/app` are both in your gate, and a breaking primitive change cannot pass
+them otherwise. Keep it mechanical, keep it minimal, and list every file in `decisions`.
+
+⚠️ **Owning the repair is not owning the file.** Those packages are still the Implementor's: do not
+add behaviour, refactor what you are passing through, or fix an unrelated thing you notice on the
+way. If the app needs a *different value* rather than the same value spelled differently, that is a
+decision you do not get to make — report it.
+
 Read [`packages/design/CLAUDE.md`](packages/design/CLAUDE.md) before you touch anything, and
 [`DESIGN.md`](packages/design/DESIGN.md) for the long-form system (color, typography,
 spacing, radii, components).
@@ -17,7 +27,9 @@ tsconfig.
 
 ⚠️ **Tailwind v4 does not scan symlinked workspace deps.** `app/src/styles.css` and www's
 each carry a load-bearing `@source "../../design/src";`. If styling vanishes wholesale, that
-is why — but those files are the Implementor's, so report it rather than editing them.
+is why — ⚠️ but that is a **pre-existing config gap, not something your change broke**, so it
+stays reported rather than edited. It is the clearest example of the line: you repair your own
+breakage, never someone else's.
 
 ⚠️ **Don't check tailwind/daisyui behaviour by reading `node_modules` at the repo root** —
 daisyui is nested per-consumer and the root has no copy. The built CSS in
