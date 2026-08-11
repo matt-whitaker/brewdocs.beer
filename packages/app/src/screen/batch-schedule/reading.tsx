@@ -8,7 +8,6 @@ import DataGridInput from "@/component/data-grid/input";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridRemoveButton from "@/component/data-grid/remove-button";
 import DataGridRow from "@/component/data-grid/row";
-import DataGridSelect from "@/component/data-grid/select";
 import {MutateFn, RemoveFn, UpdateFn} from "@/hooks/useJsonEdit";
 import Batch from "@/model/batch";
 import {BrewablePhase, Milestone, MilestoneKind} from "@/model/brewable";
@@ -27,13 +26,12 @@ type BatchScheduleReadingItemProps = {
     onPatch: (ref: Ref, patch: TrackerEntry) => void;
     update: UpdateFn;
     remove: RemoveFn;
-    unitOptions?: {name: string; value: Unit}[];
     defaultUnit?: Unit;
-    /** date-only kinds (kegDate/bottleDate) skip the reading/unit inputs and use only `TrackerEntry.date` */
+    /** date-only kinds (kegDate/bottleDate) skip the reading input and use only `TrackerEntry.date` */
     dateOnly?: boolean;
 };
 
-function BatchScheduleReadingItem({ phaseIndex, row, milestone, entry, onPatch, update, remove, unitOptions, defaultUnit, dateOnly = false }: BatchScheduleReadingItemProps) {
+function BatchScheduleReadingItem({ phaseIndex, row, milestone, entry, onPatch, update, remove, defaultUnit, dateOnly = false }: BatchScheduleReadingItemProps) {
     // reading unit defaults to the entry's own existing unit, like updateScalar's
     // prev.unit fallback — only a brand-new reading falls back to defaultUnit
     const unit = (entry?.reading?.unit ?? defaultUnit) as Unit;
@@ -48,12 +46,6 @@ function BatchScheduleReadingItem({ phaseIndex, row, milestone, entry, onPatch, 
     // mirrors the ingredient rows' updateScalar, but written to the tracker not a path
     const onChangeReading = useCallback((next: string) => onPatch(refOf(milestone.id), { reading: { value: next, unit } }), [onPatch, milestone.id, unit]);
     const onBlurReading = useCallback((next: string) => onPatch(refOf(milestone.id), { reading: scalarFromNumberWithUnit(next, unit) }), [onPatch, milestone.id, unit]);
-    // switching units reformats the existing numeric value under the new one, same
-    // as updateScalar's lockUnit path — an empty reading just adopts the new unit
-    const onChangeUnit = useCallback((next: string) => {
-        const value = entry?.reading?.value;
-        onPatch(refOf(milestone.id), { reading: value ? scalarFromNumberWithUnit(value, next as Unit, true) : { value: "", unit: next as Unit } });
-    }, [onPatch, milestone.id, entry?.reading?.value]);
     const onChangeDate = useCallback((next: string) => onPatch(refOf(milestone.id), { date: next }), [onPatch, milestone.id]);
 
     if (dateOnly) {
@@ -82,8 +74,7 @@ function BatchScheduleReadingItem({ phaseIndex, row, milestone, entry, onPatch, 
         >
             <DataGridRemoveButton label={removeLabel} onClick={onRemove} />
             <DataGridInput label={`${milestone.label} name`} className="ml-6" colStart={1} cols={3} value={milestone.label} onChange={onChangeLabel} />
-            <DataGridSelect colStart={4} cols={1} data={unitOptions ?? []} value={unit} onChange={onChangeUnit} />
-            <DataGridInput label={`${milestone.label} reading`} colStart={5} cols={2} value={entry?.reading?.value ?? ""} onChange={onChangeReading} onBlur={onBlurReading} />
+            <DataGridInput label={`${milestone.label} reading`} colStart={4} cols={3} value={entry?.reading?.value ?? ""} onChange={onChangeReading} onBlur={onBlurReading} />
         </DataGridRow>
     );
 }
@@ -164,7 +155,6 @@ export default function BatchScheduleReading({ phase, phaseIndex, tracker, onPat
                     onPatch={onPatch}
                     update={update}
                     remove={remove}
-                    unitOptions={unitOptions}
                     defaultUnit={defaultUnit}
                     dateOnly={dateOnly} />
             ))}
@@ -180,8 +170,8 @@ export default function BatchScheduleReading({ phase, phaseIndex, tracker, onPat
                     placeholder={defaultLabel} />
                 <DataGridInput
                     label={`${headerLabel} ${dateOnly ? "date" : "value"} to add`}
-                    colStart={dateOnly ? 4 : 5}
-                    cols={dateOnly ? 3 : 2}
+                    colStart={4}
+                    cols={3}
                     type={dateOnly ? "date" : undefined}
                     value={draftValue}
                     onChange={setDraftValue} />
