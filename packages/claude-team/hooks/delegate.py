@@ -32,11 +32,39 @@ IS_PR = os.environ.get("IS_PR", "false") == "true"
 if not team.REPO:
     team.fail("REPO is required")
 
-ROLES = STORY = STORY_BRANCH = REASON = KIND = ""
+ROLES = STORY = STORY_BRANCH = REASON = KIND = REMEDY = ""
 DEFAULTED = False
 
 
+def report_guess() -> None:
+    """Say, where the maintainer looks, that this run routed on a guess.
+
+    ⚠️ `DEFAULTED` was emitted to `$GITHUB_OUTPUT` and declared as a job output for a long time
+    with NOTHING READING IT — so "default rather than stall, but say so" said so only in a log
+    nobody opens. A required channel with no consumer is the shape that shipped dead three times
+    here already (#797).
+
+    ⚠️ UPSERTED, not appended. A re-run that guesses the same way twice is one fact, not two —
+    unlike the decisions log, where each round is a separate record worth keeping.
+
+    ⚠️ Carries the REMEDY, not just the guess. A warning the reader cannot act on is noise, and
+    the whole point is that the stamp or the branch name is a one-line fix.
+    """
+    if not (DEFAULTED and NUMBER):
+        return
+    team.upsert_comment(
+        NUMBER,
+        "<!-- claude-team:routing-guess -->",
+        "<!-- claude-team:routing-guess -->\n"
+        f"🔔 **I guessed the role for this one.** Routed to `{ROLES}` because {REASON}.\n\n"
+        f"{REMEDY}\n\n"
+        "Until then this keeps guessing the same way, which is recoverable but not right."
+        + team.run_footer(),
+    )
+
+
 def emit() -> None:
+    report_guess()
     out = os.environ.get("GITHUB_OUTPUT")
     if out:
         with open(out, "a", encoding="utf-8") as handle:
@@ -136,6 +164,11 @@ if IS_PR:
     else:
         DEFAULTED = True
         REASON = f"PR #{NUMBER} resolves to no story; defaulting to implementor"
+        REMEDY = (
+            "**To fix it:** name the head branch `<story#>-<summary>` so the story can be read "
+            "off it, or add `Closes #<issue>` to the PR body. The branch name is the primary "
+            "route — a closing reference is only the fallback."
+        )
     emit()
     raise SystemExit(0)
 
@@ -201,6 +234,14 @@ else:
     # recoverable, nothing running is not — but say so.
     ROLES = "implementor"
     DEFAULTED = True
+    REMEDY = (
+        f"**To fix it:** trigger one of #{NUMBER}'s tasks instead — a story is worked through "
+        "them, not directly."
+        if kids
+        else "**To fix it:** add `**Role: implementor|designer|tester|writer**` on its own line "
+             "in the body. The Architect normally writes it; an issue filed by hand will not "
+             "have one."
+    )
     REASON = (
         f"#{NUMBER} is a story with {kids} task(s) and no Role: stamp; defaulting to "
         "implementor — you probably meant to trigger one of its tasks"

@@ -460,6 +460,14 @@ turns and cannot be forgotten.
   react to an unrelated comment. Empty falls back to the issue or PR itself.
 - ⚠️ **`delegate.py` defaults a missing `Role:` stamp and says so.** Wrong is recoverable,
   silent is not — a run that quietly does nothing is indistinguishable from a broken workflow.
+  ⚠️ **"Says so" now means on the issue, not only in the log.** `DEFAULTED` was emitted to
+  `$GITHUB_OUTPUT` and declared as a job output with **nothing reading it** — a required channel
+  with no consumer, the same shape that shipped dead for the #475/#476 handoff, for `decisions` on
+  the PR path, and for `docsCandidates`. It now upserts one comment naming the guess **and its
+  remedy**: the two default paths are a missing `Role:` stamp and a PR whose story cannot be
+  resolved, and each is a one-line fix, so a warning without it would be noise. Upserted rather
+  than appended — a re-run guessing the same way twice is one fact, unlike the decisions log where
+  each round is its own record.
 - ⚠️ **The log hooks rewrite ONE comment each, never one per run.** An epic with ten tasks
   across three roles would otherwise bury itself in thirty comments. They are also derived
   entirely from GitHub state — no model writes any part of them, which is the only reason
