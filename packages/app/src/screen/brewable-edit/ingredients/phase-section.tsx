@@ -1,14 +1,14 @@
-import classNames from "classnames";
 import {useCallback, useMemo} from "react";
+import {InputSelectOption} from "@brewdocs.beer/design";
 import {KbGrain, KbHop, KbYeast} from "@brewdocs.beer/kb";
 import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
 import DataGridSubheaderRow from "@/component/data-grid/subheader-row";
 import {AddFn, RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
-import {Assignment, PhaseType} from "@/model/brewable";
+import {Assignment, PhaseType, ResourceType} from "@/model/brewable";
 import RecipeEditAssignmentRow from "@/screen/brewable-edit/ingredients/assignment-row";
 import {RESOURCE_TYPES, RESOURCE_TYPE_LABELS} from "@/screen/brewable-edit/ingredients/catalog-defaults";
-import RecipeEditPhaseAddRow from "@/screen/brewable-edit/ingredients/phase-add-row";
+import RecipeEditResourceAddRow from "@/screen/brewable-edit/ingredients/resource-add-row";
 import {saveSession, useSession} from "@/state/session";
 
 /** an assignment paired with its index in the flat `brewable.assignments` array — the index a row's remove/update calls must target, since this component only ever sees its phase's filtered slice */
@@ -26,7 +26,7 @@ export type RecipeEditPhaseSectionProps = {
     remove: RemoveFn;
     update: UpdateFn;
     updateScalar: UpdateScalarFn;
-    resourceOptions: { value: string; name: string }[];
+    resourceOptions: Record<ResourceType, InputSelectOption[]>;
     kbGrainsIndex: Map<string, KbGrain>;
     kbHopsIndex: Map<string, KbHop>;
     kbYeastsIndex: Map<string, KbYeast>;
@@ -39,15 +39,10 @@ export default function RecipeEditPhaseSection({
     const session = useSession();
     const onToggleCollapsed = useCallback((collapsed: boolean) => saveSession(sessionKey, collapsed), [sessionKey]);
 
-    // only subsections with at least one assignment render — the phase's own
-    // add-row (below, inside the collapsible section) seeds the first item of
-    // any type into this phase
-    const subsections = useMemo(() => RESOURCE_TYPES
-        .map(resourceType => ({
-            resourceType,
-            items: assignments.filter(({ assignment }) => assignment.resourceType === resourceType),
-        }))
-        .filter(({ items }) => items.length > 0), [assignments]);
+    const subsections = useMemo(() => RESOURCE_TYPES.map(resourceType => ({
+        resourceType,
+        items: assignments.filter(({ assignment }) => assignment.resourceType === resourceType),
+    })), [assignments]);
 
     return (
         <DataGrid>
@@ -70,21 +65,19 @@ export default function RecipeEditPhaseSection({
                             updateScalar={updateScalar}
                         />
                     ))}
+                    <RecipeEditResourceAddRow
+                        phaseId={phaseId}
+                        phaseLabel={label}
+                        phaseType={phaseType}
+                        resourceType={resourceType}
+                        add={add}
+                        options={resourceOptions[resourceType]}
+                        kbGrainsIndex={kbGrainsIndex}
+                        kbHopsIndex={kbHopsIndex}
+                        kbYeastsIndex={kbYeastsIndex}
+                    />
                 </div>
             ))}
-            <div className={classNames({ "mt-2 border-t border-base-300": subsections.length > 0 })}>
-                <DataGridSubheaderRow>Add to {label}</DataGridSubheaderRow>
-                <RecipeEditPhaseAddRow
-                    phaseId={phaseId}
-                    phaseLabel={label}
-                    phaseType={phaseType}
-                    add={add}
-                    resourceOptions={resourceOptions}
-                    kbGrainsIndex={kbGrainsIndex}
-                    kbHopsIndex={kbHopsIndex}
-                    kbYeastsIndex={kbYeastsIndex}
-                />
-            </div>
         </DataGrid>
     );
 }

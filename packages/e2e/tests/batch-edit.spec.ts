@@ -214,8 +214,8 @@ test("a second phase of the same type gets its own tab and its own ingredients",
     // give it an ingredient of its own (the add-row needs a selection first)
     await page.getByRole("tab", {name: "Planning", exact: true}).click();
     await page.getByRole("tab", {name: "Ingredients", exact: true}).click();
-    await page.getByLabel("Ingredient for 4. Boil").selectOption("hop:Cascade");
-    await page.getByRole("button", {name: "Add ingredient to 4. Boil"}).click();
+    await page.getByLabel("Hops for 4. Boil").selectOption("Cascade");
+    await page.getByRole("button", {name: "Add hop to 4. Boil"}).click();
 
     await settleSave(page);
     await page.reload();
@@ -245,8 +245,8 @@ test("adds a hop to a phase that also has additives, and it persists under Hops"
     await page.getByRole("tab", {name: "Planning", exact: true}).click();
     await page.getByRole("tab", {name: "Ingredients", exact: true}).click();
 
-    await page.getByLabel("Ingredient for 2. Boil").selectOption("hop:Cascade");
-    await page.getByRole("button", {name: "Add ingredient to 2. Boil"}).click();
+    await page.getByLabel("Hops for 2. Boil").selectOption("Cascade");
+    await page.getByRole("button", {name: "Add hop to 2. Boil"}).click();
     await expect(page.getByLabel("Cascade weight")).toBeVisible();
 
     await settleSave(page);
