@@ -3,7 +3,7 @@ import {DEFAULT_ENTITY_VERSION, Migration, MigrationResult} from "@/storage/migr
 
 type Versioned<T> = T & { version?: number };
 
-const idOf = (record: unknown): string | undefined => {
+export const entityIdOf = (record: unknown): string | undefined => {
     const id = (record as { id?: unknown } | null)?.id;
     return typeof id === "string" ? id : undefined;
 };
@@ -16,7 +16,7 @@ export function runMigrations<T>(entityType: string, record: Versioned<T>, targe
 
     const failed = (error: unknown): MigrationResult<Versioned<T>> => ({
         ok: false,
-        failure: {entityType, id: idOf(record), fromVersion, targetVersion, data: record, error: messageOf(error)},
+        failure: {entityType, id: entityIdOf(record), fromVersion, targetVersion, data: record, error: messageOf(error)},
     });
 
     let currentVersion = fromVersion;
