@@ -368,6 +368,63 @@ jobs:
           # the tasks it just cut, or an epic's stories
           INCLUDE_SUB_ISSUES: "true"
         run: "$RUNNER_TEMP/agent-bin/set-issue-status.py"
+  # ── @claude: the root role, reached by naming it in a comment ──────────────────
+  # ⚠️ ROUTED, NOT LABELLED. There is no `@claude/claude` handle and no label of its own — the
+  # router sends here (rule 1b) when a comment names `@claude` and no role handle matched. The
+  # `@claude` LABEL still routes to a working role exactly as before; the split is that the label
+  # does the work and a comment talks about it.
+  claude:
+    needs: delegate
+    if: |
+      always() && needs.delegate.result != 'skipped'
+      && contains(needs.delegate.outputs.roles, 'claude')
+    runs-on: ubuntu-latest
+    permissions:
+      # reads to answer, writes only its own reply. No branch, no PR, no code.
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # ⚠️ Same reasoning as the Researcher: `persist-credentials: true` leaves the token in
+          # `.git/config` as an http extraheader, recoverable by anything holding `Read`. This role
+          # never pushes, so there is nothing to lose by dropping it.
+          persist-credentials: false
+      - id: prompt
+        uses: ./.github/actions/load-prompt
+        with:
+          role: claude
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      # ⚠️ No role-label stamp. The stamp records "this role has been here" on work; a
+      # conversation is not work, and there is no `@claude/claude` label for it to write.
+      - uses: anthropics/claude-code-action@v1
+        env:
+          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
+          STORY: ${{ needs.delegate.outputs.story }}
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # ⚠️ Supplied for the two reasons #668 established: it short-circuits `setupGitHubToken`
+          # before OIDC, so this job needs no `id-token`; and it makes the `permissions:` block
+          # above actually bound the agent, which the App token from the exchange does not.
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # ⚠️ The bare handle is correct HERE and nowhere else. The action extracts everything
+          # after the phrase as "the user request" and the CLI scans it for a slash command — which
+          # is why a bare `@claude` breaks the *role* jobs, where `@claude/architect do X` would
+          # extract as `/architect do X`. It cannot happen here: rule 1b only routes to this job
+          # when no role handle matched, so the text after `@claude` is prose.
+          trigger_phrase: "@claude"
+          track_progress: true
+          prompt: ${{ steps.prompt.outputs.body }}
+          # Reads and answers. No Edit/Write: this role produces no content, and repairs are a
+          # separate bounded remit that does not exist yet.
+          claude_args: |
+            --model sonnet
+            --allowedTools "Read,Glob,Grep,Bash(gh:*),Bash(git:*)"
+            --max-turns 40
+
   # ── Researcher: answers a spike before anything is shaped ──────────────────────
   # ⚠️ ITS OWN JOB, not a step in `authors`. The authoring job's whole tail — finish-pr.py,
   # post-handoff.py, the PR label — assumes a run that produced a PR. A Researcher produces a

@@ -168,6 +168,22 @@ the issue's state to pick the role. The same label named in a comment does the s
 `@claude/<role>` handle in a comment names the role outright and skips the inspection — the
 way to override a bad guess.
 
+⚠️ **The label does the work; a comment talks about it.** That split is the whole ergonomics of
+the root role. The `@claude` **label** routes to a working role exactly as it always has. A comment
+naming `@claude` with **no** role handle now reaches the root role instead of falling through to
+rules 2-4 — so "@claude what happened here?" answers rather than starting an Implementor.
+
+⚠️ **An unknown handle lands there too.** `@claude/nonsense` matches no role, so rule 1b catches it
+and the root role can say there is no such role — where rule 3 would previously have shaped the
+issue as a story instead.
+
+⚠️ **This changes PR follow-ups.** A bare `@claude` on a PR used to run an Implementor; it now
+answers. `@claude/implementor` is the way to ask for the work, and it is unchanged.
+
+⚠️ **`trigger_phrase` is the bare `@claude` for that job, and only that job.** The usual warning —
+that a bare phrase makes `@claude/architect do X` extract as the slash command `/architect do X` and
+kills the run — cannot bite here, because rule 1b only routes to it when no role handle matched.
+
 ⚠️ **A handle skips the role decision, not the context.** It still resolves the story — from
 the PR's head branch on a PR, from the issue's **Branch** line on an issue. It did neither on
 an issue once, so a handled role started with no story and paid turns rediscovering what the
@@ -190,6 +206,7 @@ at all.)
 
 | role | picked up from | writes |
 |---|---|---|
+| `@claude` | its name in a **comment**, with no role handle | an answer. No code, no branch, no PR — it is who you talk to |
 | Architect | an epic or an unshaped story | the issue, a story's branch, and its tasks |
 | Researcher | a spike | findings and a recommendation, appended to the issue by a hook — it holds no shell |
 | Implementor | a task stamped `Role: implementor` | code, outside the design system |
