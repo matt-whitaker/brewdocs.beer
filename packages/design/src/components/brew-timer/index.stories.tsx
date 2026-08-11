@@ -1,5 +1,6 @@
 import type {Meta, StoryObj} from "@storybook/react-vite";
 import {ComponentProps, useEffect, useState} from "react";
+import {Hop} from "@/components/svg";
 import {BrewTimer, BrewTimerMarker, BrewTimerScope} from "./index";
 
 const MILESTONE_KIND_OPTIONS = [
@@ -53,6 +54,9 @@ const MARKERS: BrewTimerMarker[] = [
     {id: "hop-60", offsetSeconds: 5460, label: "Bittering hops", kind: "note"},
     {id: "flame-out", offsetSeconds: 9000, label: "Flame out", kind: "temperature"}
 ];
+
+const ICON_MARKERS: BrewTimerMarker[] = MARKERS.map(marker =>
+    marker.id === "hop-60" ? {...marker, icon: Hop} : marker);
 
 const CROWDED_MARKERS: BrewTimerMarker[] = [
     {id: "boil-start", offsetSeconds: 5400, label: "Boil start", kind: "temperature"},
@@ -214,6 +218,18 @@ export const Markers: Story = {
         docs: {
             description: {
                 story: "Each marker at or before the elapsed time gets a `Popover` showing its label, kind and offset. Hover on desktop, tap on mobile; the hit target carries an accessible name of `\"<label> at <HH:MM:SS>\"`."
+            }
+        }
+    }
+};
+
+export const MarkerIcons: Story = {
+    name: "Marker popover with an icon",
+    args: {isRunning: false, elapsedSeconds: 9000, markers: ICON_MARKERS},
+    parameters: {
+        docs: {
+            description: {
+                story: "A marker may carry an optional `icon` — any component taking a `className` — rendered beside its kind inside the popover. Only \"Bittering hops\" has one here; every other marker's popover is byte-for-byte what it was without the field. The marker drawn on the line itself is the same plain square either way: `Timeline` knows nothing about icons, and shape-per-kind would be a different change."
             }
         }
     }
