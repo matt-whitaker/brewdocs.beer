@@ -1,4 +1,6 @@
-import {useState} from "react";
+import classNames from "classnames";
+import {ComponentType, useState} from "react";
+import {PropsWithClass} from "@brewdocs.beer/core";
 import {Popover} from "@/components/popover";
 import {formatElapsed} from "./format";
 
@@ -10,6 +12,7 @@ export type BrewTimerMarker = {
     offsetSeconds: number;
     label: string;
     kind: string;
+    icon?: ComponentType<PropsWithClass>;
 };
 
 export type BrewTimerMarkerOverlayProps = {
@@ -63,7 +66,10 @@ export function BrewTimerMarkerOverlay({ markers, elapsedSeconds, markerSize }: 
                                 style={{width: hitSize, height: hitSize}} />
                         }>
                         <p className="font-bold whitespace-nowrap">{marker.label}</p>
-                        <p className="text-sm opacity-70 whitespace-nowrap">{marker.kind}</p>
+                        <p className={classNames("text-sm opacity-70 whitespace-nowrap", {"flex items-center gap-1.5": !!marker.icon})}>
+                            {marker.icon ? <marker.icon className="h-4 w-4 shrink-0" /> : null}
+                            {marker.kind}
+                        </p>
                         <p className="font-mono text-sm whitespace-nowrap">{formatElapsed(marker.offsetSeconds)}</p>
                     </Popover>
                 </div>

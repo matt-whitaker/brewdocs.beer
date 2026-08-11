@@ -129,6 +129,18 @@ export const Pause = ({ className }: PropsWithClass) => (
     </svg>
 );
 
+export const Hop = ({ className }: PropsWithClass) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth={1.5}
+        stroke="currentColor"
+        className={classNames([className])}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 5.25V2.75M12 5.25C15.31 5.25 17.75 8.05 17.75 11.5C17.75 14.95 15.5 18.25 12 20.25C8.5 18.25 6.25 14.95 6.25 11.5C6.25 8.05 8.69 5.25 12 5.25ZM7.4 9C9.1 10.6 14.9 10.6 16.6 9M6.9 12.6C8.6 14.2 15.4 14.2 17.1 12.6M8.4 16.2C9.6 17.4 14.4 17.4 15.6 16.2" />
+    </svg>
+);
+
 export const LockClosed = ({ className }: PropsWithClass) => (
     <svg
         xmlns="http://www.w3.org/2000/svg"
