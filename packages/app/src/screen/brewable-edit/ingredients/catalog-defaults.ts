@@ -24,6 +24,13 @@ export const RESOURCE_TYPE_LABELS: Record<ResourceType, string> = {
     additive: "Additives",
 };
 
+export const RESOURCE_TYPE_SINGULAR_LABELS: Record<ResourceType, string> = {
+    grain: "grain",
+    hop: "hop",
+    yeast: "yeast",
+    additive: "additive",
+};
+
 /** Default weight for a grain newly picked from the catalog. */
 export function kbGrainToRecipeGrain(kbGrain: KbGrain): Grain {
     return {

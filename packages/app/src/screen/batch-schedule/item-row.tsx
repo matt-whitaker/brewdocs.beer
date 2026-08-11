@@ -138,7 +138,7 @@ function BatchScheduleItemRow({ item, entry, onToggle, onPatch }: BatchScheduleI
                         <BatchScheduleItemDetail
                             key={detail.name}
                             detail={detail}
-                            value={entry?.date ?? ""}
+                            value={entry?.date?.slice(0, 10) ?? ""}
                             onChange={onChangePitchDate} />
                     ))}
                 </DataGrid>

@@ -8,7 +8,7 @@ This root file holds the **universal** rules. Each package's deep-dive lives in 
 
 ## Overview
 
-- **What.** BrewDocs — offline-first homebrewing PWA (brew-day companion + knowledge base). **Proof-of-concept**; breaking changes are expected. There is deliberately **no data migration or on-load normalization** — assume a **pristine local store** in dev (`/?purge=true` to reset). Don't add "ensure"/backfill shims that repair old stored objects.
+- **What.** BrewDocs — offline-first homebrewing PWA (brew-day companion + knowledge base). **Proof-of-concept**; breaking changes are expected. Stored data is versioned and carried forward through a dedicated migration framework, not normalized ad hoc — `Entity` carries an optional `version` (missing ⇒ `1`), and a `Migration` up/down pair plus a registry/runner (`packages/app/src/storage/migration/`) apply the chain on read; `batches` is the reference integration today, other domains aren't wired yet. Don't add "ensure"/backfill shims outside that framework — see _Data compatibility_ (`packages/app/CLAUDE.md`).
 - **Layout.** npm-workspaces monorepo; packages named `@brewdocs.beer/<name>`.
 - **Default branch.** `mainline` — also the target for all PRs and the **sole** deploy branch.
 - **Node.** ≥22. ⚠️ Non-interactive shells on this machine resolve `node` to an ancient v10 — if a command fails with syntax errors inside `node_modules`, prefix it: `PATH="$HOME/.nvm/versions/node/v22.23.1/bin:$PATH"`.
@@ -126,8 +126,8 @@ Guidance for human contributors **and** for the `@claude` GitHub integration.
 
 ### The Claude GitHub roles
 
-Seven roles, one workflow (`.github/workflows/claude-roles.yaml`), so a comment makes one run
-with the unselected roles skipping inside it rather than six skipped runs cluttering the
+Eight roles, one workflow (`.github/workflows/claude-roles.yaml`), so a comment makes one run
+with the unselected roles skipping inside it rather than seven skipped runs cluttering the
 history.
 
 **Each role's prompt is a file** — `.github/agent-prompts/<role>.md`. Editing a role means
@@ -172,6 +172,15 @@ and `delegate.py` reads the issue's state to pick the role. A bare `@claude` in 
 the same. A `@claude/<role>` handle in a comment names the role outright and skips the
 inspection (rule 1) — still the way to override a bad guess.
 
+- `@claude` **(no handle)** — the root role, reached by naming it in a **comment**. It answers:
+  explains why a run did what it did, says which role owns something, and points at what would fix
+  a process problem. It writes no code, cuts no branch and starts no role. ⚠️ **The label still
+  routes** — the split is that the label does the work and a comment talks about it, which also
+  means a bare `@claude` on a PR now answers instead of running an Implementor (#798).
+  ⚠️ **It is also reached without being named**, as a step inside `delegate` whenever the router
+  had to guess: it reads the issue, returns a role, and the script's default becomes the fallback
+  rather than the decision. Its second prompt is `route.md`; the mechanics and the three job shapes
+  that do *not* work are in `packages/claude-team/CLAUDE.md`.
 - `@claude/architect` — epic or story. Shapes the issue, cuts a story's branch, and creates
   its tasks — each stamped with the role that should pick it up.
 - `@claude/researcher` — a **spike**: an issue titled `Spike:` or labelled `spike`, whose answer
@@ -189,9 +198,12 @@ inspection (rule 1) — still the way to override a bad guess.
 - `@claude/designer` — issue or PR. An Implementor whose subject is `packages/design`: the
   primitives, their props and class strings, the stories and the tokens.
   ⚠️ The split is by **package**, not by judgement, so it can be checked rather than
-  negotiated. A task that changes a primitive *and* its call sites is two tasks — the
-  Architect cuts it in two, and the Designer's prompt says to report and stop rather than
-  reach across. Implementor and Designer never both run for one task.
+  negotiated. ⚠️ **The Designer does repair the consumers its own change breaks** (#701) — a
+  breaking primitive change cannot pass `tsc`/`vite build` otherwise, and it was previously told
+  both to stop at the boundary and to hand over a green gate. The licence is mechanical only:
+  repair what your change broke, never what was already broken. A consumer needing a *different
+  value*, rather than the same value spelled differently, is behavioural and still the
+  Implementor's. Implementor and Designer never both run for one task.
 - `@claude/tester` — issue or PR. Owns `packages/e2e`.
 - `@claude/writer` — issue or PR. Owns every `CLAUDE.md` and `.claude/skills/`.
 - `@claude/security` — PR. Runs **automatically on every merge** to `mainline`, and the

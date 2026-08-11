@@ -4,9 +4,6 @@ A portable definition of a Claude/GitHub role team — the prompts each role run
 scripted hooks that do the bookkeeping around them. A repo **consumes** it by pointing a
 workflow at these files, and **extends** it with its own per-role overlay.
 
-BrewDocs is the first consumer. Nothing here names BrewDocs, its gate or its packages; if it
-does, it belongs in the consumer's overlay.
-
 ## Entry points
 
 - [`prompts/`](prompts/) — [`_shared.md`](prompts/_shared.md) for every role, plus one file

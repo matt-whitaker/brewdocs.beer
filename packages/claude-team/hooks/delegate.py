@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
-"""Decides which role handles an event, from issue state. Emits `roles`, `story`, `defaulted`
-and `reason` to $GITHUB_OUTPUT; every role job gates on `roles`.
+"""Decides which role handles an event, from issue state. Emits `roles`, `story`, `defaulted`,
+`reason` and `remedy` to $GITHUB_OUTPUT; every role job gates on `roles`.
+
+⚠️ `defaulted` MEANS "ASK SOMEONE ELSE", not "run this". Where it is true the workflow puts the
+route to the root role before any role job starts, and only falls back to what this script chose
+if that cannot answer. So a default here is a floor, not the decision — which is why nothing in
+this file announces one any more; see `emit`.
 
 THIS IS A SCRIPT ON PURPOSE. Routing was going to be a model step emitting JSON, and that is
 the pattern this repo has been bitten by most — a model asked to produce data a consumer
@@ -11,6 +16,7 @@ the task as a `Role:` line, which rule 4 reads.
 
 Precedence:
   1. a @claude/<role> handle in the comment wins outright
+  1b. a bare @claude in a COMMENT -> the root role, which answers rather than routes
   2. a PR            -> resolve its story, default to implementor
   3. no Branch line  -> researcher for a spike, otherwise architect, told what it is
   4. a Branch line   -> the role stamped on the task
@@ -32,17 +38,27 @@ IS_PR = os.environ.get("IS_PR", "false") == "true"
 if not team.REPO:
     team.fail("REPO is required")
 
-ROLES = STORY = STORY_BRANCH = REASON = KIND = ""
+ROLES = STORY = STORY_BRANCH = REASON = KIND = REMEDY = ""
 DEFAULTED = False
 
 
 def emit() -> None:
+    """Write the route to `$GITHUB_OUTPUT`. This does NOT announce a default.
+
+    ⚠️ IT USED TO, AND THAT WAS ONE STEP TOO EARLY. Announcing here means announcing before the
+    root role has been asked, so an intercepted route posted "I guessed" and then ran something
+    else — the notice describing a decision that never took effect. `report-route.py` runs after
+    the interception instead, and says whichever of the two actually happened.
+
+    `remedy` rides along for it: the fix for a default outlives the run that hit it, and the hook
+    is where it gets said.
+    """
     out = os.environ.get("GITHUB_OUTPUT")
     if out:
         with open(out, "a", encoding="utf-8") as handle:
             handle.write(
                 f"roles={ROLES}\nstory={STORY}\nstory_branch={STORY_BRANCH}\nkind={KIND}\n"
-                f"defaulted={str(DEFAULTED).lower()}\nreason={REASON}\n"
+                f"defaulted={str(DEFAULTED).lower()}\nreason={REASON}\nremedy={REMEDY}\n"
             )
     print(
         f"roles={ROLES} story={STORY or 'none'} branch={STORY_BRANCH or 'none'} "
@@ -125,6 +141,34 @@ for role in ("architect", "researcher", "implementor", "tester", "writer", "desi
         emit()
         raise SystemExit(0)
 
+# ---- 1b. a bare `@claude` in a COMMENT is a conversation, not a route
+#
+# ⚠️ COMMENT ONLY. The `@claude` **label** still routes exactly as it always has — that is the
+# front door and nothing here touches it. The split is worth stating plainly because it is the
+# whole ergonomics of the change: **the label does the work, a comment talks about it.**
+#
+# Reaching here means rule 1 found no `@claude/<role>` handle, so the trigger named `@claude`
+# and nothing more. Previously that fell through to rules 2-4 and started whichever role the
+# state implied — so typing "@claude what happened here?" ran an Implementor. Nothing is lost by
+# ending it: `@claude/<role>` still names a role outright, and re-adding the label is the
+# documented "run again" gesture.
+#
+# ⚠️ An unknown handle lands here too (`@claude/nonsense` matches no role), and that is the right
+# home for it — the root role can say there is no such role, where rule 3 would have silently
+# shaped the issue as a story instead.
+if COMMENT_BODY and "@claude" in COMMENT_BODY:
+    ROLES = "claude"
+    REASON = "@claude named in a comment with no role handle — answering rather than routing"
+    # the same context a handle gets: being conversational is no reason to arrive uninformed
+    if NUMBER:
+        if IS_PR:
+            STORY = resolve_pr_story()
+        else:
+            STORY_BRANCH = team.branch_line(team.issue_body(NUMBER))
+            STORY = team.story_from_branch(STORY_BRANCH)
+    emit()
+    raise SystemExit(0)
+
 # ---- 2. triggered on a PR: resolve its story, default to implementor
 if IS_PR:
     if not NUMBER:
@@ -136,6 +180,11 @@ if IS_PR:
     else:
         DEFAULTED = True
         REASON = f"PR #{NUMBER} resolves to no story; defaulting to implementor"
+        REMEDY = (
+            "**To fix it:** name the head branch `<story#>-<summary>` so the story can be read "
+            "off it, or add `Closes #<issue>` to the PR body. The branch name is the primary "
+            "route — a closing reference is only the fallback."
+        )
     emit()
     raise SystemExit(0)
 
@@ -201,6 +250,14 @@ else:
     # recoverable, nothing running is not — but say so.
     ROLES = "implementor"
     DEFAULTED = True
+    REMEDY = (
+        f"**To fix it:** trigger one of #{NUMBER}'s tasks instead — a story is worked through "
+        "them, not directly."
+        if kids
+        else "**To fix it:** add `**Role: implementor|designer|tester|writer**` on its own line "
+             "in the body. The Architect normally writes it; an issue filed by hand will not "
+             "have one."
+    )
     REASON = (
         f"#{NUMBER} is a story with {kids} task(s) and no Role: stamp; defaulting to "
         "implementor — you probably meant to trigger one of its tasks"

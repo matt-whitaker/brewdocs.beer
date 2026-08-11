@@ -162,11 +162,19 @@ changes fall inside the design-system package is `designer`; everything else is
 `implementor`. Read the paths rather than reasoning about which side a change "really"
 belongs to — the boundary is drawn to be checkable.
 
-**A task that changes a primitive *and* its call sites is two tasks**, and you are the only
-one who can split it: cut the design-package change as a `designer` task and the consumer
-updates as an `implementor` task, and say in the consumer task that it depends on the other.
-Neither role will reach across on its own — both are told to report and stop — so a task
-left spanning both simply stalls.
+**A task that changes a primitive *and* asks for new consumer BEHAVIOUR is two tasks**, and you
+are the only one who can split it: cut the design-package change as a `designer` task and the
+consumer work as an `implementor` task, and say in the consumer task that it depends on the other.
+
+⚠️ **Do not split a change whose consumer half is only keeping the build green.** The Designer
+repairs the call sites its own change breaks — a renamed prop, a changed signature — because a
+breaking primitive change cannot pass a typecheck or a build otherwise. Splitting that makes every
+primitive rename two tasks and a hand-off for work one role can finish.
+
+The question to ask is **mechanical or behavioural**: the same value spelled differently is the
+Designer's to fix; a *different* value, or a screen that should now do something else, is the
+Implementor's. When it is genuinely both, split it — a task left spanning a behavioural boundary
+stalls, because neither role will decide the other's half.
 
 ## Sizing is about exploration cost, not just reviewability
 

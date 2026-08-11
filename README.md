@@ -5,13 +5,14 @@ BrewDocs is an offline homebrewing application and info handbook.
 ## Packages
 
 | Package | Role |
-|---                            |--- |
-| [`core`](/packages/core)      | Shared types, helpers, and config |
-| [`kb`](/packages/kb)          | Knowledge base|
-| [`design`](/packages/design)  | Design System + Component Library |
-| [`app`](/packages/app)        | App|
-| [`www`](/packages/www)        | Marketing Site |
-| [`e2e`](/packages/e2e)        | E2E test suite |
+|---                                      |--- |
+| [`app`](/packages/app)                  | App|
+| [`claude-team`](/packages/claude-team)  |Claude Team|
+| [`core`](/packages/core)                | Shared types, helpers, and config |
+| [`design`](/packages/design)            | Design System + Component Library |
+| [`e2e`](/packages/e2e)                  | E2E test suite |
+| [`kb`](/packages/kb)                    | Knowledge base|
+| [`www`](/packages/www)                  | Marketing Site |
 
 ## Stack
 
@@ -34,6 +35,12 @@ BrewDocs is an offline homebrewing application and info handbook.
 - [Daisy UI](https://daisyui.com/)
 
 ## Claude Code
+
+### Claude Team
+
+Custom Github / Claude Code AI workforce setup drives a majority of the work, with human oversight supported by frequent check-in phases for course correction and review. I've been having great success with it so far.
+
+### CLAUDE.md
 
 [Claude Code](https://claude.com/claude-code) enabled with [`@claude` integration](.github/workflows/claude.yaml)
 

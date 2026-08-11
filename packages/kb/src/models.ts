@@ -69,7 +69,6 @@ export interface KbAdditive extends Entity {
 export interface KbEquipment extends Entity {
     __type: "kbEquipment";
     name: string;
-    use: string[];
     notes: string;
     count?: number;
 }

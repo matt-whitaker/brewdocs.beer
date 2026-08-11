@@ -1,4 +1,4 @@
-import {memo, useCallback, useEffect, useMemo, useState} from "react";
+import {memo, useCallback, useMemo} from "react";
 import DataGridInput from "@/component/data-grid/input";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridRemoveButton from "@/component/data-grid/remove-button";
@@ -28,20 +28,13 @@ function RecipeEditPhaseEquipmentRow({ phase, row, phaseLabel, item, remove, upd
     }, [equipment, equipmentIndex, item.name]);
     const path = `schedule.phases[${phase}].equipment`;
 
-    // free-text draft for the use[] field, committed to the array on blur —
-    // rendering it straight from item.use.join(", ") would swallow a typed
-    // trailing comma on every keystroke's re-render
-    const [useText, setUseText] = useState(() => item.use.join(", "));
-    useEffect(() => setUseText(item.use.join(", ")), [item.use]);
-
     const onRemoveItem = useCallback(() => remove(path, row), [remove, path, row]);
     const onChangeItem = useCallback((value: string) => {
         const catalogItem = equipmentIndex.get(value);
         update(`${path}[${row}]`, catalogItem
-            ? { name: catalogItem.name, use: catalogItem.use, count: catalogItem.count }
-            : { name: value, use: item.use, count: item.count });
-    }, [update, path, row, equipmentIndex, item.use, item.count]);
-    const onBlurUse = useCallback((value: string) => update(`${path}[${row}].use`, value.split(",").map(s => s.trim()).filter(Boolean)), [update, path, row]);
+            ? { name: catalogItem.name, count: catalogItem.count }
+            : { name: value, count: item.count });
+    }, [update, path, row, equipmentIndex, item.count]);
     const onChangeCount = useCallback((value: string) => {
         const trimmed = value.trim();
         update(`${path}[${row}].count`, trimmed === "" ? undefined : Number(trimmed));
@@ -57,12 +50,6 @@ function RecipeEditPhaseEquipmentRow({ phase, row, phaseLabel, item, remove, upd
                     onChange={onChangeItem}
                 />
             </DataGridLabel>
-            <DataGridInput
-                colStart={5}
-                value={useText}
-                onChange={setUseText}
-                onBlur={onBlurUse}
-            />
             <DataGridInput
                 colStart={6}
                 value={item.count?.toString() ?? ""}

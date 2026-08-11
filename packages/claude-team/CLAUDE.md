@@ -168,6 +168,22 @@ the issue's state to pick the role. The same label named in a comment does the s
 `@claude/<role>` handle in a comment names the role outright and skips the inspection — the
 way to override a bad guess.
 
+⚠️ **The label does the work; a comment talks about it.** That split is the whole ergonomics of
+the root role. The `@claude` **label** routes to a working role exactly as it always has. A comment
+naming `@claude` with **no** role handle now reaches the root role instead of falling through to
+rules 2-4 — so "@claude what happened here?" answers rather than starting an Implementor.
+
+⚠️ **An unknown handle lands there too.** `@claude/nonsense` matches no role, so rule 1b catches it
+and the root role can say there is no such role — where rule 3 would previously have shaped the
+issue as a story instead.
+
+⚠️ **This changes PR follow-ups.** A bare `@claude` on a PR used to run an Implementor; it now
+answers. `@claude/implementor` is the way to ask for the work, and it is unchanged.
+
+⚠️ **`trigger_phrase` is the bare `@claude` for that job, and only that job.** The usual warning —
+that a bare phrase makes `@claude/architect do X` extract as the slash command `/architect do X` and
+kills the run — cannot bite here, because rule 1b only routes to it when no role handle matched.
+
 ⚠️ **A handle skips the role decision, not the context.** It still resolves the story — from
 the PR's head branch on a PR, from the issue's **Branch** line on an issue. It did neither on
 an issue once, so a handled role started with no story and paid turns rediscovering what the
@@ -177,6 +193,52 @@ state-based rules, which would re-judge the role and could pick a different one.
 ⚠️ **Routing is a shell script, never a model.** It is all readable state; the one call that
 needs judgement — which author owns a task — is answered once by the Architect and written
 into the task as a `Role:` line.
+
+### When the script has to guess
+
+⚠️ **A `defaulted` route means "ask", not "run".** Rules 1-4 decide from state, and where the
+state that should decide is missing they fall back to a default rather than stall. That default is
+now a **floor**: the router job puts the question to the root role first, and runs the fallback
+only if it cannot answer. The choice this adds is not "script or model" — it is "read the issue or
+guess", and guessing was the incumbent.
+
+⚠️ **It is a STEP in the router job, and each alternative is ruled out by something already paid
+for here:**
+
+| shape | why not |
+|---|---|
+| a new workflow run | an event created with the workflow token starts no run, by design |
+| a job the roles `needs:` | a job needing a **skipped** job reports cancelled — the #430 revert, verbatim |
+| a job that `needs:` the router | too late; role jobs gate on the router's outputs and have already started |
+
+A job cannot gate on a step inside itself. It *can* gate on an output that step produced, which is
+what makes the step form work where the job form does not.
+
+⚠️ **The step's answer is filtered by an allowlist, not trusted because it matched a schema.** A
+shell step accepts a known role and discards anything else, so a malformed answer, a failed step, a
+skipped step and `undecided` all arrive as the same thing: the script's default, with its notice
+intact. **A failed interception must never mean nothing runs** — degrading to the old behaviour is
+the correct failure, and the step carries `continue-on-error` so the job reaches the fallback.
+
+⚠️ **`undecided` has to be a real answer, or the schema manufactures a guess.** An enum of roles
+alone leaves no way to say "the issue does not tell me", so a model obliged to pick one produces
+exactly the confident-wrong route this is meant to remove — and worse than the script's, because
+answering suppresses the guess notice that would have flagged it.
+
+⚠️ **It decides the ROLE and nothing else.** The story, its branch and the issue kind stay on the
+script's outputs. They are read from state and are not in doubt; letting a model restate them puts
+two sources on one fact.
+
+⚠️ **Announcing a default belongs AFTER the decision, not inside `delegate.py`.** It was inside,
+and that was one step too early: the script announced its guess before anything had been asked, so
+an intercepted run posted "I guessed" and then ran something else — a notice describing a decision
+that never took effect, which is worse than none because it is a false record of *why* the run did
+what it did. `report-route.py` runs after resolution and says whichever actually happened.
+
+⚠️ **Deciding correctly does not repair the issue.** The missing stamp is still missing and the
+next trigger takes the same detour, so the remedy is carried on **both** outcomes. Only the
+sentence changes: a guess "keeps guessing the same way", an interception "costs a run before any
+of the work starts".
 
 ⚠️ **The role stamp is a record, not a route.** Roles stamp `@claude/<role>` as they start,
 so the labels read as "these agents have been here". Nothing routes off them.
@@ -190,6 +252,7 @@ at all.)
 
 | role | picked up from | writes |
 |---|---|---|
+| `@claude` | its name in a **comment**, with no role handle; **and** a route the script had to guess | an answer, a role name, and repairs to process state. No code, no branch, no PR — it is who you talk to |
 | Architect | an epic or an unshaped story | the issue, a story's branch, and its tasks |
 | Researcher | a spike | findings and a recommendation, appended to the issue by a hook — it holds no shell |
 | Implementor | a task stamped `Role: implementor` | code, outside the design system |
@@ -197,6 +260,65 @@ at all.)
 | Tester | a task stamped `Role: tester`, one per story | tests |
 | Writer | a task stamped `Role: writer`, one per story, run **first** | the product specification, then documentation |
 | Security | every merge, plus its handle on a PR | issues it files |
+
+### The custodian's repair remit
+
+The root role is the only one that may put **process state** right — the breakage no role owns,
+which is exactly why it accumulates: an issue off the board, a child never parented, a missing
+classification label.
+
+⚠️ **It names repairs; a hook applies them.** The model returns JSON, `apply-repairs.py` acts on it,
+and the hook's repertoire is a fixed enum — `board-item`, `sub-issue-link`, `classification-label`.
+That is what makes "never touches content" a fact about what *exists* rather than a promise in a
+prompt, which was the acceptance criterion: enforced by what the role can **reach**.
+
+⚠️ **Its tools are allowlisted by SUBCOMMAND**, the same way Security's are and for the same reason:
+`Bash(gh:*)` includes `gh issue edit --body`, which rewrites an issue, and a family grant cannot
+express "read but do not write". ⚠️ `gh api` is deliberately absent — it reaches every endpoint the
+token has. Relationships survive that narrowing because `gh issue view` exposes `parent`,
+`subIssues` and `subIssuesSummary`; **that was checked before narrowing**, because Security already
+taught this package that too narrow starves a role *silently*.
+
+⚠️ **Creating a missing branch is NOT in the repertoire, though it is the case that motivated the
+role.** Writing a ref needs `contents: write`, and the action's base allowlist unions in
+`Bash(git rm:*)` and `git-push.sh` which no role can remove — so `contents: write` would let a run
+delete files and push them, and the no-content claim would rest on holding no `Write` tool rather
+than on the token. `contents: read` is load-bearing. The branch case is prevented upstream anyway.
+
+⚠️ **Fix AND report, never fix quietly**, and this is the rule most likely to be eroded by a
+well-meaning change. Every repair appends to one log comment on its target carrying *what was
+wrong* and *why*. The value of this system has come from breakage being visible: a 404 nobody hid
+is what produced the rule that prevents it, and a custodian that had silently created the branch
+would have left a working run and a rule still wrong, with nobody knowing to fix it.
+
+⚠️ **A repeat escalates instead of repairing.** Reaching for the same `kind` on the same target
+twice means the cause was never fixed, so the hook withholds the repair, files an issue, and leaves
+the instance broken **on purpose**. A custodian quietly repairing the same thing weekly has become
+a suppressor of the signal that would have fixed it properly. The check reads the log comment —
+state on the issue, not a memory of the last run.
+
+⚠️ **`unrepairable` is the other half and carries the weight.** Anything outside the enum, anything
+needing content changed, and anything whose real fix is upstream in a rule goes there with what
+would fix it. Keeping it separate from `repairs` is the point: a custodian that quietly fixed
+everything would erase the evidence that the rule is wrong.
+
+⚠️ **The answer still goes in the tracking comment.** With `--json-schema` the final message is
+JSON, so `track_progress: true` stops being cosmetic and becomes the only place a human reads a
+reply — a run that answers into the JSON and leaves the comment empty has answered nobody.
+
+⚠️ **The root role has three jobs and two prompts.** `claude.md` is the conversation — someone asked
+it something. `route.md` is the interception — nobody asked it anything, and its whole output is a
+role name plus the reason, returned as JSON to a shell step. Splitting them is not tidiness: a
+conversational prompt handed a routing decision answers in prose, and a routing prompt handed a
+question answers with an enum. Same persona, same bounds, different contract.
+
+⚠️ **`route.md` is loaded by a STEP, so it runs in agent mode**, and that is the one place here
+where losing the tag-mode tracking comment is the *better* outcome — the durable record is the
+comment `report-route.py` writes, and a tracking comment beside it would be two comments for one
+sub-second decision. It is also why the prompt is authoritative rather than wrapped in the
+framing that tells a model its instructions are the triggering comment; there is no comment on a
+label event to be confused by. ⚠️ `structured_output` is set after the run in either mode, so the
+schema still binds — checked in the action's source, not assumed.
 
 ⚠️ **The Researcher answers; it does not shape.** It appends findings to the spike and stops —
 it creates no story, cuts no branch and starts no author. The maintainer decides, and only then
@@ -260,8 +382,19 @@ the section under the most pressure to skip and the most valuable to keep — wi
 person re-derives the gap without knowing it was one.
 
 ⚠️ **Implementor and Designer split on the package a change touches, not on judgement**, so
-the boundary can be checked rather than negotiated. A task spanning both is two tasks, and
-only the Architect can cut it in two.
+the boundary can be checked rather than negotiated.
+
+⚠️ **But the Designer repairs the consumers its own change breaks**, and that is not a hole in the
+boundary — it is what makes the boundary survivable. A primitive is an API, so changing one can
+stop its consumers compiling, and the same role is told to hand over a green gate. Those were
+contradictory instructions and a run had to disobey one of them silently. The licence is bounded
+by a checkable line: **repair what your change broke, never what was already broken**, and keep it
+mechanical. A consumer needing a *different value* rather than the same value spelled differently
+is a behavioural decision, still the Implementor's, and still a stop-and-report.
+
+⚠️ **A task spanning both is two tasks only when the consumer half is behavioural.** Splitting a
+change whose consumer side is purely keeping the build green makes every primitive rename two
+tasks and a stall.
 
 ⚠️ **The Tester and Writer are tasks the Architect cuts** — the Writer ahead of the authoring
 tasks, the Tester after them. No role chains off another; nothing runs that a maintainer did
@@ -426,12 +559,14 @@ forgotten by a model that ran out of turns or simply skipped it.
 |---|---|---|
 | `acknowledge.py` | the router job, first | reacts 👀 so the trigger is visibly received |
 | `delegate.py` | the router job | picks the role from issue state — routing is scripted, not judged |
+| `report-route.py` | the router job, last | says on the issue that this run did not route from state alone — whether the script guessed or the root role was asked |
 | `stamp-role-label.py` | pre, every role | stamps `@claude/<role>` on the triggering issue or PR |
 | `set-issue-status.py` | pre, authors + post, Architect | puts an issue **on** the board and sets its Status; column and flags are inputs |
-| `ensure-story-branch.py` | post, Architect + Researcher | creates the story's branch if it is missing; an epic and a spike have none, and it says so rather than warning |
+| `ensure-story-branch.py` | post, Architect + Researcher; **pre, authors** | creates the story's branch if it is missing; an epic and a spike have none, and it says so rather than warning |
 | `sync-kind-label.py` | post, Architect + Researcher | applies the `epic`/`spike`/`bug`/`story` label `kind()` derives |
 | `file-sub-issues.py` | post, Architect | parents stories to their epic, tasks to their story |
 | `finish-pr.py` | post, authors | labels the PR, and ensures it closes its issue — or, when the author reported work `remaining`, that it does not |
+| `apply-repairs.py` | post, the root role | applies the process repairs it named, records each with what was wrong and why, and files an issue rather than repairing the same thing twice |
 | `post-findings.py` | post, Researcher | renders its schema-forced findings onto the spike — the role has no shell, so this is the only way they reach anyone |
 | `post-handoff.py` | post, authors | posts the JSON handoff to the story's issue, and appends its `decisions` to one running log there |
 | `log-to-story.py` | post, Architect + authors + on merge | rewrites one comment on the story listing its tasks in trigger order |
@@ -449,6 +584,21 @@ turns and cannot be forgotten.
   react to an unrelated comment. Empty falls back to the issue or PR itself.
 - ⚠️ **`delegate.py` defaults a missing `Role:` stamp and says so.** Wrong is recoverable,
   silent is not — a run that quietly does nothing is indistinguishable from a broken workflow.
+  ⚠️ **"Says so" means on the issue, not only in the log.** `DEFAULTED` was emitted to
+  `$GITHUB_OUTPUT` and declared as a job output with **nothing reading it** — a required channel
+  with no consumer, the same shape that shipped dead for the #475/#476 handoff, for `decisions` on
+  the PR path, and for `docsCandidates`. One comment names the route **and its remedy**: the two
+  default paths are a missing `Role:` stamp and a PR whose story cannot be resolved, and each is a
+  one-line fix, so a warning without it would be noise. Upserted rather than appended — a re-run
+  resolving the same way twice is one fact, unlike the decisions log where each round is its own
+  record.
+  ⚠️ **`report-route.py` writes it, not `delegate.py`, because the announcement has to follow the
+  interception** — see *When the script has to guess*. Both outcomes share the comment's marker, so
+  a later interception **replaces** an earlier guess rather than stacking under it.
+  ⚠️ **The same defect one level up: `defaulted` and `reason` were job outputs nobody read.** The
+  fix for the router's dead channel reproduced it at the job boundary. They are step outputs now,
+  consumed inside the router job; a job-level declaration only invites a reader to assume something
+  gates on them.
 - ⚠️ **The log hooks rewrite ONE comment each, never one per run.** An epic with ten tasks
   across three roles would otherwise bury itself in thirty comments. They are also derived
   entirely from GitHub state — no model writes any part of them, which is the only reason
@@ -457,6 +607,15 @@ turns and cannot be forgotten.
   line plus an `epic #N` reference, and adopted a meta-issue that quoted the convention as an
   example. Checking the author is a bot is what makes it sound — with the accepted cost that a
   hand-written sub-issue is never auto-parented.
+- ⚠️ **`ensure-story-branch.py` runs on the AUTHORS path too, and that is not redundancy.**
+  `delegate.py` rule 4 routes straight to the stamped role whenever a `Branch:` line is present, so
+  an issue filed with both routing lines already written — **which is what a good agent-filed bug
+  looks like** — never reaches the Architect, and so never reached the hook that creates its branch.
+  `setupBranch` resolves the base branch before anything else, so the authoring job then 404s and
+  dies in ~3s, before the model is called (#744, #777).
+  ⚠️ The deeper fault was treating the `Branch:` **line** as proof of the **branch** — a
+  model-written block standing in for state, which is the anti-pattern this file already names.
+  Running the idempotent hook once more is the cheap fix; it only ever handles the absent case.
 - ⚠️ **A role labels only what it opens.** The stamp hook marks the triggering issue or PR;
   `finish-pr.py` labels the PR that run created. Nothing labels someone else's work.
 - ⚠️ **`Closes #<issue>` is both a prompt instruction and a hook.** The model writing it puts

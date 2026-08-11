@@ -15,6 +15,7 @@ import useSchedule from "@/hooks/useSchedule";
 import Batch, {ScheduleKind} from "@/model/batch";
 import {phaseLabel} from "@/model/brewable";
 import {byBrewingOrder} from "@/model/scheduleProgress";
+import {isRunning} from "@/model/timer";
 import {key, Ref, TrackerEntry} from "@/model/tracker";
 import BatchScheduleBrewTimer from "@/screen/batch-schedule/brew-timer";
 import BatchScheduleEquipment from "@/screen/batch-schedule/equipment";
@@ -46,6 +47,10 @@ function srmTag(srm?: string): ReactNode {
     return Number.isFinite(value) ? <SrmTag srm={value} /> : null;
 }
 
+function pauseRunningTimer(batch: Batch, date: string): Partial<Batch> {
+    return isRunning(batch.timer) ? { timer: [...batch.timer ?? [], { type: "pause", date }] } : {};
+}
+
 export type BatchScheduleProps = { batchId: string; onChange: (batch: Batch) => void; };
 export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps) {
     const session = useSession();
@@ -67,7 +72,13 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
     // list. Shared by the equipment checklist and the ingredient rows' checkoff;
     // immediate (like the old checkbox toggle), not debounced.
     const toggleTrackerCompleted = useCallback((ref: Ref) => {
-        mutate(d => ({ ...d, tracker: putEntry(d.tracker, ref, { completed: !d.tracker[key(ref)]?.completed }) }), true);
+        mutate(d => ({
+            ...d,
+            tracker: putEntry(d.tracker, ref, {
+                completed: !d.tracker[key(ref)]?.completed,
+                date: new Date().toISOString()
+            })
+        }), true);
     }, [mutate]);
 
     const toggleEquipment = useCallback((id: string) => toggleTrackerCompleted({ on: "equipment", id }), [toggleTrackerCompleted]);
@@ -79,7 +90,14 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
     }, [mutate]);
 
     const completePhase = useCallback((phaseId: string) => {
-        mutate(d => ({ ...d, tracker: putEntry(d.tracker, { on: "phase", id: phaseId }, { completed: true, date: new Date().toISOString() }) }), true);
+        mutate(d => {
+            const date = new Date().toISOString();
+            return {
+                ...d,
+                tracker: putEntry(d.tracker, { on: "phase", id: phaseId }, { completed: true, date }),
+                ...pauseRunningTimer(d, date)
+            };
+        }, true);
 
         const phases = data.brewable.schedule.phases;
         const nextIndex = phases.findIndex(({ id }) => id === phaseId) + 1;

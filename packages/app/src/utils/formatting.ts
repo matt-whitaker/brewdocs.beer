@@ -4,6 +4,13 @@ export const UNIT_REGEX = /^(-?\d+(?:\.\d+)?)(\D*)$/;
 export const CURRENCY_REGEX = /^(\D*)(-?\d+(?:\.\d+)?)$/;
 
 export function scalarFromNumberWithUnit(input: string, defaultUnit: Unit, lockUnit: boolean = false): Scalar {
+    if (!input.trim()) {
+        return {
+            value: "",
+            unit: defaultUnit
+        };
+    }
+
     const match = input.match(UNIT_REGEX);
 
     if (!match) {
@@ -26,6 +33,13 @@ export function scalarFromNumberWithUnit(input: string, defaultUnit: Unit, lockU
 }
 
 export function scalarFromNumberWithCurrency(input: string, defaultCurrency: Currency, lock: boolean = false): Scalar {
+    if (!input.trim()) {
+        return {
+            value: "",
+            currency: defaultCurrency
+        };
+    }
+
     const match = input.match(CURRENCY_REGEX);
 
     if (!match) {

@@ -11,9 +11,17 @@ import {QuickActionModal, QuickActionTab, QuickActionTabState} from "./quick-act
 export type {BrewTimerMarker} from "./marker-overlay";
 export type {QuickActionTab, QuickActionTabState} from "./quick-action";
 
+export type BrewTimerScope = "global" | "phase";
+
+const SCOPE_OPTIONS: {value: BrewTimerScope; label: string}[] = [
+    {value: "global", label: "Global"},
+    {value: "phase", label: "Phase"}
+];
+
 export type BrewTimerProps = PropsWithClass & {
     isRunning: boolean;
     elapsedSeconds: number;
+    scope: BrewTimerScope;
     markers?: BrewTimerMarker[];
     quickActionTabs: Record<QuickActionTab, QuickActionTabState>;
     defaultQuickActionTab: QuickActionTab;
@@ -29,6 +37,7 @@ export type BrewTimerProps = PropsWithClass & {
     label?: string;
     completeLabel?: string;
     onPlayPause: () => void;
+    onScopeChange: (scope: BrewTimerScope) => void;
     onQuickMilestone: (kind: string, value: string, parameter?: string) => void;
     onQuickSchedule: (id: string, value?: string) => void;
     onQuickEquipment: (id: string) => void;
@@ -38,6 +47,7 @@ export type BrewTimerProps = PropsWithClass & {
 export function BrewTimer({
     isRunning,
     elapsedSeconds,
+    scope,
     markers = [],
     quickActionTabs,
     defaultQuickActionTab,
@@ -53,6 +63,7 @@ export function BrewTimer({
     label = "Brew day elapsed timeline",
     completeLabel,
     onPlayPause,
+    onScopeChange,
     onQuickMilestone,
     onQuickSchedule,
     onQuickEquipment,
@@ -81,8 +92,16 @@ export function BrewTimer({
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-2 sm:ml-auto sm:justify-end sm:gap-3">
                     <div className="join" role="group" aria-label="Timer scope">
-                        <button type="button" className="btn btn-xs sm:btn-sm join-item btn-active" aria-pressed={true}>Global</button>
-                        <button type="button" className="btn btn-xs sm:btn-sm join-item" title="Coming soon" disabled>Phase</button>
+                        {SCOPE_OPTIONS.map(option => (
+                            <button
+                                key={option.value}
+                                type="button"
+                                className={classNames("btn btn-xs sm:btn-sm join-item", {"btn-active": scope === option.value})}
+                                aria-pressed={scope === option.value}
+                                onClick={() => onScopeChange(option.value)}>
+                                {option.label}
+                            </button>
+                        ))}
                     </div>
                     <button type="button" className="btn btn-xs sm:btn-sm" aria-label="Quick actions" onClick={toggleModal}>
                         <Plus className="h-3 w-3 sm:h-4 sm:w-4" />

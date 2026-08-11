@@ -1,5 +1,6 @@
 import Batch from "@/model/batch";
 import {BrewablePhase} from "@/model/brewable";
+import {sessionStartDate, TimerEvent} from "@/model/timer";
 import {key, TrackerEntry} from "@/model/tracker";
 
 export function isPhaseComplete(tracker: Record<string, TrackerEntry>, phaseId: string): boolean {
@@ -14,6 +15,22 @@ export function isPhaseComplete(tracker: Record<string, TrackerEntry>, phaseId: 
 export function currentPhaseIndex(phases: BrewablePhase[], tracker: Record<string, TrackerEntry>): number {
     const index = phases.findIndex(phase => !isPhaseComplete(tracker, phase.id));
     return index === -1 ? phases.length : index;
+}
+
+export function phaseStartDate(
+    phases: BrewablePhase[],
+    index: number,
+    tracker: Record<string, TrackerEntry>,
+    events?: TimerEvent[]
+): Date | undefined {
+    const previous = phases[index - 1];
+    const completedAt = previous && tracker[key({on: "phase", id: previous.id})]?.date;
+    if (completedAt) {
+        const completed = new Date(completedAt);
+        if (!Number.isNaN(completed.getTime())) return completed;
+    }
+
+    return sessionStartDate(events);
 }
 
 export interface BatchProgress {
