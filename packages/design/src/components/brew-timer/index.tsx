@@ -74,8 +74,8 @@ export function BrewTimer({
 
     return (
         <div className={classNames("rounded-box border border-base-300 bg-base-100 p-2 sm:p-3 flex flex-col gap-2 sm:gap-3", [className])}>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-                <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex flex-col gap-2 sm:gap-3">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                     <button
                         type="button"
                         className="btn btn-circle btn-primary btn-xs sm:btn-sm"
@@ -89,8 +89,19 @@ export function BrewTimer({
                     <span role="timer" aria-label="Elapsed time" className="font-mono text-lg sm:text-2xl tabular-nums">
                         {formatElapsed(elapsedSeconds)}
                     </span>
+                    {completeLabel && onComplete
+                        ? (
+                            <button
+                                type="button"
+                                className="btn btn-primary btn-xs sm:btn-sm ml-auto"
+                                aria-label={`Complete ${completeLabel}`}
+                                onClick={onComplete}>
+                                Complete {completeLabel}
+                            </button>
+                        )
+                        : null}
                 </div>
-                <div className="flex flex-wrap items-center justify-between gap-2 sm:ml-auto sm:justify-end sm:gap-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
                     <div className="join" role="group" aria-label="Timer scope">
                         {SCOPE_OPTIONS.map(option => (
                             <button
@@ -122,19 +133,6 @@ export function BrewTimer({
                     elapsedSeconds={elapsedSeconds}
                     markerSize={markerSize} />
             </div>
-            {completeLabel && onComplete
-                ? (
-                    <div className="flex justify-end pt-1">
-                        <button
-                            type="button"
-                            className="btn btn-primary btn-xs sm:btn-sm"
-                            aria-label={`Complete ${completeLabel}`}
-                            onClick={onComplete}>
-                            Complete {completeLabel}
-                        </button>
-                    </div>
-                )
-                : null}
             <QuickActionModal
                 ref={modalRef}
                 tabs={quickActionTabs}
