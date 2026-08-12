@@ -7,13 +7,13 @@ const marks: { title: string; path: string }[] = [
     { title: 'Claude', path: 'M4.709 15.955l4.72-2.647.079-.23-.08-.128H9.2l-.79-.048-2.698-.073-2.339-.097-2.266-.122-.571-.121L0 11.784l.055-.352.48-.321.686.06 1.52.103 2.278.158 1.652.097 2.449.255h.389l.055-.157-.134-.098-.103-.097-2.358-1.596-2.552-1.688-1.336-.972-.724-.491-.364-.462-.158-1.008.656-.722.881.06.225.061.893.686 1.908 1.476 2.491 1.833.365.304.145-.103.019-.073-.164-.274-1.355-2.446-1.446-2.49-.644-1.032-.17-.619a2.97 2.97 0 01-.104-.729L6.283.134 6.696 0l.996.134.42.364.62 1.414 1.002 2.229 1.555 3.03.456.898.243.832.091.255h.158V9.01l.128-1.706.237-2.095.23-2.695.08-.76.376-.91.747-.492.584.28.48.685-.067.444-.286 1.851-.559 2.903-.364 1.942h.212l.243-.242.985-1.306 1.652-2.064.73-.82.85-.904.547-.431h1.033l.76 1.129-.34 1.166-1.064 1.347-.881 1.142-1.264 1.7-.79 1.36.073.11.188-.02 2.856-.606 1.543-.28 1.841-.315.833.388.091.395-.328.807-1.969.486-2.309.462-3.439.813-.042.03.049.061 1.549.146.662.036h1.622l3.02.225.79.522.474.638-.079.485-1.215.62-1.64-.389-3.829-.91-1.312-.329h-.182v.11l1.093 1.068 2.006 1.81 2.509 2.33.127.578-.322.455-.34-.049-2.205-1.657-.851-.747-1.926-1.62h-.128v.17l.444.649 2.345 3.521.122 1.08-.17.353-.608.213-.668-.122-1.374-1.925-1.415-2.167-1.143-1.943-.14.08-.674 7.254-.316.37-.729.28-.607-.461-.322-.747.322-1.476.389-1.924.315-1.53.286-1.9.17-.632-.012-.042-.14.018-1.434 1.967-2.18 2.945-1.726 1.845-.414.164-.717-.37.067-.662.401-.589 2.388-3.036 1.44-1.882.93-1.086-.006-.158h-.055L4.132 18.56l-1.13.146-.487-.456.061-.746.231-.243 1.908-1.312-.006.006z' },
 ];
 
-const roles: { name: string; blurb: string }[] = [
-    { name: "Architect", blurb: "Shapes the work: turns a rough idea into a plan, and splits it into pieces small enough to finish." },
-    { name: "Implementor", blurb: "Writes the app code, one piece at a time." },
-    { name: "Designer", blurb: "Owns the look and feel — the shared buttons, inputs and type everything else is built from." },
-    { name: "Tester", blurb: "Writes the checks, from what the product promised rather than from what got built." },
-    { name: "Writer", blurb: "Keeps the written record straight: what the product does, and why it works the way it does." },
-    { name: "Security", blurb: "Reviews every change that ships, and raises what it finds." },
+const roles: { name: string; blurb: string; color: string; ink: string }[] = [
+    { name: "Architect", blurb: "Shapes the work: turns a rough idea into a plan, and splits it into pieces small enough to finish.", color: "#FBCA04", ink: "#1F2328" },
+    { name: "Implementor", blurb: "Writes the app code, one piece at a time.", color: "#1D76DB", ink: "#FFFFFF" },
+    { name: "Designer", blurb: "Owns the look and feel — the shared buttons, inputs and type everything else is built from.", color: "#B5257A", ink: "#FFFFFF" },
+    { name: "Tester", blurb: "Writes the checks, from what the product promised rather than from what got built.", color: "#0E8A16", ink: "#FFFFFF" },
+    { name: "Writer", blurb: "Keeps the written record straight: what the product does, and why it works the way it does.", color: "#5319E7", ink: "#FFFFFF" },
+    { name: "Security", blurb: "Reviews every change that ships, and raises what it finds.", color: "#B60205", ink: "#FFFFFF" },
 ];
 
 const CLAUDE_TEAM_URL = `${GITHUB_URL}/tree/mainline/packages/claude-team`;
@@ -57,15 +57,17 @@ const CLAUDE_TEAM_URL = `${GITHUB_URL}/tree/mainline/packages/claude-team`;
                     </p>
                 </div>
                 <div class="rounded-box glass p-5 [box-shadow:inset_0_0_0_1px_oklch(100%_0_0/22%)]">
-                    <div class="text-xs font-mono uppercase tracking-widest text-primary">Six roles, one job each</div>
-                    <ul class="mt-2 flex flex-col gap-2">
-                        {roles.map(({ name, blurb }) => (
-                            <li class="text-base">
-                                <span class="font-semibold">{name}</span>
-                                <span class="opacity-80"> — {blurb}</span>
-                            </li>
+                    <div class="text-xs font-mono uppercase tracking-widest text-primary">Compartmentalized roles</div>
+                    <div class="mt-3 grid grid-cols-[auto_1fr] items-baseline gap-x-4 gap-y-2">
+                        {roles.map(({ name, blurb, color, ink }) => (
+                            <Fragment>
+                                <span
+                                    class="badge badge-sm border-transparent font-semibold justify-self-start"
+                                    style={`background-color: ${color}; color: ${ink};`}>{name}</span>
+                                <span class="text-base opacity-80">{blurb}</span>
+                            </Fragment>
                         ))}
-                    </ul>
+                    </div>
                 </div>
                 <div class="rounded-box glass p-5 [box-shadow:inset_0_0_0_1px_oklch(100%_0_0/22%)]">
                     <div class="text-xs font-mono uppercase tracking-widest text-primary">A person is always driving</div>
@@ -80,10 +82,10 @@ const CLAUDE_TEAM_URL = `${GITHUB_URL}/tree/mainline/packages/claude-team`;
 
             <div class="px-5">
                 <p>
-                    The interesting part is that it's portable. It isn't glued to brewing software —
-                    it's a set of instructions and small scripts that any project can adopt, which
-                    is why BrewDocs keeps it as a self-contained piece rather than as its own
-                    plumbing.
+                    Claude Team isn't specific to brewing software: it's a set of role instructions,
+                    a GitHub workflow and a few small scripts, with no application code of its own.
+                    BrewDocs keeps it in a self-contained package rather than woven through the app,
+                    so another project can adopt it by copying that package.
                 </p>
                 <p class="mt-3">
                     If you want the details, the whole thing is public: the instructions each role
