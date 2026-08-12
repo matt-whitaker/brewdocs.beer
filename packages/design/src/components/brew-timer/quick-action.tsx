@@ -20,7 +20,7 @@ export type QuickActionModalProps = {
     scheduleValueLabels?: Record<string, string>;
     equipmentOptions?: InputSelectOption[];
     phaseLabel: string;
-    onQuickMilestone: (kind: string, value: string, parameter?: string) => void;
+    onQuickMilestone: (kind: string, value: string, parameter?: string, label?: string) => void;
     onQuickSchedule: (id: string, value?: string) => void;
     onQuickEquipment: (id: string) => void;
 };
@@ -111,13 +111,14 @@ type ReadingTabProps = {
     kindOptions: InputSelectOption[];
     parameterOptions?: Record<string, InputSelectOption[]>;
     phaseLabel: string;
-    onSubmit: (kind: string, value: string, parameter?: string) => void;
+    onSubmit: (kind: string, value: string, parameter?: string, label?: string) => void;
 };
 
 function ReadingTab({kindOptions, parameterOptions, phaseLabel, onSubmit}: ReadingTabProps) {
     const [kind, setKind] = useState<string | null>(null);
     const [parameter, setParameter] = useState<string | null>(null);
     const [value, setValue] = useState("");
+    const [label, setLabel] = useState("");
 
     const selectedKind = kind ?? firstValue(kindOptions);
     const parametersForKind = parameterOptions?.[selectedKind];
@@ -126,11 +127,13 @@ function ReadingTab({kindOptions, parameterOptions, phaseLabel, onSubmit}: Readi
         : undefined;
 
     const confirm = useCallback(() => {
-        onSubmit(selectedKind, value, selectedParameter);
+        const typedLabel = label.trim();
+        onSubmit(selectedKind, value, selectedParameter, typedLabel || undefined);
         setKind(null);
         setParameter(null);
         setValue("");
-    }, [onSubmit, selectedKind, selectedParameter, value]);
+        setLabel("");
+    }, [label, onSubmit, selectedKind, selectedParameter, value]);
 
     return (
         <>
@@ -159,6 +162,14 @@ function ReadingTab({kindOptions, parameterOptions, phaseLabel, onSubmit}: Readi
                         className="w-full"
                         value={value}
                         onChange={setValue} />
+                </Field>
+                <Field label="Label">
+                    <InputText
+                        label="Reading label"
+                        placeholder="Optional"
+                        className="w-full"
+                        value={label}
+                        onChange={setLabel} />
                 </Field>
                 <RecordingOn phaseLabel={phaseLabel} />
             </div>
