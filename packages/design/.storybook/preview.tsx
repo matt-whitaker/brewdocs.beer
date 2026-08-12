@@ -7,7 +7,8 @@ const preview: Preview = {
     // light — so brand them with the same theme here. The preview canvas itself
     // is just our components, rendered against real tokens via design.css above.
     parameters: {
-        docs: {theme}
+        docs: {theme},
+        options: {storySort: {order: ["Introduction", "*"]}}
     },
     decorators: [
         (Story) => (
