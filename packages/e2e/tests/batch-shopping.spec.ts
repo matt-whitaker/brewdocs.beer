@@ -164,9 +164,8 @@ test("a freeform additive that collides with an existing row's name keeps that r
     await settleSave(page);
 
     await openIngredients(page);
-    await page.getByLabel("Ingredient for 2. Boil").selectOption("additive");
-    await page.getByPlaceholder("Additive name").fill("Irish Moss");
-    await page.getByRole("button", {name: "Add ingredient to 2. Boil"}).click();
+    await page.getByLabel("Additive for 2. Boil").fill("Irish Moss");
+    await page.getByRole("button", {name: "Add additive to 2. Boil"}).click();
     await settleSave(page);
 
     await page.reload();
