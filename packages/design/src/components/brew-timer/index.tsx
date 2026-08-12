@@ -38,7 +38,7 @@ export type BrewTimerProps = PropsWithClass & {
     completeLabel?: string;
     onPlayPause: () => void;
     onScopeChange: (scope: BrewTimerScope) => void;
-    onQuickMilestone: (kind: string, value: string, parameter?: string) => void;
+    onQuickMilestone: (kind: string, value: string, parameter?: string, label?: string) => void;
     onQuickSchedule: (id: string, value?: string) => void;
     onQuickEquipment: (id: string) => void;
     onComplete?: () => void;
