@@ -82,6 +82,9 @@ test("freezes the counter on pause, and a reload keeps it frozen", async ({page}
     await expect(page.getByRole("timer", {name: "Elapsed time"})).toHaveText(frozenValue ?? "");
 });
 
+// also the BREW-TIMER-12 blank-label case: the Reading tab's label field is left
+// untouched here, and the grid row still renders under the Gravity kind's own
+// default label ("Reading"), unchanged from BREW-TIMER-02.
 test("logs a quick milestone that lands on the timeline and in the phase's reading grid", async ({page}) => {
     await brewBatchFromKbRecipe(page, "E2E Timer Milestone Batch");
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
@@ -112,6 +115,51 @@ test("logs a quick milestone that lands on the timeline and in the phase's readi
     await expect(page.getByRole("button", {name: /^Reading at \d{2}:\d{2}:\d{2}$/})).toBeVisible();
     await openSchedulePhase(page, "1. Mash");
     await expect(page.getByLabel("Reading reading")).toBeVisible();
+});
+
+// BREW-TIMER-12: a typed label names the recorded reading instead of the kind's
+// default, and that name is a real write, not just a moment's UI state.
+test("logs a quick reading with a typed label that names the resulting reading", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Quick Reading Label Batch");
+    await page.getByRole("tab", {name: "Brewing", exact: true}).click();
+
+    await page.getByRole("button", {name: "Quick actions"}).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await dialog.getByLabel("Reading label").fill("Mash pH check");
+    await dialog.getByRole("button", {name: "Confirm"}).click();
+    await expect(dialog).not.toBeVisible();
+
+    await openSchedulePhase(page, "1. Mash");
+    await expect(page.getByLabel("Mash pH check reading")).toBeVisible();
+    await expect(page.getByLabel("Reading reading")).not.toBeVisible();
+
+    await settleSave(page);
+    await page.reload();
+    await page.getByRole("tab", {name: "Brewing", exact: true}).click();
+
+    // proves the typed label was persisted, not just held in the modal's own state
+    await openSchedulePhase(page, "1. Mash");
+    await expect(page.getByLabel("Mash pH check reading")).toBeVisible();
+});
+
+// BREW-TIMER-12: a label of only whitespace must fall back the same way a truly
+// blank one does — the fallback is two independent trims (design coerces to
+// undefined, app trims again before its `||` default) and either alone looks
+// sufficient, so this is the case that would survive losing one of them.
+test("logs a quick reading with a whitespace-only label under the kind's default label", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Quick Reading Blank Label Batch");
+    await page.getByRole("tab", {name: "Brewing", exact: true}).click();
+
+    await page.getByRole("button", {name: "Quick actions"}).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await dialog.getByLabel("Reading label").fill("   ");
+    await dialog.getByRole("button", {name: "Confirm"}).click();
+    await expect(dialog).not.toBeVisible();
+
+    await openSchedulePhase(page, "1. Mash");
+    await expect(page.getByLabel("Reading name")).toHaveValue("Reading");
 });
 
 // BREW-TIMER-01/05, BATCH-SCHEDULE-04: one entry point opens a tab panel ordered
