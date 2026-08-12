@@ -55,7 +55,7 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
         }, true);
     }, [mutate]);
 
-    const onQuickMilestone = useCallback((kind: string, value: string, parameter?: string) => {
+    const onQuickMilestone = useCallback((kind: string, value: string, parameter?: string, label?: string) => {
         const spec = readingKind(kind);
         if (!spec) return;
 
@@ -64,7 +64,7 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
             const phase = draft.brewable.schedule.phases[index];
             if (!phase) return draft;
 
-            const milestone: Milestone = { id: newId(), label: spec.defaultLabel, kind: spec.kind };
+            const milestone: Milestone = { id: newId(), label: label?.trim() || spec.defaultLabel, kind: spec.kind };
             const nextPhases = draft.brewable.schedule.phases.map((candidate, i) =>
                 i === index ? { ...candidate, milestones: [...candidate.milestones, milestone] } : candidate);
 

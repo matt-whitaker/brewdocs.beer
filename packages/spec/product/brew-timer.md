@@ -65,6 +65,10 @@ Phase, whether or not anything on screen shows that time yet.
 > was captured — the same recording holds for every other kind so a marker for one of them is a
 > display change later, not a data change.
 
+**BREW-TIMER-12** — The Reading tab also offers an optional label field, entered after the
+value. Submitting with a label uses it as the recorded reading's name; submitting without one
+keeps the reading kind's default label, unchanged from BREW-TIMER-02.
+
 ## Known gaps
 
 - Which specific item a reading, an ingredient addition, or an equipment check-off actually
