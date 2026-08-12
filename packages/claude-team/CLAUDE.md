@@ -653,6 +653,15 @@ turns and cannot be forgotten.
   close with nothing to signal it. ⚠️ **Unless the author reported `remaining`** — then the hook
   withholds the keyword rather than adding it. A forgotten keyword and a deliberately omitted one
   were indistinguishable, and the deliberate one lost.
+- ⚠️ **A job that can be triggered on a PR needs `pull-requests: write`, not `issues: write`, to
+  say anything at all.** Commenting on a PR goes through the `/issues/{n}/comments` endpoint — so
+  the API reads as if `issues` covers it — but the permission GitHub checks is `pull-requests`.
+  Without it the host action cannot create its tracking comment, and because that comment *is* how
+  a tag-mode run reports, the run **aborts at setup before the model is called**: `Resource not
+  accessible by integration`. ⚠️ Diagnose it by the step that failed, not by `num_turns` — there is
+  no result payload at all, which is a different fingerprint from the dead run that reports success.
+  ⚠️ The trap is that the job works perfectly on issues, so the gap stays invisible until the first
+  PR trigger, however long that takes.
 - ⚠️ **Keep long-lived credentials out of any job a model step shares** unless the workflow
   puts them in *step* env. Step env is per-step, so a scripted step can hold a token the
   model step beside it cannot read. Secret masking covers logs only — not an API payload a
