@@ -1,0 +1,76 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import {GITHUB_URL} from "@/data/env";
+import GitHubMark from "@/assets/github.svg";
+import ClaudeMark from "@/assets/claude.svg";
+
+const roles: { name: string; blurb: string; color: string; ink: string }[] = [
+    { name: "Architect", blurb: "Shapes the work: turns a rough idea into a plan, and splits it into pieces small enough to finish.", color: "#FBCA04", ink: "#1F2328" },
+    { name: "Implementor", blurb: "Writes the app code, one piece at a time.", color: "#1D76DB", ink: "#FFFFFF" },
+    { name: "Designer", blurb: "Owns the look and feel — the shared buttons, inputs and type everything else is built from.", color: "#B5257A", ink: "#FFFFFF" },
+    { name: "Tester", blurb: "Writes the checks, from what the product promised rather than from what got built.", color: "#0E8A16", ink: "#FFFFFF" },
+    { name: "Writer", blurb: "Keeps the written record straight: what the product does, and why it works the way it does.", color: "#5319E7", ink: "#FFFFFF" },
+    { name: "Security", blurb: "Reviews every change that ships, and raises what it finds.", color: "#B60205", ink: "#FFFFFF" },
+];
+
+const CLAUDE_TEAM_URL = `${GITHUB_URL}/tree/mainline/packages/claude-team`;
+---
+<Layout title="Claude Team">
+    <main
+        class="min-h-screen w-screen flex flex-col items-center px-6 pt-24 pb-16 lg:pt-28"
+        style="background-image: linear-gradient(to bottom, color-mix(in oklab, var(--color-base-200) 85%, transparent) 65%, var(--color-base-300) 100%);">
+        <div class="flex items-center gap-5 text-base-content/50">
+            <GitHubMark class="h-6 w-6 fill-current" />
+            <ClaudeMark class="h-6 w-6 fill-current" />
+        </div>
+
+        <h1 class="mt-5 text-3xl lg:text-4xl font-semibold tracking-tight">Claude Team</h1>
+
+        <div class="mt-8 lg:max-w-screen-md text-left flex flex-col gap-4">
+            <p class="px-5">
+                Built both from and for BrewDocs, Claude Teams is a automated AI agent "team" built on Github. The role compartmentalization
+                started as a desire to optimize around business actions, but balancing for turn costs to ensure successful
+                runs. From that, it naturally evolved towards automation of SDLC, becoming more of a small managed team.
+            </p>
+            <p class="px-5">
+                BrewDocs was originally hand-written, with some light AI assistance in its less mature days. Nowadays,
+                virtually every line of code is managed and authored by Claude Code running on Github.
+            </p>
+
+            <div class="flex flex-col gap-3">
+                <div class="rounded-box glass p-5 [box-shadow:inset_0_0_0_1px_oklch(100%_0_0/22%)]">
+                    <div class="text-xs font-mono uppercase tracking-widest text-primary">Clear Workflows</div>
+                    <p class="mt-2 text-base">
+                        Work is organized using Github Issues as <strong>Epics</strong> &bull; <strong>Stories</strong> &bull; <strong>Tasks</strong>
+                    </p>
+                </div>
+                <div class="rounded-box glass p-5 [box-shadow:inset_0_0_0_1px_oklch(100%_0_0/22%)]">
+                    <div class="text-xs font-mono uppercase tracking-widest text-primary">Compartmentalized roles</div>
+                    <div class="mt-3 grid grid-cols-[auto_1fr] items-baseline gap-x-4 gap-y-2">
+                        {roles.map(({ name, blurb, color, ink }) => (
+                            <Fragment>
+                                <span
+                                    class="badge badge-sm border-transparent font-semibold justify-self-start"
+                                    style={`background-color: ${color}; color: ${ink};`}>{name}</span>
+                                <span class="text-base opacity-80">{blurb}</span>
+                            </Fragment>
+                        ))}
+                    </div>
+                </div>
+                <div class="p-5">
+                    <div class="text-xs font-mono uppercase tracking-widest text-primary">Reasonable check-ins</div>
+                    <p class="mt-2 text-base">
+                        Claude Team is more of a pattern of Claude Code on Github, as much of the instruction can be generated
+                        by AI. If you are interested in understanding the roles more deeploy, head on over to the dedicated package.
+                    </p>
+                </div>
+            </div>
+
+            <div class="px-5">
+                <div class="mt-5 flex flex-wrap gap-3">
+                    <a href={CLAUDE_TEAM_URL} class="btn btn-primary">Read the source</a>
+                </div>
+            </div>
+        </div>
+    </main>
+</Layout>

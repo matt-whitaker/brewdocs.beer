@@ -541,9 +541,20 @@ jobs:
       && contains(needs.delegate.outputs.roles, 'claude')
     runs-on: ubuntu-latest
     permissions:
-      # reads to answer, writes only its own reply. No branch, no PR, no code.
+      # reads to answer, writes only its own reply. No branch, no code.
       contents: read
       issues: write
+      # ⚠️ REQUIRED TO ANSWER ON A PR, and its absence is not a degraded run — it is a dead one.
+      # Commenting on a PR goes through the `/issues/{n}/comments` endpoint, but the permission
+      # GitHub checks is `pull-requests`, not `issues`. Without this the action cannot create its
+      # tracking comment, and since that comment IS how a tag-mode run reports, it aborts at setup
+      # before the model is ever called: "Resource not accessible by integration".
+      # ⚠️ This role reaches PRs by design — rule 1b routes a bare `@claude` on a PR here rather
+      # than to an Implementor — so the PR path is the normal case, not an edge.
+      # ⚠️ It does NOT widen what the role may change. Commenting on and labelling a PR is process
+      # state; `contents: read` is what still bounds it away from content, and that is the load-
+      # bearing half (it neuters the `git rm`/`git-push.sh` the action's base allowlist unions in).
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -1454,7 +1465,13 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: read
+      # ⚠️ WRITE, because `open-story-pr.py` calls `gh pr create`. It was `read`, so that call
+      # 403'd every time — the hook has **never once** succeeded, and every story PR in this repo
+      # was opened by hand. The docs described it as the mechanism regardless, which is how a
+      # story branch sat unmerged long enough to lose its work (#735/#815).
+      # ⚠️ Nothing else in this job needs it: `close-merged-work.py` only *reads* PRs and closes
+      # issues, and the board writes go through PROJECTS_TOKEN on their own step.
+      pull-requests: write
       issues: write
     steps:
       - uses: actions/checkout@v4

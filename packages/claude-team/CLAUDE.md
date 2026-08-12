@@ -126,6 +126,36 @@ its concurrency group on issue number, two tasks are in *different* groups and c
 the same branch at the same time. Sub-branching removes the possibility rather than relying
 on runs being triggered one at a time.
 
+### Where work goes, and why there is only ever one PR
+
+⚠️ **The governing rule: work goes on the branch of the thing the run was triggered on.** Not a
+branch the model picks, not a new one. Two modes fall out of it — an **issue** trigger means a
+fresh task branch and exactly one PR into the story; a **PR** trigger means commit to that PR's
+branch and open nothing.
+
+⚠️ **The host action already implements this; only the prompt ever disagreed.** `setupBranch`
+checks the PR's state, and for an **open** PR it checks out `headRefName` and **ignores
+`base_branch` entirely** — that input is read only on the create-a-branch path, which is reached
+for an issue trigger or a closed/merged PR. So a follow-up run is put on the right branch before
+the model gets a turn.
+
+⚠️ **The contradiction that produced the extra PRs was ours.** The prompt told every run to "open
+your PR against the story branch" and, in the same breath, "never commit to the story branch
+itself". On a comment against the *story's own PR*, the checkout puts the run on the story branch —
+so both instructions were wrong at once, and a run obeying them had to invent a third branch and a
+second PR to escape. Committing to the story branch is **correct** when the story's PR is what is
+being discussed; the no-commit rule belongs to task runs, which have their own branch.
+
+⚠️ **More PRs is not more granularity, and that is the actual argument.** A reviewer follows a
+conversation by reading its commits as small diffs, in order, in the place the discussion is
+happening. A second PR splits that thread and makes them reassemble it. The commits already are
+the granularity — an extra PR only adds a seam.
+
+⚠️ **No hook opens a second one either**, and that is worth knowing before someone "fixes" it:
+`finish-pr.py` resolves the PR from the current branch, so on a follow-up it finds the existing one
+and its stranded-commit recovery never fires. That recovery is for a run that committed and left
+*no* PR at all.
+
 ## How a story moves
 
 1. **Architect** shapes the story, **names** its branch on a `Branch:` line, and creates its
@@ -623,6 +653,27 @@ turns and cannot be forgotten.
   close with nothing to signal it. ⚠️ **Unless the author reported `remaining`** — then the hook
   withholds the keyword rather than adding it. A forgotten keyword and a deliberately omitted one
   were indistinguishable, and the deliberate one lost.
+- ⚠️ **`open-story-pr.py` calls `gh pr create`, so its job needs `pull-requests: write`** — and
+  until that was noticed it had `read`, so the call 403'd **every time since the hook existed**.
+  It had never once succeeded: every story PR in the consuming repo was opened by hand, while this
+  file described the hook as the mechanism. A story branch then sat unmerged with nobody looking
+  and its work was lost.
+  ⚠️ **It warned rather than failing, which is what made it survive.** A `::warning::` fails no
+  step, so the job stayed green and the gap was invisible from outside — the same shape as the
+  `defaulted` output nobody read. It now **fails the step**: every benign case returns earlier, so
+  reaching the create call and not creating anything is always a real problem.
+  ⚠️ The general lesson, since this is the third instance: **a hook that is the sole mechanism for
+  something must fail loudly when it cannot do it.** Best-effort is right for bookkeeping that a
+  human would notice missing; it is wrong for the only thing that opens a PR.
+- ⚠️ **A job that can be triggered on a PR needs `pull-requests: write`, not `issues: write`, to
+  say anything at all.** Commenting on a PR goes through the `/issues/{n}/comments` endpoint — so
+  the API reads as if `issues` covers it — but the permission GitHub checks is `pull-requests`.
+  Without it the host action cannot create its tracking comment, and because that comment *is* how
+  a tag-mode run reports, the run **aborts at setup before the model is called**: `Resource not
+  accessible by integration`. ⚠️ Diagnose it by the step that failed, not by `num_turns` — there is
+  no result payload at all, which is a different fingerprint from the dead run that reports success.
+  ⚠️ The trap is that the job works perfectly on issues, so the gap stays invisible until the first
+  PR trigger, however long that takes.
 - ⚠️ **Keep long-lived credentials out of any job a model step shares** unless the workflow
   puts them in *step* env. Step env is per-step, so a scripted step can hold a token the
   model step beside it cannot read. Secret masking covers logs only — not an API payload a

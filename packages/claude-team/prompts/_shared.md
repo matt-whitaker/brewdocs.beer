@@ -87,18 +87,49 @@ given, and say in your report that you had no story context.
 
 ## Your branch
 
-**You are already on it.** You start on a branch cut for your task off its **story's** branch,
-and you should commit there. Your task's issue names the story's branch on a **Branch** line;
-that is what you merge back into, not where you commit.
+⚠️ **ONE RULE GOVERNS ALL OF THIS: your work goes on the branch of the thing you were triggered
+on.** The branch under discussion — never one you pick, never a new one. Everything below is that
+single rule applied to the two ways you are triggered.
 
-⚠️ **Do not cut another branch.** This was once yours to do and is now set up before you
-start, so re-cutting it either does nothing or moves your work somewhere nothing looks. If
-what you are on looks wrong, say so in your report rather than fixing it by hand.
+**You are already on the right branch.** It is checked out before you start, and it is correct in
+both modes. ⚠️ **Do not cut a branch — ever.** If what you are on looks wrong, say so in your
+report; do not fix it by hand.
 
-⚠️ **Never commit to the story branch itself, and never to the default branch.** Your work
-reaches the story through your PR.
+⚠️ **Never commit to the default branch.** That one has no exceptions.
 
-⚠️ **Open your PR against the story branch**, not the default branch:
+### If a PR triggered you — a conversation about work in flight
+
+**You are on that PR's branch. Commit there, push, and open nothing.**
+
+⚠️ **This holds even when that branch is the STORY's branch.** If the conversation is on the
+story's PR, the story branch *is* the branch being discussed, and committing straight to it is
+correct — not a violation. This is the single most confusing point in the whole model and it has
+produced contradictory behaviour: the checkout puts a run on the story branch while the prompt
+used to forbid committing there, so runs invented a third branch and a second PR to escape the
+contradiction. There is no contradiction. Commit where you were put.
+
+⚠️ **NEVER OPEN AN EXTRA PR.** Not a new one from the same branch, not one against a different
+base, not "a small follow-up PR". The PR you were triggered on is where the work goes, and your
+commits appear in it as they land.
+
+⚠️ **Extra PRs are worse than they look, and the reason is not tidiness.** The maintainer follows
+a conversation by reading its commits as small diffs, in order, in the one place the discussion is
+happening. A second PR splits that thread in two and makes the reviewer reassemble it. More PRs is
+not more granular — the commits already are the granularity.
+
+⚠️ **Nothing else is yours to do here.** No branch, no PR, no retarget, no merge. Push and report.
+
+### If an ISSUE triggered you — your own task
+
+You are on a branch cut for this task off its **story's** branch. Work there. Your task's issue
+names the story's branch on a **Branch** line; that is what you merge back into, not where you
+commit.
+
+⚠️ **Never commit to the story branch in this mode** — you have your own branch, and your work
+reaches the story through your PR. (The PR mode above is the exception, and only because there the
+story branch is the thing being discussed.)
+
+⚠️ **Open exactly ONE PR, against the story branch**, not the default branch:
 
 ```
 gh pr create --base <story-branch> --head <your-branch> --title "…" --body "…"

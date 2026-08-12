@@ -103,7 +103,7 @@ const meta: Meta<typeof BrewTimer> = {
     parameters: {
         docs: {
             description: {
-                component: "The brew-day timer shell. It is fully controlled and holds no timer state of its own — `elapsedSeconds` and `isRunning` come from the consumer, which owns the ticking and any persistence. Reading markers are drawn by `Timeline` and given a `Popover` hit target apiece, since a `Popover` renders a `<div>` and cannot live inside the `<svg>`. One \"Log\" button opens one `Modal` holding a `[Ingredients, Reading, Equipment]` tab panel — only the active tab is mounted, so switching tabs clears the fields the other one held. Each tab hands its selection back through its own callback and asks nothing about the phase: the consumer resolves the current phase and passes `phaseLabel` for display. Which tabs apply is the consumer's to state, via `quickActionTabs` — each tab carries `available` and an `unavailableReason` shown in its `title`. It is deliberately not inferred from whether a handler was passed: that made a consumer which simply forgot to wire a tab indistinguishable from one where the action does not apply, and app shipped for two stories with two dead tabs and no signal. `defaultQuickActionTab` names the tab that opens when several apply. The Global/Phase scope toggle is controlled the same way everything else here is — `scope` in, `onScopeChange` out — and picking a scope changes only which elapsed span the consumer feeds back as `elapsedSeconds`; nothing about it starts, stops or resets the clock. The public word is \"Reading\"; the model behind it is still a `Milestone`, which is why the props and handlers say `milestone`. `completeLabel` + `onComplete` add the card's primary action on its own right-aligned row below the timeline; `onComplete` fires on click and any confirmation is the consumer's, since only it knows what completing a phase costs."
+                component: "The brew-day timer shell. It is fully controlled and holds no timer state of its own — `elapsedSeconds` and `isRunning` come from the consumer, which owns the ticking and any persistence. Reading markers are drawn by `Timeline` and given a `Popover` hit target apiece, since a `Popover` renders a `<div>` and cannot live inside the `<svg>`. One \"Log\" button opens one `Modal` holding a `[Ingredients, Reading, Equipment]` tab panel — only the active tab is mounted, so switching tabs clears the fields the other one held. Each tab hands its selection back through its own callback and asks nothing about the phase: the consumer resolves the current phase and passes `phaseLabel` for display. Which tabs apply is the consumer's to state, via `quickActionTabs` — each tab carries `available` and an `unavailableReason` shown in its `title`. It is deliberately not inferred from whether a handler was passed: that made a consumer which simply forgot to wire a tab indistinguishable from one where the action does not apply, and app shipped for two stories with two dead tabs and no signal. `defaultQuickActionTab` names the tab that opens when several apply. The Global/Phase scope toggle is controlled the same way everything else here is — `scope` in, `onScopeChange` out — and picking a scope changes only which elapsed span the consumer feeds back as `elapsedSeconds`; nothing about it starts, stops or resets the clock. The public word is \"Reading\"; the model behind it is still a `Milestone`, which is why the props and handlers say `milestone`. `completeLabel` + `onComplete` add the card's primary action at the right-hand end of the play/pause row; `onComplete` fires on click and any confirmation is the consumer's, since only it knows what completing a phase costs."
             }
         }
     }
@@ -187,7 +187,7 @@ function TickingDemo({markers = MARKERS, startSeconds = 1200}: {markers?: BrewTi
                 phaseLabel="2. Boil"
                 onPlayPause={() => setIsRunning(running => !running)}
                 onScopeChange={setScope}
-                onQuickMilestone={(kind, value) => window.console.log("quick reading", kind, value)}
+                onQuickMilestone={(kind, value, parameter, label) => window.console.log("quick reading", kind, value, parameter, label)}
                 onQuickSchedule={(kind, value) => window.console.log("quick ingredient", kind, value)}
                 onQuickEquipment={id => window.console.log("quick equipment", id)} />
             <p className="text-sm">
@@ -265,7 +265,7 @@ export const Narrow: Story = {
     parameters: {
         docs: {
             description: {
-                story: "Constrained to a 360px-wide phone viewport. Below `sm` the whole bar steps down together — the counter one type size, every button to `btn-xs`, the card to a tighter padding — and the controls drop to their own row, the scope toggle to the left and \"Log\" to the right, so nothing bleeds past the edge. \"Complete 2. Boil\" keeps a row of its own rather than joining that already-tight row, so a long phase label has the full card width to run into before it wraps."
+                story: "Constrained to a 360px-wide phone viewport. The control bar is the same two rows at every width — play/pause, the counter and \"Complete 2. Boil\" pushed to the right on the first; the scope toggle and \"Log\" spread edge-to-edge on the second — so the phone layout and the desktop one differ only in size. Below `sm` the whole bar steps down together: the counter one type size, every button to `btn-xs`, the card to a tighter padding. A phase label long enough to crowd the counter wraps the Complete button onto a line of its own rather than bleeding past the card edge."
             }
         }
     },
@@ -282,7 +282,7 @@ export const NoCompleteAction: Story = {
     parameters: {
         docs: {
             description: {
-                story: "An absent or empty `completeLabel` renders no action row at all — not a disabled button and not an empty one, so the card closes on the timeline with no leftover gap. The consumer decides when the action applies; BatchSchedule shows it only on the phase the batch is actually on."
+                story: "An absent or empty `completeLabel` renders no button at all — not a disabled one and not an empty one — leaving the play/pause row holding just the control and the counter, with no gap where the action would have been. The consumer decides when the action applies; BatchSchedule shows it only on the phase the batch is actually on."
             }
         }
     }
@@ -313,8 +313,8 @@ function QuickActionDemo({optionalTabs = true}: {optionalTabs?: boolean}) {
                 phaseLabel="2. Boil"
                 onPlayPause={() => undefined}
                 onScopeChange={() => undefined}
-                onQuickMilestone={(kind, value, parameter) =>
-                    log(`reading · ${kind}${parameter ? ` · ${parameter}` : ""} · ${value}`)}
+                onQuickMilestone={(kind, value, parameter, label) =>
+                    log(`reading · ${kind}${parameter ? ` · ${parameter}` : ""} · ${value}${label ? ` · “${label}”` : ""}`)}
                 onQuickSchedule={(kind, value) => log(`ingredient · ${kind}${value ? ` · ${value}` : ""}`)}
                 onQuickEquipment={id => log(`equipment · ${EQUIPMENT_OPTIONS.find(o => o.value === id)?.name ?? id}`)} />
             <ul className="text-sm list-disc pl-5">
@@ -329,7 +329,7 @@ export const QuickAction: Story = {
     parameters: {
         docs: {
             description: {
-                story: "\"Log\" opens the one modal. **Ingredients** picks the item from `scheduleOptions` \u2014 offered in brew order with the next one already selected \u2014 and shows a value field only for the items `scheduleValueLabels` names, submitting `onQuickSchedule(id, value?)`. ⚠️ It names the item rather than resolving \"the next one\": only hops are reliably chronological, grain goes in all at once, and an additive may or may not carry a boil time, so a resolver would be right for one kind and arbitrary for the other two. **Reading** is the former standalone quick-reading modal verbatim — kind, the optional measurement dropdown `milestoneParameterOptions` adds for Water, and a value — submitting `onQuickMilestone(kind, value, parameter?)`. **Equipment** picks the item from `equipmentOptions` and submits `onQuickEquipment(id)` \u2014 ⚠️ it names the item rather than resolving \"the next one\", because equipment carries no boil time and no other intrinsic order, so an auto-advance would be an arbitrary pick presented as a resolution. Only the active tab is mounted, so switching tabs discards what the last one held. Every tab records against the current phase, which the consumer resolves and passes as `phaseLabel`. Confirm closes the modal natively — `ModalFooter` submits a `method=\"dialog\"` form. Submissions are listed below the timer."
+                story: "\"Log\" opens the one modal. **Ingredients** picks the item from `scheduleOptions` \u2014 offered in brew order with the next one already selected \u2014 and shows a value field only for the items `scheduleValueLabels` names, submitting `onQuickSchedule(id, value?)`. ⚠️ It names the item rather than resolving \"the next one\": only hops are reliably chronological, grain goes in all at once, and an additive may or may not carry a boil time, so a resolver would be right for one kind and arbitrary for the other two. **Reading** takes a kind, the optional measurement dropdown `milestoneParameterOptions` adds for Water, a value, and an optional free-text label naming what was read — submitting `onQuickMilestone(kind, value, parameter?, label?)`, with `label` `undefined` when it is left blank. **Equipment** picks the item from `equipmentOptions` and submits `onQuickEquipment(id)` \u2014 ⚠️ it names the item rather than resolving \"the next one\", because equipment carries no boil time and no other intrinsic order, so an auto-advance would be an arbitrary pick presented as a resolution. Only the active tab is mounted, so switching tabs discards what the last one held. Every tab records against the current phase, which the consumer resolves and passes as `phaseLabel`. Confirm closes the modal natively — `ModalFooter` submits a `method=\"dialog\"` form. Submissions are listed below the timer."
             }
         }
     },
