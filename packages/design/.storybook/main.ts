@@ -31,7 +31,7 @@ writeFileSync(
 );
 
 const config: StorybookConfig = {
-    stories: ["../src/components/**/*.stories.@(ts|tsx)"],
+    stories: ["../src/components/**/*.stories.@(ts|tsx)", "../src/*.stories.@(ts|tsx)"],
     framework: {
         name: "@storybook/react-vite",
         options: {}
