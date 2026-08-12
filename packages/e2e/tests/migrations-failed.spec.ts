@@ -1,12 +1,19 @@
 import {expect, Page, test} from "@playwright/test";
 
 /**
- * Nothing in the app can produce a migration failure today (`batches`' own
- * migrations array is empty), so every case here seeds a record straight into
- * the `migration-failures` IndexedDB database — `migrationFailuresStorage` is
- * a `Forage` built with `localforage.createInstance({name: "migration-failures"})`,
- * which makes that name a separate IndexedDB database (default store
- * "keyvaluepairs"), keyed `migration-failures#${entityType}:${id}`.
+ * Nothing in the app can produce a *migration-error* failure today (`batches`'
+ * own migrations array is empty, so no migration ever runs to throw) — every
+ * test proving that reason seeds directly into the `migration-failures`
+ * IndexedDB database. `migrationFailuresStorage` is a `Forage` built with
+ * `localforage.createInstance({name: "migration-failures"})`, which makes
+ * that name a separate IndexedDB database (default store "keyvaluepairs"),
+ * keyed `migration-failures#${entityType}:${id}`.
+ *
+ * A `no-migration-path` failure, though, is exactly what a stale batch
+ * produces on its own via the page-load pass (#809/#824) — every test
+ * proving that reason instead seeds the source `batches` store and lets the
+ * pass record the failure itself (mirrors migration-pass.spec.ts's
+ * `seedBatches`).
  */
 type SeedFailure = {
     entityType: string;
@@ -15,13 +22,22 @@ type SeedFailure = {
     targetVersion: number;
     data: unknown;
     error: string;
+    reason: "no-migration-path" | "migration-error";
 };
+
+type SeedBatch = {
+    id: string;
+    name: string;
+    version: number;
+};
+
+const BATCHES_VERSION = 1;
 
 // The db/store only exist once localforage has initialized them, which
 // happens the first time the page's own query runs.
 async function primeMigrationFailuresStore(page: Page) {
     await page.goto("/migrations/failed");
-    await expect(page.getByText("No records have been set aside.")).toBeVisible();
+    await expect(page.getByText("No records are waiting to be updated.")).toBeVisible();
 }
 
 async function seedMigrationFailures(page: Page, failures: SeedFailure[]) {
@@ -39,6 +55,48 @@ async function seedMigrationFailures(page: Page, failures: SeedFailure[]) {
             tx.onerror = () => reject(tx.error);
         };
     }), failures);
+}
+
+// mirrors migration-pass.spec.ts's batchRecord/seedBatches — a stale batch
+// seeded straight into the source store, so the page-load pass is what
+// produces its migration-failures entry (with a real `reason`), not the test
+function batchRecord({id, name, version}: SeedBatch) {
+    return {
+        id,
+        name,
+        version,
+        brewDate: "",
+        recipeId: "",
+        brewable: {schedule: {phases: []}, assignments: []},
+        batchSize: {value: "5gal", unit: "gal"},
+        efficiency: {value: "75%", unit: "%"},
+        boilTime: {value: "60min", unit: "min"},
+        actuals: {
+            og: {value: "0.00°P", unit: "°P"},
+            fg: {value: "0.00°P", unit: "°P"},
+            abv: {value: "0.0%", unit: "%"},
+            ibu: "0",
+            srm: "0",
+        },
+        shopping: [],
+        tracker: {},
+    };
+}
+
+async function seedBatches(page: Page, batches: SeedBatch[]) {
+    await page.evaluate((seeded) => new Promise<void>((resolve, reject) => {
+        const request = indexedDB.open("batches");
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+            const db = request.result;
+            const tx = db.transaction("keyvaluepairs", "readwrite");
+            for (const batch of seeded) {
+                tx.objectStore("keyvaluepairs").put(batch, `batches#${batch.id}`);
+            }
+            tx.oncomplete = () => { db.close(); resolve(); };
+            tx.onerror = () => reject(tx.error);
+        };
+    }), batches.map(batchRecord));
 }
 
 async function readIndexedDbValue(page: Page, dbName: string, key: string) {
@@ -64,14 +122,16 @@ test("lists every seeded failed record with its identity, versions, error and ra
             fromVersion: 1,
             targetVersion: 3,
             data: {id: "e2e-batch-01", name: "Anchor Steam Clone", version: 1},
-            error: "No migration bridges version 1 to 3"
+            error: "No migration bridges version 1 to 3",
+            reason: "migration-error"
         },
         {
             entityType: "recipes",
             fromVersion: 1,
             targetVersion: 2,
             data: {name: "Untitled Recipe", version: 1},
-            error: "Cannot read properties of undefined (reading 'brewable')"
+            error: "Cannot read properties of undefined (reading 'brewable')",
+            reason: "migration-error"
         }
     ]);
     await page.reload();
@@ -79,14 +139,14 @@ test("lists every seeded failed record with its identity, versions, error and ra
     const batchRow = page.getByRole("listitem").filter({hasText: "e2e-batch-01"});
     await expect(batchRow).toBeVisible();
     await expect(batchRow.getByText("batches · e2e-batch-01")).toBeVisible();
-    await expect(batchRow.getByText("Version 1 → 3")).toBeVisible();
+    await expect(batchRow.getByText("Stuck at version 1 — the app expects version 3.")).toBeVisible();
     await expect(batchRow.getByText("No migration bridges version 1 to 3")).toBeVisible();
     await expect(batchRow.getByText(/"name": "Anchor Steam Clone"/)).toBeVisible();
 
     const recipeRow = page.getByRole("listitem").filter({hasText: "Cannot read properties of undefined"});
     await expect(recipeRow).toBeVisible();
     await expect(recipeRow.getByText("recipes", {exact: true})).toBeVisible();
-    await expect(recipeRow.getByText("Version 1 → 2")).toBeVisible();
+    await expect(recipeRow.getByText("Stuck at version 1 — the app expects version 2.")).toBeVisible();
     await expect(recipeRow.getByText(/"name": "Untitled Recipe"/)).toBeVisible();
 });
 
@@ -98,7 +158,8 @@ test("discarding a record removes it for good", async ({page}) => {
         fromVersion: 1,
         targetVersion: 3,
         data: {id: "e2e-discard-01", version: 1},
-        error: "No migration bridges version 1 to 3"
+        error: "No migration bridges version 1 to 3",
+        reason: "migration-error"
     }]);
     await page.reload();
 
@@ -111,7 +172,7 @@ test("discarding a record removes it for good", async ({page}) => {
     // landed rather than just updating the on-screen list
     await page.reload();
     await expect(page.getByText("e2e-discard-01")).toHaveCount(0);
-    await expect(page.getByText("No records have been set aside.")).toBeVisible();
+    await expect(page.getByText("No records are waiting to be updated.")).toBeVisible();
 });
 
 test("retrying a record that now migrates successfully removes it and saves the recovered data", async ({page}) => {
@@ -125,7 +186,8 @@ test("retrying a record that now migrates successfully removes it and saves the 
         fromVersion: 1,
         targetVersion: 1,
         data: {id: "e2e-retry-success", name: "Recovered Batch", version: 1},
-        error: "No migration bridges version 1 to 1"
+        error: "No migration bridges version 1 to 1",
+        reason: "migration-error"
     }]);
     await page.reload();
 
@@ -146,7 +208,8 @@ test("retrying a record that still can't be migrated leaves it listed", async ({
         fromVersion: 1,
         targetVersion: 3,
         data: {id: "e2e-retry-failure", version: 1},
-        error: "No migration bridges version 1 to 3"
+        error: "No migration bridges version 1 to 3",
+        reason: "migration-error"
     }]);
     await page.reload();
 
@@ -164,12 +227,81 @@ test("retry is unavailable for a record with no id or an entity type that isn't 
         fromVersion: 1,
         targetVersion: 2,
         data: {name: "No Retry Recipe", version: 1},
-        error: "Cannot read properties of undefined (reading 'brewable')"
+        error: "Cannot read properties of undefined (reading 'brewable')",
+        reason: "migration-error"
     }]);
     await page.reload();
 
     const row = page.getByRole("listitem").filter({hasText: "No Retry Recipe"});
     await expect(row.getByRole("button", {name: "Retry"})).toBeDisabled();
+});
+
+// UPDATES-01, MIGRATION-FAILURES-01: a record excluded from its own list for
+// lacking a bridging migration is listed here too, paired with a thrown-
+// migration record in the same multi-record list
+test("a batch with no update path is excluded from /batches and listed here alongside a thrown-migration record", async ({page}) => {
+    await primeMigrationFailuresStore(page);
+    await seedBatches(page, [{id: "e2e-no-path-01", name: "E2E No Path Batch", version: BATCHES_VERSION + 1}]);
+    await seedMigrationFailures(page, [{
+        entityType: "batches",
+        id: "e2e-thrown-01",
+        fromVersion: 1,
+        targetVersion: 3,
+        data: {id: "e2e-thrown-01", name: "Thrown Migration Batch", version: 1},
+        error: "No migration bridges version 1 to 3",
+        reason: "migration-error"
+    }]);
+    await page.reload();
+
+    await page.goto("/batches");
+    await expect(page.getByRole("listitem").filter({hasText: "E2E No Path Batch"})).toHaveCount(0);
+
+    await page.goto("/migrations/failed");
+
+    const noPathRow = page.getByRole("listitem").filter({hasText: "e2e-no-path-01"});
+    await expect(noPathRow).toBeVisible();
+    await expect(noPathRow.getByText(`Stuck at version ${BATCHES_VERSION + 1} — the app expects version ${BATCHES_VERSION}.`)).toBeVisible();
+    await expect(noPathRow.getByText("No update path exists for this record yet.")).toBeVisible();
+
+    const thrownRow = page.getByRole("listitem").filter({hasText: "e2e-thrown-01"});
+    await expect(thrownRow).toBeVisible();
+    await expect(thrownRow.getByText("An update was attempted and failed.")).toBeVisible();
+});
+
+// UPDATES-02: retry is unavailable for a no-migration-path record, and the
+// reason is visible as page text, not merely the disabled button's title
+test("retry is disabled for a no-migration-path record and its reason is stated as visible text", async ({page}) => {
+    await primeMigrationFailuresStore(page);
+    await seedBatches(page, [{id: "e2e-no-path-02", name: "E2E No Path Retry", version: BATCHES_VERSION + 1}]);
+    await page.reload();
+
+    const row = page.getByRole("listitem").filter({hasText: "e2e-no-path-02"});
+    await expect(row.getByRole("button", {name: "Retry"})).toBeDisabled();
+    await expect(row.getByText("Retry isn't available until an update path exists. Discarding it is the only action.")).toBeVisible();
+});
+
+// MIGRATION-FAILURES-03: discarding a record removes it for good, across a
+// reload. This is currently FAILING against the real app — see the finding
+// filed on #813. Discard only deletes the migration-failures entry; the
+// underlying stale batch is untouched, so the next reload's page-load pass
+// (#809) re-scans it and re-records the same failure. Left red on purpose
+// rather than weakened, per this suite's own rule.
+test("discarding a no-migration-path record removes it for good, across a reload", async ({page}) => {
+    await primeMigrationFailuresStore(page);
+    await seedBatches(page, [{id: "e2e-no-path-discard", name: "E2E No Path Discard", version: BATCHES_VERSION + 1}]);
+    await page.reload();
+
+    const row = page.getByRole("listitem").filter({hasText: "e2e-no-path-discard"});
+    await expect(row).toBeVisible();
+    await row.getByRole("button", {name: "Discard"}).click();
+    await expect(row).toHaveCount(0);
+
+    await page.reload();
+    // the page-load pass runs inside MigrationGate's own suspense boundary,
+    // ahead of this route's content — waiting for the heading is what makes
+    // the absence check meaningful instead of racing the pass
+    await expect(page.getByRole("heading", {name: "Updates"})).toBeVisible();
+    await expect(page.getByText("e2e-no-path-discard")).toHaveCount(0);
 });
 
 test("a record whose data can't be rendered is contained, and the rest of the list still shows", async ({page}) => {
@@ -188,7 +320,8 @@ test("a record whose data can't be rendered is contained, and the rest of the li
                 fromVersion: 1,
                 targetVersion: 2,
                 data: circular,
-                error: "some migration error"
+                error: "some migration error",
+                reason: "migration-error"
             }, "migration-failures#batches:e2e-circular");
             tx.objectStore("keyvaluepairs").put({
                 entityType: "batches",
@@ -196,7 +329,8 @@ test("a record whose data can't be rendered is contained, and the rest of the li
                 fromVersion: 1,
                 targetVersion: 2,
                 data: {id: "e2e-sibling", version: 1},
-                error: "some other migration error"
+                error: "some other migration error",
+                reason: "migration-error"
             }, "migration-failures#batches:e2e-sibling");
             tx.oncomplete = () => { db.close(); resolve(); };
             tx.onerror = () => reject(tx.error);
@@ -204,7 +338,7 @@ test("a record whose data can't be rendered is contained, and the rest of the li
     }));
     await page.reload();
 
-    await expect(page.getByRole("heading", {name: "Failed migrations"})).toBeVisible();
+    await expect(page.getByRole("heading", {name: "Updates"})).toBeVisible();
     await expect(page.getByText("This failed record can’t be displayed.")).toBeVisible();
     await expect(page.getByText("batches:e2e-circular")).toBeVisible();
     await expect(page.getByText("batches · e2e-sibling")).toBeVisible();
