@@ -28,25 +28,20 @@ const CLAUDE_TEAM_URL = `${GITHUB_URL}/tree/mainline/packages/claude-team`;
 
         <div class="mt-8 lg:max-w-screen-md text-left flex flex-col gap-4">
             <p class="px-5">
-                Claude Team is a project built for BrewDocs. It's a way of running a software
-                project where a team of AI agents does the work in the open, on GitHub, each one
-                with a job it owns and a person deciding what happens next.
+                Built both from and for BrewDocs, Claude Teams is a automated AI agent "team" built on Github. The role compartmentalization
+                started as a desire to optimize around business actions, but balancing for turn costs to ensure successful
+                runs. From that, it naturally evolved towards automation of SDLC, becoming more of a small managed team.
             </p>
             <p class="px-5">
-                BrewDocs is built with it. Nearly everything on this site and in the app was
-                planned, written, reviewed and documented by that team — which makes BrewDocs both
-                its first home and its proving ground.
+                BrewDocs was originally hand-written, with some light AI assistance in its less mature days. Nowadays,
+                virtually every line of code is managed and authored by Claude Code running on Github.
             </p>
 
             <div class="flex flex-col gap-3">
                 <div class="rounded-box glass p-5 [box-shadow:inset_0_0_0_1px_oklch(100%_0_0/22%)]">
-                    <div class="text-xs font-mono uppercase tracking-widest text-primary">Big idea to small change</div>
+                    <div class="text-xs font-mono uppercase tracking-widest text-primary">Clear Workflows</div>
                     <p class="mt-2 text-base">
-                        Work moves through three sizes. An <strong>epic</strong> is the ambition —
-                        "brew day should work without a signal". A <strong>story</strong> is one
-                        useful slice of it, shipped on its own. A <strong>task</strong> is a single
-                        change one agent can finish and hand over. Each size has its own place to
-                        be reviewed, so nothing lands without someone having looked at it.
+                        Work is organized using Github Issues as <strong>Epics</strong> &bull; <strong>Stories</strong> &bull; <strong>Tasks</strong>
                     </p>
                 </div>
                 <div class="rounded-box glass p-5 [box-shadow:inset_0_0_0_1px_oklch(100%_0_0/22%)]">
@@ -62,29 +57,16 @@ const CLAUDE_TEAM_URL = `${GITHUB_URL}/tree/mainline/packages/claude-team`;
                         ))}
                     </div>
                 </div>
-                <div class="rounded-box glass p-5 [box-shadow:inset_0_0_0_1px_oklch(100%_0_0/22%)]">
-                    <div class="text-xs font-mono uppercase tracking-widest text-primary">A person is always driving</div>
+                <div class="p-5">
+                    <div class="text-xs font-mono uppercase tracking-widest text-primary">Reasonable check-ins</div>
                     <p class="mt-2 text-base">
-                        No agent starts another, and none of them can ship. Every run begins with a
-                        person asking for it, and every change ends with a person choosing to merge
-                        it. What the agents produce is a trail anyone can read: the plan, the
-                        change, the review, and the reasoning behind each.
+                        Claude Team is more of a pattern of Claude Code on Github, as much of the instruction can be generated
+                        by AI. If you are interested in understanding the roles more deeploy, head on over to the dedicated package.
                     </p>
                 </div>
             </div>
 
             <div class="px-5">
-                <p>
-                    Claude Team isn't specific to brewing software: it's a set of role instructions,
-                    a GitHub workflow and a few small scripts, with no application code of its own.
-                    BrewDocs keeps it in a self-contained package rather than woven through the app,
-                    so another project can adopt it by copying that package.
-                </p>
-                <p class="mt-3">
-                    If you want the details, the whole thing is public: the instructions each role
-                    runs on, the scripts that do the bookkeeping, and the reasoning behind every
-                    awkward decision.
-                </p>
                 <div class="mt-5 flex flex-wrap gap-3">
                     <a href={CLAUDE_TEAM_URL} class="btn btn-primary">Read the source</a>
                 </div>
