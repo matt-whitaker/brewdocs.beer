@@ -126,6 +126,36 @@ its concurrency group on issue number, two tasks are in *different* groups and c
 the same branch at the same time. Sub-branching removes the possibility rather than relying
 on runs being triggered one at a time.
 
+### Where work goes, and why there is only ever one PR
+
+⚠️ **The governing rule: work goes on the branch of the thing the run was triggered on.** Not a
+branch the model picks, not a new one. Two modes fall out of it — an **issue** trigger means a
+fresh task branch and exactly one PR into the story; a **PR** trigger means commit to that PR's
+branch and open nothing.
+
+⚠️ **The host action already implements this; only the prompt ever disagreed.** `setupBranch`
+checks the PR's state, and for an **open** PR it checks out `headRefName` and **ignores
+`base_branch` entirely** — that input is read only on the create-a-branch path, which is reached
+for an issue trigger or a closed/merged PR. So a follow-up run is put on the right branch before
+the model gets a turn.
+
+⚠️ **The contradiction that produced the extra PRs was ours.** The prompt told every run to "open
+your PR against the story branch" and, in the same breath, "never commit to the story branch
+itself". On a comment against the *story's own PR*, the checkout puts the run on the story branch —
+so both instructions were wrong at once, and a run obeying them had to invent a third branch and a
+second PR to escape. Committing to the story branch is **correct** when the story's PR is what is
+being discussed; the no-commit rule belongs to task runs, which have their own branch.
+
+⚠️ **More PRs is not more granularity, and that is the actual argument.** A reviewer follows a
+conversation by reading its commits as small diffs, in order, in the place the discussion is
+happening. A second PR splits that thread and makes them reassemble it. The commits already are
+the granularity — an extra PR only adds a seam.
+
+⚠️ **No hook opens a second one either**, and that is worth knowing before someone "fixes" it:
+`finish-pr.py` resolves the PR from the current branch, so on a follow-up it finds the existing one
+and its stranded-commit recovery never fires. That recovery is for a run that committed and left
+*no* PR at all.
+
 ## How a story moves
 
 1. **Architect** shapes the story, **names** its branch on a `Branch:` line, and creates its
