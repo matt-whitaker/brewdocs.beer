@@ -541,9 +541,20 @@ jobs:
       && contains(needs.delegate.outputs.roles, 'claude')
     runs-on: ubuntu-latest
     permissions:
-      # reads to answer, writes only its own reply. No branch, no PR, no code.
+      # reads to answer, writes only its own reply. No branch, no code.
       contents: read
       issues: write
+      # ⚠️ REQUIRED TO ANSWER ON A PR, and its absence is not a degraded run — it is a dead one.
+      # Commenting on a PR goes through the `/issues/{n}/comments` endpoint, but the permission
+      # GitHub checks is `pull-requests`, not `issues`. Without this the action cannot create its
+      # tracking comment, and since that comment IS how a tag-mode run reports, it aborts at setup
+      # before the model is ever called: "Resource not accessible by integration".
+      # ⚠️ This role reaches PRs by design — rule 1b routes a bare `@claude` on a PR here rather
+      # than to an Implementor — so the PR path is the normal case, not an edge.
+      # ⚠️ It does NOT widen what the role may change. Commenting on and labelling a PR is process
+      # state; `contents: read` is what still bounds it away from content, and that is the load-
+      # bearing half (it neuters the `git rm`/`git-push.sh` the action's base allowlist unions in).
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
         with:
