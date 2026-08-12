@@ -12,7 +12,7 @@ export default function Topbar({ nav }: TopbarProps) {
                 {nav.map(([name, href, cta]) => (
                     <a
                         key={name}
-                        className={classNames("btn text-lg capitalize max-lg:hidden", {
+                        className={classNames("btn text-lg max-lg:hidden", {
                             "btn-ghost": !cta,
                             "bg-base-200 text-base-content border-base-200 hover:opacity-90": cta
                         })}
@@ -28,7 +28,7 @@ export default function Topbar({ nav }: TopbarProps) {
                             className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
                             {nav.map(([name, href]) => (
                                 <li key={name}>
-                                    <a href={href} className="capitalize">{name}</a>
+                                    <a href={href}>{name}</a>
                                 </li>
                             ))}
                         </ul>
