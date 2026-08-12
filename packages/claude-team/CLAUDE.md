@@ -252,7 +252,7 @@ at all.)
 
 | role | picked up from | writes |
 |---|---|---|
-| `@claude` | its name in a **comment**, with no role handle; **and** a route the script had to guess | an answer, or a role name. No code, no branch, no PR — it is who you talk to |
+| `@claude` | its name in a **comment**, with no role handle; **and** a route the script had to guess | an answer, a role name, and repairs to process state. No code, no branch, no PR — it is who you talk to |
 | Architect | an epic or an unshaped story | the issue, a story's branch, and its tasks |
 | Researcher | a spike | findings and a recommendation, appended to the issue by a hook — it holds no shell |
 | Implementor | a task stamped `Role: implementor` | code, outside the design system |
@@ -261,7 +261,52 @@ at all.)
 | Writer | a task stamped `Role: writer`, one per story, run **first** | the product specification, then documentation |
 | Security | every merge, plus its handle on a PR | issues it files |
 
-⚠️ **The root role has two jobs and two prompts.** `claude.md` is the conversation — someone asked
+### The custodian's repair remit
+
+The root role is the only one that may put **process state** right — the breakage no role owns,
+which is exactly why it accumulates: an issue off the board, a child never parented, a missing
+classification label.
+
+⚠️ **It names repairs; a hook applies them.** The model returns JSON, `apply-repairs.py` acts on it,
+and the hook's repertoire is a fixed enum — `board-item`, `sub-issue-link`, `classification-label`.
+That is what makes "never touches content" a fact about what *exists* rather than a promise in a
+prompt, which was the acceptance criterion: enforced by what the role can **reach**.
+
+⚠️ **Its tools are allowlisted by SUBCOMMAND**, the same way Security's are and for the same reason:
+`Bash(gh:*)` includes `gh issue edit --body`, which rewrites an issue, and a family grant cannot
+express "read but do not write". ⚠️ `gh api` is deliberately absent — it reaches every endpoint the
+token has. Relationships survive that narrowing because `gh issue view` exposes `parent`,
+`subIssues` and `subIssuesSummary`; **that was checked before narrowing**, because Security already
+taught this package that too narrow starves a role *silently*.
+
+⚠️ **Creating a missing branch is NOT in the repertoire, though it is the case that motivated the
+role.** Writing a ref needs `contents: write`, and the action's base allowlist unions in
+`Bash(git rm:*)` and `git-push.sh` which no role can remove — so `contents: write` would let a run
+delete files and push them, and the no-content claim would rest on holding no `Write` tool rather
+than on the token. `contents: read` is load-bearing. The branch case is prevented upstream anyway.
+
+⚠️ **Fix AND report, never fix quietly**, and this is the rule most likely to be eroded by a
+well-meaning change. Every repair appends to one log comment on its target carrying *what was
+wrong* and *why*. The value of this system has come from breakage being visible: a 404 nobody hid
+is what produced the rule that prevents it, and a custodian that had silently created the branch
+would have left a working run and a rule still wrong, with nobody knowing to fix it.
+
+⚠️ **A repeat escalates instead of repairing.** Reaching for the same `kind` on the same target
+twice means the cause was never fixed, so the hook withholds the repair, files an issue, and leaves
+the instance broken **on purpose**. A custodian quietly repairing the same thing weekly has become
+a suppressor of the signal that would have fixed it properly. The check reads the log comment —
+state on the issue, not a memory of the last run.
+
+⚠️ **`unrepairable` is the other half and carries the weight.** Anything outside the enum, anything
+needing content changed, and anything whose real fix is upstream in a rule goes there with what
+would fix it. Keeping it separate from `repairs` is the point: a custodian that quietly fixed
+everything would erase the evidence that the rule is wrong.
+
+⚠️ **The answer still goes in the tracking comment.** With `--json-schema` the final message is
+JSON, so `track_progress: true` stops being cosmetic and becomes the only place a human reads a
+reply — a run that answers into the JSON and leaves the comment empty has answered nobody.
+
+⚠️ **The root role has three jobs and two prompts.** `claude.md` is the conversation — someone asked
 it something. `route.md` is the interception — nobody asked it anything, and its whole output is a
 role name plus the reason, returned as JSON to a shell step. Splitting them is not tidiness: a
 conversational prompt handed a routing decision answers in prose, and a routing prompt handed a
@@ -521,6 +566,7 @@ forgotten by a model that ran out of turns or simply skipped it.
 | `sync-kind-label.py` | post, Architect + Researcher | applies the `epic`/`spike`/`bug`/`story` label `kind()` derives |
 | `file-sub-issues.py` | post, Architect | parents stories to their epic, tasks to their story |
 | `finish-pr.py` | post, authors | labels the PR, and ensures it closes its issue — or, when the author reported work `remaining`, that it does not |
+| `apply-repairs.py` | post, the root role | applies the process repairs it named, records each with what was wrong and why, and files an issue rather than repairing the same thing twice |
 | `post-findings.py` | post, Researcher | renders its schema-forced findings onto the spike — the role has no shell, so this is the only way they reach anyone |
 | `post-handoff.py` | post, authors | posts the JSON handoff to the story's issue, and appends its `decisions` to one running log there |
 | `log-to-story.py` | post, Architect + authors + on merge | rewrites one comment on the story listing its tasks in trigger order |
