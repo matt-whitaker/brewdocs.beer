@@ -45,10 +45,9 @@ const CATEGORIES: Category[] = [
 
 const Introduction = () => (
     <article className="mx-auto max-w-3xl">
-        <ScreenH1>BrewDocs design system</ScreenH1>
+        <ScreenH1 className="mb-2">BrewDocs design system</ScreenH1>
         <ScreenP>
-            React UI primitives that emit Tailwind and DaisyUI class strings against the nord theme.
-            Every primitive is previewed here, and a variant with no story is a variant nobody reviews.
+            React UI primitives that emit Tailwind and DaisyUI class strings.
         </ScreenP>
 
         <ScreenH3>Consumers</ScreenH3>
@@ -62,13 +61,8 @@ const Introduction = () => (
                 </li>
             ))}
         </ul>
-        <p className="text-base-content/70 mt-3 text-sm">
-            The package ships raw TypeScript with no build step, so each consumer&rsquo;s bundler compiles
-            the source and each consumer&rsquo;s own Tailwind pipeline compiles the class strings.
-        </p>
 
         <ScreenH3>Categories</ScreenH3>
-        <ScreenP>The sidebar groups every primitive under one of these — open one to see its stories.</ScreenP>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
             {CATEGORIES.map(({storyTitlePrefix, contents}) => (
                 <section
