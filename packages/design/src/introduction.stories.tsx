@@ -1,4 +1,6 @@
 import type {Meta, StoryObj} from "@storybook/react-vite";
+import {SELECT_STORY} from "storybook/internal/core-events";
+import {addons} from "storybook/preview-api";
 import {ScreenH1, ScreenH3, ScreenH4, ScreenP} from "@/components/typography";
 
 type Consumer = {
@@ -8,9 +10,12 @@ type Consumer = {
 };
 
 type Category = {
-    title: string;
+    storyTitlePrefix: string;
     contents: string;
 };
+
+const showFirstStoryIn = (storyTitlePrefix: string) =>
+    addons.getChannel().emit(SELECT_STORY, {title: storyTitlePrefix});
 
 const CONSUMERS: Consumer[] = [
     {
@@ -26,16 +31,16 @@ const CONSUMERS: Consumer[] = [
 ];
 
 const CATEGORIES: Category[] = [
-    {title: "Typography", contents: "ScreenH1–ScreenH5 and ScreenP, plus the type scale they form."},
-    {title: "Inputs", contents: "InputText, InputDate, InputSelect, Textarea and SearchBar."},
-    {title: "Layout", contents: "Hero, and the Screen page wrappers."},
-    {title: "Modal", contents: "The dialog-backed Modal family and the useModal hook."},
-    {title: "Overlay", contents: "Popover, the anchored info bubble."},
-    {title: "Data", contents: "BrewTimer, Timeline, SrmAvatar and SrmTag."},
-    {title: "DataGrid", contents: "The dense editable grid behind batch planning and recipe editing."},
-    {title: "Data Display", contents: "StatusBadge."},
-    {title: "Feedback", contents: "ErrorMessage."},
-    {title: "Icons", contents: "The inline SVG set."}
+    {storyTitlePrefix: "Typography", contents: "ScreenH1–ScreenH5 and ScreenP, plus the type scale they form."},
+    {storyTitlePrefix: "Inputs", contents: "InputText, InputDate, InputSelect, Textarea and SearchBar."},
+    {storyTitlePrefix: "Layout", contents: "Hero, and the Screen page wrappers."},
+    {storyTitlePrefix: "Modal", contents: "The dialog-backed Modal family and the useModal hook."},
+    {storyTitlePrefix: "Overlay", contents: "Popover, the anchored info bubble."},
+    {storyTitlePrefix: "Data", contents: "BrewTimer, Timeline, SrmAvatar and SrmTag."},
+    {storyTitlePrefix: "DataGrid", contents: "The dense editable grid behind batch planning and recipe editing."},
+    {storyTitlePrefix: "Data Display", contents: "StatusBadge."},
+    {storyTitlePrefix: "Feedback", contents: "ErrorMessage."},
+    {storyTitlePrefix: "Icons", contents: "The inline SVG set."}
 ];
 
 const Introduction = () => (
@@ -63,11 +68,22 @@ const Introduction = () => (
         </p>
 
         <ScreenH3>Categories</ScreenH3>
-        <ScreenP>The sidebar groups every primitive under one of these.</ScreenP>
+        <ScreenP>The sidebar groups every primitive under one of these — open one to see its stories.</ScreenP>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            {CATEGORIES.map(({title, contents}) => (
-                <section key={title} className="bg-base-200 border-base-300 rounded-box border p-3">
-                    <ScreenH4 className="cozy">{title}</ScreenH4>
+            {CATEGORIES.map(({storyTitlePrefix, contents}) => (
+                <section
+                    key={storyTitlePrefix}
+                    className="bg-base-200 border-base-300 rounded-box focus-within:border-primary border p-3 transition-colors"
+                >
+                    <ScreenH4 className="cozy">
+                        <button
+                            type="button"
+                            className="link link-hover link-primary"
+                            onClick={() => showFirstStoryIn(storyTitlePrefix)}
+                        >
+                            {storyTitlePrefix}
+                        </button>
+                    </ScreenH4>
                     <p className="text-base-content/70 mt-1 text-sm">{contents}</p>
                 </section>
             ))}
