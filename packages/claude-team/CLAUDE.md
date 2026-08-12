@@ -653,6 +653,18 @@ turns and cannot be forgotten.
   close with nothing to signal it. ⚠️ **Unless the author reported `remaining`** — then the hook
   withholds the keyword rather than adding it. A forgotten keyword and a deliberately omitted one
   were indistinguishable, and the deliberate one lost.
+- ⚠️ **`open-story-pr.py` calls `gh pr create`, so its job needs `pull-requests: write`** — and
+  until that was noticed it had `read`, so the call 403'd **every time since the hook existed**.
+  It had never once succeeded: every story PR in the consuming repo was opened by hand, while this
+  file described the hook as the mechanism. A story branch then sat unmerged with nobody looking
+  and its work was lost.
+  ⚠️ **It warned rather than failing, which is what made it survive.** A `::warning::` fails no
+  step, so the job stayed green and the gap was invisible from outside — the same shape as the
+  `defaulted` output nobody read. It now **fails the step**: every benign case returns earlier, so
+  reaching the create call and not creating anything is always a real problem.
+  ⚠️ The general lesson, since this is the third instance: **a hook that is the sole mechanism for
+  something must fail loudly when it cannot do it.** Best-effort is right for bookkeeping that a
+  human would notice missing; it is wrong for the only thing that opens a PR.
 - ⚠️ **A job that can be triggered on a PR needs `pull-requests: write`, not `issues: write`, to
   say anything at all.** Commenting on a PR goes through the `/issues/{n}/comments` endpoint — so
   the API reads as if `issues` covers it — but the permission GitHub checks is `pull-requests`.

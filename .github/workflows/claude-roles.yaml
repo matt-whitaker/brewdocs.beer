@@ -1465,7 +1465,13 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: read
+      # ⚠️ WRITE, because `open-story-pr.py` calls `gh pr create`. It was `read`, so that call
+      # 403'd every time — the hook has **never once** succeeded, and every story PR in this repo
+      # was opened by hand. The docs described it as the mechanism regardless, which is how a
+      # story branch sat unmerged long enough to lose its work (#735/#815).
+      # ⚠️ Nothing else in this job needs it: `close-merged-work.py` only *reads* PRs and closes
+      # issues, and the board writes go through PROJECTS_TOKEN on their own step.
+      pull-requests: write
       issues: write
     steps:
       - uses: actions/checkout@v4
