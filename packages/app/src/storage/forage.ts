@@ -1,7 +1,7 @@
 import { v4 as uuidV4} from "uuid";
 import localforage from "@/storage/localforage";
 import {registerMigrations} from "@/storage/migration/registry";
-import {entityIdOf, entityVersionOf, runMigrations} from "@/storage/migration/runner";
+import {entityIdOf, entityVersionOf, messageOf, runMigrations} from "@/storage/migration/runner";
 import {Migration, MigrationBackup, MigrationFailure} from "@/storage/migration/types";
 
 export const ID_REGEX = /^.*?#(.*)$/;
@@ -77,7 +77,19 @@ export abstract class Forage<T> {
         });
 
         for (const {key, item} of stale) {
-            await this.migrateStoredRecord(key, item, migration);
+            try {
+                await this.migrateStoredRecord(key, item, migration);
+            } catch (error) {
+                await this.recordMigrationFailure({
+                    entityType: migration.entityType,
+                    id: entityIdOf(item),
+                    fromVersion: entityVersionOf(item),
+                    targetVersion: migration.version,
+                    data: item,
+                    error: messageOf(error),
+                    reason: "migration-error",
+                });
+            }
         }
     }
 
@@ -106,6 +118,14 @@ export abstract class Forage<T> {
         });
 
         await this._forage.setItem(key, result.data);
+        await this.clearMigrationFailure(migration.entityType, entityIdOf(item));
+    }
+
+    private async clearMigrationFailure(entityType: string, id?: string): Promise<void> {
+        if (!id) return;
+
+        const {default: migrationFailuresStorage} = await import("@/storage/migration/failures");
+        await migrationFailuresStorage.delete(`${entityType}:${id}`);
     }
 
     private async recordMigrationBackup(backup: MigrationBackup): Promise<void> {
