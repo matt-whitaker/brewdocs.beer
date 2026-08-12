@@ -76,4 +76,13 @@ if team.gh(
 ) is not None:
     print(f"opened the story PR for {BASE}")
 else:
-    team.warn(f"could not open the story PR for {BASE} — open it by hand.")
+    # ⚠️ FAILS THE STEP, and that is the whole lesson of this hook's history. It warned instead,
+    # for as long as it existed, while `pull-requests: read` made the create 403 every single
+    # time — so it never once worked, the job stayed green, and the docs went on describing it as
+    # the mechanism. A story branch then sat unmerged with nobody looking, and its work was lost
+    # (#735/#815).
+    #
+    # ⚠️ Reaching this line means a PR genuinely should exist: every benign case — merged into the
+    # default branch, an unresolvable story, a PR already open, a branch not ahead — returned
+    # earlier. So there is no legitimate reason to be here and quiet.
+    team.fail(f"could not open the story PR for {BASE} — open it by hand.")
