@@ -1,7 +1,8 @@
 import {useMemo} from "react";
+import {InputSelectOption} from "@brewdocs.beer/design";
 import useIndexBy from "@/hooks/useIndexBy";
 import {AddFn, RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
-import Brewable, {phaseLabel} from "@/model/brewable";
+import Brewable, {phaseLabel, ResourceType} from "@/model/brewable";
 import RecipeEditPhaseSection, {AssignmentWithIndex} from "@/screen/brewable-edit/ingredients/phase-section";
 import {useKbGrains} from "@/state/kbGrains";
 import {useKbHops} from "@/state/kbHops";
@@ -25,15 +26,12 @@ export default function BrewableEditIngredients({ brewable, update, updateScalar
     const kbYeasts = useKbYeasts();
     const kbYeastsIndex = useIndexBy(kbYeasts, "name");
 
-    // a phase's add-row offers every catalog resource in one dropdown; the value
-    // carries the resource type (`"<type>:<name>"`) so the row can build the
-    // right assignment without a second dropdown. Additives have no catalog and
-    // aren't offered here.
-    const resourceOptions = useMemo(() => [
-        ...kbGrains.map(({ name }) => ({ value: `grain:${name}`, name })),
-        ...kbHops.map(({ name }) => ({ value: `hop:${name}`, name })),
-        ...kbYeasts.map(({ name }) => ({ value: `yeast:${name}`, name })),
-    ], [kbGrains, kbHops, kbYeasts]);
+    const resourceOptions = useMemo<Record<ResourceType, InputSelectOption[]>>(() => ({
+        grain: kbGrains.map(({ name }) => ({ value: name, name })),
+        hop: kbHops.map(({ name }) => ({ value: name, name })),
+        yeast: kbYeasts.map(({ name }) => ({ value: name, name })),
+        additive: [],
+    }), [kbGrains, kbHops, kbYeasts]);
 
     // group by phase *instance*, in schedule order — two "boil" phases are two
     // sections, each holding only the assignments that point at it

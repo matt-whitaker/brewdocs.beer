@@ -107,8 +107,8 @@ test("a Details edit and an Ingredients edit in the same session both survive â€
     await page.getByLabel("Brewer").fill("E2E Clobber Brewer 1");
 
     await page.getByRole("tab", {name: "Ingredients", exact: true}).click();
-    await page.getByLabel("Ingredient for 2. Boil").selectOption("hop:Cascade");
-    await page.getByRole("button", {name: "Add ingredient to 2. Boil"}).click();
+    await page.getByLabel("Hops for 2. Boil").selectOption("Cascade");
+    await page.getByRole("button", {name: "Add hop to 2. Boil"}).click();
     // the new row's own weight edit debounces too, so start it right away
     await page.getByLabel("Cascade weight").fill("1.5");
 
@@ -128,8 +128,8 @@ test("a Details edit and an Ingredients edit in the same session both survive â€
     await createRecipeFromTemplate(page, "E2E Clobber Ingredients First", "Empty");
 
     await page.getByRole("tab", {name: "Ingredients", exact: true}).click();
-    await page.getByLabel("Ingredient for 2. Boil").selectOption("hop:Cascade");
-    await page.getByRole("button", {name: "Add ingredient to 2. Boil"}).click();
+    await page.getByLabel("Hops for 2. Boil").selectOption("Cascade");
+    await page.getByRole("button", {name: "Add hop to 2. Boil"}).click();
     await page.getByLabel("Cascade weight").fill("1.5");
 
     await page.getByRole("tab", {name: "Details", exact: true}).click();
@@ -147,8 +147,8 @@ test("adds an ingredient, equipment, and a phase from the recipe side, and all p
     await createRecipeFromTemplate(page, "E2E Brewable Persist", "Empty");
 
     await page.getByRole("tab", {name: "Ingredients", exact: true}).click();
-    await page.getByLabel("Ingredient for 2. Boil").selectOption("hop:Cascade");
-    await page.getByRole("button", {name: "Add ingredient to 2. Boil"}).click();
+    await page.getByLabel("Hops for 2. Boil").selectOption("Cascade");
+    await page.getByRole("button", {name: "Add hop to 2. Boil"}).click();
 
     await page.getByRole("tab", {name: "Equipment", exact: true}).click();
     const mashEquipment = page.locator(".data-grid").filter({has: page.getByRole("button", {name: "Add equipment to 1. Mash"})});

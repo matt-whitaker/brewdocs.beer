@@ -25,7 +25,8 @@ export const useMigrationFailures = (): Record<string, MigrationFailure> => {
     return data;
 };
 
-export const isRetryable = ({entityType, id}: MigrationFailure) => !!id && !!retryStores[entityType];
+export const isRetryable = ({entityType, id, reason}: MigrationFailure) =>
+    !!id && !!retryStores[entityType] && reason !== "no-migration-path";
 
 export const discardMigrationFailure = async (id: string) => {
     await migrationFailuresStorage.delete(id);

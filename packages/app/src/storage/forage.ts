@@ -1,8 +1,8 @@
 import { v4 as uuidV4} from "uuid";
 import localforage from "@/storage/localforage";
 import {registerMigrations} from "@/storage/migration/registry";
-import {entityIdOf, runMigrations} from "@/storage/migration/runner";
-import {DEFAULT_ENTITY_VERSION, Migration, MigrationBackup, MigrationFailure, MigrationResult} from "@/storage/migration/types";
+import {entityIdOf, entityVersionOf, messageOf, runMigrations} from "@/storage/migration/runner";
+import {Migration, MigrationBackup, MigrationFailure} from "@/storage/migration/types";
 
 export const ID_REGEX = /^.*?#(.*)$/;
 
@@ -27,16 +27,10 @@ export abstract class Forage<T> {
 
     async get(id: string): Promise<T|null> {
         const item = await this._forage.getItem<T>(this.buildKey(id));
-        const migration = this._migration;
 
-        if (item === null || !migration) return item;
+        if (item === null) return null;
 
-        const result = await this.migrate(item, migration);
-
-        if (result.ok) return result.data;
-
-        await this.recordMigrationFailure(result.failure);
-        return null;
+        return this.isCurrentVersion(item) ? item : null;
     }
 
     async list(): Promise<T[]> {
@@ -45,15 +39,7 @@ export abstract class Forage<T> {
             items.push(val);
         });
 
-        const migration = this._migration;
-        if (!migration) return items;
-
-        const results = await Promise.all(items.map((item) => this.migrate(item, migration)));
-        const failures = results.flatMap((result) => result.ok ? [] : [result.failure]);
-
-        await Promise.all(failures.map((failure) => this.recordMigrationFailure(failure)));
-
-        return results.flatMap((result) => result.ok ? [result.data] : []);
+        return items.filter((item) => this.isCurrentVersion(item));
     }
 
     async index(): Promise<Record<string, T>> {
@@ -80,22 +66,66 @@ export abstract class Forage<T> {
         return `${this._name}#${id}`;
     }
 
-    private async migrate(item: T, migration: ForageMigrationConfig): Promise<MigrationResult<T & {version?: number}>> {
-        const record = item as T & {version?: number};
-        const fromVersion = record.version ?? DEFAULT_ENTITY_VERSION;
+    async migrateStoredRecords(): Promise<void> {
+        const migration = this._migration;
 
-        if (fromVersion !== migration.version) {
-            await this.recordMigrationBackup({
-                entityType: migration.entityType,
-                id: entityIdOf(item),
-                fromVersion,
-                toVersion: migration.version,
-                migratedAt: new Date().toISOString(),
-                data: item,
-            });
+        if (!migration) return;
+
+        const stale: {key: string, item: T}[] = [];
+        await this._forage.iterate((item: T, key: string) => {
+            if (entityVersionOf(item) !== migration.version) stale.push({key, item});
+        });
+
+        for (const {key, item} of stale) {
+            try {
+                await this.migrateStoredRecord(key, item, migration);
+            } catch (error) {
+                await this.recordMigrationFailure({
+                    entityType: migration.entityType,
+                    id: entityIdOf(item),
+                    fromVersion: entityVersionOf(item),
+                    targetVersion: migration.version,
+                    data: item,
+                    error: messageOf(error),
+                    reason: "migration-error",
+                });
+            }
+        }
+    }
+
+    private isCurrentVersion(item: T): boolean {
+        const migration = this._migration;
+
+        return !migration || entityVersionOf(item) === migration.version;
+    }
+
+    private async migrateStoredRecord(key: string, item: T, migration: ForageMigrationConfig): Promise<void> {
+        const fromVersion = entityVersionOf(item);
+        const result = runMigrations<T>(migration.entityType, item as T & {version?: number}, migration.version);
+
+        if (!result.ok) {
+            await this.recordMigrationFailure(result.failure);
+            return;
         }
 
-        return runMigrations<T>(migration.entityType, record, migration.version);
+        await this.recordMigrationBackup({
+            entityType: migration.entityType,
+            id: entityIdOf(item),
+            fromVersion,
+            toVersion: migration.version,
+            migratedAt: new Date().toISOString(),
+            data: item,
+        });
+
+        await this._forage.setItem(key, result.data);
+        await this.clearMigrationFailure(migration.entityType, entityIdOf(item));
+    }
+
+    private async clearMigrationFailure(entityType: string, id?: string): Promise<void> {
+        if (!id) return;
+
+        const {default: migrationFailuresStorage} = await import("@/storage/migration/failures");
+        await migrationFailuresStorage.delete(`${entityType}:${id}`);
     }
 
     private async recordMigrationBackup(backup: MigrationBackup): Promise<void> {
