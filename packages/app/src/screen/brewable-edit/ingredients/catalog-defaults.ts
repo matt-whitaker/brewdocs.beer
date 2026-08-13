@@ -17,6 +17,18 @@ export const PHASE_TYPE_LABELS: Record<PhaseType, string> = {
 /** subsection order within a phase group */
 export const RESOURCE_TYPES: ResourceType[] = ["grain", "hop", "yeast", "additive"];
 
+export const RESOURCE_TYPE_PHASE_TYPES: Partial<Record<ResourceType, PhaseType[]>> = {
+    grain: ["mash"],
+    hop: ["boil"],
+    yeast: ["ferment"],
+};
+
+export const resourceTypesForPhase = (type: PhaseType): ResourceType[] =>
+    RESOURCE_TYPES.filter(resourceType => {
+        const phaseTypes = RESOURCE_TYPE_PHASE_TYPES[resourceType];
+        return !phaseTypes || phaseTypes.includes(type);
+    });
+
 export const RESOURCE_TYPE_LABELS: Record<ResourceType, string> = {
     grain: "Grains",
     hop: "Hops",
