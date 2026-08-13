@@ -257,7 +257,12 @@ that sentence was the model talking, and fixed something else entirely.
 
 ⚠️ The Architect requires `!github.event.issue.pull_request` on its handle arm — `issue_comment`
 fires for PRs too, and without the guard a PR comment started a role written for an epic issue.
-The router cannot pick it on a PR (rule 2 sends every PR to the Implementor).
+Excluding a PR is the job `if:`'s job, not routing's: `delegate.py` rule 1 matches an explicit
+`@claude/<role>` handle and short-circuits before rule 2's every-PR-to-Implementor default ever
+runs, so the router hands `architect`/`researcher` a PR trigger the moment a comment names the
+handle. The workflow `if:` guards only the arm reading the comment body directly — the arm
+reading `needs.delegate.outputs.roles` carries no such guard, so a PR comment naming the handle
+still routes through unguarded (#873).
 
 ⚠️ Every run is started by hand — a label or a comment — and the delegator picks the role from
 there. No role chains off another. **Tester and Writer briefly chained off the Implementor via
