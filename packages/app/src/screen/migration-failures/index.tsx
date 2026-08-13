@@ -27,10 +27,10 @@ export default function MigrationFailures() {
 
     return (
         <Screen>
-            <ScreenH2>Failed migrations</ScreenH2>
+            <ScreenH2>Updates</ScreenH2>
             {items.length
                 ? <ul className="w-full menu px-0">{items}</ul>
-                : <ScreenP>No records have been set aside.</ScreenP>}
+                : <ScreenP>No records are waiting to be updated.</ScreenP>}
         </Screen>
     );
 }

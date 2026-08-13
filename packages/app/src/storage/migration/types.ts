@@ -8,6 +8,8 @@ export interface Migration<T = unknown> {
     down: (data: T) => T;
 }
 
+export type MigrationFailureReason = "no-migration-path" | "migration-error";
+
 export interface MigrationFailure {
     entityType: string;
     id?: string;
@@ -15,6 +17,7 @@ export interface MigrationFailure {
     targetVersion: number;
     data: unknown;
     error: string;
+    reason: MigrationFailureReason;
 }
 
 export interface MigrationBackup {
