@@ -161,7 +161,7 @@ function RecipeEditAssignmentRow({ row, assignment, remove, update, updateScalar
     }, [assignment, row, onChangeAlphaValue, onBlurAlpha, onChangeBoilValue, onBlurBoil, onChangeWeightValue, onBlurWeight, onChangeAttnValue, onBlurAttn, onChangeTempValue, onBlurTemp, onToggleStarter]);
 
     return (
-        <DataGridRow zebra label="assignment details" expandContent={expandContent}>
+        <DataGridRow zebra reserveExpand label="assignment details" expandContent={expandContent}>
             <DataGridLabel className="ml-6">
                 <DataGridRemoveButton label={`Remove ${assignmentResourceName(assignment)}`} onClick={onRemove} />
                 {assignmentResourceName(assignment)}
