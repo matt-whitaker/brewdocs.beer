@@ -27,6 +27,11 @@ const CONSUMERS: Consumer[] = [
         packageName: "@brewdocs.beer/www",
         site: "brewdocs.beer",
         role: "the marketing and information site"
+    },
+    {
+        packageName: "@brewdocs.beer/design",
+        site: "design.brewdocs.beer",
+        role: "this Storybook as well"
     }
 ];
 
@@ -47,14 +52,13 @@ const Introduction = () => (
     <article className="mx-auto max-w-3xl">
         <ScreenH1 className="mb-2">BrewDocs design system</ScreenH1>
         <ScreenP>
-            React UI primitives that emit Tailwind and DaisyUI class strings.
+            Tokens, components, and patterns built on Tailwind and Daisy UI.
         </ScreenP>
 
         <ScreenH3>Consumers</ScreenH3>
         <ul className="mt-2 space-y-2">
             {CONSUMERS.map(({packageName, site, role}) => (
                 <li key={packageName} className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                    <span className="badge badge-primary badge-sm font-mono">{packageName}</span>
                     <span className="text-base-content/70 text-sm">
                         {site} — {role}
                     </span>
