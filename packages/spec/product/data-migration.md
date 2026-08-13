@@ -29,4 +29,4 @@ _None._
 ## Out of scope
 
 - What happens to a record that can't be brought up to date — see `migration-failures.md`.
-- Restoring a record from an earlier version — undecided, #811.
+- Restoring a record from an earlier version — see `reverts.md`.

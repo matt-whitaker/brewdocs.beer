@@ -15,6 +15,7 @@ import { Route as DisclaimerRouteImport } from './routes/disclaimer'
 import { Route as KnowledgeRouteImport } from './routes/knowledge'
 import { Route as RecipesRouteImport } from './routes/recipes'
 import { Route as BatchBatchIdRouteImport } from './routes/batch.$batchId'
+import { Route as MigrationsBackupsRouteImport } from './routes/migrations.backups'
 import { Route as MigrationsFailedRouteImport } from './routes/migrations.failed'
 import { Route as RecipeRecipeIdRouteImport } from './routes/recipe.$recipeId'
 import { Route as KbGrainGrainIdRouteImport } from './routes/kb.grain.$grainId'
@@ -51,6 +52,11 @@ const RecipesRoute = RecipesRouteImport.update({
 const BatchBatchIdRoute = BatchBatchIdRouteImport.update({
   id: '/batch/$batchId',
   path: '/batch/$batchId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MigrationsBackupsRoute = MigrationsBackupsRouteImport.update({
+  id: '/migrations/backups',
+  path: '/migrations/backups',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MigrationsFailedRoute = MigrationsFailedRouteImport.update({
@@ -96,6 +102,7 @@ export interface FileRoutesByFullPath {
   '/knowledge': typeof KnowledgeRoute
   '/recipes': typeof RecipesRoute
   '/batch/$batchId': typeof BatchBatchIdRoute
+  '/migrations/backups': typeof MigrationsBackupsRoute
   '/migrations/failed': typeof MigrationsFailedRoute
   '/recipe/$recipeId': typeof RecipeRecipeIdRoute
   '/kb/grain/$grainId': typeof KbGrainGrainIdRoute
@@ -111,6 +118,7 @@ export interface FileRoutesByTo {
   '/knowledge': typeof KnowledgeRoute
   '/recipes': typeof RecipesRoute
   '/batch/$batchId': typeof BatchBatchIdRoute
+  '/migrations/backups': typeof MigrationsBackupsRoute
   '/migrations/failed': typeof MigrationsFailedRoute
   '/recipe/$recipeId': typeof RecipeRecipeIdRoute
   '/kb/grain/$grainId': typeof KbGrainGrainIdRoute
@@ -127,6 +135,7 @@ export interface FileRoutesById {
   '/knowledge': typeof KnowledgeRoute
   '/recipes': typeof RecipesRoute
   '/batch/$batchId': typeof BatchBatchIdRoute
+  '/migrations/backups': typeof MigrationsBackupsRoute
   '/migrations/failed': typeof MigrationsFailedRoute
   '/recipe/$recipeId': typeof RecipeRecipeIdRoute
   '/kb/grain/$grainId': typeof KbGrainGrainIdRoute
@@ -144,6 +153,7 @@ export interface FileRouteTypes {
     | '/knowledge'
     | '/recipes'
     | '/batch/$batchId'
+    | '/migrations/backups'
     | '/migrations/failed'
     | '/recipe/$recipeId'
     | '/kb/grain/$grainId'
@@ -159,6 +169,7 @@ export interface FileRouteTypes {
     | '/knowledge'
     | '/recipes'
     | '/batch/$batchId'
+    | '/migrations/backups'
     | '/migrations/failed'
     | '/recipe/$recipeId'
     | '/kb/grain/$grainId'
@@ -174,6 +185,7 @@ export interface FileRouteTypes {
     | '/knowledge'
     | '/recipes'
     | '/batch/$batchId'
+    | '/migrations/backups'
     | '/migrations/failed'
     | '/recipe/$recipeId'
     | '/kb/grain/$grainId'
@@ -190,6 +202,7 @@ export interface RootRouteChildren {
   KnowledgeRoute: typeof KnowledgeRoute
   RecipesRoute: typeof RecipesRoute
   BatchBatchIdRoute: typeof BatchBatchIdRoute
+  MigrationsBackupsRoute: typeof MigrationsBackupsRoute
   MigrationsFailedRoute: typeof MigrationsFailedRoute
   RecipeRecipeIdRoute: typeof RecipeRecipeIdRoute
   KbGrainGrainIdRoute: typeof KbGrainGrainIdRoute
@@ -241,6 +254,13 @@ declare module '@tanstack/react-router' {
       path: '/batch/$batchId'
       fullPath: '/batch/$batchId'
       preLoaderRoute: typeof BatchBatchIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/migrations/backups': {
+      id: '/migrations/backups'
+      path: '/migrations/backups'
+      fullPath: '/migrations/backups'
+      preLoaderRoute: typeof MigrationsBackupsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/migrations/failed': {
@@ -302,6 +322,7 @@ const rootRouteChildren: RootRouteChildren = {
   KnowledgeRoute: KnowledgeRoute,
   RecipesRoute: RecipesRoute,
   BatchBatchIdRoute: BatchBatchIdRoute,
+  MigrationsBackupsRoute: MigrationsBackupsRoute,
   MigrationsFailedRoute: MigrationsFailedRoute,
   RecipeRecipeIdRoute: RecipeRecipeIdRoute,
   KbGrainGrainIdRoute: KbGrainGrainIdRoute,
