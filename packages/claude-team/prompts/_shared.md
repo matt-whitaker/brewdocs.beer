@@ -129,11 +129,24 @@ commit.
 reaches the story through your PR. (The PR mode above is the exception, and only because there the
 story branch is the thing being discussed.)
 
-⚠️ **Open exactly ONE PR, against the story branch**, not the default branch:
+⚠️ **Open exactly ONE PR. Its base depends on whether you are a task or a story**, and the issue
+itself tells you which:
 
-```
-gh pr create --base <story-branch> --head <your-branch> --title "…" --body "…"
-```
+- **You are a TASK** — the **Branch** line names a branch belonging to a *different* issue (its
+  number is not yours). Target that story branch:
+  ```
+  gh pr create --base <story-branch> --head <your-branch> --title "…" --body "…"
+  ```
+- **You are a STORY worked as-is** — the **Branch** line names *your own* issue number, so nothing
+  sits between you and the default branch. Target the **default branch**:
+  ```
+  gh pr create --base <default-branch> --head <your-branch> --title "…" --body "…"
+  ```
+
+⚠️ **Getting that backwards on a story is not cosmetic.** A story PR aimed at its own story branch
+lands the work where nothing has been merged, the story closes on that merge anyway, and finishing
+it then needs a second PR for an issue that is already closed. A hook corrects the base either way,
+but it is correcting *you* — write it right.
 
 ⚠️ **If the story branch does not exist, say so plainly in your report.** Do not invent one.
 Target the default branch so the work is at least reviewable, and state in the PR that it
