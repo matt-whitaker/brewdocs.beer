@@ -183,6 +183,6 @@ export const Overview: StoryObj = {
     render: () => <Introduction/>
 };
 
-export const Philosophy: StoryObj = {
-    render: () => <InformationDensity/>
-};
+// export const Philosophy: StoryObj = {
+//     render: () => <InformationDensity/>
+// };
