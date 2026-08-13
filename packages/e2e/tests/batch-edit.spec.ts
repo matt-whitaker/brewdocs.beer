@@ -562,6 +562,65 @@ test("adds and removes equipment on a phase, persisting each change", async ({pa
     await expect(page.getByRole("button", {name: "Remove CO2 from 1. Mash"})).toHaveCount(0);
 });
 
+// EQUIPMENT-01 (packages/spec/product/equipment.md): a note is saved exactly as
+// typed, with no interpretation — non-numeric text is what distinguishes this
+// from the retired `count` field, which ran input through `Number()`.
+test("types a freeform note on an equipment row, persisting it across a reload", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Equipment Notes Batch");
+    await page.getByRole("tab", {name: "Planning", exact: true}).click();
+    await page.getByRole("tab", {name: "Equipment", exact: true}).click();
+
+    const mashSection = page.getByRole("button", {name: "1. Mash", exact: true}).locator("xpath=..");
+    await mashSection.getByRole("combobox").last().selectOption("CO2");
+    await mashSection.getByRole("button", {name: "Add equipment to 1. Mash"}).click();
+
+    const co2Notes = page.getByRole("button", {name: "Remove CO2 from 1. Mash"}).locator("xpath=../..").getByRole("textbox");
+    await co2Notes.fill("2 spare O-rings");
+
+    await settleSave(page);
+    await page.reload();
+    await page.getByRole("tab", {name: "Planning", exact: true}).click();
+    await page.getByRole("tab", {name: "Equipment", exact: true}).click();
+
+    const reloadedCo2Notes = page.getByRole("button", {name: "Remove CO2 from 1. Mash"}).locator("xpath=../..").getByRole("textbox");
+    await expect(reloadedCo2Notes).toHaveValue("2 spare O-rings");
+});
+
+// EQUIPMENT-02 (packages/spec/product/equipment.md): picking a catalog item
+// seeds its own default note. "Keg (Coke) - 5.5gal" is the one catalog entry
+// carrying a seeded value (data/equipment.ts). Also covers the implementor's
+// testing note that clearing a note to empty persists as cleared, not as a
+// stray stored value.
+test("seeds an equipment row's note from the catalog default, and persists a clear", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Equipment Catalog Notes Batch");
+    await page.getByRole("tab", {name: "Planning", exact: true}).click();
+    await page.getByRole("tab", {name: "Equipment", exact: true}).click();
+
+    const mashSection = page.getByRole("button", {name: "1. Mash", exact: true}).locator("xpath=..");
+    await mashSection.getByRole("combobox").last().selectOption("Keg (Coke) - 5.5gal");
+    await mashSection.getByRole("button", {name: "Add equipment to 1. Mash"}).click();
+
+    const kegNotes = page.getByRole("button", {name: "Remove Keg (Coke) - 5.5gal from 1. Mash"}).locator("xpath=../..").getByRole("textbox");
+    await expect(kegNotes).toHaveValue("4");
+
+    await settleSave(page);
+    await page.reload();
+    await page.getByRole("tab", {name: "Planning", exact: true}).click();
+    await page.getByRole("tab", {name: "Equipment", exact: true}).click();
+
+    const reloadedKegNotes = page.getByRole("button", {name: "Remove Keg (Coke) - 5.5gal from 1. Mash"}).locator("xpath=../..").getByRole("textbox");
+    await expect(reloadedKegNotes).toHaveValue("4");
+
+    await reloadedKegNotes.fill("");
+    await settleSave(page);
+    await page.reload();
+    await page.getByRole("tab", {name: "Planning", exact: true}).click();
+    await page.getByRole("tab", {name: "Equipment", exact: true}).click();
+
+    const clearedKegNotes = page.getByRole("button", {name: "Remove Keg (Coke) - 5.5gal from 1. Mash"}).locator("xpath=../..").getByRole("textbox");
+    await expect(clearedKegNotes).toHaveValue("");
+});
+
 /**
  * A fresh batch's three phases (Mash/Boil/Ferment) are each the only instance
  * of a required type, so `canRemovePhase` should block every one of them.
