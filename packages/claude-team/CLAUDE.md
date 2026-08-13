@@ -622,6 +622,7 @@ forgotten by a model that ran out of turns or simply skipped it.
 | `log-to-epic.py` | post, authors | rewrites one rolling work-log comment on the epic |
 | `open-story-pr.py` | **on merge** | opens the story's PR once a task has landed on its branch |
 | `close-merged-work.py` | on merge | closes the PR's issues and files them on the board |
+| `custodial-sweep.py` | **post, every role** (`deliverable`) and **on merge** (`branches`) | checks what a run left behind: an Architect with no `Branch:` line fails the run; a story branch that is 0-ahead with a closed issue is deleted |
 
 ⚠️ These were prompt instructions until a model skipped them. A scripted step costs no
 turns and cannot be forgotten.
@@ -709,6 +710,31 @@ turns and cannot be forgotten.
   puts them in *step* env. Step env is per-step, so a scripted step can hold a token the
   model step beside it cannot read. Secret masking covers logs only — not an API payload a
   model could write.
+
+### The sandwich
+
+⚠️ **Two scripted phases, one at each end of a run**: `delegate` routes in front, `custodial`
+checks behind, and both consult a model only where a script cannot decide.
+
+⚠️ **The back half exists because the front half cannot answer its questions.** "Does this story
+have tasks?" reads 0 for *every* story at branch-creation time, since `ensure-story-branch.py` runs
+before `file-sub-issues.py`. "Was this branch ever used?" is not knowable until work lands, or does
+not. "Did the Architect deliver?" is only knowable once it has stopped. Each of these was attempted
+at the front and produced fragile logic; observing them at the back is simply cheaper. **Reach for
+the back half before adding a predicate to the front.**
+
+⚠️ **`always()` on the custodial job is the #430 trap, handled.** It needs every role job, most of
+which skip on any run, and a job needing a SKIPPED job reports cancelled without it. `security`
+already runs this shape for the same reason.
+
+⚠️ **It holds no model step, and that is what lets its merge-time half hold `contents: write`** —
+the only destructive capability anywhere in this system. Nothing untrusted executes in a job with
+no agent in it.
+
+⚠️ **The branch delete is safe by construction, not by care.** Two conditions, both required:
+0 commits ahead of the default branch — so there is no content to lose — **and** the issue closed,
+so nothing is about to arrive. Either alone is wrong: 0-ahead by itself would delete a story branch
+whose first task has not run yet.
 
 ⚠️ **A scripted hook fed by model-written input is still model-driven.** Derive a hook's
 input from something the model must produce for another reason, or from state it cannot
