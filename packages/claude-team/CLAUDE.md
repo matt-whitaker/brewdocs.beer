@@ -585,6 +585,25 @@ by the consumer's overlay in the same order. The base says how the role behaves 
 hierarchy works; the overlay says what the repo's gate is, where its code lives, and any
 house rules.
 
+⚠️ **The prompt forbids planning-and-stopping, not just stating an intention**, and the two are
+easy to conflate. The observed failure is never a sentence saying "I'll get to it" — it is a
+**tidy checklist with the boxes unticked**, which reads as progress at a glance. Measured twice
+(#834, #866): ~6 turns, ~30s, a good plan, nothing done, run reports success. Both completed on a
+plain re-trigger, so nothing was blocking them.
+
+⚠️ **The host action's own scaffolding contributes**, which is why the prompt has to push back
+explicitly. Tag mode asks the model to keep a todo list in its tracking comment; writing that list
+is a real, satisfying, visible action, and it is the one thing both stalled runs accomplished.
+
+⚠️ **"Confirm scope" is the tell.** A plan step whose natural completion is asking a human has
+planned its own failure — nobody is reading while a run executes. The prompt says ambiguity is not
+a stop condition: choose a defensible reading, ship, and raise the question in the 🔔 Maintainer
+section.
+
+⚠️ **The prompt is the second line of defence, not the first.** The custodial phase fails the run
+when the deliverable is missing, because for as long as this went unnoticed it reported success.
+Neither replaces the other: the check is how anyone finds out, the prompt is what stops it.
+
 ⚠️ **Shared first, and that ordering is load-bearing.** `_shared.md` opens by overriding the
 host action's own prompt, which for comment events states repeatedly that the model's
 instructions are the triggering comment. Ours arrives after all of that, so the override has
