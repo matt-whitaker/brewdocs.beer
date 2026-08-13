@@ -113,6 +113,62 @@ async function readIndexedDbValue(page: Page, dbName: string, key: string) {
     }), {dbName, key});
 }
 
+async function countIndexedDbKeysWithPrefix(page: Page, dbName: string, prefix: string) {
+    return page.evaluate(({dbName, prefix}) => new Promise<number>((resolve, reject) => {
+        const request = indexedDB.open(dbName);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+            const db = request.result;
+            const tx = db.transaction("keyvaluepairs", "readonly");
+            const getAllKeysRequest = tx.objectStore("keyvaluepairs").getAllKeys();
+            getAllKeysRequest.onsuccess = () => {
+                db.close();
+                resolve((getAllKeysRequest.result as string[]).filter((key) => key.startsWith(prefix)).length);
+            };
+            getAllKeysRequest.onerror = () => reject(getAllKeysRequest.error);
+        };
+    }), {dbName, prefix});
+}
+
+// an id-less batch as it would exist if a record predates whatever gave every
+// other record an id — the app itself never writes one without an id, but
+// nothing here depends on it having come from the app
+function idlessBatchRecord({name, version}: {name: string, version: number}) {
+    return {
+        name,
+        version,
+        brewDate: "",
+        recipeId: "",
+        brewable: {schedule: {phases: []}, assignments: []},
+        batchSize: {value: "5gal", unit: "gal"},
+        efficiency: {value: "75%", unit: "%"},
+        boilTime: {value: "60min", unit: "min"},
+        actuals: {
+            og: {value: "0.00°P", unit: "°P"},
+            fg: {value: "0.00°P", unit: "°P"},
+            abv: {value: "0.0%", unit: "%"},
+            ibu: "0",
+            srm: "0",
+        },
+        shopping: [],
+        tracker: {},
+    };
+}
+
+async function seedIdlessBatch(page: Page, storageKey: string, batch: {name: string, version: number}) {
+    await page.evaluate(({storageKey, record}) => new Promise<void>((resolve, reject) => {
+        const request = indexedDB.open("batches");
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+            const db = request.result;
+            const tx = db.transaction("keyvaluepairs", "readwrite");
+            tx.objectStore("keyvaluepairs").put(record, storageKey);
+            tx.oncomplete = () => { db.close(); resolve(); };
+            tx.onerror = () => reject(tx.error);
+        };
+    }), {storageKey, record: idlessBatchRecord(batch)});
+}
+
 test("lists every seeded failed record with its identity, versions, error and raw data", async ({page}) => {
     await primeMigrationFailuresStore(page);
     await seedMigrationFailures(page, [
@@ -234,6 +290,45 @@ test("retry is unavailable for a record with no id or an entity type that isn't 
 
     const row = page.getByRole("listitem").filter({hasText: "No Retry Recipe"});
     await expect(row.getByRole("button", {name: "Retry"})).toBeDisabled();
+});
+
+// MIGRATION-FAILURES-01: an id-less record has nothing to key its stored
+// failure on but its own storage slot — before #884's fix, each page-load
+// pass minted a fresh uuid instead of overwriting that slot, so the same
+// broken record piled up one indistinguishable "batches" row per reload
+// instead of staying at one
+test("an id-less stale batch's migration-failures entry doesn't duplicate across two migration passes", async ({page}) => {
+    await primeMigrationFailuresStore(page);
+    await seedIdlessBatch(page, "batches#e2e-idless-nodupe", {name: "E2E Idless No Dupe", version: BATCHES_VERSION + 1});
+
+    await page.reload();
+    await page.reload();
+
+    // MigrationGate wraps the whole router, so a route rendering at all
+    // proves the page-load pass (and its store writes) already settled
+    await page.goto("/migrations/failed");
+    await expect(page.getByRole("heading", {name: "Updates"})).toBeVisible();
+
+    expect(await countIndexedDbKeysWithPrefix(page, "migration-failures", "migration-failures#batches:")).toBe(1);
+    // an id-less record's title is the bare entity type ("batches", no id to
+    // disambiguate) — an exact heading match, not a substring filter, since
+    // the sidebar nav also links to "Batches"
+    await expect(page.getByRole("heading", {name: "batches", exact: true})).toHaveCount(1);
+});
+
+// regression guard for the implementor's own testingNotes: every other test
+// in this file seeds the migration-failures key by hand, so none of them
+// would notice a future regression in Forage's extractId/buildKey that
+// shifted the key format for a record that DOES carry its own id
+test("an id-carrying stale batch's migration-failures entry lands at the expected key when written by the real migration pass", async ({page}) => {
+    await primeMigrationFailuresStore(page);
+    await seedBatches(page, [{id: "e2e-keyformat-01", name: "E2E Key Format Batch", version: BATCHES_VERSION + 1}]);
+
+    await page.goto("/migrations/failed");
+    await expect(page.getByRole("listitem").filter({hasText: "e2e-keyformat-01"})).toBeVisible();
+
+    const failure = await readIndexedDbValue(page, "migration-failures", "migration-failures#batches:e2e-keyformat-01");
+    expect(failure).toMatchObject({entityType: "batches", id: "e2e-keyformat-01", reason: "no-migration-path"});
 });
 
 // UPDATES-01, MIGRATION-FAILURES-01: a record excluded from its own list for
