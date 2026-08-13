@@ -1051,12 +1051,12 @@ jobs:
       # without it `tsc` resolves to the runner image's global TypeScript (a different
       # major) and fails on config this repo pins as valid. The Writer builds nothing, so a
       # Writer-only run skips all of it.
-      - if: contains(steps.roles.outputs.list, 'implementor') || contains(steps.roles.outputs.list, 'designer') || contains(steps.roles.outputs.list, 'tester')
+      - if: contains(steps.roles.outputs.list, 'implementor') || contains(steps.roles.outputs.list, 'designer') || contains(steps.roles.outputs.list, 'tester') || contains(steps.roles.outputs.list, 'writer')
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-      - if: contains(steps.roles.outputs.list, 'implementor') || contains(steps.roles.outputs.list, 'designer') || contains(steps.roles.outputs.list, 'tester')
+      - if: contains(steps.roles.outputs.list, 'implementor') || contains(steps.roles.outputs.list, 'designer') || contains(steps.roles.outputs.list, 'tester') || contains(steps.roles.outputs.list, 'writer')
         run: npm ci
       # Browser install as a workflow step, not a Claude turn. Without it the Tester can
       # write specs but never run them, and an unrun test is worse than no test.
@@ -1366,7 +1366,7 @@ jobs:
           # input is maintainer-shaped issues — the trust level of every other authoring role.
           claude_args: |
             --model sonnet
-            --allowedTools "Read,Edit,Write,Bash(git:*),Bash(gh:*),Bash(npm:*),Bash(npx:*)"
+            --allowedTools "Read,Edit,Write,Bash(git:*),Bash(gh:*),Bash(npm:*),Bash(npx:*),Bash(node:*)"
             --max-turns 80
 
       # ── Once, for the job ──
