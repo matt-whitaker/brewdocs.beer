@@ -7,7 +7,7 @@ import DataGridSubheaderRow from "@/component/data-grid/subheader-row";
 import {AddFn, RemoveFn, UpdateFn, UpdateScalarFn} from "@/hooks/useJsonEdit";
 import {Assignment, PhaseType, ResourceType} from "@/model/brewable";
 import RecipeEditAssignmentRow from "@/screen/brewable-edit/ingredients/assignment-row";
-import {RESOURCE_TYPES, RESOURCE_TYPE_LABELS} from "@/screen/brewable-edit/ingredients/catalog-defaults";
+import {RESOURCE_TYPE_LABELS, resourceTypesForPhase} from "@/screen/brewable-edit/ingredients/catalog-defaults";
 import RecipeEditResourceAddRow from "@/screen/brewable-edit/ingredients/resource-add-row";
 import {saveSession, useSession} from "@/state/session";
 
@@ -39,10 +39,10 @@ export default function RecipeEditPhaseSection({
     const session = useSession();
     const onToggleCollapsed = useCallback((collapsed: boolean) => saveSession(sessionKey, collapsed), [sessionKey]);
 
-    const subsections = useMemo(() => RESOURCE_TYPES.map(resourceType => ({
+    const subsections = useMemo(() => resourceTypesForPhase(phaseType).map(resourceType => ({
         resourceType,
         items: assignments.filter(({ assignment }) => assignment.resourceType === resourceType),
-    })), [assignments]);
+    })), [assignments, phaseType]);
 
     return (
         <DataGrid>
