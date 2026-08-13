@@ -1,15 +1,5 @@
 # DESIGN.md
 
-⚠️ **This is not the design system's source of truth any more.** What a colour means, which heading
-to reach for, how dense a control sits — that lives in Storybook's **Design System** page, which
-renders the real components rather than describing them, and is what a designer should be sent to.
-
-This file is the **implementation** companion: how the tokens are wired, which stylesheet owns
-what, and the cascade rules that make a change stick. It is written from the code as it stands, and
-where the system hasn't caught up with itself that is a **Known gap** rather than smoothed over.
-Design intent belongs in Storybook; the mechanism belongs here. If a statement would still be true
-after a rewrite that changed no CSS, it is intent — it goes there, not here.
-
 ## Foundations / stack
 
 - **Tailwind v4**, CSS-first — no `tailwind.config.*`, no PostCSS config. Configuration lives inline in CSS via `@import "tailwindcss"`, `@theme {}`, and `@plugin`.
