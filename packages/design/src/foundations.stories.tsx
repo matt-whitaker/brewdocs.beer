@@ -1,5 +1,7 @@
 import type {Meta, StoryObj} from "@storybook/react-vite";
+import {findSrmClasses} from "@/components/srm-avatar/constants";
 import {ScreenH1, ScreenH2, ScreenP} from "@/components/typography";
+import tokens from "@/tokens.json";
 
 const DESIGN_MD_URL = "https://github.com/matt-whitaker/brewdocs.beer/blob/mainline/packages/design/DESIGN.md";
 
@@ -16,6 +18,8 @@ const ROLES: {name: string; swatch: string; usedFor: string}[] = [
     {name: "warning", swatch: "bg-warning", usedFor: "DaisyUI status role — not yet observed in app usage."},
     {name: "error", swatch: "bg-error", usedFor: "DaisyUI status role — not yet observed in app usage."}
 ];
+
+const SRM_SCALE = tokens.srmScale;
 
 const Foundations = () => (
     <div className="max-w-3xl">
@@ -87,6 +91,26 @@ const Foundations = () => (
             isn&apos;t part of the DaisyUI theme; see <code>SrmAvatar</code>/<code>SrmTag</code> and the
             Color section of DESIGN.md for the full scale and how it&apos;s consumed.
         </ScreenP>
+        <table className="table table-zebra mt-2">
+            <thead>
+                <tr>
+                    <th>SRM</th>
+                    <th/>
+                    <th>Name</th>
+                    <th>Token</th>
+                </tr>
+            </thead>
+            <tbody>
+                {SRM_SCALE.map(({srm, name, property, hex}) => (
+                    <tr key={srm}>
+                        <td><code>{srm}</code></td>
+                        <td><div className={`size-5 rounded border border-base-content/20 ${findSrmClasses(srm)[0]}`}/></td>
+                        <td className="text-base-content/70">{name}</td>
+                        <td className="text-base-content/70"><code>{property}</code> <code>{hex}</code></td>
+                    </tr>
+                ))}
+            </tbody>
+        </table>
     </div>
 );
 
