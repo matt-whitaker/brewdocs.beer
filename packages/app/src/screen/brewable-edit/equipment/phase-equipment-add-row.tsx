@@ -18,7 +18,7 @@ export default function RecipeEditPhaseEquipmentAddRow({ phase, phaseLabel, add,
     const addItem = useCallback(() => {
         if (!selection) return;
         const item = equipmentIndex.get(selection)!;
-        add(`schedule.phases[${phase}].equipment`, { name: item.name, count: item.count });
+        add(`schedule.phases[${phase}].equipment`, { name: item.name, notes: item.notes });
         setSelection(null);
     }, [add, phase, equipmentIndex, selection]);
 

@@ -21,7 +21,7 @@ export function kbBrewableToBrewable(kbBrewable: KbBrewable): Brewable {
     const phases = kbBrewable.schedule.phases.map((phase): BrewablePhase => ({
         id: newId(),
         type: phase.type as PhaseType,
-        equipment: phase.equipment.map(({name, count}) => ({name, count})),
+        equipment: phase.equipment.map(({name, notes}) => ({name, notes})),
         milestones: []
     }));
 
