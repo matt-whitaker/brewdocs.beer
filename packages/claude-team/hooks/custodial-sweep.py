@@ -15,12 +15,12 @@ a channel with no reader.
 
 TWO MODES, because the two checks become true at different moments:
 
-  MODE=deliverable  after a role runs — did it leave the artifact it exists to produce?
-  MODE=branches     on merge — is the story's branch now provably dead?
+  MODE=deliverable  did the role leave the artifact it exists to produce?
+  MODE=branch       does this story need a branch at all — and if so, make it
 
-⚠️ THE BRANCH CHECK MUST RUN ON MERGE. A branch becomes dead exactly when its story closes, and
-nothing triggers on a closed story afterwards — so a post-role-only sweep would never collect
-anything at all.
+⚠️ NOTHING HERE DELETES. An earlier version swept branches that nothing had used; the branches
+should not have been created, and here they are not. Putting the decision where the knowledge is
+removes the need for a destructive capability rather than justifying one.
 """
 
 from __future__ import annotations
@@ -32,7 +32,6 @@ import team
 MODE = os.environ.get("MODE", "")
 ISSUE = os.environ.get("ISSUE", "")
 ROLE = os.environ.get("ROLE", "")
-PR = os.environ.get("PR", "")
 KIND = os.environ.get("KIND", "")
 
 if not team.REPO:
@@ -66,98 +65,65 @@ def check_deliverable() -> None:
     )
 
 
-def check_branches() -> None:
-    """Delete a story branch that was never used and never will be.
+def ensure_branch() -> None:
+    """Create the story's branch — but only for a story that actually has tasks.
 
-    ⚠️ THE TEST IS TWO-PART AND BOTH HALVES ARE LOAD-BEARING:
-      * **0 commits ahead of the default branch** — the branch contains nothing that is not already
-        on the default branch, so deleting it destroys no work *by construction*.
-      * **its issue is closed** — the work is finished, so nothing is about to arrive.
+    ⚠️ THIS IS THE FIRST MOMENT THE QUESTION CAN BE ANSWERED. `ensure-story-branch.py` runs before
+    `file-sub-issues.py`, so `sub_issues()` reads 0 for *every* story where creation used to happen
+    — including one the Architect had just decomposed. Here the parenting is done and the count is
+    real. Everything else about branch handling follows from putting the decision where the
+    knowledge is.
 
-    Either half alone is wrong. 0-ahead by itself would have deleted `866-bug-not-all-ingredients-and`,
-    which was empty only because its task had not run yet. Closed by itself would delete branches
-    carrying real commits.
+    ⚠️ A STORY WITH NO TASKS GETS NO BRANCH, EVER. Its author cuts off the default branch
+    (`delegate.py` blanks `story_branch`) and opens its PR there (#877/#878). Creating one would
+    produce a branch nothing ever commits to — which is what #883 then had to delete. Not creating
+    it is the same outcome with no destructive capability anywhere in the system.
 
-    ⚠️ This is the only destructive action any hook here takes. It is safe because the first half of
-    the test makes it a no-op in content terms, and reversible because the ref can be recreated at
-    the default branch's head — which is, by the test, exactly where it pointed.
+    ⚠️ NOT REDUNDANT WITH THE PRE-AUTHORS NET, though the net would eventually cover correctness.
+    A story's `Branch:` line carries a compare link the maintainer clicks to open the story's PR;
+    with no branch it 404s until the first task happens to run. That is user-visible.
     """
-    # ⚠️ The issues come from the PR, not from an input. A merge can close more than one, and the
-    # one whose branch is now dead is not necessarily the one anybody passed — `close-merged-work.py`
-    # resolves them the same way, and this runs after it precisely so their state is already closed.
-    issues = [str(i["number"]) for i in (team.gh_json(
-        "pr", "view", PR, "--repo", team.REPO, "--json", "closingIssuesReferences"
-    ) or {}).get("closingIssuesReferences", [])] if PR else ([ISSUE] if ISSUE else [])
-
-    if not issues:
-        print("This merge closed no issue — no branch to consider.")
+    if ROLE != "architect" or not ISSUE:
         return
-    for number in issues:
-        sweep_one(number)
-
-
-def sweep_one(ISSUE: str) -> None:
-    branch = team.branch_line(team.issue_body(ISSUE))
-    if not branch:
-        print(f"#{ISSUE} names no branch — nothing to sweep.")
+    if KIND in ("epic", "spike"):
         return
 
-    if team.issue_state(ISSUE).lower() != "closed":
-        print(f"#{ISSUE} is still open — leaving `{branch}` alone.")
+    named = team.branch_line(team.issue_body(ISSUE))
+    if not named:
+        return
+    if team.story_from_branch(named) != str(ISSUE):
+        print(f"#{ISSUE} does not own `{named}` — not this issue's branch to make.")
+        return
+
+    tasks = len(team.sub_issues(ISSUE))
+    if not tasks:
+        print(f"#{ISSUE} has no tasks — it is worked as-is, so it needs no branch of its own.")
+        return
+
+    if team.gh_json("api", f"repos/{team.REPO}/git/ref/heads/{named}") is not None:
+        print(f"`{named}` already exists.")
         return
 
     repo = team.gh_json("repo", "view", team.REPO, "--json", "defaultBranchRef") or {}
     default = (repo.get("defaultBranchRef") or {}).get("name") or ""
-    if not default:
-        team.warn("could not read the default branch — leaving the branch alone.")
-        return
-    if branch == default:
-        return
-
-    if team.gh_json("api", f"repos/{team.REPO}/git/ref/heads/{branch}") is None:
-        print(f"`{branch}` is already gone.")
+    base = team.gh_json("api", f"repos/{team.REPO}/git/ref/heads/{default}") or {}
+    sha = (base.get("object") or {}).get("sha")
+    if not sha:
+        team.warn(f"could not read {default}'s head, so `{named}` was not created")
         return
 
-    compare = team.gh_json("api", f"repos/{team.REPO}/compare/{default}...{branch}") or {}
-    ahead = compare.get("ahead_by")
-    if ahead is None:
-        team.warn(f"could not compare `{branch}` against {default} — leaving it alone.")
+    if team.gh(
+        "api", "--method", "POST", f"repos/{team.REPO}/git/refs",
+        "-f", f"ref=refs/heads/{named}", "-f", f"sha={sha}",
+    ) is None:
+        team.warn(f"could not create `{named}` at {default}@{sha[:7]}")
         return
-    if ahead:
-        print(f"`{branch}` is {ahead} commit(s) ahead of {default} — it holds work, leaving it.")
-        return
-
-    if team.gh("api", "--method", "DELETE", f"repos/{team.REPO}/git/refs/heads/{branch}") is None:
-        team.warn(f"could not delete `{branch}`.")
-        return
-    print(
-        f"deleted `{branch}` — 0 commits ahead of {default} and #{ISSUE} is closed, so it was "
-        "created for a story that turned out to need no branch of its own."
-    )
-
-    # ⚠️ FIX AND REPORT, NEVER FIX QUIETLY — the custodian's own rule, and a job log is not
-    # reporting. Announcing a deletion where the maintainer actually looks is the difference
-    # between a repair and a disappearance; without it this is the same swallowed signal as a
-    # `::warning::` nobody reads.
-    #
-    # ⚠️ The SAME log `apply-repairs.py` appends to, so everything the custodian has done to an
-    # issue reads as one history rather than scattering across comments.
-    team.append_to_comment(
-        ISSUE,
-        "<!-- claude-team:custodian-log -->",
-        f"**`branch-swept`** — deleted `{branch}`.\n\n"
-        f"_Why it was safe:_ 0 commits ahead of `{default}`, so it held nothing that was not "
-        f"already there, and #{ISSUE} is closed, so nothing further was coming.\n\n"
-        f"_If that was wrong:_ recreate it at `{default}`'s head — by the first test, that is "
-        f"exactly where it pointed.{team.run_link()}",
-        "🔧 **Custodian repairs.** Process state put right by a run, each with what was wrong "
-        "and why. Nothing here changed any content.",
-    )
+    print(f"created `{named}` at {default}@{sha[:7]} — empty, for #{ISSUE}'s {tasks} task(s)")
 
 
 if MODE == "deliverable":
     check_deliverable()
-elif MODE == "branches":
-    check_branches()
+elif MODE == "branch":
+    ensure_branch()
 else:
-    team.fail(f"MODE must be 'deliverable' or 'branches', got {MODE!r}")
+    team.fail(f"MODE must be 'deliverable' or 'branch', got {MODE!r}")

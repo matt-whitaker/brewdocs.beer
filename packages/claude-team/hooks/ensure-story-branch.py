@@ -132,6 +132,16 @@ if not sha:
     raise SystemExit(0)
 
 # The API, not a push: the model has switched branches by now and the working tree is not a
+# ⚠️ AN ISSUE THAT OWNS ITS OWN BRANCH LINE NEVER CREATES IT HERE. A task's line names its
+# *story's* branch, so `story_from_branch(named) != ISSUE` and it still gets the #744 net. When
+# they are EQUAL this is the story itself, and whether it needs a branch depends on whether it has
+# tasks — a question that cannot be answered here, because this runs before `file-sub-issues.py`
+# and `sub_issues()` reads 0 for every story. The custodial phase decides it instead, where the
+# parenting is done. Creating speculatively here is what produced branches nothing ever used.
+if team.story_from_branch(named) == str(ISSUE):
+    print(f"#{ISSUE} owns `{named}` — the custodial phase decides whether it needs one.")
+    raise SystemExit(0)
+
 # reliable place to cut from. A ref created at the default branch's head is empty by
 # construction, which is what the story model wants — the first author's work is its first commit.
 if team.gh(
