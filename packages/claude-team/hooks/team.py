@@ -130,6 +130,7 @@ EPIC_LABEL = "epic"
 SPIKE_LABEL = "spike"
 BUG_LABEL = "bug"
 STORY_LABEL = "story"
+TASK_LABEL = "task"
 
 # The CLASSIFICATION labels — what an issue *is*. Distinct from the routing labels
 # (`@claude`, `@claude/<role>`), which say what should happen to it, belong to the maintainer,
@@ -139,7 +140,13 @@ STORY_LABEL = "story"
 # called the absence the signal — which reads fine in a hook and badly on a board, where you
 # cannot filter for "the ones with no classification". `kind()` still DERIVES story from the
 # absence of the other markers; the label is what makes that visible.
-KIND_LABELS = {"epic": EPIC_LABEL, "spike": SPIKE_LABEL, "bug": BUG_LABEL, "story": STORY_LABEL}
+KIND_LABELS = {
+    "epic": EPIC_LABEL,
+    "spike": SPIKE_LABEL,
+    "bug": BUG_LABEL,
+    "task": TASK_LABEL,
+    "story": STORY_LABEL,
+}
 
 
 def titled_epic(title: str) -> bool:
@@ -166,7 +173,7 @@ def titled_bug(title: str) -> bool:
     return bool(re.match(r"\s*bug\b", title or "", re.IGNORECASE))
 
 
-def kind(number: str | int, data: dict | None = None) -> str:
+def kind(number: str | int, data: dict | None = None, body: str | None = None) -> str:
     """Classify an issue as `epic`, `bug` or `story`. An unprocessed issue is a STORY.
 
     Each classification needs a durable marker — its label, or a title that announces it.
@@ -204,6 +211,19 @@ def kind(number: str | int, data: dict | None = None) -> str:
         return "spike"
     if BUG_LABEL in names or titled_bug(title):
         return "bug"
+
+    # ⚠️ TASK IS THE ONE KIND DERIVED FROM STRUCTURE RATHER THAN A MARKER, and it needs no new
+    # stamp because the Architect already writes the fact down. A task's `Branch:` line names its
+    # STORY's branch, so the number it starts with is not its own; a story's names itself. Same
+    # test the PR-base rule uses, so the two cannot disagree about what a task is.
+    #
+    # ⚠️ It sits AFTER the marker kinds deliberately. An `Epic:`/`Spike:`/`Bug:` title is an
+    # explicit statement about what an issue is; the branch line is an inference, and an explicit
+    # statement outranks one.
+    branch = branch_line(body if body is not None else issue_body(number))
+    if branch and story_from_branch(branch) != str(number):
+        return "task"
+
     return "story"
 
 

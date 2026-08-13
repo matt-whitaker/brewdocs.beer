@@ -40,7 +40,7 @@ OWNER = os.environ.get("PROJECT_OWNER", "")
 PROJECT = os.environ.get("PROJECT_NUMBER", "")
 
 MARKER = "<!-- claude-team:custodian-log -->"
-CLASSIFICATION = {"epic", "spike", "bug", "story"}
+CLASSIFICATION = {"epic", "spike", "bug", "task", "story"}
 
 if not team.REPO:
     team.fail("REPO is required")
