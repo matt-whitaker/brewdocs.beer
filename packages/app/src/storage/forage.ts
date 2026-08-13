@@ -45,7 +45,7 @@ export abstract class Forage<T> {
     async index(): Promise<Record<string, T>> {
         const items: Record<string, T> = {};
         await this._forage.iterate((val: T, key: string) => {
-            items[key.replace(`${this._name}#`, "")] = val;
+            items[this.extractId(key)] = val;
         });
         return items;
     }
@@ -66,6 +66,10 @@ export abstract class Forage<T> {
         return `${this._name}#${id}`;
     }
 
+    protected extractId(key: string): string {
+        return key.replace(`${this._name}#`, "");
+    }
+
     async migrateStoredRecords(): Promise<void> {
         const migration = this._migration;
 
@@ -80,7 +84,7 @@ export abstract class Forage<T> {
             try {
                 await this.migrateStoredRecord(key, item, migration);
             } catch (error) {
-                await this.recordMigrationFailure({
+                await this.recordMigrationFailure(this.extractId(key), {
                     entityType: migration.entityType,
                     id: entityIdOf(item),
                     fromVersion: entityVersionOf(item),
@@ -101,14 +105,15 @@ export abstract class Forage<T> {
 
     private async migrateStoredRecord(key: string, item: T, migration: ForageMigrationConfig): Promise<void> {
         const fromVersion = entityVersionOf(item);
+        const storedId = this.extractId(key);
         const result = runMigrations<T>(migration.entityType, item as T & {version?: number}, migration.version);
 
         if (!result.ok) {
-            await this.recordMigrationFailure(result.failure);
+            await this.recordMigrationFailure(storedId, result.failure);
             return;
         }
 
-        await this.recordMigrationBackup({
+        await this.recordMigrationBackup(storedId, {
             entityType: migration.entityType,
             id: entityIdOf(item),
             fromVersion,
@@ -118,24 +123,22 @@ export abstract class Forage<T> {
         });
 
         await this._forage.setItem(key, result.data);
-        await this.clearMigrationFailure(migration.entityType, entityIdOf(item));
+        await this.clearMigrationFailure(migration.entityType, storedId);
     }
 
-    private async clearMigrationFailure(entityType: string, id?: string): Promise<void> {
-        if (!id) return;
-
+    private async clearMigrationFailure(entityType: string, storedId: string): Promise<void> {
         const {default: migrationFailuresStorage} = await import("@/storage/migration/failures");
-        await migrationFailuresStorage.delete(`${entityType}:${id}`);
+        await migrationFailuresStorage.delete(`${entityType}:${storedId}`);
     }
 
-    private async recordMigrationBackup(backup: MigrationBackup): Promise<void> {
+    private async recordMigrationBackup(storedId: string, backup: MigrationBackup): Promise<void> {
         const {default: migrationBackupsStorage} = await import("@/storage/migration/backups");
-        await migrationBackupsStorage.save(`${backup.entityType}:${backup.id ?? uuidV4()}`, backup);
+        await migrationBackupsStorage.save(`${backup.entityType}:${storedId}`, backup);
     }
 
-    private async recordMigrationFailure(failure: MigrationFailure): Promise<void> {
+    private async recordMigrationFailure(storedId: string, failure: MigrationFailure): Promise<void> {
         const {default: migrationFailuresStorage} = await import("@/storage/migration/failures");
-        await migrationFailuresStorage.save(`${failure.entityType}:${failure.id ?? uuidV4()}`, failure);
+        await migrationFailuresStorage.save(`${failure.entityType}:${storedId}`, failure);
     }
 
     async purge() {
@@ -143,13 +146,4 @@ export abstract class Forage<T> {
             this._forage.removeItem(key);
         });
     }
-
-    // private extractId(key: string): string | null {
-    //     const match = key.match(ID_REGEX);
-    //
-    //     if (!match) return null;
-    //
-    //     const [, id] = match;
-    //     return id;
-    // }
 }
