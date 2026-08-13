@@ -674,6 +674,18 @@ turns and cannot be forgotten.
   no result payload at all, which is a different fingerprint from the dead run that reports success.
   ⚠️ The trap is that the job works perfectly on issues, so the gap stays invisible until the first
   PR trigger, however long that takes.
+- ⚠️ **The full transcript already exists on every run — `show_full_output` is not what captures
+  it.** `claude-code-action` calls `writeExecutionFile` unconditionally, leaving the complete
+  turn-by-turn at `claude-execution-output.json` and exposing its path as the `execution_file`
+  output. `show_full_output` only decides whether that content is *echoed to the console*. So a
+  consumer wanting transcripts should **collect the file**, never turn on console output — on a
+  public repo the console is the whole internet, and an Actions artifact is no better because
+  artifacts follow repository read access.
+  ⚠️ **A transcript is tool calls _and their results_.** If a run ever read a file or ran a command
+  that surfaced a credential, it is in there. Treat it as secret material wherever it lands.
+  ⚠️ Two runs have now been diagnosed only as far as their result payload — `num_turns`, cost,
+  denials — because nothing collected the file before the runner was destroyed. That payload can
+  say a run stopped early; it cannot say **why**.
 - ⚠️ **Keep long-lived credentials out of any job a model step shares** unless the workflow
   puts them in *step* env. Step env is per-step, so a scripted step can hold a token the
   model step beside it cannot read. Secret masking covers logs only — not an API payload a
