@@ -8,7 +8,7 @@ const preview: Preview = {
     // is just our components, rendered against real tokens via design.css above.
     parameters: {
         docs: {theme},
-        options: {storySort: {order: ["Introduction", "*"]}}
+        options: {storySort: {order: ["Introduction", "Design System", "*"]}}
     },
     decorators: [
         (Story) => (
