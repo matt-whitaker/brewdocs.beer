@@ -1,4 +1,5 @@
 import type {Meta, StoryObj} from "@storybook/react-vite";
+import {findSrmClasses} from "@/components/srm-avatar/constants";
 import {ScreenH1, ScreenH2, ScreenP} from "@/components/typography";
 
 const DESIGN_MD_URL = "https://github.com/matt-whitaker/brewdocs.beer/blob/mainline/packages/design/DESIGN.md";
@@ -15,6 +16,22 @@ const ROLES: {name: string; swatch: string; usedFor: string}[] = [
     {name: "success", swatch: "bg-success", usedFor: "DaisyUI status role — not yet observed in app usage."},
     {name: "warning", swatch: "bg-warning", usedFor: "DaisyUI status role — not yet observed in app usage."},
     {name: "error", swatch: "bg-error", usedFor: "DaisyUI status role — not yet observed in app usage."}
+];
+
+const SRM_SCALE: {srm: number; name: string}[] = [
+    {srm: 1, name: "Pale Straw"},
+    {srm: 3, name: "Straw"},
+    {srm: 6, name: "Pale Gold"},
+    {srm: 9, name: "Deep Gold"},
+    {srm: 12, name: "Light Amber"},
+    {srm: 15, name: "Amber"},
+    {srm: 18, name: "Deep Amber"},
+    {srm: 20, name: "Copper"},
+    {srm: 24, name: "Deep Copper"},
+    {srm: 30, name: "Brown"},
+    {srm: 35, name: "Ruby Brown"},
+    {srm: 40, name: "Deep Brown"},
+    {srm: 50, name: "Black (fallback value)"}
 ];
 
 const Foundations = () => (
@@ -87,6 +104,24 @@ const Foundations = () => (
             isn&apos;t part of the DaisyUI theme; see <code>SrmAvatar</code>/<code>SrmTag</code> and the
             Color section of DESIGN.md for the full scale and how it&apos;s consumed.
         </ScreenP>
+        <table className="table table-zebra mt-2">
+            <thead>
+                <tr>
+                    <th>SRM</th>
+                    <th/>
+                    <th>Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                {SRM_SCALE.map(({srm, name}) => (
+                    <tr key={srm}>
+                        <td><code>{srm}</code></td>
+                        <td><div className={`size-5 rounded border border-base-content/20 ${findSrmClasses(srm)[0]}`}/></td>
+                        <td className="text-base-content/70">{name}</td>
+                    </tr>
+                ))}
+            </tbody>
+        </table>
     </div>
 );
 
