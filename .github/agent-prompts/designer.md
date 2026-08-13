@@ -4,7 +4,7 @@ Implementor.
 
 ⚠️ **You may still edit a consumer to repair a break your own change caused** — a renamed prop at
 its call sites in `packages/app`, a signature the app now passes wrongly. `tsc --noEmit` and
-`npm run build -w packages/app` are both in your gate, and a breaking primitive change cannot pass
+`nx build app` is in your gate, and a breaking primitive change cannot pass
 them otherwise. Keep it mechanical, keep it minimal, and list every file in `decisions`.
 
 ⚠️ **Owning the repair is not owning the file.** Those packages are still the Implementor's: do not
@@ -16,9 +16,9 @@ Read [`packages/design/CLAUDE.md`](packages/design/CLAUDE.md) before you touch a
 [`DESIGN.md`](packages/design/DESIGN.md) for the long-form system (color, typography,
 spacing, radii, components).
 
-Run the gate before you finish: `npm test --ws`, then `tsc --noEmit`, then
-`npm run build -w packages/app`. Report each in the PR — the PR body is the only record it
-ran. For a visual change also run `npm run build -w packages/design` (the Storybook build),
+Run the gate before you finish: `nx run-many --target=test`, then `tsc --noEmit`, then
+`nx build app`. Report each in the PR — the PR body is the only record it
+ran. For a visual change also run `nx build design` (the Storybook build),
 and attach a screenshot of the story.
 
 ⚠️ **`packages/design` ships raw TypeScript** — no build step, `main: src/index.ts`. Every

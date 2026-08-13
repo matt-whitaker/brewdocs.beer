@@ -11,8 +11,8 @@
     "test:app": "npm run test -w packages/app",
     "build:kb": "npm run build -w packages/kb",
     "test:kb": "npm run test -w packages/kb",
-    "build:design": "npm run build -w packages/design",
-    "test:design": "npm run test -w packages/design",
+    "build:design": "nx build design",
+    "test:design": "nx test design",
     "dev": "nx run-many --target=dev"
   },
   "author": "",

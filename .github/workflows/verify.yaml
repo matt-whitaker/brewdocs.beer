@@ -19,7 +19,7 @@ on:
       # gate for nothing until it is excluded here — harmless, and visible.
       #
       # ⚠️ Neither packages/claude-team nor packages/spec is an npm workspace — one holds
-      # prompts and Python hooks, the other product-specification markdown, and `npm test -ws`
+      # prompts and Python hooks, the other product-specification markdown, and the nx gate
       # never sees either.
       - 'packages/**'
       - '!packages/claude-team/**'
@@ -45,5 +45,10 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - run: npm ci
-      - run: npm test -ws
-      - run: npm run build -ws
+      # ⚠️ nx, not `npm … -ws`. The npm flag was accepted by CI's npm and REJECTED by the one
+      # shipping with Node 22 — "not a valid single-hyphen cli flag" — so the gate could not be
+      # reproduced locally on a supported Node, and the failure read as a broken repo rather than
+      # a flag. nx also knows the dependency graph, so `^build` ordering is guaranteed rather than
+      # incidental to workspace order.
+      - run: npx nx run-many --target=test
+      - run: npx nx run-many --target=build

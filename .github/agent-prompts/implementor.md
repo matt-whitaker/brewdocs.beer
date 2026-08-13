@@ -1,5 +1,5 @@
-Run the gate before you finish: `npm test --ws`, then `tsc --noEmit`, then
-`npm run build -w packages/app`. Report each in the PR — the PR body is the only record it
+Run the gate before you finish: `nx run-many --target=test`, then `tsc --noEmit`, then
+`nx build app`. Report each in the PR — the PR body is the only record it
 ran.
 
 For a UI change, check the screen in a browser and attach a screenshot.
