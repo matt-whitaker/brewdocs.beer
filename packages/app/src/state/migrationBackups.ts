@@ -50,6 +50,26 @@ export const revertKindFor = async (backup: MigrationBackup): Promise<RevertKind
     return stored ? revertKindOf(backup, stored) : undefined;
 };
 
+export const revertKindsQueryKey = () => ["migration-backup-revert-kinds"];
+
+export const loadRevertKinds = async (): Promise<Record<string, RevertKind | undefined>> => {
+    const backups = await migrationBackupsStorage.index();
+    const kinds = await Promise.all(Object.entries(backups)
+        .map(async ([key, backup]) => [key, await revertKindFor(backup)] as const));
+
+    return Object.fromEntries(kinds);
+};
+
+export const useRevertKinds = (): Record<string, RevertKind | undefined> => {
+    const {data} = useSuspenseQuery({queryKey: revertKindsQueryKey(), queryFn: loadRevertKinds});
+
+    if (!data) {
+        throw new Error("Unable to load migration backup revert kinds");
+    }
+
+    return data;
+};
+
 export const revertMigrationBackup = async (key: string, backup: MigrationBackup): Promise<boolean> => {
     const store = migratedStoreOf(backup);
 
@@ -69,6 +89,7 @@ export const revertMigrationBackup = async (key: string, backup: MigrationBackup
     await migrationBackupsStorage.delete(key);
     await queryClient.invalidateQueries({queryKey: store.queryKey()});
     await queryClient.invalidateQueries({queryKey: migrationBackupsQueryKey()});
+    await queryClient.invalidateQueries({queryKey: revertKindsQueryKey()});
 
     return true;
 };
