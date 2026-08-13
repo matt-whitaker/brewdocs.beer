@@ -41,17 +41,20 @@ active phase began, so it reflects only the time actually spent on that phase.
 
 **BREW-TIMER-08** — Phase's timeline shows only the active phase's own milestones, plus its own
 completion marker once it has been completed, each positioned relative to the phase's start.
-Global's timeline is unchanged: every milestone from every phase, positioned relative to the
-whole session's start.
+Global's timeline shows one start marker and one complete marker per phase that has begun — not
+each phase's individual readings or hop additions — each positioned relative to the whole
+session's start. A phase that hasn't started yet shows neither marker.
+
+> *Why:* every phase's individual readings and hop additions plotted across the whole session
+> would crowd the timeline past being readable — the phase boundaries are what's useful to see
+> at that scale, not every entry within them.
 
 **BREW-TIMER-09** — Logging a reading or a hop addition while Phase is the active scope places
 its marker on the timeline at its elapsed time within the phase — logged 30 seconds after the
-phase started, the marker reads `0:30` — rather than at a session-wide time. Viewed in Global,
-the same entry appears at its true position in the whole session. No other ingredient kind, and
-no equipment check-off, places a marker.
-
-> *Why:* the phase-relative number is a display of the same moment, not a separate one —
-> switching scope changes only how that moment is read, never what was recorded.
+phase started, the marker reads `0:30` — rather than at a session-wide time. This marker belongs
+to Phase's own timeline; Global shows only the phase-level start and complete markers described
+in BREW-TIMER-08, never an individual reading's or hop addition's marker. No other ingredient
+kind, and no equipment check-off, places a marker in Phase's timeline.
 
 **BREW-TIMER-10** — Switching to Global, or resuming the timer while already on Global, always
 shows the session's true elapsed time on the very next tick — never a number carried over from
