@@ -12,7 +12,7 @@ This root file holds the **universal** rules. Each package's deep-dive lives in 
 - **Layout.** npm-workspaces monorepo; packages named `@brewdocs.beer/<name>`.
 - **Default branch.** `mainline` — also the target for all PRs and the **sole** deploy branch.
 - **Node.** ≥22. ⚠️ Non-interactive shells on this machine resolve `node` to an ancient v10 — if a command fails with syntax errors inside `node_modules`, prefix it: `PATH="$HOME/.nvm/versions/node/v22.23.1/bin:$PATH"`.
-- **Verify (the gate).** `npm test -ws` (eslint — app + www + design + e2e) + `tsc --noEmit` + `vite build`. No unit-test framework, no runtime tests in that gate — Playwright functional tests (`packages/e2e`) run separately in `.github/workflows/functional-test.yaml`, not in Verify. See _Linting_ (`packages/app/CLAUDE.md`) and _Definition of done_.
+- **Verify (the gate).** `nx run-many --target=test` (eslint — app + www + design + e2e) + `tsc --noEmit` + `nx run-many --target=build`. ⚠️ nx, not `npm … -ws`: that flag is accepted by CI's npm and **rejected** by the one shipping with Node 22, so the gate was not reproducible locally on a supported Node. No unit-test framework, no runtime tests in that gate — Playwright functional tests (`packages/e2e`) run separately in `.github/workflows/functional-test.yaml`, not in Verify. See _Linting_ (`packages/app/CLAUDE.md`) and _Definition of done_.
 
 | Package | Role |
 |---|---|
@@ -51,7 +51,7 @@ nx build design  # storybook build -o dist → the static site the deploy workfl
 `nx run-many --target=<target>` runs a target across every project that has it — `dev` is the
 root `package.json`'s own example of this pattern.
 
-Root `build:design`/`test:design` are **CI-only** now — `.github/workflows/build-test-deploy.design-prod.yaml` still calls them by name, so they can't be removed, but a contributor's local-dev path is the `nx` form above, not those aliases.
+Root `build:<pkg>`/`test:<pkg>` are **CI-only** — each `build-test-deploy.*` workflow calls one by name, so the names have to survive. All eight are now thin wrappers over `nx build <pkg>` / `nx test <pkg>`, so there is one implementation rather than two: the deploy workflows keep working untouched, and a contributor's local path is the `nx` form directly. ⚠️ Deleting them is not free — a rename lands in a **post-merge** deploy, so it is discovered in production rather than on a PR.
 
 - Typecheck app only: `cd packages/app && ../../node_modules/.bin/tsc --noEmit`.
 - Lint app only: `nx test app` (⚠️ see _Linting_ — must resolve the app's nested eslint 9, not the root's).
@@ -88,7 +88,7 @@ GitHub Actions, path-filtered on push to `mainline` (the sole deploy branch), al
 - `build-test-deploy.app-kb-prod.yaml` — **kb dist deploys independently** to a dedicated kb bucket behind the app's CloudFront distribution (invalidates `/kb`). This is why `importResource` fetches the relative `/kb/*` — same origin in prod, symlink in dev, and kb data updates ship without an app rebuild.
 - `build-test-deploy.www-prod.yaml` — www dist → www bucket (brewdocs.beer).
 
-The **Verify** workflow (`.github/workflows/verify.yaml`) runs `npm ci`, then `npm test` (lint) and `npm run build` across **all workspaces** (`-ws`), on every PR **whatever its base** (no deploy) — the real pre-merge gate; the `build-test-deploy.*` workflows run only *post*-merge on push.
+The **Verify** workflow (`.github/workflows/verify.yaml`) runs `npm ci`, then `nx run-many --target=test` (lint) and `nx run-many --target=build` across **every project**, on every PR **whatever its base** (no deploy) — the real pre-merge gate; the `build-test-deploy.*` workflows run only *post*-merge on push.
 
 **Functional tests.** `.github/workflows/functional-test.yaml` runs the Playwright suite (`packages/e2e`) on PRs **to `mainline` only**, independently of Verify — it installs the chromium browser and lets Playwright's `webServer` auto-start the app dev server, uploading the HTML report/traces as an artifact on failure. See `packages/e2e/CLAUDE.md`.
 

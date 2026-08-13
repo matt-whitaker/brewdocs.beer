@@ -15,7 +15,7 @@ on:
       # gate for nothing until it is excluded here — harmless, and visible.
       #
       # ⚠️ Neither packages/claude-team nor packages/spec is an npm workspace — one holds
-      # prompts and Python hooks, the other product-specification markdown, and `npm test -ws`
+      # prompts and Python hooks, the other product-specification markdown, and the nx gate
       # never sees either.
       - 'packages/**'
       - '!packages/claude-team/**'
