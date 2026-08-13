@@ -1574,7 +1574,8 @@ jobs:
       # path. Safe here on the same argument as everything else in this job: it has no model step,
       # so nothing untrusted executes in it. Nothing here deletes.
       contents: write
-      issues: read
+      # write, to apply the classification label an issue is missing
+      issues: write
     steps:
       - uses: actions/checkout@v4
       - name: Stash the agent hooks
@@ -1606,6 +1607,18 @@ jobs:
           MODE: branch
           ROLE: ${{ needs.delegate.outputs.roles }}
           KIND: ${{ needs.delegate.outputs.kind }}
+          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
+        run: "$RUNNER_TEMP/agent-bin/custodial-sweep.py"
+      # ⚠️ THE TASKS ARE WHY THIS IS HERE. `sync-kind-label.py` labels the TRIGGERING issue, so a
+      # story gets one and the tasks the Architect just created never do — and tasks are the most
+      # numerous kind. This runs after `file-sub-issues.py`, the first point at which those
+      # children are discoverable at all. It only ever adds; an existing kind is left alone.
+      - name: Make sure every issue says what it is
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          MODE: kinds
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
         run: "$RUNNER_TEMP/agent-bin/custodial-sweep.py"
 

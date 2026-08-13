@@ -52,6 +52,7 @@ covering both, and it does not:
 | kind | labels | who applies | what it means |
 |---|---|---|---|
 | **routing** | the front-door label, `@claude/<role>` | the maintainer; hooks stamp the trail | what should *happen* to this issue, and what has already run |
+| **classification** | `epic`, `spike`, `bug`, `task`, `story` | anyone filing; the custodial phase fills gaps | what this issue *is* |
 | **classification** | `epic`, `spike`, `bug`, `story` | anyone filing; a hook applies it after the Architect runs | what this issue *is* |
 
 A classification label is durable and derivable, so it survives a run and nothing has to
@@ -59,6 +60,24 @@ re-derive it. ⚠️ **Every kind gets one, `story` included.** An earlier versi
 unlabelled and treated the absence as the signal — which reads fine inside a hook and badly on
 a board, where you cannot filter for "the ones with nothing". `team.kind()` still *derives*
 story from the absence of the other markers; the label is what makes that visible.
+
+⚠️ **`task` IS DERIVED FROM STRUCTURE, NOT A MARKER, and needs no new stamp.** A task's `Branch:`
+line names its **story's** branch, so the number it starts with is not its own; a story's names
+itself. `kind()` uses exactly the test the PR-base rule uses, so the two cannot disagree about what
+a task is. ⚠️ It is checked **after** the marker kinds: an `Epic:`/`Spike:`/`Bug:` title is an
+explicit statement, a branch line is an inference, and the explicit one wins.
+
+⚠️ **The custodial phase labels the TASKS; `sync-kind-label.py` only ever reached the trigger.**
+That hook runs against the issue that triggered the run, so a story got a label and the tasks the
+Architect had just created never did — and tasks are the most numerous kind. The back half runs
+after `file-sub-issues.py`, which is the first moment those children are discoverable at all. It
+only ever **adds**: an issue already carrying a kind is left alone, because a maintainer who
+relabelled something by hand meant it.
+
+⚠️ **`spike` stays a kind even though it looks redundant beside `story`.** It is not cosmetic:
+`delegate.py` rule 3 routes a spike to the **Researcher** rather than the Architect, because an
+Architect handed an open question decomposes a solution nobody has chosen. Removing it changes
+routing, not labelling.
 
 ⚠️ **`sync-kind-label.py` asks `kind()`, not the title.** Keying on the title worked only while
 every kind announced itself — a story has no prefix to match and would never have been labelled.
