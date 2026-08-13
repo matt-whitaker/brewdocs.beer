@@ -731,6 +731,13 @@ already runs this shape for the same reason.
 the only destructive capability anywhere in this system. Nothing untrusted executes in a job with
 no agent in it.
 
+⚠️ **A deletion is announced on the issue, not just logged** — the same `custodian-log` comment
+`apply-repairs.py` appends to, so everything the custodian has done to an issue reads as one
+history. This is the fix-and-report rule applied to the one action that removes something: a job
+log is not reporting, and a branch that vanishes with no record is indistinguishable from one that
+was never created. ⚠️ Only a **deletion** writes; every no-op path stays silent, or the log becomes
+noise nobody reads.
+
 ⚠️ **The branch delete is safe by construction, not by care.** Two conditions, both required:
 0 commits ahead of the default branch — so there is no content to lose — **and** the issue closed,
 so nothing is about to arrive. Either alone is wrong: 0-ahead by itself would delete a story branch

@@ -135,6 +135,25 @@ def sweep_one(ISSUE: str) -> None:
         "created for a story that turned out to need no branch of its own."
     )
 
+    # ⚠️ FIX AND REPORT, NEVER FIX QUIETLY — the custodian's own rule, and a job log is not
+    # reporting. Announcing a deletion where the maintainer actually looks is the difference
+    # between a repair and a disappearance; without it this is the same swallowed signal as a
+    # `::warning::` nobody reads.
+    #
+    # ⚠️ The SAME log `apply-repairs.py` appends to, so everything the custodian has done to an
+    # issue reads as one history rather than scattering across comments.
+    team.append_to_comment(
+        ISSUE,
+        "<!-- claude-team:custodian-log -->",
+        f"**`branch-swept`** — deleted `{branch}`.\n\n"
+        f"_Why it was safe:_ 0 commits ahead of `{default}`, so it held nothing that was not "
+        f"already there, and #{ISSUE} is closed, so nothing further was coming.\n\n"
+        f"_If that was wrong:_ recreate it at `{default}`'s head — by the first test, that is "
+        f"exactly where it pointed.{team.run_link()}",
+        "🔧 **Custodian repairs.** Process state put right by a run, each with what was wrong "
+        "and why. Nothing here changed any content.",
+    )
+
 
 if MODE == "deliverable":
     check_deliverable()
