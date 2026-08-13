@@ -31,7 +31,7 @@ function RecipeEditPhasesRow({ row, label, removable, count, locked = false, rem
     const lockedReason = locked ? PHASES_LOCKED_REASON : undefined;
 
     return (
-        <DataGridRow zebra>
+        <DataGridRow zebra reserveExpand>
             <DataGridLabel className={removable ? "ml-6" : ""} cols={4}>
                 {removable && <DataGridRemoveButton label={`Remove ${label}`} title={lockedReason} disabled={locked} onClick={onRemovePhase} />}
                 {label}
