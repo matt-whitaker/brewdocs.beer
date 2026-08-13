@@ -89,6 +89,9 @@ test("logs a quick milestone that lands on the timeline and in the phase's readi
     await brewBatchFromKbRecipe(page, "E2E Timer Milestone Batch");
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
+    // an individual reading marker only ever plots on Phase's own timeline (BREW-TIMER-09)
+    await page.getByRole("group", {name: "Timer scope"}).getByRole("button", {name: "Phase", exact: true}).click();
+
     // a marker only places once there's a running session with elapsed > 0
     await page.getByRole("button", {name: "Start timer"}).click();
     await page.waitForTimeout(1000);
@@ -108,6 +111,8 @@ test("logs a quick milestone that lands on the timeline and in the phase's readi
     await settleSave(page);
     await page.reload();
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
+    // scope resets to its default (Global) on remount — back to Phase to see the marker
+    await page.getByRole("group", {name: "Timer scope"}).getByRole("button", {name: "Phase", exact: true}).click();
 
     // both writes (the milestone on the phase, and the timer's marker derived
     // from it) are fire-and-forget saves — the reload is what proves neither
@@ -404,6 +409,9 @@ test("hovering each marker after logging two milestones shows that marker's own 
     await brewBatchFromKbRecipe(page, "E2E Marker Popover Batch");
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
+    // an individual reading marker only ever plots on Phase's own timeline (BREW-TIMER-09)
+    await page.getByRole("group", {name: "Timer scope"}).getByRole("button", {name: "Phase", exact: true}).click();
+
     await page.getByRole("button", {name: "Start timer"}).click();
     await page.waitForTimeout(1000);
 
@@ -460,6 +468,11 @@ test("places a freshly logged milestone marker without waiting for a tick to cat
     await brewBatchFromKbRecipe(page, "E2E Marker Clock Batch");
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
+    // an individual reading marker only ever plots on Phase's own timeline (BREW-TIMER-09) —
+    // Global's own Mash start stamp is visible from t=0 and would otherwise satisfy the loose
+    // "at HH:MM:SS" match below regardless of the timing behaviour under test
+    await page.getByRole("group", {name: "Timer scope"}).getByRole("button", {name: "Phase", exact: true}).click();
+
     // pauseAt's target must be in the fake clock's future by the time the
     // command reaches the browser, or it throws "Cannot fast-forward to the
     // past" — a fixed lead covers the round-trip
@@ -482,50 +495,61 @@ test("places a freshly logged milestone marker without waiting for a tick to cat
 
     // no further clock advance past this point — a marker that only shows up
     // once the next tick fires would time out here, not eventually pass
-    await expect(page.getByRole("button", {name: /at \d{2}:\d{2}:\d{2}$/})).toBeVisible();
+    await expect(page.getByRole("button", {name: /^Reading at \d{2}:\d{2}:\d{2}$/})).toBeVisible();
 });
 
 // #422: elapsedSeconds used to sum only the *running* intervals of Batch.timer, so
-// a paused counter fell behind the wall-clock basis the markers use, and anything
-// logged during a pause could sit past elapsedSeconds indefinitely — catching up
+// a paused counter fell behind the wall-clock basis Global's markers use, and anything
+// timestamped during a pause could sit past elapsedSeconds indefinitely — catching up
 // required as much *additional running time after resume* as the pause itself
 // lasted. That's what the pause below is long relative to: a fixed implementation
 // clears the tight post-resume assertion window immediately (it jumps straight to
 // the true wall-clock offset), while a regressed one would need the whole pause
 // length in further running time to get there, which the window doesn't allow.
+//
+// Global's only markers are now the phase stamps (BREW-TIMER-08), not an individual
+// reading — reproduced here via a phase completed while ALREADY paused: BATCH-SCHEDULE-14
+// leaves an already-paused timer untouched, so the completion's recorded `date` is real
+// wall-clock time even though the frozen counter doesn't move to match it.
 // (page.clock isn't used here — freezing time across two consecutive immediate
 // writes races this app's query invalidation/refetch and reverts the optimistic
 // UI update within milliseconds, unrelated to the bug under test.)
-test("keeps a milestone logged during a long pause on the timeline once resumed", async ({page}) => {
+test("keeps a phase's complete stamp on Global's timeline once resumed, even completed during a long pause", async ({page}) => {
     await brewBatchFromKbRecipe(page, "E2E Timer Pause Marker Batch");
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
+
+    const mashStamps = page.getByRole("button", {name: /^1\. Mash at \d{2}:\d{2}:\d{2}$/});
 
     await page.getByRole("button", {name: "Start timer"}).click();
     await page.waitForTimeout(1000);
     await page.getByRole("button", {name: "Pause timer"}).click();
     await expect(page.getByRole("button", {name: "Start timer"})).toBeVisible();
+    // just Mash's own start stamp so far
+    await expect(mashStamps).toHaveCount(1);
 
     const frozenValue = await page.getByRole("timer", {name: "Elapsed time"}).textContent();
 
     // a pause much longer than the running time before it
     await page.waitForTimeout(6000);
 
-    await page.getByRole("button", {name: "Quick actions"}).click();
+    // completing while already paused leaves the timer untouched (BATCH-SCHEDULE-14) — the
+    // completion's recorded date is still real wall-clock time, well past what the frozen
+    // counter shows
+    await page.getByRole("button", {name: "Complete 1. Mash"}).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
     await dialog.getByRole("button", {name: "Confirm"}).click();
     await expect(dialog).not.toBeVisible();
 
-    const marker = page.getByRole("button", {name: /^Reading at \d{2}:\d{2}:\d{2}$/});
-    // still paused: the milestone's wall-clock offset is past the frozen counter,
-    // so the marker must not show yet, and the counter itself stays frozen
-    await expect(marker).toHaveCount(0);
+    // still paused: the completion's wall-clock offset is past the frozen counter, so its
+    // stamp must not show yet, and the counter itself stays frozen
+    await expect(mashStamps).toHaveCount(1);
     await expect(page.getByRole("timer", {name: "Elapsed time"})).toHaveText(frozenValue ?? "");
 
     await page.getByRole("button", {name: "Start timer"}).click();
-    // resuming alone must jump the counter to the true wall-clock offset and reveal
-    // the marker — well inside the 6s pause a regressed implementation would need
-    await expect(marker).toBeVisible({timeout: 2500});
+    // resuming alone must jump the counter to the true wall-clock offset and reveal the
+    // complete stamp — well inside the 6s pause a regressed implementation would need
+    await expect(mashStamps).toHaveCount(2, {timeout: 2500});
 });
 
 // BREW-TIMER-06: the scope toggle changes only what is displayed. It must never touch
@@ -599,9 +623,10 @@ test("Phase's elapsed excludes a pause, and Global reads the true elapsed the mo
 });
 
 // BREW-TIMER-08: completing the active phase while Phase is displayed re-anchors both
-// the counter and the markers to the newly current phase — a milestone logged on the
-// finished phase stays on Global's timeline but drops off Phase's, and Phase only ever
-// shows the phase that's active right now.
+// the counter and the markers to the newly current phase, which only ever shows the
+// phase that's active right now. Global shows only a start and a complete stamp per
+// phase that's begun — a milestone logged on the finished phase never appears there,
+// compacted or otherwise.
 test("completing a phase while Phase is displayed re-anchors its markers to the new phase", async ({page}) => {
     await brewBatchFromKbRecipe(page, "E2E Timer Scope Complete Batch");
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
@@ -618,10 +643,11 @@ test("completing a phase while Phase is displayed re-anchors its markers to the 
     await expect(dialog).toBeVisible();
     await dialog.getByRole("button", {name: "Confirm"}).click();
     await expect(dialog).not.toBeVisible();
-    await expect(readingMarker).toBeVisible();
+    // Global (the default scope) never shows an individual reading marker
+    await expect(readingMarker).toHaveCount(0);
 
     await scopeGroup.getByRole("button", {name: "Phase", exact: true}).click();
-    // still on Mash, so its own reading marker shows in Phase scope too
+    // still on Mash, so its own reading marker shows in Phase scope
     await expect(readingMarker).toBeVisible();
 
     await page.getByRole("button", {name: "Complete 1. Mash"}).click();
@@ -635,9 +661,11 @@ test("completing a phase while Phase is displayed re-anchors its markers to the 
     await expect(readingMarker).toHaveCount(0);
 
     await scopeGroup.getByRole("button", {name: "Global", exact: true}).click();
-    // Global keeps everything — the old reading and the phase-complete marker both
-    await expect(readingMarker).toBeVisible();
-    await expect(page.getByRole("button", {name: /^1\. Mash at \d{2}:\d{2}:\d{2}$/})).toBeVisible();
+    // Global drops the individual reading marker entirely, and shows Mash's compacted
+    // start and complete stamps instead — both share the same "1. Mash at HH:MM:SS" name
+    // (kind isn't part of the accessible name), so two of them is the assertion
+    await expect(readingMarker).toHaveCount(0);
+    await expect(page.getByRole("button", {name: /^1\. Mash at \d{2}:\d{2}:\d{2}$/})).toHaveCount(2);
 
     await scopeGroup.getByRole("button", {name: "Phase", exact: true}).click();
     // completing Mash paused the timer (BATCH-SCHEDULE-14); Boil's own phase-relative
@@ -657,7 +685,8 @@ test("completing a phase while Phase is displayed re-anchors its markers to the 
 
 // BREW-TIMER-09 (reading only — ingredient/equipment check-offs record no timestamp
 // yet, see #699): a reading logged while Phase is active lands at its phase-relative
-// offset; the same entry reads its true session-wide offset in Global.
+// offset, on Phase's own timeline — and never plots in Global at all, which shows only
+// the phase-level start/complete stamps from BREW-TIMER-08.
 test("a reading logged while Phase is active lands at its phase-relative offset", async ({page}) => {
     await brewBatchFromKbRecipe(page, "E2E Timer Scope Offset Batch");
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
@@ -691,13 +720,87 @@ test("a reading logged while Phase is active lands at its phase-relative offset"
     await expect(page.getByRole("button", {name: readingMarker})).toBeVisible();
 
     const phaseOffset = await markerOffsetSeconds(page, readingMarker);
+    // logged partway into Boil's own phase clock, not at its very start
+    expect(phaseOffset).toBeGreaterThan(0);
 
     await scopeGroup.getByRole("button", {name: "Global", exact: true}).click();
-    const globalOffset = await markerOffsetSeconds(page, readingMarker);
+    // the reading itself never plots on Global's timeline — only the phase-level
+    // start/complete stamps do (BREW-TIMER-08/09)
+    await expect(page.getByRole("button", {name: readingMarker})).toHaveCount(0);
+});
 
-    // same recorded moment, two readings of it: Global includes the ~2s spent on
-    // Mash before Boil's boundary even started, Phase does not
-    expect(globalOffset).toBeGreaterThan(phaseOffset);
+// BREW-TIMER-08: Global shows one start stamp and one complete stamp per phase that has
+// begun, and nothing at all for one that hasn't.
+test("Global shows a phase's start stamp once it begins, a complete stamp once it's completed, and nothing before that", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Global Stamps Batch");
+    await page.getByRole("tab", {name: "Brewing", exact: true}).click();
+
+    const scopeGroup = page.getByRole("group", {name: "Timer scope"});
+    const mashStamp = page.getByRole("button", {name: /^1\. Mash at \d{2}:\d{2}:\d{2}$/});
+    const boilStamp = page.getByRole("button", {name: /^2\. Boil at \d{2}:\d{2}:\d{2}$/});
+
+    await scopeGroup.getByRole("button", {name: "Global", exact: true}).click();
+    // the timer hasn't started, so Mash — the current phase — hasn't begun either
+    await expect(mashStamp).toHaveCount(0);
+
+    await page.getByRole("button", {name: "Start timer"}).click();
+    await page.waitForTimeout(1000);
+
+    // Mash has begun: one stamp, its start. Boil hasn't been reached yet: none.
+    await expect(mashStamp).toHaveCount(1);
+    await expect(boilStamp).toHaveCount(0);
+
+    await page.getByRole("button", {name: "Complete 1. Mash"}).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole("button", {name: "Confirm"}).click();
+    await expect(dialog).not.toBeVisible();
+    await settleSave(page);
+
+    // Mash is complete: both its stamps now show. Boil is the new current phase, so its
+    // own start stamp appears too, though it hasn't been completed yet.
+    await expect(mashStamp).toHaveCount(2);
+    await expect(boilStamp).toHaveCount(1);
+});
+
+// BREW-TIMER-08/09: a hop addition places a marker on Phase's own timeline (like a
+// reading) but, same as a reading, never plots on Global's — which shows only the
+// phase-level stamps.
+test("a hop addition logged while Phase is active never plots on Global's timeline", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Global No Hop Marker Batch");
+    await page.getByRole("tab", {name: "Brewing", exact: true}).click();
+
+    await page.getByRole("button", {name: "Start timer"}).click();
+    await page.waitForTimeout(1000);
+
+    await page.getByRole("button", {name: "Complete 1. Mash"}).click();
+    let dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole("button", {name: "Confirm"}).click();
+    await expect(dialog).not.toBeVisible();
+    await settleSave(page);
+
+    // completing Mash paused the timer (BATCH-SCHEDULE-14) — resume it so Boil's own
+    // phase-relative clock has elapsed time to plot the coming hop addition against
+    await page.getByRole("button", {name: "Start timer"}).click();
+    await page.waitForTimeout(1000);
+
+    // log Boil's first hop addition (preselected, per BATCH-SCHEDULE-10/-11)
+    await page.getByRole("button", {name: "Quick actions"}).click();
+    dialog = page.getByRole("dialog").filter({hasText: "Quick action"});
+    await dialog.getByRole("tab", {name: "Ingredients"}).click();
+    await dialog.getByRole("button", {name: "Confirm"}).click();
+    await expect(dialog).not.toBeVisible();
+    await settleSave(page);
+
+    const hopMarker = page.getByRole("button", {name: /Northern Brewer/});
+    const scopeGroup = page.getByRole("group", {name: "Timer scope"});
+    await scopeGroup.getByRole("button", {name: "Phase", exact: true}).click();
+    // sanity check: the addition really was logged, on Phase's own timeline
+    await expect(hopMarker).toBeVisible();
+
+    await scopeGroup.getByRole("button", {name: "Global", exact: true}).click();
+    await expect(hopMarker).toHaveCount(0);
 });
 
 // BATCH-SCHEDULE-14: confirming a phase complete, while the timer is running, stops it.

@@ -397,14 +397,17 @@ test("completing a phase puts a marker on the brew timer's live timeline", async
     await page.getByRole("button", {name: "Start timer"}).click();
     await settleSave(page);
 
-    const markers = page.getByRole("button", {name: /at \d\d:\d\d:\d\d$/});
-    await expect(markers).toHaveCount(0);
+    const mashMarkers = page.getByRole("button", {name: /^1\. Mash at /});
+    // Global compacts to phase stamps (BREW-TIMER-08): Mash has begun, so its own
+    // start stamp already shows before anything is completed
+    await expect(mashMarkers).toHaveCount(1);
     await page.getByRole("button", {name: "Complete 1. Mash"}).click();
     await page.getByRole("dialog").getByRole("button", {name: "Confirm"}).click();
     await settleSave(page);
 
-    await expect(markers).toHaveCount(1);
-    await expect(page.getByRole("button", {name: /^1\. Mash at /})).toBeVisible();
+    // completing adds Mash's own complete stamp alongside its start stamp — Boil also
+    // begins as the new current phase, but that's its own stamp, not Mash's
+    await expect(mashMarkers).toHaveCount(2);
 });
 
 /**
