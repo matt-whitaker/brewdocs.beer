@@ -1,0 +1,94 @@
+name: Capture an agent transcript
+description: Ships a model step's execution transcript to a private S3 prefix, when enabled.
+
+# ⚠️ THE TRANSCRIPT ALREADY EXISTS — this does not turn anything on. `claude-code-action` calls
+# `writeExecutionFile` unconditionally (base-action/src/run-claude-sdk.ts), so every run leaves the
+# full turn-by-turn at `claude-execution-output.json` and exposes its path as `execution_file`.
+# `show_full_output` only decides whether that content is *echoed to the console*, and on a public
+# repo the console is the whole internet. So the fix is never to enable console output — it is to
+# collect the file that is already there before the runner is destroyed.
+#
+# ⚠️ WHY A TRANSCRIPT MUST NOT BE PUBLIC. It is tool calls *and their results*. If a run ever read
+# a file or ran a command that surfaced a credential, it is in there. That is the whole reason this
+# ships to a private bucket rather than to an artifact, which on a public repo anyone can download.
+#
+# ⚠️ THE CREDENTIAL NEVER COEXISTS WITH THE AGENT. Two independent reasons, and both hold alone:
+#   1. This runs *after* the model step, so the agent's process is already gone.
+#   2. `parse-sdk-options.ts` deletes ACTIONS_ID_TOKEN_REQUEST_URL/_TOKEN from the agent's
+#      environment — "so Claude cannot mint new tokens" — so `id-token: write` on the job does not
+#      hand the agent the ability to assume the role.
+#
+# ⚠️ IT MUST NEVER FAIL A RUN. This is a debugging aid; a missing secret or an S3 hiccup is not a
+# reason to redden a good run. Callers pass `continue-on-error: true`, and every step here is
+# additionally guarded so an unset secret simply skips.
+
+inputs:
+  enabled:
+    description: '"true" to capture. Computed by the caller from the AGENT_TRANSCRIPTS variable.'
+    required: true
+  role:
+    description: Role name, used in the object key
+    required: true
+  execution_file:
+    description: The model step's `execution_file` output. Empty when the step did not run.
+    required: true
+  role_arn:
+    description: AWS role to assume (OIDC)
+    required: true
+  bucket:
+    description: Destination bucket
+    required: true
+  entity:
+    description: Issue or PR number, used in the object key
+    required: false
+    default: unknown
+  region:
+    description: AWS region
+    required: false
+    default: us-west-2
+
+runs:
+  using: composite
+  steps:
+    - id: gate
+      shell: bash
+      env:
+        ENABLED: ${{ inputs.enabled }}
+        EXECUTION_FILE: ${{ inputs.execution_file }}
+        ROLE_ARN: ${{ inputs.role_arn }}
+        BUCKET: ${{ inputs.bucket }}
+      run: |
+        # ⚠️ One gate, evaluated once, so the two steps below cannot disagree. Each condition is a
+        # legitimate skip rather than an error: capture off, the model step never ran, or the AWS
+        # secrets are not configured yet.
+        go=true
+        [ "$ENABLED" = "true" ]      || { echo "transcript capture is off"; go=false; }
+        [ -n "$EXECUTION_FILE" ]     || { echo "no execution file — the model step did not run"; go=false; }
+        [ -n "$ROLE_ARN" ]           || { echo "no AWS_TRANSCRIPTS_ROLE configured"; go=false; }
+        [ -n "$BUCKET" ]             || { echo "no AWS_TRANSCRIPTS_BUCKET configured"; go=false; }
+        if [ "$go" = true ] && [ ! -f "$EXECUTION_FILE" ]; then
+          echo "::warning::execution_file was set to $EXECUTION_FILE but no such file exists"
+          go=false
+        fi
+        echo "go=$go" >> "$GITHUB_OUTPUT"
+
+    - if: steps.gate.outputs.go == 'true'
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ inputs.role_arn }}
+        aws-region: ${{ inputs.region }}
+
+    - if: steps.gate.outputs.go == 'true'
+      shell: bash
+      env:
+        EXECUTION_FILE: ${{ inputs.execution_file }}
+        BUCKET: ${{ inputs.bucket }}
+        ROLE: ${{ inputs.role }}
+        ENTITY: ${{ inputs.entity }}
+      run: |
+        # gzip because a transcript carries full tool results and reaches megabytes
+        key="transcripts/${ROLE}/${ENTITY}/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.json.gz"
+        gzip -c "$EXECUTION_FILE" > "$RUNNER_TEMP/transcript.json.gz"
+        aws s3 cp "$RUNNER_TEMP/transcript.json.gz" "s3://${BUCKET}/${key}" --only-show-errors
+        printf 'transcript -> s3://%s/%s (%s)\n' "$BUCKET" "$key" \
+          "$(du -h "$RUNNER_TEMP/transcript.json.gz" | cut -f1)"

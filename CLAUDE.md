@@ -386,6 +386,29 @@ recovery — so the click means an authoring run committed and stopped without a
 hook rescued it (#566). Read it as a diagnostic, not as friction. ⚠️ The fingerprint on a past
 run is `actor` a bot with `triggering_actor` the maintainer; the click reattributes the trigger.
 
+**Agent transcripts.** Every model step already writes its full turn-by-turn to
+`claude-execution-output.json`; `.github/actions/capture-transcript` gzips it to
+`s3://brewdocs-logs/transcripts/<role>/<entity>/<run_id>-<attempt>.json.gz`.
+
+- ⚠️ **Controlled at runtime by the `AGENT_TRANSCRIPTS` repository variable** (Settings → Secrets
+  and variables → Actions → *Variables*) — no commit, no deploy. Unset or empty means **off**, so
+  it is inert until someone opts in. Values are `all`, or a comma list of
+  `architect,claude,researcher,authors,security`.
+- ⚠️ **`contains()` is substring matching**, so a role name that is a substring of another would
+  silently over-match. The current names are all distinct; adding one called `test` would collide
+  with `tester`.
+- **AWS:** bucket `brewdocs-logs`, prefix `transcripts/` (lifecycle-expired at 30 days), region
+  `us-west-2`. Auth is **OIDC** — `AWS_TRANSCRIPTS_ROLE` may only `s3:PutObject` to that prefix:
+  no read, no list, no delete. ⚠️ **Never point this at the deploy credentials**
+  (`AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`/`AWS_ROLE_TO_ASSUME`), which can write the site
+  buckets and invalidate CloudFront.
+- ⚠️ **It cannot fail a run** — `continue-on-error` plus `always()`, so a failed run still yields
+  its transcript, which is exactly when one is wanted.
+- ⚠️ **`id-token: write` on `claude` and `researcher` is for this and nothing else.** Both pass
+  `github_token`, so the OIDC path for *GitHub* auth stays short-circuited, and the agent cannot
+  use the permission: the action deletes `ACTIONS_ID_TOKEN_REQUEST_*` from the environment it hands
+  the model.
+
 **House rules.** Never push to a deploy branch. May open PRs, push to feature branches and
 comment; may not merge, edit `.github/workflows/**` or secrets, or run destructive git. Pass
 the gate before proposing a PR. Ask when a change is ambiguous, irreversible or outward-facing.

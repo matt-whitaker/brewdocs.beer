@@ -421,7 +421,8 @@ jobs:
           REPO: ${{ github.repository }}
           NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
         run: "$RUNNER_TEMP/agent-bin/stamp-role-label.py"
-      - uses: anthropics/claude-code-action@v1
+      - id: architect
+        uses: anthropics/claude-code-action@v1
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
@@ -529,6 +530,22 @@ jobs:
           # the tasks it just cut, or an epic's stories
           INCLUDE_SUB_ISSUES: "true"
         run: "$RUNNER_TEMP/agent-bin/set-issue-status.py"
+
+      # ⚠️ Diagnostics only, and it must never redden a good run — hence continue-on-error, and
+      # `always()` so a FAILED run still yields its transcript, which is when you most want one.
+      # ⚠️ Turned on and off at runtime by the AGENT_TRANSCRIPTS repository variable; unset means
+      # off, so this is inert until someone opts in. See .github/actions/capture-transcript.
+      - name: Capture the transcript
+        if: always()
+        continue-on-error: true
+        uses: ./.github/actions/capture-transcript
+        with:
+          enabled: ${{ contains(vars.AGENT_TRANSCRIPTS, 'all') || contains(vars.AGENT_TRANSCRIPTS, 'architect') }}
+          role: architect
+          execution_file: ${{ steps.architect.outputs.execution_file }}
+          role_arn: ${{ secrets.AWS_TRANSCRIPTS_ROLE }}
+          bucket: ${{ secrets.AWS_TRANSCRIPTS_BUCKET }}
+          entity: ${{ github.event.issue.number || github.event.pull_request.number }}
   # ── @claude: the root role, reached by naming it in a comment ──────────────────
   # ⚠️ ROUTED, NOT LABELLED. There is no `@claude/claude` handle and no label of its own — the
   # router sends here (rule 1b) when a comment names `@claude` and no role handle matched. The
@@ -543,6 +560,11 @@ jobs:
     permissions:
       # reads to answer, writes only its own reply. No branch, no code.
       contents: read
+      # ⚠️ Present only so the transcript step can assume the AWS role by OIDC. It does NOT
+      # re-open the OIDC path for GitHub auth — `github_token` below short-circuits that — and
+      # it does not reach the agent: `parse-sdk-options.ts` deletes ACTIONS_ID_TOKEN_REQUEST_*
+      # from the environment it hands the model.
+      id-token: write
       issues: write
       # ⚠️ REQUIRED TO ANSWER ON A PR, and its absence is not a degraded run — it is a dead one.
       # Commenting on a PR goes through the `/issues/{n}/comments` endpoint, but the permission
@@ -649,6 +671,22 @@ jobs:
           REPAIRS: ${{ steps.custodian.outputs.structured_output }}
         run: "$RUNNER_TEMP/agent-bin/apply-repairs.py"
 
+      # ⚠️ Diagnostics only, and it must never redden a good run — hence continue-on-error, and
+      # `always()` so a FAILED run still yields its transcript, which is when you most want one.
+      # ⚠️ Turned on and off at runtime by the AGENT_TRANSCRIPTS repository variable; unset means
+      # off, so this is inert until someone opts in. See .github/actions/capture-transcript.
+      - name: Capture the transcript
+        if: always()
+        continue-on-error: true
+        uses: ./.github/actions/capture-transcript
+        with:
+          enabled: ${{ contains(vars.AGENT_TRANSCRIPTS, 'all') || contains(vars.AGENT_TRANSCRIPTS, 'claude') }}
+          role: claude
+          execution_file: ${{ steps.custodian.outputs.execution_file }}
+          role_arn: ${{ secrets.AWS_TRANSCRIPTS_ROLE }}
+          bucket: ${{ secrets.AWS_TRANSCRIPTS_BUCKET }}
+          entity: ${{ github.event.issue.number || github.event.pull_request.number }}
+
   # ── Researcher: answers a spike before anything is shaped ──────────────────────
   # ⚠️ ITS OWN JOB, not a step in `authors`. The authoring job's whole tail — finish-pr.py,
   # post-handoff.py, the PR label — assumes a run that produced a PR. A Researcher produces a
@@ -668,6 +706,11 @@ jobs:
       # ⚠️ contents READ, unlike every authoring role and unlike the Architect. A spike ships
       # nothing and has no branch to cut.
       contents: read
+      # ⚠️ Present only so the transcript step can assume the AWS role by OIDC. It does NOT
+      # re-open the OIDC path for GitHub auth — `github_token` below short-circuits that — and
+      # it does not reach the agent: `parse-sdk-options.ts` deletes ACTIONS_ID_TOKEN_REQUEST_*
+      # from the environment it hands the model.
+      id-token: write
       issues: write
       # ⚠️ NO `id-token`, unlike every other role here — which is only possible because this job
       # passes `github_token` below. The action needs OIDC to mint its own App token; removing
@@ -832,6 +875,22 @@ jobs:
           STATUS: "Todo"
           ONLY_IF_UNSET: "true"
         run: "$RUNNER_TEMP/agent-bin/set-issue-status.py"
+
+      # ⚠️ Diagnostics only, and it must never redden a good run — hence continue-on-error, and
+      # `always()` so a FAILED run still yields its transcript, which is when you most want one.
+      # ⚠️ Turned on and off at runtime by the AGENT_TRANSCRIPTS repository variable; unset means
+      # off, so this is inert until someone opts in. See .github/actions/capture-transcript.
+      - name: Capture the transcript
+        if: always()
+        continue-on-error: true
+        uses: ./.github/actions/capture-transcript
+        with:
+          enabled: ${{ contains(vars.AGENT_TRANSCRIPTS, 'all') || contains(vars.AGENT_TRANSCRIPTS, 'researcher') }}
+          role: researcher
+          execution_file: ${{ steps.research.outputs.execution_file }}
+          role_arn: ${{ secrets.AWS_TRANSCRIPTS_ROLE }}
+          bucket: ${{ secrets.AWS_TRANSCRIPTS_BUCKET }}
+          entity: ${{ github.event.issue.number || github.event.pull_request.number }}
   # ── Authors: Implementor | Designer | Tester | Writer ──────────────────────────
   # The four authoring roles as gated steps in one job. ⚠️ EXACTLY ONE RUNS PER TRIGGER —
   # `delegate.py` emits a single role, and each step gates on it. They share a job to share
@@ -1187,6 +1246,7 @@ jobs:
         run: "$RUNNER_TEMP/agent-bin/stamp-role-label.py"
       - name: Tester
         if: contains(steps.roles.outputs.list, 'tester')
+      - id: tester
         uses: anthropics/claude-code-action@v1
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -1250,6 +1310,7 @@ jobs:
         run: "$RUNNER_TEMP/agent-bin/stamp-role-label.py"
       - name: Writer
         if: contains(steps.roles.outputs.list, 'writer')
+      - id: writer
         uses: anthropics/claude-code-action@v1
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -1347,6 +1408,22 @@ jobs:
           ROLES: ${{ steps.roles.outputs.list }}
         run: "$RUNNER_TEMP/agent-bin/log-to-epic.py"
 
+      # ⚠️ Diagnostics only, and it must never redden a good run — hence continue-on-error, and
+      # `always()` so a FAILED run still yields its transcript, which is when you most want one.
+      # ⚠️ Turned on and off at runtime by the AGENT_TRANSCRIPTS repository variable; unset means
+      # off, so this is inert until someone opts in. See .github/actions/capture-transcript.
+      - name: Capture the transcript
+        if: always()
+        continue-on-error: true
+        uses: ./.github/actions/capture-transcript
+        with:
+          enabled: ${{ contains(vars.AGENT_TRANSCRIPTS, 'all') || contains(vars.AGENT_TRANSCRIPTS, 'authors') }}
+          role: ${{ needs.delegate.outputs.roles }}
+          execution_file: ${{ steps.implementor.outputs.execution_file || steps.designer.outputs.execution_file || steps.tester.outputs.execution_file || steps.writer.outputs.execution_file }}
+          role_arn: ${{ secrets.AWS_TRANSCRIPTS_ROLE }}
+          bucket: ${{ secrets.AWS_TRANSCRIPTS_BUCKET }}
+          entity: ${{ github.event.issue.number || github.event.pull_request.number }}
+
   # ── Security ───────────────────────────────────────────────────────────────────
   # Reviews what just landed on mainline and files issues for what it finds. Runs on
   # merge rather than on the PR, deliberately: a review that blocks a merge gets
@@ -1397,7 +1474,8 @@ jobs:
         uses: ./.github/actions/load-prompt
         with:
           role: security
-      - uses: anthropics/claude-code-action@v1
+      - id: security
+        uses: anthropics/claude-code-action@v1
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # the one value a prompt file can't carry: `${{ }}` is evaluated by Actions in
@@ -1443,6 +1521,22 @@ jobs:
             --model sonnet
             --allowedTools "Read,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*),Bash(gh pr checks:*),Bash(gh pr comment:*),Bash(gh issue create:*),Bash(gh issue view:*),Bash(gh issue list:*),Bash(gh repo view:*),Bash(gh project item-add:*),Bash(git log:*),Bash(git show:*),Bash(git diff:*),Bash(git status:*),Bash(git rev-parse:*),Bash(git ls-files:*),Bash(git blame:*)"
             --max-turns 40
+
+      # ⚠️ Diagnostics only, and it must never redden a good run — hence continue-on-error, and
+      # `always()` so a FAILED run still yields its transcript, which is when you most want one.
+      # ⚠️ Turned on and off at runtime by the AGENT_TRANSCRIPTS repository variable; unset means
+      # off, so this is inert until someone opts in. See .github/actions/capture-transcript.
+      - name: Capture the transcript
+        if: always()
+        continue-on-error: true
+        uses: ./.github/actions/capture-transcript
+        with:
+          enabled: ${{ contains(vars.AGENT_TRANSCRIPTS, 'all') || contains(vars.AGENT_TRANSCRIPTS, 'security') }}
+          role: security
+          execution_file: ${{ steps.security.outputs.execution_file }}
+          role_arn: ${{ secrets.AWS_TRANSCRIPTS_ROLE }}
+          bucket: ${{ secrets.AWS_TRANSCRIPTS_BUCKET }}
+          entity: ${{ github.event.issue.number || github.event.pull_request.number }}
 
   # ── Merge housekeeping ─────────────────────────────────────────────────────────
   # Closes the issues a merged PR finished and files them on the board.
