@@ -8,7 +8,7 @@ const equipment: Equipment[] = [
     { name: "Sparge Vessel - 15gal" },
     { name: "Star San" },
     { name: "PBW" },
-    { name: "Keg (Coke) - 5.5gal", count: 4 },
+    { name: "Keg (Coke) - 5.5gal", notes: "4" },
     { name: "Digital Hydrometer" },
     { name: "Long Thermometer" },
     { name: "Erlenmeyer Flask" },
