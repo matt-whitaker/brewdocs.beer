@@ -51,7 +51,7 @@ nx build design  # storybook build -o dist → the static site the deploy workfl
 `nx run-many --target=<target>` runs a target across every project that has it — `dev` is the
 root `package.json`'s own example of this pattern.
 
-Root `build:design`/`test:design` are **CI-only** — `.github/workflows/build-test-deploy.design-prod.yaml` calls them by name, so the names have to survive. They are now thin wrappers over `nx build design` / `nx test design`, so there is one implementation rather than two: the deploy workflow keeps working untouched, and a contributor's local path is the `nx` form directly.
+Root `build:<pkg>`/`test:<pkg>` are **CI-only** — each `build-test-deploy.*` workflow calls one by name, so the names have to survive. All eight are now thin wrappers over `nx build <pkg>` / `nx test <pkg>`, so there is one implementation rather than two: the deploy workflows keep working untouched, and a contributor's local path is the `nx` form directly. ⚠️ Deleting them is not free — a rename lands in a **post-merge** deploy, so it is discovered in production rather than on a PR.
 
 - Typecheck app only: `cd packages/app && ../../node_modules/.bin/tsc --noEmit`.
 - Lint app only: `nx test app` (⚠️ see _Linting_ — must resolve the app's nested eslint 9, not the root's).

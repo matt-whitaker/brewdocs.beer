@@ -5,12 +5,12 @@
   "description": "An (offline) web app prototype of a standard brew day application",
   "main": "index.ts",
   "scripts": {
-    "build:www": "npm run build -w packages/www",
-    "test:www": "npm run test -w packages/www",
-    "build:app": "npm run build -w packages/app",
-    "test:app": "npm run test -w packages/app",
-    "build:kb": "npm run build -w packages/kb",
-    "test:kb": "npm run test -w packages/kb",
+    "build:www": "nx build www",
+    "test:www": "nx test www",
+    "build:app": "nx build app",
+    "test:app": "nx test app",
+    "build:kb": "nx build kb",
+    "test:kb": "nx test kb",
     "build:design": "nx build design",
     "test:design": "nx test design",
     "dev": "nx run-many --target=dev"
