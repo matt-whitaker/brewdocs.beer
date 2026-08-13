@@ -1245,8 +1245,8 @@ jobs:
           NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
         run: "$RUNNER_TEMP/agent-bin/stamp-role-label.py"
       - name: Tester
+        id: tester
         if: contains(steps.roles.outputs.list, 'tester')
-      - id: tester
         uses: anthropics/claude-code-action@v1
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -1309,8 +1309,8 @@ jobs:
           NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
         run: "$RUNNER_TEMP/agent-bin/stamp-role-label.py"
       - name: Writer
+        id: writer
         if: contains(steps.roles.outputs.list, 'writer')
-      - id: writer
         uses: anthropics/claude-code-action@v1
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
