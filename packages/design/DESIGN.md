@@ -1,7 +1,5 @@
 # DESIGN.md
 
-The design system, in prose. `README.md` is the short entry point (stack + exports); this is the long-form companion — what the tokens and components actually are today, and why. Written from the code as it stands; where the system hasn't caught up with itself, that's called out as a **Known gap**, not smoothed over.
-
 ## Foundations / stack
 
 - **Tailwind v4**, CSS-first — no `tailwind.config.*`, no PostCSS config. Configuration lives inline in CSS via `@import "tailwindcss"`, `@theme {}`, and `@plugin`.
