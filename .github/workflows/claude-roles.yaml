@@ -21,15 +21,22 @@ run-name: >-
   · #${{ github.event.issue.number || github.event.pull_request.number }}
   ${{ github.event.issue.title || github.event.pull_request.title }}
 
-# ONE WORKFLOW, FIVE JOBS, SIX ROLES. Kept in one file so the Actions history stays
+# ONE WORKFLOW, EIGHT JOBS, EIGHT ROLES. Kept in one file so the Actions history stays
 # readable: one run per trigger, with whatever was not selected skipping inside it rather
 # than filling the list with skipped runs.
 #
-#   delegate            routes — no model
+#   delegate            routes — scripted, with the root role consulted only on a guess
 #   architect           shapes work and cuts tasks
+#   claude              the root role answering, and naming process repairs
+#   researcher          answers a spike — no shell
 #   authors             Implementor | Designer | Tester | Writer — one per run, gated steps
 #   security            on merge, plus on request via @claude/security
+#   custodial           checks what the run left behind — no model
 #   merge_housekeeping  on merge — no model
+#
+# ⚠️ A SANDWICH: `delegate` in front, `custodial` behind, and the roles between them. Both ends
+# are scripted first and consult a model only where a script cannot decide. Every check the back
+# half makes is unanswerable at the front — see custodial-sweep.py.
 #
 # ⚠️ THE AUTHORS JOB IS NOT A CHAIN, and briefly claimed to be (#500). `delegate.py` emits
 # exactly ONE role, so exactly one of its gated steps ever runs. That is deliberate: the
@@ -1538,6 +1545,46 @@ jobs:
           bucket: ${{ secrets.AWS_TRANSCRIPTS_BUCKET }}
           entity: ${{ github.event.issue.number || github.event.pull_request.number }}
 
+  # ── Custodial: the back half of the sandwich ─────────────────────────────────
+  # Scripted checks on what the run left behind. The front half (delegate) routes and consults the
+  # root role only where the script cannot decide; this mirrors it.
+  #
+  # ⚠️ NO MODEL STEP, deliberately. Nothing here needs judgement yet, and wiring a model that
+  # decides nothing is a channel with no reader — the failure this repo keeps repeating. It joins
+  # when a check genuinely cannot be scripted.
+  #
+  # ⚠️ `always()` IS LOAD-BEARING AND IS THE #430 TRAP. This needs five role jobs, four of which
+  # skip on any given run, and a job needing a SKIPPED job reports cancelled without it. The same
+  # shape already works for `security`, which carries `always()` because `delegate` skips on
+  # `pull_request` — proven here, not theoretical.
+  custodial:
+    needs: [delegate, architect, researcher, authors, security, claude]
+    if: always() && needs.delegate.result != 'skipped'
+    runs-on: ubuntu-latest
+    permissions:
+      # reads only — the destructive half runs on merge, in merge_housekeeping
+      contents: read
+      issues: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Stash the agent hooks
+        run: |
+          mkdir -p "$RUNNER_TEMP/agent-bin"
+          cp packages/claude-team/hooks/*.py "$RUNNER_TEMP/agent-bin/"
+          chmod +x "$RUNNER_TEMP/agent-bin"/*.py
+      # ⚠️ FAILS THE RUN when an Architect left no Branch line. That stall reports success today —
+      # measured on #834 and #866 — and `ensure-story-branch.py` already says the right thing about
+      # it as a warning nobody reads. This is the same sentence with teeth.
+      - name: Check the role left its deliverable
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          MODE: deliverable
+          ROLE: ${{ needs.delegate.outputs.roles }}
+          KIND: ${{ needs.delegate.outputs.kind }}
+          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
+        run: "$RUNNER_TEMP/agent-bin/custodial-sweep.py"
+
   # ── Merge housekeeping ─────────────────────────────────────────────────────────
   # Closes the issues a merged PR finished and files them on the board.
   #
@@ -1558,7 +1605,10 @@ jobs:
       && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      # ⚠️ WRITE so `custodial-sweep.py` can delete a story branch that was never used. Safe
+      # here and nowhere an agent runs: this job has NO model step, so nothing untrusted executes
+      # in it. The delete is additionally a no-op in content terms — see the hook.
+      contents: write
       # ⚠️ WRITE, because `open-story-pr.py` calls `gh pr create`. It was `read`, so that call
       # 403'd every time — the hook has **never once** succeeded, and every story PR in this repo
       # was opened by hand. The docs described it as the mechanism regardless, which is how a
@@ -1610,3 +1660,16 @@ jobs:
           REPO: ${{ github.repository }}
           BASE: ${{ github.event.pull_request.base.ref }}
         run: "$RUNNER_TEMP/agent-bin/open-story-pr.py"
+
+      # ⚠️ ON MERGE, not after a role run, and that is the whole reason it is here. A story branch
+      # becomes dead exactly when its story closes, and nothing triggers on a closed story
+      # afterwards — a post-role sweep would never collect anything.
+      # ⚠️ AFTER close-merged-work.py, which is what closes the issue this reads.
+      - name: Sweep a story branch that was never used
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          MODE: branches
+          PR: ${{ github.event.pull_request.number }}
+        run: "$RUNNER_TEMP/agent-bin/custodial-sweep.py"
