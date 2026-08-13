@@ -6,18 +6,22 @@ import {Migration, MigrationBackup, MigrationFailure} from "@/storage/migration/
 
 export const ID_REGEX = /^.*?#(.*)$/;
 
-export interface ForageMigrationConfig {
+export interface ForageMigrationConfig<T = unknown> {
     entityType: string;
     version: number;
-    migrations: Migration<unknown>[];
+    migrations: Migration<T>[];
+}
+
+export interface MigratableStore {
+    migrateStoredRecords(): Promise<void>;
 }
 
 export abstract class Forage<T> {
     protected _forage: LocalForage;
     protected _name: string;
-    protected _migration?: ForageMigrationConfig;
+    protected _migration?: ForageMigrationConfig<T>;
 
-    constructor(name: string, driver?: string, migration?: ForageMigrationConfig) {
+    constructor(name: string, driver?: string, migration?: ForageMigrationConfig<T>) {
         this._name = name;
         this._forage = localforage.createInstance(!driver ? { name } : { name, driver });
         this._migration = migration;
@@ -103,7 +107,7 @@ export abstract class Forage<T> {
         return !migration || entityVersionOf(item) === migration.version;
     }
 
-    private async migrateStoredRecord(key: string, item: T, migration: ForageMigrationConfig): Promise<void> {
+    private async migrateStoredRecord(key: string, item: T, migration: ForageMigrationConfig<T>): Promise<void> {
         const fromVersion = entityVersionOf(item);
         const storedId = this.extractId(key);
         const result = runMigrations<T>(migration.entityType, item as T & {version?: number}, migration.version);
