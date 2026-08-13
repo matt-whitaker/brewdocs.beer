@@ -240,6 +240,13 @@ STORY = team.story_from_branch(branch) or (parent or NUMBER)
 # branch instead of the default one. Emitting it here costs nothing — the line is already read.
 STORY_BRANCH = branch
 
+# ⚠️ AN AS-IS STORY EXPOSES NO BASE BRANCH. When the executing issue owns the line, no branch is
+# created for it (see the custodial phase), so handing it to the host action as `base_branch` would
+# 404 before the model is ever called. Empty makes `setupBranch` fall back to the default branch,
+# which is also where #878 sends the PR.
+if team.story_from_branch(branch) == str(NUMBER) and not kids:
+    STORY_BRANCH = ""
+
 stamped = team.role_stamp(body)
 if stamped in ("implementor", "tester", "writer", "designer"):
     ROLES = stamped

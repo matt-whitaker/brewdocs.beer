@@ -731,6 +731,24 @@ already runs this shape for the same reason.
 the only destructive capability anywhere in this system. Nothing untrusted executes in a job with
 no agent in it.
 
+⚠️ **THE BACK HALF CREATES BRANCHES; NOTHING DELETES THEM.** An earlier version swept branches
+nothing had used — the wrong end of the problem, since they should never have existed. Branch
+creation now happens **only** in the custodial phase, which is the first moment `sub_issues()` tells
+the truth, and only when the story actually has tasks. A story worked as-is gets none: `delegate.py`
+blanks `story_branch` so its author cuts off the default branch, which is where #878 already sends
+the PR. Nothing unnecessary is made, so nothing needs removing — and the one destructive capability
+this system briefly had is gone.
+
+⚠️ **`ensure-story-branch.py` stays, as the net and only as the net.** It creates only when the
+executing issue does **not** own its `Branch:` line — a task whose story branch is missing, the
+#744/#777 case for hand-filed issues that never met an Architect. An issue that owns its own line
+defers to the custodial phase, because the question there is "does this story have tasks", and that
+is exactly what cannot be answered before `file-sub-issues.py`.
+
+⚠️ **The obsolete note below is kept deliberately** — the sweep it describes was real, shipped, and
+removed one PR later. Whoever reaches for deletion again should find the reason it was the wrong
+answer.
+
 ⚠️ **A deletion is announced on the issue, not just logged** — the same `custodian-log` comment
 `apply-repairs.py` appends to, so everything the custodian has done to an issue reads as one
 history. This is the fix-and-report rule applied to the one action that removes something: a job
