@@ -8,9 +8,17 @@ import migrationFailuresStorage from "@/storage/migration/failures";
 import {runMigrations} from "@/storage/migration/runner";
 import {MigrationFailure} from "@/storage/migration/types";
 
-const retryStores: Record<string, Forage<Batch>> = {
-    [BATCHES_ENTITY_TYPE]: batchesStorage
+type MigratedStore = {
+    storage: Forage<Batch>;
+    queryKey: () => string[];
 };
+
+const migratedStores: Record<string, MigratedStore> = {
+    [BATCHES_ENTITY_TYPE]: {storage: batchesStorage, queryKey: batchesQueryKey}
+};
+
+const migratedStoreOf = ({entityType, id}: MigrationFailure): MigratedStore | undefined =>
+    id ? migratedStores[entityType] : undefined;
 
 export const migrationFailuresQueryKey = () => ["migration-failures"];
 export const loadMigrationFailures = async () => migrationFailuresStorage.index();
@@ -25,16 +33,24 @@ export const useMigrationFailures = (): Record<string, MigrationFailure> => {
     return data;
 };
 
-export const isRetryable = ({entityType, id, reason}: MigrationFailure) =>
-    !!id && !!retryStores[entityType] && reason !== "no-migration-path";
+export const isRetryable = (failure: MigrationFailure) =>
+    !!migratedStoreOf(failure) && failure.reason !== "no-migration-path";
 
 export const discardMigrationFailure = async (id: string) => {
+    const failure = await migrationFailuresStorage.get(id);
+    const store = failure ? migratedStoreOf(failure) : undefined;
+
+    if (store && failure?.id) {
+        await store.storage.delete(failure.id);
+        await queryClient.invalidateQueries({queryKey: store.queryKey()});
+    }
+
     await migrationFailuresStorage.delete(id);
     await queryClient.invalidateQueries({queryKey: migrationFailuresQueryKey()});
 };
 
 export const retryMigrationFailure = async (id: string, failure: MigrationFailure): Promise<boolean> => {
-    const store = retryStores[failure.entityType];
+    const store = migratedStoreOf(failure);
 
     if (!store || !failure.id) return false;
 
@@ -42,9 +58,9 @@ export const retryMigrationFailure = async (id: string, failure: MigrationFailur
 
     if (!result.ok) return false;
 
-    await store.save(failure.id, result.data);
+    await store.storage.save(failure.id, result.data);
     await migrationFailuresStorage.delete(id);
-    await queryClient.invalidateQueries({queryKey: batchesQueryKey()});
+    await queryClient.invalidateQueries({queryKey: store.queryKey()});
     await queryClient.invalidateQueries({queryKey: migrationFailuresQueryKey()});
 
     return true;
