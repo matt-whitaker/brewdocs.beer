@@ -32,12 +32,11 @@ function RecipeEditPhaseEquipmentRow({ phase, row, phaseLabel, item, remove, upd
     const onChangeItem = useCallback((value: string) => {
         const catalogItem = equipmentIndex.get(value);
         update(`${path}[${row}]`, catalogItem
-            ? { name: catalogItem.name, count: catalogItem.count }
-            : { name: value, count: item.count });
-    }, [update, path, row, equipmentIndex, item.count]);
-    const onChangeCount = useCallback((value: string) => {
-        const trimmed = value.trim();
-        update(`${path}[${row}].count`, trimmed === "" ? undefined : Number(trimmed));
+            ? { name: catalogItem.name, notes: catalogItem.notes }
+            : { name: value, notes: item.notes });
+    }, [update, path, row, equipmentIndex, item.notes]);
+    const onChangeNotes = useCallback((value: string) => {
+        update(`${path}[${row}].notes`, value === "" ? undefined : value);
     }, [update, path, row]);
 
     return (
@@ -52,8 +51,8 @@ function RecipeEditPhaseEquipmentRow({ phase, row, phaseLabel, item, remove, upd
             </DataGridLabel>
             <DataGridInput
                 colStart={6}
-                value={item.count?.toString() ?? ""}
-                onChange={onChangeCount}
+                value={item.notes ?? ""}
+                onChange={onChangeNotes}
             />
         </DataGridRow>
     );
