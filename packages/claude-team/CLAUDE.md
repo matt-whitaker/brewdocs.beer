@@ -121,6 +121,25 @@ pre-hook pushing the story branch would collide with the very name the action mi
 existing branch may carry an author's commits, and resetting it to the default branch would
 destroy exactly the work the hook exists to protect.
 
+⚠️ **A story implementable as-is is not a task, and its PR targets the DEFAULT branch.** The
+test is scripted, not judged: a task's `Branch:` line names its *story's* branch, so
+`story_from_branch(named) != ISSUE`; when they are **equal**, the executing issue owns that branch
+and its work is the whole story. There is no parent for it to merge into.
+
+⚠️ **Retargeting one of those onto its own story branch is the failure**, and it looks like
+correctness. The work lands on a branch nobody has merged, `close-merged-work.py` closes the story
+on that merge anyway, and finishing it then needs a second PR for an issue that is already closed —
+which is also why the two cannot simply be linked. Measured on #751: its story branch was **empty**,
+the real work sat one branch further down, and the PR pointed at the empty branch.
+
+⚠️ **The doubled branch is not the thing to fix, and the obvious fix is worse.** `setupBranch`
+always *creates* a branch on an issue trigger — it has no mode that checks out an existing one, so
+a second branch is structurally guaranteed and the author cannot avoid it. Making the story branch
+itself the working branch would mean not pre-creating it, and **`ensure-story-branch.py` runs before
+`file-sub-issues.py`**, so at that moment `sub_issues()` returns 0 for *every* story — including one
+the Architect just decomposed. That test cannot be evaluated there, and acting on it would strand
+every story with no branch at all. Changing the PR's **base** costs none of that.
+
 ⚠️ **Tasks must not share one branch.** They did once, and it was a race: if a consumer keys
 its concurrency group on issue number, two tasks are in *different* groups and can commit to
 the same branch at the same time. Sub-branching removes the possibility rather than relying

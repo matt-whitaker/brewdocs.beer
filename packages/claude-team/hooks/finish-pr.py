@@ -136,12 +136,41 @@ if not pr:
 # ⚠️ Retarget only when the named branch really exists and is not this PR's own head. A story
 # triggered directly resolves its Branch line to the branch the PR is already FROM, and
 # GitHub rejects a PR whose base is its head.
+#
+# ⚠️ UNLESS THE ISSUE *IS* THE STORY, which is the opposite case and wants the opposite base.
+# A task's Branch line names its story's branch, so `story_from_branch(named) != ISSUE`. When
+# they are EQUAL the executing issue owns that branch — the story is implementable as-is, its
+# work is the whole story, and there is no parent for it to merge into.
+#
+# Retargeting one of those onto the story branch produces the mess this rule exists to stop:
+# the work lands on a branch nobody has merged, `close-merged-work.py` closes the story anyway,
+# and finishing it needs a second PR for an issue that is already closed. Measured on #751,
+# whose story branch was empty and whose real work sat one branch further down (PR #865).
+#
+# So: that PR targets the DEFAULT branch, where its closing keyword fires natively and one merge
+# finishes the story. The pre-created story branch is left unused — litter, not breakage.
 if ISSUE:
     named = team.branch_line(team.issue_body(ISSUE))
     current = (
         team.gh_json("pr", "view", pr, "--repo", team.REPO, "--json", "baseRefName") or {}
     ).get("baseRefName") or ""
-    if (
+    owns_branch = bool(named) and team.story_from_branch(named) == str(ISSUE)
+
+    if owns_branch:
+        want = (
+            team.gh_json("repo", "view", team.REPO, "--json", "defaultBranchRef") or {}
+        ).get("defaultBranchRef", {}).get("name") or ""
+        if want and want != current and want != branch:
+            if team.gh("pr", "edit", pr, "--repo", team.REPO, "--base", want) is not None:
+                print(f"PR #{pr} retargeted {current} -> {want} — #{ISSUE} is the story, not a task")
+            else:
+                team.warn(
+                    f"PR #{pr} targets {current}; #{ISSUE} owns its branch so it belongs on {want}, "
+                    "and I could not move it"
+                )
+        else:
+            print(f"PR #{pr} targets {current} — #{ISSUE} is the story, nothing to retarget")
+    elif (
         named
         and named != current
         and named != branch
