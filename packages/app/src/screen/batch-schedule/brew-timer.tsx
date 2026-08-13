@@ -220,6 +220,32 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
             }];
         };
 
+        const stampsOf = (phase: BrewablePhase, index: number, at: MarkerOffset): BrewTimerMarker[] => {
+            const stamps: BrewTimerMarker[] = [];
+            const startOffset = at(phaseStartDate(phases, index, batch.tracker, batch.timer)?.toISOString());
+            const completeOffset = at(batch.tracker[key({ on: "phase", id: phase.id })]?.date);
+
+            if (startOffset !== null) {
+                stamps.push({
+                    id: `phase-start:${phase.id}`,
+                    offsetSeconds: startOffset,
+                    label: phaseLabel(phases, index),
+                    kind: "Phase start"
+                });
+            }
+
+            if (completeOffset !== null) {
+                stamps.push({
+                    id: `phase:${phase.id}`,
+                    offsetSeconds: completeOffset,
+                    label: phaseLabel(phases, index),
+                    kind: "Phase complete"
+                });
+            }
+
+            return stamps;
+        };
+
         if (scope === "phase") {
             const phase = phases[currentIndex];
             if (!phase || !phaseBoundary) return [];
@@ -243,7 +269,7 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
             return Number.isNaN(recordedAt) ? null : Math.floor((recordedAt - startedAt) / 1000);
         };
 
-        return phases.flatMap((phase, index) => markersOf(phase, index, at));
+        return phases.slice(0, currentIndex + 1).flatMap((phase, index) => stampsOf(phase, index, at));
     }, [scope, sessionStart, phaseBoundary, currentIndex, phases, batch.brewable.assignments, batch.timer, batch.tracker]);
 
     return (
