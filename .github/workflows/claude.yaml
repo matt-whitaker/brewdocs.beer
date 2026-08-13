@@ -1356,9 +1356,17 @@ jobs:
           # ⚠️ NO handoff appended — same reason as the Tester. The Writer reads the Handoff
           # comments on its own story's ISSUE, on its own trigger.
           prompt: ${{ steps.p_writer.outputs.body }}
+          # ⚠️ `npm`/`npx` because a SPECIFICATION IS WRITTEN BY DRIVING THE APP. The Writer states
+          # what a brewer can do and see, which means starting the dev server and driving Chrome —
+          # `npm run dev -w packages/app`, then Playwright via `npx`. Without them the role is told
+          # to do something it cannot, and burns its budget on permission denials discovering that.
+          # ⚠️ This is the same grant the Tester has, for the same reason: both drive the app.
+          # ⚠️ It breaks no principle. The role that must hold NO shell is the Researcher, because
+          # its input is arbitrary web content and an injection there has an author. The Writer's
+          # input is maintainer-shaped issues — the trust level of every other authoring role.
           claude_args: |
             --model sonnet
-            --allowedTools "Read,Edit,Write,Bash(git:*),Bash(gh:*)"
+            --allowedTools "Read,Edit,Write,Bash(git:*),Bash(gh:*),Bash(npm:*),Bash(npx:*)"
             --max-turns 80
 
       # ── Once, for the job ──
