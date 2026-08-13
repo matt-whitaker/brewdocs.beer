@@ -9,7 +9,7 @@ diff-shaped and becomes history the moment it merges.
 **Where.** `product/*.md`, one document per area of the app, plus `product/_template.md`.
 **Invariants.** Observable behaviour only. Ids are never renumbered or reused. Written from
 intent, never from a diff.
-**Gotchas.** Not an npm workspace — `npm test -ws` never sees it, and neither CI workflow runs
+**Gotchas.** Not an npm workspace and not an nx project — the gate never sees it, and neither CI workflow runs
 for a spec-only change (both `paths` lists carry `'!packages/spec/**'`).
 
 ## Why this package exists

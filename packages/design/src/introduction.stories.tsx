@@ -133,7 +133,7 @@ const Introduction = () => (
     </article>
 );
 
-const InformationDensity = () => (
+const _InformationDensity = () => (
     <article className="mx-auto max-w-3xl">
         <ScreenH1 className="mb-2">Information density</ScreenH1>
         <ScreenP>
@@ -183,6 +183,6 @@ export const Overview: StoryObj = {
     render: () => <Introduction/>
 };
 
-export const Philosophy: StoryObj = {
-    render: () => <InformationDensity/>
-};
+// export const Philosophy: StoryObj = {
+//     render: () => <_InformationDensity/>
+// };

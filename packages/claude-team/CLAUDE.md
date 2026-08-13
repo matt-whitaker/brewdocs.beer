@@ -380,6 +380,12 @@ happened, here it is the question itself. The maintainer's framing carries which
 already weighed and which constraint they called non-negotiable, and replacing it destroys the
 thing that was asked.
 
+⚠️ **A SHELL IS NOT THE DIVIDING LINE BETWEEN ROLES — INPUT PROVENANCE IS.** Every authoring role
+has one, the Writer included: a specification says what a brewer can do and see, which means
+starting the app and driving it, not reading the source. Withholding `npm`/`npx` from the Writer
+made the one role that owns the spec unable to produce it, and it failed the expensive way — by
+burning turns on permission denials rather than saying so.
+
 ⚠️ **It is the only role that reads the open web, and the only one whose input the maintainer did
 not write** — which is exactly why **it holds no shell**. No `Bash` of any kind, no `Write`, no
 `npm ci`, no build. It reads (`Read`/`Glob`/`Grep`), it fetches, and it returns JSON.

@@ -4,8 +4,8 @@ Read the repo-root `CLAUDE.md` first; each package has its own, loaded when you 
 
 - **Monorepo**, npm workspaces: `packages/{app,core,design,kb,www,e2e}`. Default branch
   `mainline`, which is also the **only** deploy branch — a merge ships to prod.
-- **The gate** is `npm test --ws` (eslint, errors only) **and** `tsc --noEmit` **and**
-  `vite build`. Green is the floor for every change.
+- **The gate** is `nx run-many --target=test` (eslint, errors only) **and** `tsc --noEmit`
+  **and** `nx run-many --target=build`. Green is the floor for every change.
 - Dependencies are **pre-installed**. Never run `npm ci` or `npm install`.
 - ⚠️ **Write no code comments.** Not explanatory blocks, not JSDoc, not "why it's like
   this" asides. Say it in a precise name, a smaller function, an explicit type — and if a
