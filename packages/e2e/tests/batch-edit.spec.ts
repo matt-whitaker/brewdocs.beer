@@ -82,6 +82,38 @@ test("records as-brewed values without overwriting the plan", async ({page}) => 
     await expect(page.getByText("plan 60min")).toBeVisible();
 });
 
+// BATCH-SCHEDULE-15 (packages/spec/product/batch-schedule.md): the Brewing
+// schedule offers an additive's weight as a plan/actual field the same way it
+// already does for a grain's or hop's weight — mirroring the grain/hop actuals
+// test above, but for an additive added fresh in Planning first.
+test("records an actual weight against a planned additive without overwriting the plan", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Additive Actual Batch");
+
+    await page.getByRole("tab", {name: "Planning", exact: true}).click();
+    await page.getByRole("tab", {name: "Ingredients", exact: true}).click();
+    await page.getByLabel("Additive for 2. Boil").fill("Irish Moss");
+    await page.getByRole("button", {name: "Add additive to 2. Boil"}).click();
+    await settleSave(page);
+
+    await openSchedulePhase(page, "2. Boil");
+
+    const weight = page.getByLabel("Irish Moss weight");
+    await expect(weight).toBeVisible();
+    await expect(weight).toHaveValue("1.0oz");
+
+    await weight.fill("0.75");
+    await weight.blur();
+
+    await settleSave(page);
+    await page.reload();
+    await openSchedulePhase(page, "2. Boil");
+
+    // the actual survived, and the drift note proves it recorded against the
+    // tracker rather than overwriting the plan (see item-row.tsx's "plan X" note)
+    await expect(page.getByLabel("Irish Moss weight")).toHaveValue(/0\.75/);
+    await expect(page.getByText("plan 1.0oz")).toBeVisible();
+});
+
 test("keeps equipment and ingredient checkoffs after a reload", async ({page}) => {
     await brewBatchFromKbRecipe(page, "E2E Checkoff Batch");
     await openSchedulePhase(page, "1. Mash");

@@ -197,6 +197,80 @@ test("Estimated IBU shows an em dash when a hopped recipe has no gravity to comp
     await expect(estimatedIbuRow(page)).toContainText("—");
 });
 
+// BATCH-SCHEDULE-09 (packages/spec/product/batch-schedule.md): every ingredient
+// assignment carries a configurable weight, set the same way regardless of kind —
+// an additive's weight is set independently of whether that addition also carries
+// a boil time. Boil is the phase that previously had no weight field at all for
+// an additive (only Conditioning did), and it's also where a default boil time
+// already existed — so this proves the new weight field doesn't clobber it, or
+// vice versa, across a save.
+test("adding an additive to a Boil phase gets a configurable weight alongside its boil time, and both persist independently", async ({page}) => {
+    await createRecipeFromTemplate(page, "E2E Additive Weight Boil", "Empty");
+
+    await page.getByRole("tab", {name: "Ingredients", exact: true}).click();
+    await page.getByLabel("Additive for 2. Boil").fill("Irish Moss");
+    await page.getByRole("button", {name: "Add additive to 2. Boil"}).click();
+
+    const weight = page.getByLabel("Irish Moss weight");
+    await expect(weight).toBeVisible();
+    await expect(weight).toHaveValue("1.0oz");
+
+    // the boil time lives under the row's expander, alongside the new headline weight
+    await page.getByRole("button", {name: "Show assignment details"}).click();
+    const boil = page.getByLabel("Irish Moss boil");
+    await expect(boil).toHaveValue("15min");
+
+    // two separate patches into the same assignment — the second must not clobber
+    // the first
+    await weight.fill("0.5");
+    await weight.blur();
+    await boil.fill("10");
+    await boil.blur();
+
+    await settleSave(page);
+    await page.reload();
+    await page.getByRole("tab", {name: "Ingredients", exact: true}).click();
+
+    await expect(page.getByLabel("Irish Moss weight")).toHaveValue(/0\.5/);
+    await page.getByRole("button", {name: "Show assignment details"}).click();
+    await expect(page.getByLabel("Irish Moss boil")).toHaveValue(/10/);
+});
+
+// Implementor's handoff testingNotes on #980: a Conditioning additive's row must
+// show no boil field at all, since the expander now returns `undefined` when
+// `boil` is absent — a future edit rendering an empty Boil input there instead
+// would silently write a spurious boil time onto a resource that never carries
+// one, and nothing in lint/typecheck/build would catch it.
+test("adding an additive to a Conditioning phase gets a configurable weight and no boil field", async ({page}) => {
+    await createRecipeFromTemplate(page, "E2E Additive Weight Conditioning", "Empty");
+
+    await page.getByRole("tab", {name: "Phases", exact: true}).click();
+    await page.getByLabel("Phase type to add").selectOption("conditioning");
+    await page.getByRole("button", {name: "Add phase"}).click();
+
+    await page.getByRole("tab", {name: "Ingredients", exact: true}).click();
+    await page.getByLabel("Additive for 4. Conditioning").fill("Priming Sugar");
+    await page.getByRole("button", {name: "Add additive to 4. Conditioning"}).click();
+
+    const weight = page.getByLabel("Priming Sugar weight");
+    await expect(weight).toBeVisible();
+    await expect(weight).toHaveValue("1.0oz");
+    // no expandable content at all for this row — the boil branch is undefined,
+    // not an empty input, so there's no toggle to show it behind
+    await expect(page.getByRole("button", {name: "Show assignment details"})).toHaveCount(0);
+
+    await weight.fill("4.5");
+    await weight.blur();
+
+    await settleSave(page);
+    await page.reload();
+    await page.getByRole("tab", {name: "Ingredients", exact: true}).click();
+
+    await expect(page.getByLabel("Priming Sugar weight")).toHaveValue(/4\.5/);
+    await expect(page.getByLabel("Priming Sugar boil")).toHaveCount(0);
+    await expect(page.getByRole("button", {name: "Show assignment details"})).toHaveCount(0);
+});
+
 test("Estimated IBU live-recomputes when a hop's weight changes on the Ingredients panel", async ({page}) => {
     // anchor-steam-beer-clone (packages/kb/data/recipes/anchor-steam-beer-clone.json)
     // carries three Northern Brewer additions — a known, non-zero hop bill.
