@@ -319,8 +319,47 @@ test("a phase lists its boil additions in the order they go in, without reorderi
     await expect.poll(() => boilTimes(page)).toEqual([20, 1, 0]);
 });
 
+// BREW-TIMER-13: selecting an item pre-fills the value field with that item's own planned
+// value from the recipe, instead of leaving it blank.
+test("the ingredients quick action pre-fills the value field with the selected item's planned value", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Quick Action Prefill Batch");
+    await page.getByRole("tab", {name: "Brewing", exact: true}).click();
+
+    await page.getByRole("button", {name: "Quick actions"}).click();
+    const dialog = page.getByRole("dialog").filter({hasText: "Quick action"});
+    await dialog.getByRole("tab", {name: "Ingredients"}).click();
+
+    // German Pils is the preselected item (first offered, per the "named, out of order" test
+    // above), and its own planned weight in the kb recipe is 9.0lb
+    await expect(dialog.getByLabel("Ingredient item").locator("option:checked")).toHaveText("German Pils");
+    await expect(dialog.getByLabel("Ingredient weight")).toHaveValue(/9\.0/);
+});
+
+// BREW-TIMER-13: "picking a different item replaces it with that item's own planned value
+// rather than carrying over the previous one."
+test("switching the selected ingredient replaces the pre-fill with the new item's own planned value", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Quick Action Prefill Switch Batch");
+    await page.getByRole("tab", {name: "Brewing", exact: true}).click();
+
+    await page.getByRole("button", {name: "Quick actions"}).click();
+    const dialog = page.getByRole("dialog").filter({hasText: "Quick action"});
+    await dialog.getByRole("tab", {name: "Ingredients"}).click();
+
+    await expect(dialog.getByLabel("Ingredient weight")).toHaveValue(/9\.0/);
+
+    await dialog.getByLabel("Ingredient item").selectOption({label: "Crystal Malt 40L"});
+    await expect(dialog.getByLabel("Ingredient weight")).toHaveValue(/1\.0/);
+
+    await dialog.getByLabel("Ingredient item").selectOption({label: "Special Robust"});
+    await expect(dialog.getByLabel("Ingredient weight")).toHaveValue(/0\.5/);
+});
+
 // BATCH-SCHEDULE-01: "If the brewer also enters a value, that value is recorded against the
 // same item." Asserted against whichever item the action chose, for the reason above.
+//
+// BREW-TIMER-13: the field starts pre-filled with the preselected item's own planned value
+// (German Pils, 9.0lb) rather than blank — this proves the typed value wins over that
+// pre-fill at confirm, not that the field started empty and got filled.
 test("a value typed into the ingredients quick action is recorded against the item it checked off", async ({page}) => {
     await brewBatchFromKbRecipe(page, "E2E Quick Action Value Batch");
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
@@ -328,6 +367,7 @@ test("a value typed into the ingredients quick action is recorded against the it
     await page.getByRole("button", {name: "Quick actions"}).click();
     const dialog = page.getByRole("dialog").filter({hasText: "Quick action"});
     await dialog.getByRole("tab", {name: "Ingredients"}).click();
+    await expect(dialog.getByLabel("Ingredient weight")).toHaveValue(/9\.0/);
     await dialog.getByLabel("Ingredient weight").fill("9.99");
     await dialog.getByRole("button", {name: "Confirm"}).click();
     await expect(dialog).not.toBeVisible();
