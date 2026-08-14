@@ -20,6 +20,13 @@ const MILESTONE_PARAMETER_OPTIONS = {
     ]
 };
 
+const MILESTONE_VALUE_PLACEHOLDERS = {
+    gravity: "1.048",
+    temperature: "152",
+    volume: "6.5",
+    water: "5.4"
+};
+
 const EQUIPMENT_OPTIONS = [
     {name: "Mash Tun - 10gal", value: "eq-1"},
     {name: "Stirring Wand", value: "eq-2"},
@@ -99,6 +106,7 @@ const meta: Meta<typeof BrewTimer> = {
         defaultQuickActionTab: "reading" as const,
         milestoneKindOptions: MILESTONE_KIND_OPTIONS,
         milestoneParameterOptions: MILESTONE_PARAMETER_OPTIONS,
+        milestoneValuePlaceholders: MILESTONE_VALUE_PLACEHOLDERS,
         scheduleOptions: SCHEDULE_OPTIONS,
         scheduleValueLabels: SCHEDULE_VALUE_LABELS,
         scheduleValueDefaults: SCHEDULE_VALUE_DEFAULTS,
@@ -313,6 +321,7 @@ function QuickActionDemo({optionalTabs = true}: {optionalTabs?: boolean}) {
                 defaultQuickActionTab="reading"
                 milestoneKindOptions={MILESTONE_KIND_OPTIONS}
                 milestoneParameterOptions={MILESTONE_PARAMETER_OPTIONS}
+                milestoneValuePlaceholders={MILESTONE_VALUE_PLACEHOLDERS}
                 scheduleOptions={SCHEDULE_OPTIONS}
                 scheduleValueLabels={SCHEDULE_VALUE_LABELS}
                 scheduleValueDefaults={SCHEDULE_VALUE_DEFAULTS}
@@ -336,7 +345,7 @@ export const QuickAction: Story = {
     parameters: {
         docs: {
             description: {
-                story: "\"Log\" opens the one modal. **Ingredients** picks the item from `scheduleOptions` \u2014 offered in brew order with the next one already selected \u2014 and shows a value field only for the items `scheduleValueLabels` names, submitting `onQuickSchedule(id, value?)`. That field opens pre-filled from `scheduleValueDefaults` when the selected item has an entry there — \"Northern Brewer · 60min\" starts at `28`, \"Irish Moss · 15min\" at `1.0`, while \"Northern Brewer · 20min\" and \"German Pils\" still open blank — and the pre-filled value is an ordinary editable field: type over it, or clear it and the submission carries no value at all. Changing the selected item re-fills it, discarding anything typed. ⚠️ The default is the consumer's, exactly like the option labels: nothing here computes or guesses what was planned. ⚠️ It names the item rather than resolving \"the next one\": only hops are reliably chronological, grain goes in all at once, and an additive may or may not carry a boil time, so a resolver would be right for one kind and arbitrary for the other two. **Reading** takes a kind, the optional measurement dropdown `milestoneParameterOptions` adds for Water, a value, and an optional free-text label naming what was read — submitting `onQuickMilestone(kind, value, parameter?, label?)`, with `label` `undefined` when it is left blank. **Equipment** picks the item from `equipmentOptions` and submits `onQuickEquipment(id)` \u2014 ⚠️ it names the item rather than resolving \"the next one\", because equipment carries no boil time and no other intrinsic order, so an auto-advance would be an arbitrary pick presented as a resolution. Only the active tab is mounted, so switching tabs discards what the last one held. Every tab records against the current phase, which the consumer resolves and passes as `phaseLabel`. Confirm closes the modal natively — `ModalFooter` submits a `method=\"dialog\"` form. Submissions are listed below the timer."
+                story: "\"Log\" opens the one modal. **Ingredients** picks the item from `scheduleOptions` \u2014 offered in brew order with the next one already selected \u2014 and shows a value field only for the items `scheduleValueLabels` names, submitting `onQuickSchedule(id, value?)`. That field opens pre-filled from `scheduleValueDefaults` when the selected item has an entry there — \"Northern Brewer · 60min\" starts at `28`, \"Irish Moss · 15min\" at `1.0`, while \"Northern Brewer · 20min\" and \"German Pils\" still open blank — and the pre-filled value is an ordinary editable field: type over it, or clear it and the submission carries no value at all. Changing the selected item re-fills it, discarding anything typed. ⚠️ The default is the consumer's, exactly like the option labels: nothing here computes or guesses what was planned. ⚠️ It names the item rather than resolving \"the next one\": only hops are reliably chronological, grain goes in all at once, and an additive may or may not carry a boil time, so a resolver would be right for one kind and arbitrary for the other two. **Reading** takes a kind, the optional measurement dropdown `milestoneParameterOptions` adds for Water, a value, and an optional free-text label naming what was read — submitting `onQuickMilestone(kind, value, parameter?, label?)`, with `label` `undefined` when it is left blank. The value field shows the example `milestoneValuePlaceholders` holds for the selected kind — a hint only, never a submitted value — and a kind with no entry there renders the field exactly as it did before the prop existed, which is what \"Note\" does here. ⚠️ Those examples are the consumer's, like the option labels and the ingredient defaults: what a plausible gravity or temperature looks like is a brewing statement, so nothing here supplies one. **Equipment** picks the item from `equipmentOptions` and submits `onQuickEquipment(id)` \u2014 ⚠️ it names the item rather than resolving \"the next one\", because equipment carries no boil time and no other intrinsic order, so an auto-advance would be an arbitrary pick presented as a resolution. Only the active tab is mounted, so switching tabs discards what the last one held. Every tab records against the current phase, which the consumer resolves and passes as `phaseLabel`. Confirm closes the modal natively — `ModalFooter` submits a `method=\"dialog\"` form. Submissions are listed below the timer."
             }
         }
     },

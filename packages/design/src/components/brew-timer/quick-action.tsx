@@ -16,6 +16,7 @@ export type QuickActionModalProps = {
     defaultTab: QuickActionTab;
     milestoneKindOptions: InputSelectOption[];
     milestoneParameterOptions?: Record<string, InputSelectOption[]>;
+    milestoneValuePlaceholders?: Record<string, string>;
     scheduleOptions?: InputSelectOption[];
     scheduleValueLabels?: Record<string, string>;
     scheduleValueDefaults?: Record<string, string>;
@@ -113,11 +114,12 @@ function IngredientsTab({options, valueLabels, valueDefaults, phaseLabel, onSubm
 type ReadingTabProps = {
     kindOptions: InputSelectOption[];
     parameterOptions?: Record<string, InputSelectOption[]>;
+    valuePlaceholders?: Record<string, string>;
     phaseLabel: string;
     onSubmit: (kind: string, value: string, parameter?: string, label?: string) => void;
 };
 
-function ReadingTab({kindOptions, parameterOptions, phaseLabel, onSubmit}: ReadingTabProps) {
+function ReadingTab({kindOptions, parameterOptions, valuePlaceholders, phaseLabel, onSubmit}: ReadingTabProps) {
     const [kind, setKind] = useState<string | null>(null);
     const [parameter, setParameter] = useState<string | null>(null);
     const [value, setValue] = useState("");
@@ -162,6 +164,7 @@ function ReadingTab({kindOptions, parameterOptions, phaseLabel, onSubmit}: Readi
                 <Field label="Value">
                     <InputText
                         label="Reading value"
+                        placeholder={valuePlaceholders?.[selectedKind]}
                         className="w-full"
                         value={value}
                         onChange={setValue} />
@@ -220,6 +223,7 @@ export const QuickActionModal = forwardRef<HTMLDialogElement, QuickActionModalPr
         defaultTab,
         milestoneKindOptions,
         milestoneParameterOptions,
+        milestoneValuePlaceholders,
         scheduleOptions = [],
         scheduleValueLabels,
         scheduleValueDefaults,
@@ -291,6 +295,7 @@ export const QuickActionModal = forwardRef<HTMLDialogElement, QuickActionModalPr
                         <ReadingTab
                             kindOptions={milestoneKindOptions}
                             parameterOptions={milestoneParameterOptions}
+                            valuePlaceholders={milestoneValuePlaceholders}
                             phaseLabel={phaseLabel}
                             onSubmit={onQuickMilestone} />
                     ) : null}

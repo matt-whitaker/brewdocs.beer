@@ -27,6 +27,7 @@ export type BrewTimerProps = PropsWithClass & {
     defaultQuickActionTab: QuickActionTab;
     milestoneKindOptions: InputSelectOption[];
     milestoneParameterOptions?: Record<string, InputSelectOption[]>;
+    milestoneValuePlaceholders?: Record<string, string>;
     scheduleOptions?: InputSelectOption[];
     scheduleValueLabels?: Record<string, string>;
     scheduleValueDefaults?: Record<string, string>;
@@ -54,6 +55,7 @@ export function BrewTimer({
     defaultQuickActionTab,
     milestoneKindOptions,
     milestoneParameterOptions,
+    milestoneValuePlaceholders,
     scheduleOptions,
     scheduleValueLabels,
     scheduleValueDefaults,
@@ -141,6 +143,7 @@ export function BrewTimer({
                 defaultTab={defaultQuickActionTab}
                 milestoneKindOptions={milestoneKindOptions}
                 milestoneParameterOptions={milestoneParameterOptions}
+                milestoneValuePlaceholders={milestoneValuePlaceholders}
                 scheduleOptions={scheduleOptions}
                 scheduleValueLabels={scheduleValueLabels}
                 scheduleValueDefaults={scheduleValueDefaults}
