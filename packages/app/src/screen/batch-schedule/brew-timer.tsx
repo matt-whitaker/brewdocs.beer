@@ -154,6 +154,15 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
             .filter(([, label]) => !!label)),
         [remaining]);
 
+    const scheduleValueDefaults = useMemo(
+        () => Object.fromEntries(remaining
+            .map(assignment => {
+                const planned: ResourceActuals = assignment.resource;
+                return [assignment.id ?? "", planned[QUICK_SCHEDULE_KINDS[assignment.resourceType].field]?.value];
+            })
+            .filter(([, value]) => !!value)),
+        [remaining]);
+
     const equipmentOptions = useMemo(
         () => incompleteEquipment(batch.brewable, currentPhaseId, batch.tracker)
             .map(({ id, name }) => ({ name, value: id ?? "" })),
@@ -287,6 +296,7 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
                 milestoneParameterOptions={milestoneParameterOptions}
                 scheduleOptions={scheduleOptions}
                 scheduleValueLabels={scheduleValueLabels}
+                scheduleValueDefaults={scheduleValueDefaults}
                 equipmentOptions={equipmentOptions}
                 phaseLabel={currentPhaseLabel}
                 completeLabel={currentPhaseLabel}
