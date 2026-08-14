@@ -189,7 +189,7 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                                         </DataGrid>
                                     ))}
                                     {/* readings come after the work — the wort's measured as the phase ends */}
-                                    {readingKindsForPhase(phase.type).map(({ kind, primary, headerLabel, addLabel, defaultLabel, unitOptions }) => (
+                                    {readingKindsForPhase(phase.type).map(({ kind, primary, headerLabel, addLabel, defaultLabel, unitOptions, valuePlaceholder }) => (
                                         primary === "waterParameter" ? (
                                             <BatchScheduleWaterReading
                                                 key={kind}
@@ -216,6 +216,7 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                                                 kind={kind}
                                                 primary={primary}
                                                 unitOptions={unitOptions}
+                                                valuePlaceholder={valuePlaceholder}
                                                 headerLabel={headerLabel}
                                                 addLabel={addLabel}
                                                 defaultLabel={defaultLabel} />

@@ -140,6 +140,11 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
         () => ({ water: WATER_PARAMETERS.map(({ key: name, label }) => ({ name: label, value: name })) }),
         []);
 
+    const milestoneValuePlaceholders = useMemo(
+        () => Object.fromEntries(READING_KINDS
+            .flatMap(({ kind, valuePlaceholder }) => valuePlaceholder ? [[kind, valuePlaceholder] as const] : [])),
+        []);
+
     const remaining = useMemo(
         () => incompleteAssignments(batch.brewable, currentPhaseId, batch.tracker),
         [batch.brewable, currentPhaseId, batch.tracker]);
@@ -294,6 +299,7 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
                 defaultQuickActionTab="reading"
                 milestoneKindOptions={milestoneKindOptions}
                 milestoneParameterOptions={milestoneParameterOptions}
+                milestoneValuePlaceholders={milestoneValuePlaceholders}
                 scheduleOptions={scheduleOptions}
                 scheduleValueLabels={scheduleValueLabels}
                 scheduleValueDefaults={scheduleValueDefaults}

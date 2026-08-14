@@ -98,20 +98,25 @@ completing the phase changes nothing about the timer: it stays exactly as it was
 > *Why:* moving on to the next phase (BATCH-SCHEDULE-12) is not the same as starting work on it
 > — a timer left running would keep counting into a phase the brewer has not actually begun.
 
-**BATCH-SCHEDULE-16** — A **Notes** tab sits alongside the phase tabs, where a brewer can record
+**BATCH-SCHEDULE-16** — On every phase tab, an empty Gravity, Volume or Temperature reading's
+value field — an existing reading row's value cell, and the "add reading" row's value field
+alike — shows a greyed-out example value as a placeholder. The example disappears the moment
+the brewer types, and is never itself recorded as a value.
+
+**BATCH-SCHEDULE-17** — A **Notes** tab sits alongside the phase tabs, where a brewer can record
 the batch's SRM (colour) and free-text notes about it.
 
-**BATCH-SCHEDULE-17** — The SRM field shows `0` until the brewer records a real value for that
+**BATCH-SCHEDULE-18** — The SRM field shows `0` until the brewer records a real value for that
 batch — it never starts blank.
 
 > *Why:* a blank field reads as "go find this out"; a batch that simply hasn't had its colour
 > measured yet is the ordinary case, not a gap that needs chasing.
 
-**BATCH-SCHEDULE-18** — A colour swatch appears next to the SRM field once the brewer has entered
+**BATCH-SCHEDULE-19** — A colour swatch appears next to the SRM field once the brewer has entered
 a real, parseable value. Clearing the field, or leaving it holding something that isn't a number,
 removes the swatch again.
 
-**BATCH-SCHEDULE-19** — SRM and notes entered on this tab persist across reloads, the same as
+**BATCH-SCHEDULE-20** — SRM and notes entered on this tab persist across reloads, the same as
 everything else recorded on a batch.
 
 ## Known gaps
