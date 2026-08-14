@@ -4,6 +4,7 @@ import ReactDOM from "react-dom/client";
 import {registerSW} from "virtual:pwa-register";
 import MigrationGate from "@/component/migration-gate";
 import RootError from "@/component/root-error";
+import {prefetchKbEquipment} from "@/state/kbEquipment";
 import {prefetchKbGrains} from "@/state/kbGrains";
 import {prefetchKbHops} from "@/state/kbHops";
 import {prefetchKbRecipes} from "@/state/kbRecipes";
@@ -34,6 +35,7 @@ prefetchKbHops();
 prefetchKbYeasts();
 prefetchKbRecipes();
 prefetchKbRecipeTemplates();
+prefetchKbEquipment();
 
 // TODO come back to this
 // no StrictMode: mutation actions are fire-and-forget and must not double-fire

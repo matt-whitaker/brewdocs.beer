@@ -1,4 +1,4 @@
-import {KbGrain, KbHop, KbYeast, KbRecipe, KbRecipeTemplate} from "@brewdocs.beer/kb";
+import {KbEquipment, KbGrain, KbHop, KbYeast, KbRecipe, KbRecipeTemplate} from "@brewdocs.beer/kb";
 import {Forage} from "@/storage/forage";
 import {LF_INDEXEDDB} from "@/storage/localforage";
 
@@ -7,6 +7,7 @@ type KbResourceMap = {
     hops: KbHop[];
     yeasts: KbYeast[];
     recipes: KbRecipe[];
+    equipment: KbEquipment[];
     "recipe-templates": KbRecipeTemplate[];
 };
 
