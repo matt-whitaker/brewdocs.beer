@@ -29,6 +29,7 @@ export type BrewTimerProps = PropsWithClass & {
     milestoneParameterOptions?: Record<string, InputSelectOption[]>;
     scheduleOptions?: InputSelectOption[];
     scheduleValueLabels?: Record<string, string>;
+    scheduleValueDefaults?: Record<string, string>;
     equipmentOptions?: InputSelectOption[];
     phaseLabel: string;
     height?: number;
@@ -55,6 +56,7 @@ export function BrewTimer({
     milestoneParameterOptions,
     scheduleOptions,
     scheduleValueLabels,
+    scheduleValueDefaults,
     equipmentOptions,
     phaseLabel,
     height = 24,
@@ -141,6 +143,7 @@ export function BrewTimer({
                 milestoneParameterOptions={milestoneParameterOptions}
                 scheduleOptions={scheduleOptions}
                 scheduleValueLabels={scheduleValueLabels}
+                scheduleValueDefaults={scheduleValueDefaults}
                 equipmentOptions={equipmentOptions}
                 phaseLabel={phaseLabel}
                 onQuickMilestone={onQuickMilestone}

@@ -18,6 +18,7 @@ export type QuickActionModalProps = {
     milestoneParameterOptions?: Record<string, InputSelectOption[]>;
     scheduleOptions?: InputSelectOption[];
     scheduleValueLabels?: Record<string, string>;
+    scheduleValueDefaults?: Record<string, string>;
     equipmentOptions?: InputSelectOption[];
     phaseLabel: string;
     onQuickMilestone: (kind: string, value: string, parameter?: string, label?: string) => void;
@@ -57,27 +58,29 @@ function RecordingOn({phaseLabel}: {phaseLabel: string}) {
 type IngredientsTabProps = {
     options: InputSelectOption[];
     valueLabels?: Record<string, string>;
+    valueDefaults?: Record<string, string>;
     phaseLabel: string;
     onSubmit: (id: string, value?: string) => void;
 };
 
-function IngredientsTab({options, valueLabels, phaseLabel, onSubmit}: IngredientsTabProps) {
+function IngredientsTab({options, valueLabels, valueDefaults, phaseLabel, onSubmit}: IngredientsTabProps) {
     const [selected, setSelected] = useState<string | null>(null);
-    const [value, setValue] = useState("");
+    const [typed, setTyped] = useState<string | null>(null);
 
     const selectedId = selected ?? firstValue(options);
     const valueLabel = valueLabels?.[selectedId];
+    const value = typed ?? valueDefaults?.[selectedId] ?? "";
 
     const choose = useCallback((next: string | null) => {
         setSelected(next);
-        setValue("");
+        setTyped(null);
     }, []);
 
     const confirm = useCallback(() => {
-        const typed = value.trim();
-        onSubmit(selectedId, typed || undefined);
+        const entered = value.trim();
+        onSubmit(selectedId, entered || undefined);
         setSelected(null);
-        setValue("");
+        setTyped(null);
     }, [onSubmit, selectedId, value]);
 
     return (
@@ -97,7 +100,7 @@ function IngredientsTab({options, valueLabels, phaseLabel, onSubmit}: Ingredient
                             label={`Ingredient ${valueLabel.toLowerCase()}`}
                             className="w-full"
                             value={value}
-                            onChange={setValue} />
+                            onChange={setTyped} />
                     </Field>
                 ) : null}
                 <RecordingOn phaseLabel={phaseLabel} />
@@ -219,6 +222,7 @@ export const QuickActionModal = forwardRef<HTMLDialogElement, QuickActionModalPr
         milestoneParameterOptions,
         scheduleOptions = [],
         scheduleValueLabels,
+        scheduleValueDefaults,
         equipmentOptions = [],
         phaseLabel,
         onQuickMilestone,
@@ -279,6 +283,7 @@ export const QuickActionModal = forwardRef<HTMLDialogElement, QuickActionModalPr
                         <IngredientsTab
                             options={scheduleOptions}
                             valueLabels={scheduleValueLabels}
+                            valueDefaults={scheduleValueDefaults}
                             phaseLabel={phaseLabel}
                             onSubmit={onQuickSchedule} />
                     ) : null}
