@@ -288,6 +288,22 @@ skipped step and `undecided` all arrive as the same thing: the script's default,
 intact. **A failed interception must never mean nothing runs** — degrading to the old behaviour is
 the correct failure, and the step carries `continue-on-error` so the job reaches the fallback.
 
+⚠️ **"ALL ARRIVE AS THE SAME THING" IS CORRECT FOR THE ROUTE AND WRONG FOR THE REPORT**, and that
+distinction cost the feature. Collapsing every failure to the script's default is the right
+*behaviour*; collapsing them in the *log* means "the model declined" and "the model's answer never
+arrived" — opposite problems — look identical from outside. Measured: across every `defaulted`
+route on record the fallback fired **100%** of the time, the interception model step ran for a real
+33s rather than the sub-second dead-run fingerprint, and nothing anywhere recorded which cause it
+was. The fallback branch now names it: no output at all, `undecided`, no `role` field, an unknown
+role, or a role with no `why`.
+
+⚠️ **AND THE INTERCEPTION MUST SHIP A TRANSCRIPT LIKE EVERY OTHER MODEL STEP.** It was the only one
+that did not. A routing decision is the *cheapest* thing to leave unrecorded and the most expensive
+to lose: it runs for a second, it decides what the whole rest of the run does, and its output is
+consumed by a shell step that keeps nothing. ⚠️ **A decision with no record is worse than a channel
+with no reader** — with a dead channel you can at least go and read the producer; here there is
+nothing to read, so the only evidence is that the outcome never changed.
+
 ⚠️ **`undecided` has to be a real answer, or the schema manufactures a guess.** An enum of roles
 alone leaves no way to say "the issue does not tell me", so a model obliged to pick one produces
 exactly the confident-wrong route this is meant to remove — and worse than the script's, because

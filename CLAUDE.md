@@ -409,10 +409,16 @@ run is `actor` a bot with `triggering_actor` the maintainer; the click reattribu
 - ⚠️ **Controlled at runtime by the `AGENT_TRANSCRIPTS` repository variable** (Settings → Secrets
   and variables → Actions → *Variables*) — no commit, no deploy. Unset or empty means **off**, so
   it is inert until someone opts in. Values are `all`, or a comma list of
-  `architect,claude,researcher,authors,security`.
+  `architect,claude,researcher,authors,security,route`.
 - ⚠️ **`contains()` is substring matching**, so a role name that is a substring of another would
   silently over-match. The current names are all distinct; adding one called `test` would collide
   with `tester`.
+- ⚠️ **`route` is the routing interception, not the conversational root role** — a different prompt
+  (`route.md` vs `claude.md`) and a different contract, so they capture separately. It was the last
+  model step here shipping nothing, and that is exactly how #807 stayed inert for days: green
+  steps, a posted routing notice and a plausible role, with no record of what the model actually
+  answered. ⚠️ **A decision with no record is worse than a channel with no reader** — there is
+  nothing to go back and read. This is why `delegate` carries `id-token: write`.
 - **AWS:** bucket `brewdocs-logs`, prefix `transcripts/` (lifecycle-expired at 30 days), region
   `us-west-2`. Auth is **OIDC** — `AWS_TRANSCRIPTS_ROLE` may only `s3:PutObject` to that prefix:
   no read, no list, no delete. ⚠️ **Never point this at the deploy credentials**
@@ -420,10 +426,10 @@ run is `actor` a bot with `triggering_actor` the maintainer; the click reattribu
   buckets and invalidate CloudFront.
 - ⚠️ **It cannot fail a run** — `continue-on-error` plus `always()`, so a failed run still yields
   its transcript, which is exactly when one is wanted.
-- ⚠️ **`id-token: write` on `claude` and `researcher` is for this and nothing else.** Both pass
-  `github_token`, so the OIDC path for *GitHub* auth stays short-circuited, and the agent cannot
-  use the permission: the action deletes `ACTIONS_ID_TOKEN_REQUEST_*` from the environment it hands
-  the model.
+- ⚠️ **`id-token: write` on `claude`, `researcher` and `delegate` is for this and nothing else.**
+  All three pass `github_token`, so the OIDC path for *GitHub* auth stays short-circuited, and the
+  agent cannot use the permission: the action deletes `ACTIONS_ID_TOKEN_REQUEST_*` from the
+  environment it hands the model.
 
 **House rules.** Never push to a deploy branch. May open PRs, push to feature branches and
 comment; may not merge, edit `.github/workflows/**` or secrets, or run destructive git. Pass
