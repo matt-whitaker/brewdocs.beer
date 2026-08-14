@@ -332,8 +332,19 @@ a real reply.
 
 **Budgets.** `sonnet` throughout except the Implementor, which runs `opus` — it is the only
 role whose output the maintainer must review line by line. Architect 100 turns,
-Security 40, the rest 80. Implementor and Tester run `npm ci` as a step; nobody else builds —
-the Researcher deliberately does not, since it holds no shell to run anything with.
+Security 40, the rest 80. Implementor, Designer, Tester **and Writer** run `npm ci` as a step; the
+Architect, Researcher and root role build nothing — the Researcher deliberately so, since it holds
+no shell to run anything with.
+
+⚠️ **The Writer is on that list for a reason that reads backwards.** Its normal job is written from
+intent *before* any implementation exists, which argues it should need nothing. The #579 backfill
+stories are the exception: they specify screens that already ship, so the only honest source is the
+running app. ⚠️ It therefore also needs `npx playwright install`, which is a **separate** step —
+`npm ci` installs the playwright package, never a browser binary, and under `CI` the e2e config
+selects the bundled chromium rather than the system Chrome (see `packages/e2e/CLAUDE.md`). Missing
+that step, a Writer reaches a running dev server and dies on a missing executable, which reads as
+"cannot verify" rather than as a failure. Cost, accepted: every Writer run pays a chromium download,
+and most never open a browser — nothing can tell in advance which will (#749, #1012).
 
 **Allowlists union, they don't replace.** A role's `claude_args --allowedTools` is merged with
 the action's own base set, not substituted for it — `mergedAllowedTools = [...new Set([...

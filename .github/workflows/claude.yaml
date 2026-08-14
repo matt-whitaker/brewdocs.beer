@@ -1049,8 +1049,8 @@ jobs:
 
       # Install as workflow steps, not from inside a run: this costs Claude zero turns, and
       # without it `tsc` resolves to the runner image's global TypeScript (a different
-      # major) and fails on config this repo pins as valid. The Writer builds nothing, so a
-      # Writer-only run skips all of it.
+      # major) and fails on config this repo pins as valid. The Writer is in this list too:
+      # a backfill spec describes a screen that already exists, so it has to drive the app.
       - if: contains(steps.roles.outputs.list, 'implementor') || contains(steps.roles.outputs.list, 'designer') || contains(steps.roles.outputs.list, 'tester') || contains(steps.roles.outputs.list, 'writer')
         uses: actions/setup-node@v4
         with:
@@ -1060,7 +1060,12 @@ jobs:
         run: npm ci
       # Browser install as a workflow step, not a Claude turn. Without it the Tester can
       # write specs but never run them, and an unrun test is worse than no test.
-      - if: contains(steps.roles.outputs.list, 'tester')
+      # ⚠️ The Writer needs it for the same reason it needs `npm ci`, and needs it SEPARATELY:
+      # `npm ci` installs the playwright package, never a browser binary. Under CI
+      # `playwright.config.ts` sets no channel and uses the bundled chromium, so without this
+      # step a Writer reaches a running dev server and then dies on a missing executable —
+      # which reads as "cannot verify" rather than as a failure (#1012, and see packages/e2e).
+      - if: contains(steps.roles.outputs.list, 'tester') || contains(steps.roles.outputs.list, 'writer')
         run: npx playwright install --with-deps chromium
 
       # ⚠️ THE STORY BRANCH MUST EXIST BEFORE ANY MODEL STEP, and until #777 nothing guaranteed
