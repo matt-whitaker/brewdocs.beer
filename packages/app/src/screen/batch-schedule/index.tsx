@@ -238,7 +238,7 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                                     colStart={5}
                                     cols={2}
                                     label="SRM"
-                                    value={data.notes?.srm ?? ""}
+                                    value={data.notes?.srm ?? "0"}
                                     onChange={updateSrm}
                                     onBlur={updateSrm} />
                             </DataGridRow>
