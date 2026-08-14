@@ -426,6 +426,17 @@ run is `actor` a bot with `triggering_actor` the maintainer; the click reattribu
   buckets and invalidate CloudFront.
 - ⚠️ **It cannot fail a run** — `continue-on-error` plus `always()`, so a failed run still yields
   its transcript, which is exactly when one is wanted.
+- ⚠️ **It also NAMES an upstream failure, and that half is deliberately not gated.** The execution
+  file carries `api_error_status` and `terminal_reason`; without reading them, a 529 surfaces only
+  as the host action's own *"--json-schema was provided but Claude did not return
+  structured_output"*, which sends the reader at the schema, the prompt and the allowlist — none of
+  which are involved. Measured on run `31777199643`: ten `api_retry` events, `api_error_status: 529`
+  and `input_tokens: 0, output_tokens: 0`, i.e. the model never ran. ⚠️ Ungated because
+  `AGENT_TRANSCRIPTS` is **off by default**, and an error report that appears only when capture
+  happens to be enabled is the channel-with-no-reader failure this repo keeps rediscovering.
+  ⚠️ It is written in **Python rather than jq** — the surrounding workflow uses jq, but a jq filter
+  can only be checked by running jq, which the runner has and a laptop usually does not, and this
+  is the one step that has to be right on the run where everything else broke.
 - ⚠️ **`id-token: write` on `claude`, `researcher` and `delegate` is for this and nothing else.**
   All three pass `github_token`, so the OIDC path for *GitHub* auth stays short-circuited, and the
   agent cannot use the permission: the action deletes `ACTIONS_ID_TOKEN_REQUEST_*` from the
