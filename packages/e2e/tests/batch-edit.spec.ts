@@ -371,7 +371,7 @@ test("keeps a batch note and SRM value after a reload", async ({page}) => {
     const notes = page.getByRole("textbox", {name: "Notes"});
     const srm = page.getByRole("textbox", {name: "SRM"});
     await expect(notes).toHaveValue("");
-    await expect(srm).toHaveValue("");
+    await expect(srm).toHaveValue("0");
 
     // SRM first: on a batch that has never had notes, this is the write that
     // creates batch.notes from nothing rather than adding a key to it
