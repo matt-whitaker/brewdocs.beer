@@ -11,6 +11,7 @@ export type ReadingKindConfig = {
     addLabel: string;
     defaultLabel: string;
     unitOptions?: {name: string; value: Unit}[];
+    valuePlaceholder?: string;
     phaseTypes?: PhaseType[];
 };
 
@@ -43,7 +44,8 @@ export const READING_KINDS: ReadingKindConfig[] = [
         headerLabel: "Gravity",
         addLabel: "Add reading",
         defaultLabel: "Reading",
-        unitOptions: GRAVITY_UNIT_OPTIONS
+        unitOptions: GRAVITY_UNIT_OPTIONS,
+        valuePlaceholder: "12"
     },
     {
         kind: "volume",
@@ -51,7 +53,8 @@ export const READING_KINDS: ReadingKindConfig[] = [
         headerLabel: "Volume",
         addLabel: "Add volume reading",
         defaultLabel: "Volume",
-        unitOptions: VOLUME_UNIT_OPTIONS
+        unitOptions: VOLUME_UNIT_OPTIONS,
+        valuePlaceholder: "5.5"
     },
     {
         kind: "temperature",
@@ -59,7 +62,8 @@ export const READING_KINDS: ReadingKindConfig[] = [
         headerLabel: "Temperature",
         addLabel: "Add temperature reading",
         defaultLabel: "Temperature",
-        unitOptions: TEMPERATURE_UNIT_OPTIONS
+        unitOptions: TEMPERATURE_UNIT_OPTIONS,
+        valuePlaceholder: "68"
     },
     {
         kind: "water",

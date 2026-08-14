@@ -98,6 +98,11 @@ completing the phase changes nothing about the timer: it stays exactly as it was
 > *Why:* moving on to the next phase (BATCH-SCHEDULE-12) is not the same as starting work on it
 > — a timer left running would keep counting into a phase the brewer has not actually begun.
 
+**BATCH-SCHEDULE-16** — On every phase tab, an empty Gravity, Volume or Temperature reading's
+value field — an existing reading row's value cell, and the "add reading" row's value field
+alike — shows a greyed-out example value as a placeholder. The example disappears the moment
+the brewer types, and is never itself recorded as a value.
+
 ## Known gaps
 
 _None._
