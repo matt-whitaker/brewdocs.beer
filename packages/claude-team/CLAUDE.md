@@ -18,7 +18,7 @@ state, not from something a model was asked to leave behind.
 | **Epic** | none | — | its stories closing |
 | **Spike** | none | — | the maintainer, once they have decided |
 | **Story** | `<story#>-<summary>`, cut by the Architect | the **default** branch | its PR merging |
-| **Task** | `<task#>-<summary>`, cut by its author off the story branch | the **story** branch | its own PR merging |
+| **Task** | none of its own — its work lands on the story's branch | — | `land-on-story.py`, once its work has landed |
 
 - An epic never has a branch and never has a PR. If something needs a PR, it is a story.
 - ⚠️ **An unprocessed issue is a STORY.** An epic has to say so — by an `epic` label or a
@@ -85,7 +85,7 @@ every kind announced itself — a story has no prefix to match and would never h
 failed API call exactly as it does for a plain issue, so a rate-limited minute would otherwise
 relabel an epic. It only ever adds, never removes.
 - A story owns one branch and one PR against the default branch, and it accumulates.
-- A task is a slice of a story with its own branch and its own PR **into the story branch**.
+- A task is a slice of a story. It has **no PR**; its commits land on the story's branch.
 
 ⚠️ **The Branch line always names the STORY's branch** — on the story and on every one of
 its tasks. It is what an author bases on and merges back into, never a branch for the task
@@ -126,8 +126,8 @@ and it went both ways. Three pieces replace it:
 - **A task's branch** — the action's own `base_branch` input, set to the story's branch. The
   branch it creates is then the right one, so its injected instruction becomes true instead of
   something to argue with. Configure the action rather than fight it.
-- **A task PR's base** — `finish-pr.py` retargets it onto the story branch. The model still
-  writes `--base` for the human-readable reason; the hook is the net.
+- **A task's commits** — `land-on-story.py` pushes them onto the story branch. There is no task
+  PR and no base to get wrong, so the whole retarget-and-net apparatus is gone.
 
 ⚠️ **The story-branch hook must run POST, and this inverts the obvious implementation.**
 `setupBranch` checks whether the name it is about to generate already exists remotely and, if
@@ -159,10 +159,31 @@ itself the working branch would mean not pre-creating it, and **`ensure-story-br
 the Architect just decomposed. That test cannot be evaluated there, and acting on it would strand
 every story with no branch at all. Changing the PR's **base** costs none of that.
 
-⚠️ **Tasks must not share one branch.** They did once, and it was a race: if a consumer keys
-its concurrency group on issue number, two tasks are in *different* groups and can commit to
-the same branch at the same time. Sub-branching removes the possibility rather than relying
-on runs being triggered one at a time.
+⚠️ **TASKS SHARE THE STORY'S BRANCH, AND THIS PARAGRAPH USED TO SAY THE OPPOSITE.** Sub-branching
+with a PR per task was correct about the race and wrong about the cost: one story became one PR per
+task plus its own, splitting the only review anyone actually performs across several places. The
+maintainer's call was that review sanity beats the guarantee. What replaces the guarantee:
+
+- ⚠️ **The race is real and CANNOT be closed.** `concurrency.group` is keyed on the issue, and it
+  cannot be keyed on the story — the group is evaluated before any job runs, so only the event
+  context is available, the story is not resolved yet, and expressions have no regex to pull it
+  from the issue body. Anyone reaching for that fix should stop here.
+- ⚠️ **What makes it survivable is that git refuses a non-fast-forward.** `land-on-story.py` pushes
+  an explicit refspec and **fails the step** when it is rejected, so a collision is loud and the
+  commits are still on the branch the run made. Swallowing that would convert a correct failure
+  into silently lost work.
+- **Trigger a story's tasks one at a time**, which the sequencing rules already say.
+
+⚠️ **A task still gets a branch, and it is unavoidable rather than intended.** `setupBranch` always
+*creates* one on an issue trigger — it has no mode that checks out an existing branch — so a run
+cannot start on the story branch. That branch is a staging area: the hook pushes its commits onto
+the story branch afterwards. ⚠️ **Nothing deletes it.** After landing it is 0-ahead and harmless,
+and adding a delete would put back the one destructive capability this system removed on purpose.
+
+⚠️ **Nothing gates a task any more, and that was chosen with the cost stated.** Verify runs on
+`pull_request`; with no task PR it first fires on the story's PR, with every task's diff
+accumulated — which is exactly what a consuming repo's no-branches-filter comment was written to
+prevent. A `push:` trigger restores it and was declined.
 
 ### Where work goes, and why there is only ever one PR
 
@@ -198,9 +219,10 @@ and its stranded-commit recovery never fires. That recovery is for a run that co
 
 1. **Architect** shapes the story, **names** its branch on a `Branch:` line, and creates its
    tasks — each stamped with the role that should pick it up. A hook creates the branch.
-2. Each **task** is triggered on its own. Its author starts on a branch already cut off the
-   story branch, works there, and opens a PR into the story branch.
-3. Merging that task PR closes the task and lands its work on the story.
+2. Each **task** is triggered on its own. Its author commits on the branch the host action
+   cut for it and opens nothing.
+3. `land-on-story.py` fast-forwards the story's branch to those commits and closes the task —
+   unless the author reported work `remaining`, which leaves it open with the list on it.
 4. The **story's** PR accumulates all of it. The maintainer reviews and merges the story as
    a whole.
 
@@ -209,18 +231,14 @@ authoring run.** The story branch is cut empty, and GitHub will not open a PR wi
 commits between base and head, so the first task landing is the earliest moment it can
 exist.
 
-⚠️ **A task PR's closing keyword links but does not close.** Two behaviours, easy to
-conflate — and they were, wrongly, until measured:
+⚠️ **A TASK IS CLOSED BY THE LANDING HOOK, NOT BY A KEYWORD.** There is no task PR, so there is no
+closing keyword and nothing for GitHub to act on. `land-on-story.py` closes the issue once its
+commits are on the story branch — and **only** when the author reported no `remaining`, which is
+the same signal that used to govern whether the keyword was written. An unfinished task stays open
+with its outstanding list posted on it.
 
-- **Linking works at any base.** A keyword in the body populates `closingIssuesReferences`
-  whatever the PR targets: #536 → [521], #542 → [522], #443 → [441], all into story branches.
-- **Auto-closing needs the default branch.** A task PR targets its story's branch, so GitHub
-  never closes it. The merge hook does.
-
-An author writes the line for both reasons, and the hook's body-parse is a net for a keyword
-GitHub did not link — not the mechanism. ⚠️ There is also **no public GraphQL mutation** for
-linking a PR to an issue: introspection shows only `createLinkedBranch` and `addSubIssue`,
-and the UI's "link an issue" control edits the PR body. The keyword *is* the API.
+⚠️ **The story's PR still needs its keyword**, and that is unchanged: it targets the default branch,
+so GitHub closes the story on merge the ordinary way.
 
 ⚠️ **A task still open when its story merges is a signal, not a gap.** Nothing closes it
 implicitly: it was abandoned, or its PR never landed. An earlier version closed a merged
@@ -724,7 +742,8 @@ forgotten by a model that ran out of turns or simply skipped it.
 | `ensure-story-branch.py` | post, Architect + Researcher; **pre, authors** | creates the story's branch if it is missing; an epic and a spike have none, and it says so rather than warning |
 | `sync-kind-label.py` | post, Architect + Researcher | applies the `epic`/`spike`/`bug`/`story` label `kind()` derives |
 | `file-sub-issues.py` | post, Architect | parents stories to their epic, tasks to their story |
-| `finish-pr.py` | post, authors | labels the PR, and ensures it closes its issue — or, when the author reported work `remaining`, that it does not |
+| `land-on-story.py` | post, authors | pushes a task's commits onto the story's branch and closes the task; **fails the step** if the push is refused |
+| `finish-pr.py` | post, authors | **a story worked as-is only** — labels its PR and ensures it closes its issue, or, when the author reported work `remaining`, that it does not. Returns immediately for a task, which has no PR |
 | `apply-repairs.py` | post, the root role | applies the process repairs it named, records each with what was wrong and why, **reports what it would not fix onto the trigger**, and files an issue rather than repairing the same thing twice |
 | `post-findings.py` | post, Researcher | renders its schema-forced findings onto the spike — the role has no shell, so this is the only way they reach anyone |
 | `post-handoff.py` | post, authors | posts the JSON handoff to the story's issue, and appends its `decisions` to one running log there |
