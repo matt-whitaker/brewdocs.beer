@@ -254,10 +254,31 @@ the issue's state to pick the role. The same label named in a comment does the s
 `@claude/<role>` handle in a comment names the role outright and skips the inspection — the
 way to override a bad guess.
 
-⚠️ **The label does the work; a comment talks about it.** That split is the whole ergonomics of
-the root role. The `@claude` **label** routes to a working role exactly as it always has. A comment
-naming `@claude` with **no** role handle now reaches the root role instead of falling through to
-rules 2-4 — so "@claude what happened here?" answers rather than starting an Implementor.
+⚠️ **The label does the work; a comment talks about it — but a comment can ASK for work, and the
+script cannot tell.** The `@claude` **label** routes to a working role exactly as it always has. A
+comment naming `@claude` with no role handle used to settle straight to the conversational role, and
+that was right most of the time and expensively wrong the rest: *"@claude I believe this branch
+needs to be updated from its base"* is a request, and the role that answered it was structurally
+unable to act.
+
+⚠️ **So rule 1b now CONSULTS rather than settles.** It sets `consult`, the delegate-phase custodian
+reads the comment, and it answers `claude` for a question or a working role for a request — before
+the role jobs gate on the result, which is the only moment the decision can still change what runs.
+`claude` stays the fallback, so a failed, skipped or `undecided` interception lands exactly where
+the rule used to send it outright.
+
+⚠️ **`consult` IS NOT `defaulted`, and merging them would be wrong both ways.** `defaulted` means
+the state that should decide is **missing** — a real gap, worth announcing, and it carries a remedy
+the maintainer can apply. `consult` means the script decided as far as state allows and the only
+open question is a judgement about a sentence. Nothing is broken, there is nothing to fix on the
+issue, and announcing every one would bury the notices that matter. ⚠️ `report-route.py` therefore
+stays **silent** on a consultation that changed nothing, and speaks only when the custodian routed
+somewhere the script would not have.
+
+⚠️ **This is not a role chaining off another**, which remains forbidden. The maintainer triggered
+the run; the router is deciding which role serves that trigger. Nothing starts work nobody asked
+for — the difference is that "who should serve this" is now read from the request rather than
+assumed from its shape.
 
 ⚠️ **An unknown handle lands there too.** `@claude/nonsense` matches no role, so rule 1b catches it
 and the root role can say there is no such role — where rule 3 would previously have shaped the
