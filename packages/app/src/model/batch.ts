@@ -13,6 +13,7 @@ export interface ShoppingItem {
     scalar?: Scalar;
     cost: Scalar;
     purchased: boolean;
+    source: "derived"|"user";
 }
 
 /** the grouping a schedule row falls under within its phase */

@@ -36,7 +36,9 @@ function named(tag: ShoppingTag, items: { name: string }[]): Derived[] {
  * looking dirty on every save.
  */
 export default function _updateShopping(batch: Partial<Batch>): Partial<Batch> {
-    const previous = new Map((batch.shopping ?? []).map(item => [itemKey(item), item]));
+    const stored = batch.shopping ?? [];
+    const userAdded = stored.filter(item => item.source === "user");
+    const previous = new Map(stored.filter(item => item.source !== "user").map(item => [itemKey(item), item]));
     const assignments = batch.brewable?.assignments ?? [];
 
     const derived: Derived[] = [
@@ -47,24 +49,28 @@ export default function _updateShopping(batch: Partial<Batch>): Partial<Batch> {
     ];
 
     return Object.assign(batch, {
-        shopping: derived.map((item): ShoppingItem => {
-            const prior = previous.get(itemKey(item));
+        shopping: [
+            ...derived.map((item): ShoppingItem => {
+                const prior = previous.get(itemKey(item));
 
-            if (!prior) {
-                return {
-                    ...item,
-                    cost: { value: "$0.00", currency: CURRENCIES.DOLLAR },
-                    purchased: false
-                };
-            }
+                if (!prior) {
+                    return {
+                        ...item,
+                        source: "derived",
+                        cost: { value: "$0.00", currency: CURRENCIES.DOLLAR },
+                        purchased: false
+                    };
+                }
 
-            // derived data untouched → hand back the same object
-            if (isEqual(prior.tags, item.tags) && isEqual(prior.scalar, item.scalar)) {
-                return prior;
-            }
+                // derived data untouched → hand back the same object
+                if (isEqual(prior.tags, item.tags) && isEqual(prior.scalar, item.scalar)) {
+                    return prior;
+                }
 
-            // derived data moved (e.g. a weight was edited) → refresh it, keep cost/purchased
-            return { ...prior, ...item };
-        })
+                // derived data moved (e.g. a weight was edited) → refresh it, keep cost/purchased
+                return { ...prior, ...item, source: "derived" };
+            }),
+            ...userAdded
+        ]
     });
 }
