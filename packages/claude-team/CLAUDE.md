@@ -370,6 +370,31 @@ needing content changed, and anything whose real fix is upstream in a rule goes 
 would fix it. Keeping it separate from `repairs` is the point: a custodian that quietly fixed
 everything would erase the evidence that the rule is wrong.
 
+⚠️ **AND IT HAS TO REACH THE ISSUE, WHICH FOR A LONG TIME IT DID NOT.** `apply-repairs.py` posted
+`repairs` as a comment and `print`ed `unrepairable` to the job log — so the half that carries the
+weight reached nobody. That is the **fifth** instance of this exact shape here, after `DEFAULTED`,
+the author handoff appended in a job its readers never run in, `decisions` on the PR path, and
+`docsCandidates`: a required output with no consumer, shipped and believed to work.
+
+⚠️ **The user-visible symptom was the custodian looking unhelpful.** A run identified a stale task
+title and named the role that should rename it — a perfectly good redirect, written to a job log.
+From outside, the role had said "not my job" and offered nothing, which is exactly the complaint
+the design was meant to answer. **A role that answers into a channel nobody reads has not
+answered.**
+
+⚠️ **It reports on the TRIGGER, because a finding carries no target of its own** — the schema gives
+it `what` and `wouldFix`, deliberately, since most findings are about a rule rather than an issue.
+So the hook needs the triggering issue *or* PR; the root role answers on both, and each workflow
+expression blanks for the other. ⚠️ Commenting on a PR needs `pull-requests: write`, not
+`issues: write` — the endpoint reads as `issues` and the permission checked is not.
+
+⚠️ **Same comment marker as the repairs, and it APPENDS.** One marker so everything the custodian
+has done to an issue reads as one history, with the section prefix — `⚠️ **Not repaired**` — as the
+only thing distinguishing it, so "I did not fix this" can never be misread as "I fixed this".
+Appending rather than upserting matches `repairs` and is load-bearing for the same reason a repeat
+repair escalates: **a finding that recurs is the signal that its cause is still there**, and an
+upsert would erase it.
+
 ⚠️ **The answer still goes in the tracking comment.** With `--json-schema` the final message is
 JSON, so `track_progress: true` stops being cosmetic and becomes the only place a human reads a
 reply — a run that answers into the JSON and leaves the comment empty has answered nobody.
@@ -684,7 +709,7 @@ forgotten by a model that ran out of turns or simply skipped it.
 | `sync-kind-label.py` | post, Architect + Researcher | applies the `epic`/`spike`/`bug`/`story` label `kind()` derives |
 | `file-sub-issues.py` | post, Architect | parents stories to their epic, tasks to their story |
 | `finish-pr.py` | post, authors | labels the PR, and ensures it closes its issue — or, when the author reported work `remaining`, that it does not |
-| `apply-repairs.py` | post, the root role | applies the process repairs it named, records each with what was wrong and why, and files an issue rather than repairing the same thing twice |
+| `apply-repairs.py` | post, the root role | applies the process repairs it named, records each with what was wrong and why, **reports what it would not fix onto the trigger**, and files an issue rather than repairing the same thing twice |
 | `post-findings.py` | post, Researcher | renders its schema-forced findings onto the spike — the role has no shell, so this is the only way they reach anyone |
 | `post-handoff.py` | post, authors | posts the JSON handoff to the story's issue, and appends its `decisions` to one running log there |
 | `log-to-story.py` | post, Architect + authors + on merge | rewrites one comment on the story listing its tasks in trigger order |

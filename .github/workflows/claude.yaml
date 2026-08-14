@@ -676,6 +676,11 @@ jobs:
           PROJECT_OWNER: "@me"
           PROJECT_NUMBER: "4"
           REPAIRS: ${{ steps.custodian.outputs.structured_output }}
+          # ⚠️ `unrepairable` findings carry no target of their own — only `what` and `wouldFix` —
+          # so they are reported on whatever triggered the run. Both are passed because the root
+          # role answers on issues AND on PR comments, and each expression blanks for the other.
+          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
+          PR: ${{ github.event.issue.pull_request && github.event.issue.number || '' }}
         run: "$RUNNER_TEMP/agent-bin/apply-repairs.py"
 
       # ⚠️ Diagnostics only, and it must never redden a good run — hence continue-on-error, and
