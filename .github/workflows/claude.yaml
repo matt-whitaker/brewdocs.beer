@@ -178,6 +178,11 @@ jobs:
       # write so the unroutable path can leave a comment rather than skipping silently
       issues: write
       pull-requests: read
+      # ⚠️ For `capture-transcript`'s OIDC and nothing else — the same pairing documented for
+      # `claude` and `researcher`. The interception step passes `github_token`, so the OIDC path
+      # for GitHub auth stays short-circuited, and the action deletes ACTIONS_ID_TOKEN_REQUEST_*
+      # from the environment it hands the model, so the agent cannot reach this permission.
+      id-token: write
     outputs:
       # ⚠️ FROM `resolve`, NOT `route`. Where the script had to fall back to a default, the root
       # role is asked inside this job and `resolve` settles which of the two answers wins. Reading
@@ -341,6 +346,12 @@ jobs:
           # model; this constrains the output. `undecided` — the honest answer, and the one the
           # prompt asks for over a coin flip — falls through here to the script's default, which
           # is exactly right: it keeps the guess AND the notice that announces it.
+          # ⚠️ KEEP THE RAW ANSWER. The filter below blanks `role`, which makes "the custodian said
+          # undecided", "it named something invalid" and "it answered nothing at all" indis-
+          # tinguishable downstream — and that ambiguity is why #807 sat inert for days looking
+          # correct. Everything needed to tell them apart exists here and was being discarded.
+          raw_role="$role"
+
           case "$role" in
             architect|researcher|implementor|designer|tester|writer) ;;
             *) role="" ;;
@@ -355,6 +366,20 @@ jobs:
             } >> "$GITHUB_OUTPUT"
             echo "resolved by the custodian: $role — $why"
           else
+            # ⚠️ SAY WHICH FALLBACK THIS IS. Falling back is a legitimate outcome — `undecided` is
+            # an answer the prompt asks for — but "the model declined" and "the model's answer never
+            # arrived" are opposite problems with the same symptom, and this branch reported neither.
+            if [ -z "${CUSTODIAN//[[:space:]]/}" ]; then
+              cause="the interception returned no structured output at all — skipped, failed, or the run produced none"
+            elif [ "$raw_role" = "undecided" ]; then
+              cause="the custodian answered 'undecided' — the issue itself does not say which role owns it"
+            elif [ -z "$raw_role" ]; then
+              cause="the structured output carried no 'role' field"
+            elif [ -z "$role" ]; then
+              cause="the custodian answered '$raw_role', which is not a role this repo runs"
+            else
+              cause="the custodian named '$raw_role' but gave no 'why', and a route without a reason is not actionable"
+            fi
             {
               echo "roles=$SCRIPT_ROLES"
               echo "reason=$SCRIPT_REASON"
@@ -362,6 +387,8 @@ jobs:
               echo "resolved_by=script"
             } >> "$GITHUB_OUTPUT"
             echo "resolved by the script: $SCRIPT_ROLES — $SCRIPT_REASON"
+            echo "::notice::routing fell back to the script because $cause"
+            echo "custodian output was ${#CUSTODIAN} chars: $(printf '%s' "$CUSTODIAN" | head -c 200)"
           fi
 
       # ⚠️ AFTER `resolve`, never inside `delegate.py`, and that ordering is the fix. Announcing a
@@ -380,6 +407,25 @@ jobs:
           REMEDY: ${{ steps.resolve.outputs.remedy }}
           RESOLVED_BY: ${{ steps.resolve.outputs.resolved_by }}
         run: "$RUNNER_TEMP/agent-bin/report-route.py"
+
+      # ⚠️ THE ROUTING STEP WAS THE ONLY MODEL STEP HERE SHIPPING NO TRANSCRIPT, which is why #807
+      # could sit inert for days while every visible signal — green steps, a posted notice, a
+      # plausible role — said it worked. A decision with no record is worse than a channel with no
+      # reader: there is nothing to go back and read.
+      # ⚠️ `route`, not `claude`: this is the interception, a different prompt and contract from the
+      # conversational root role, and `contains()` is substring matching so the two must not share
+      # a name. It collides with no existing AGENT_TRANSCRIPTS value.
+      - name: Capture the routing transcript
+        if: always()
+        continue-on-error: true
+        uses: ./.github/actions/capture-transcript
+        with:
+          enabled: ${{ contains(vars.AGENT_TRANSCRIPTS, 'all') || contains(vars.AGENT_TRANSCRIPTS, 'route') }}
+          role: route
+          execution_file: ${{ steps.custodian.outputs.execution_file }}
+          role_arn: ${{ secrets.AWS_TRANSCRIPTS_ROLE }}
+          bucket: ${{ secrets.AWS_TRANSCRIPTS_BUCKET }}
+          entity: ${{ github.event.issue.number || github.event.pull_request.number }}
 
   # ── Architect ────────────────────────────────────────────────────────────────
   # Shapes work so the others can act on it. On an epic it defines the goal and cuts
