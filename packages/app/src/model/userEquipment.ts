@@ -1,7 +1,6 @@
-import {Entity} from "@brewdocs.beer/core";
+import {KbEquipment} from "@brewdocs.beer/kb";
 
-export default interface UserEquipment extends Entity {
-    name: string;
-    notes?: string;
-    count?: number;
+export default interface UserEquipment extends KbEquipment {
+    __type: "equipment";
+    sourceId?: string;
 }
