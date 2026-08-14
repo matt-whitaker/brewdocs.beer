@@ -18,7 +18,7 @@ export type RecipeEditAssignmentRowProps = {
 
 /**
  * One row per assignment: name + remove, a headline scalar when the
- * resource has one (grain/hop `weight`), and an expansion narrowed by
+ * resource has one (grain/hop/additive `weight`), and an expansion narrowed by
  * `resourceType` for everything else (switching on it to reach
  * `assignment.resource`'s type-specific fields with no cast). `row` indexes
  * `assignments` directly (dot-paths are relative to the brewable), so every
@@ -59,8 +59,17 @@ function RecipeEditAssignmentRow({ row, assignment, remove, update, updateScalar
                         onBlur={onBlurWeight}
                     />
                 );
-            case "yeast":
             case "additive":
+                return (
+                    <DataGridInput
+                        colStart={6}
+                        label={`${assignmentResourceName(assignment)} weight`}
+                        value={assignment.resource.weight?.value ?? ""}
+                        onChange={onChangeWeightValue}
+                        onBlur={onBlurWeight}
+                    />
+                );
+            case "yeast":
                 return null;
         }
     }, [assignment, onChangeWeightValue, onBlurWeight]);
@@ -126,39 +135,26 @@ function RecipeEditAssignmentRow({ row, assignment, remove, update, updateScalar
                 );
             }
             case "additive": {
-                const {weight} = assignment.resource;
-                return weight ? (
-                    <DataGrid>
-                        <DataGridRow>
-                            <DataGridLabel tiny className="ml-6">Weight</DataGridLabel>
-                            <DataGridInput
-                                colStart={6}
-                                label={`${assignmentResourceName(assignment)} weight`}
-                                value={weight.value}
-                                onChange={onChangeWeightValue}
-                                onBlur={onBlurWeight}
-                            />
-                        </DataGridRow>
-                    </DataGrid>
-                ) : (
+                const {boil} = assignment.resource;
+                return boil ? (
                     <DataGrid>
                         <DataGridRow>
                             <DataGridLabel tiny className="ml-6">Boil</DataGridLabel>
                             <DataGridInput
                                 colStart={6}
                                 label={`${assignmentResourceName(assignment)} boil`}
-                                value={assignment.resource.boil?.value ?? ""}
+                                value={boil.value}
                                 onChange={onChangeBoilValue}
                                 onBlur={onBlurBoil}
                             />
                         </DataGridRow>
                     </DataGrid>
-                );
+                ) : undefined;
             }
             case "grain":
                 return undefined;
         }
-    }, [assignment, row, onChangeAlphaValue, onBlurAlpha, onChangeBoilValue, onBlurBoil, onChangeWeightValue, onBlurWeight, onChangeAttnValue, onBlurAttn, onChangeTempValue, onBlurTemp, onToggleStarter]);
+    }, [assignment, row, onChangeAlphaValue, onBlurAlpha, onChangeBoilValue, onBlurBoil, onChangeAttnValue, onBlurAttn, onChangeTempValue, onBlurTemp, onToggleStarter]);
 
     return (
         <DataGridRow zebra reserveExpand label="assignment details" expandContent={expandContent}>
