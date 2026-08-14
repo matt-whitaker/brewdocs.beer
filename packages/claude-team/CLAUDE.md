@@ -613,8 +613,33 @@ house rules.
 ⚠️ **The prompt forbids planning-and-stopping, not just stating an intention**, and the two are
 easy to conflate. The observed failure is never a sentence saying "I'll get to it" — it is a
 **tidy checklist with the boxes unticked**, which reads as progress at a glance. Measured twice
-(#834, #866): ~6 turns, ~30s, a good plan, nothing done, run reports success. Both completed on a
-plain re-trigger, so nothing was blocking them.
+(#834, #866): ~6 turns, ~30s, a good plan, nothing done, run reports success.
+
+⚠️ **THE UNTICKED CHECKLIST IS THE SYMPTOM; BACKGROUNDING IS THE CAUSE.** This was documented for
+a long time as a model that plans and then idles, which is what it looks like from the comment. A
+captured transcript (#1018) shows otherwise: the model launched a **background subagent**, called a
+**schedule-a-wake-up** tool to wait for it, and signed off with *"I'll wait for the research agent
+to complete."* 7 turns, 24s, `is_error: false`, `subtype: success`, nothing written. The boxes are
+unticked because the work was **delegated to a continuation that never comes**, not because nothing
+was attempted.
+
+⚠️ **"Both completed on a plain re-trigger, so nothing was blocking them" was the wrong inference
+from a true observation.** Re-triggering works because the failure is **nondeterministic** — it
+depends on whether the model reaches for the background tool at all. That is a coin flip, and
+reading it as "nothing was wrong" is what kept the real mechanism hidden across three runs.
+
+⚠️ **The fix is the prompt, and it has to be specific, because the general rule did not bind.**
+"Never end a run with an intention" was already there and the model did not think it was ending on
+one — it believed it had *scheduled a resumption*, and the tool call had returned success. The rule
+therefore names the behaviour (backgrounding) rather than the feeling (giving up), and it must
+preserve synchronous delegation: a subagent invoked in-turn returns its result and works correctly.
+⚠️ **Forbidding delegation outright would be the wrong fix** — it removes a useful capability to
+correct a default.
+
+⚠️ **A denylist is not available as the fix, and that is a finding in itself.** The tools involved
+were in **neither** the role's `--allowedTools` **nor** the action's base set, and executed anyway.
+An allowlist that does not bind cannot be tightened into a denylist that does; the prompt is the
+only lever the consuming repo actually holds.
 
 ⚠️ **The host action's own scaffolding contributes**, which is why the prompt has to push back
 explicitly. Tag mode asks the model to keep a todo list in its tracking comment; writing that list

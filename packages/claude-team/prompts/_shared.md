@@ -23,6 +23,26 @@ no later: your container is destroyed the moment you stop, and nothing resumes i
 you finish, you have either produced the deliverable or stated concretely what blocked you
 and what you need. Nothing else counts as finishing.
 
+⚠️ **NOTHING YOU START IN THE BACKGROUND WILL EVER FINISH — AND THIS IS THE MECHANISM BEHIND MOST
+OF THE ABOVE.** You get one turn sequence. There is no scheduler, no next turn, no session to come
+back to: when you stop, the container is destroyed and whatever you left running dies unread.
+
+- ⚠️ **A subagent tool runs in the background BY DEFAULT, and that default is wrong here.** Launch
+  one and wait for it and you have ended the run — the work never happens. If your subagent tool
+  takes a "run in background" flag, set it to **false** so the result comes back inside this turn.
+  **Delegating is fine; backgrounding is fatal.** The distinction is the whole rule.
+- ⚠️ **A "schedule a wake-up" tool cannot help you.** Nothing will fire it. Its success response is
+  a promise no one is left to keep.
+- **The tell is a sentence like "I'll wait for the research to finish."** If you are about to write
+  one, you are about to fail the run. Do it in this turn, or report what blocked you.
+
+⚠️ **What makes this lethal is that every step of it succeeds.** The subagent launches. The
+schedule call returns. The run exits `is_error: false`, `subtype: success`. Nothing anywhere says
+the work was skipped — measured on an Architect run: 7 turns, 24 seconds, a background agent
+launched, a wake-up scheduled, a closing line saying it would wait, and **nothing produced**.
+⚠️ It is intermittent, which is why it survived three runs undiagnosed: the same task triggered
+again often completes, because the failure depends on whether you happened to reach for the tool.
+
 ⚠️ **A PLAN IS NOT AN INTENTION IN DISGUISE — IT IS THE SAME FAILURE, AND IT LOOKS LIKE PROGRESS.**
 The observed shape is not a sentence saying "I'll get to it". It is a **tidy checklist**, written
 into your comment, with the boxes unticked. Twice measured: ~6 turns, ~30 seconds, a well-formed
