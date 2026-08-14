@@ -6,6 +6,7 @@ const nav: [string, string?][] = [
     ["", "divider"],
     // ["Dashboard", "/"],
     ["Batches", "/batches"],
+    ["Equipment", "/equipment"],
     ["Recipes", "/recipes"]
 ];
 

@@ -12,12 +12,15 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BatchesRouteImport } from './routes/batches'
 import { Route as DisclaimerRouteImport } from './routes/disclaimer'
+import { Route as EquipmentRouteImport } from './routes/equipment'
 import { Route as KnowledgeRouteImport } from './routes/knowledge'
 import { Route as RecipesRouteImport } from './routes/recipes'
 import { Route as BatchBatchIdRouteImport } from './routes/batch.$batchId'
+import { Route as EquipmentEquipmentIdRouteImport } from './routes/equipment_.$equipmentId'
 import { Route as MigrationsBackupsRouteImport } from './routes/migrations.backups'
 import { Route as MigrationsFailedRouteImport } from './routes/migrations.failed'
 import { Route as RecipeRecipeIdRouteImport } from './routes/recipe.$recipeId'
+import { Route as KbEquipmentEquipmentIdRouteImport } from './routes/kb.equipment.$equipmentId'
 import { Route as KbGrainGrainIdRouteImport } from './routes/kb.grain.$grainId'
 import { Route as KbHopHopIdRouteImport } from './routes/kb.hop.$hopId'
 import { Route as KbRecipeRecipeIdRouteImport } from './routes/kb.recipe.$recipeId'
@@ -39,6 +42,11 @@ const DisclaimerRoute = DisclaimerRouteImport.update({
   path: '/disclaimer',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EquipmentRoute = EquipmentRouteImport.update({
+  id: '/equipment',
+  path: '/equipment',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const KnowledgeRoute = KnowledgeRouteImport.update({
   id: '/knowledge',
   path: '/knowledge',
@@ -54,6 +62,11 @@ const BatchBatchIdRoute = BatchBatchIdRouteImport.update({
   path: '/batch/$batchId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EquipmentEquipmentIdRoute = EquipmentEquipmentIdRouteImport.update({
+  id: '/equipment_/$equipmentId',
+  path: '/equipment/$equipmentId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MigrationsBackupsRoute = MigrationsBackupsRouteImport.update({
   id: '/migrations/backups',
   path: '/migrations/backups',
@@ -67,6 +80,11 @@ const MigrationsFailedRoute = MigrationsFailedRouteImport.update({
 const RecipeRecipeIdRoute = RecipeRecipeIdRouteImport.update({
   id: '/recipe/$recipeId',
   path: '/recipe/$recipeId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KbEquipmentEquipmentIdRoute = KbEquipmentEquipmentIdRouteImport.update({
+  id: '/kb/equipment/$equipmentId',
+  path: '/kb/equipment/$equipmentId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const KbGrainGrainIdRoute = KbGrainGrainIdRouteImport.update({
@@ -99,12 +117,15 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/batches': typeof BatchesRoute
   '/disclaimer': typeof DisclaimerRoute
+  '/equipment': typeof EquipmentRoute
   '/knowledge': typeof KnowledgeRoute
   '/recipes': typeof RecipesRoute
   '/batch/$batchId': typeof BatchBatchIdRoute
+  '/equipment/$equipmentId': typeof EquipmentEquipmentIdRoute
   '/migrations/backups': typeof MigrationsBackupsRoute
   '/migrations/failed': typeof MigrationsFailedRoute
   '/recipe/$recipeId': typeof RecipeRecipeIdRoute
+  '/kb/equipment/$equipmentId': typeof KbEquipmentEquipmentIdRoute
   '/kb/grain/$grainId': typeof KbGrainGrainIdRoute
   '/kb/hop/$hopId': typeof KbHopHopIdRoute
   '/kb/recipe/$recipeId': typeof KbRecipeRecipeIdRoute
@@ -115,12 +136,15 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/batches': typeof BatchesRoute
   '/disclaimer': typeof DisclaimerRoute
+  '/equipment': typeof EquipmentRoute
   '/knowledge': typeof KnowledgeRoute
   '/recipes': typeof RecipesRoute
   '/batch/$batchId': typeof BatchBatchIdRoute
+  '/equipment/$equipmentId': typeof EquipmentEquipmentIdRoute
   '/migrations/backups': typeof MigrationsBackupsRoute
   '/migrations/failed': typeof MigrationsFailedRoute
   '/recipe/$recipeId': typeof RecipeRecipeIdRoute
+  '/kb/equipment/$equipmentId': typeof KbEquipmentEquipmentIdRoute
   '/kb/grain/$grainId': typeof KbGrainGrainIdRoute
   '/kb/hop/$hopId': typeof KbHopHopIdRoute
   '/kb/recipe/$recipeId': typeof KbRecipeRecipeIdRoute
@@ -132,12 +156,15 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/batches': typeof BatchesRoute
   '/disclaimer': typeof DisclaimerRoute
+  '/equipment': typeof EquipmentRoute
   '/knowledge': typeof KnowledgeRoute
   '/recipes': typeof RecipesRoute
   '/batch/$batchId': typeof BatchBatchIdRoute
+  '/equipment_/$equipmentId': typeof EquipmentEquipmentIdRoute
   '/migrations/backups': typeof MigrationsBackupsRoute
   '/migrations/failed': typeof MigrationsFailedRoute
   '/recipe/$recipeId': typeof RecipeRecipeIdRoute
+  '/kb/equipment/$equipmentId': typeof KbEquipmentEquipmentIdRoute
   '/kb/grain/$grainId': typeof KbGrainGrainIdRoute
   '/kb/hop/$hopId': typeof KbHopHopIdRoute
   '/kb/recipe/$recipeId': typeof KbRecipeRecipeIdRoute
@@ -150,12 +177,15 @@ export interface FileRouteTypes {
     | '/'
     | '/batches'
     | '/disclaimer'
+    | '/equipment'
     | '/knowledge'
     | '/recipes'
     | '/batch/$batchId'
+    | '/equipment/$equipmentId'
     | '/migrations/backups'
     | '/migrations/failed'
     | '/recipe/$recipeId'
+    | '/kb/equipment/$equipmentId'
     | '/kb/grain/$grainId'
     | '/kb/hop/$hopId'
     | '/kb/recipe/$recipeId'
@@ -166,12 +196,15 @@ export interface FileRouteTypes {
     | '/'
     | '/batches'
     | '/disclaimer'
+    | '/equipment'
     | '/knowledge'
     | '/recipes'
     | '/batch/$batchId'
+    | '/equipment/$equipmentId'
     | '/migrations/backups'
     | '/migrations/failed'
     | '/recipe/$recipeId'
+    | '/kb/equipment/$equipmentId'
     | '/kb/grain/$grainId'
     | '/kb/hop/$hopId'
     | '/kb/recipe/$recipeId'
@@ -182,12 +215,15 @@ export interface FileRouteTypes {
     | '/'
     | '/batches'
     | '/disclaimer'
+    | '/equipment'
     | '/knowledge'
     | '/recipes'
     | '/batch/$batchId'
+    | '/equipment_/$equipmentId'
     | '/migrations/backups'
     | '/migrations/failed'
     | '/recipe/$recipeId'
+    | '/kb/equipment/$equipmentId'
     | '/kb/grain/$grainId'
     | '/kb/hop/$hopId'
     | '/kb/recipe/$recipeId'
@@ -199,12 +235,15 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BatchesRoute: typeof BatchesRoute
   DisclaimerRoute: typeof DisclaimerRoute
+  EquipmentRoute: typeof EquipmentRoute
   KnowledgeRoute: typeof KnowledgeRoute
   RecipesRoute: typeof RecipesRoute
   BatchBatchIdRoute: typeof BatchBatchIdRoute
+  EquipmentEquipmentIdRoute: typeof EquipmentEquipmentIdRoute
   MigrationsBackupsRoute: typeof MigrationsBackupsRoute
   MigrationsFailedRoute: typeof MigrationsFailedRoute
   RecipeRecipeIdRoute: typeof RecipeRecipeIdRoute
+  KbEquipmentEquipmentIdRoute: typeof KbEquipmentEquipmentIdRoute
   KbGrainGrainIdRoute: typeof KbGrainGrainIdRoute
   KbHopHopIdRoute: typeof KbHopHopIdRoute
   KbRecipeRecipeIdRoute: typeof KbRecipeRecipeIdRoute
@@ -235,6 +274,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DisclaimerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/equipment': {
+      id: '/equipment'
+      path: '/equipment'
+      fullPath: '/equipment'
+      preLoaderRoute: typeof EquipmentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/knowledge': {
       id: '/knowledge'
       path: '/knowledge'
@@ -256,6 +302,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BatchBatchIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/equipment_/$equipmentId': {
+      id: '/equipment_/$equipmentId'
+      path: '/equipment/$equipmentId'
+      fullPath: '/equipment/$equipmentId'
+      preLoaderRoute: typeof EquipmentEquipmentIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/migrations/backups': {
       id: '/migrations/backups'
       path: '/migrations/backups'
@@ -275,6 +328,13 @@ declare module '@tanstack/react-router' {
       path: '/recipe/$recipeId'
       fullPath: '/recipe/$recipeId'
       preLoaderRoute: typeof RecipeRecipeIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/kb/equipment/$equipmentId': {
+      id: '/kb/equipment/$equipmentId'
+      path: '/kb/equipment/$equipmentId'
+      fullPath: '/kb/equipment/$equipmentId'
+      preLoaderRoute: typeof KbEquipmentEquipmentIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/kb/grain/$grainId': {
@@ -319,12 +379,15 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BatchesRoute: BatchesRoute,
   DisclaimerRoute: DisclaimerRoute,
+  EquipmentRoute: EquipmentRoute,
   KnowledgeRoute: KnowledgeRoute,
   RecipesRoute: RecipesRoute,
   BatchBatchIdRoute: BatchBatchIdRoute,
+  EquipmentEquipmentIdRoute: EquipmentEquipmentIdRoute,
   MigrationsBackupsRoute: MigrationsBackupsRoute,
   MigrationsFailedRoute: MigrationsFailedRoute,
   RecipeRecipeIdRoute: RecipeRecipeIdRoute,
+  KbEquipmentEquipmentIdRoute: KbEquipmentEquipmentIdRoute,
   KbGrainGrainIdRoute: KbGrainGrainIdRoute,
   KbHopHopIdRoute: KbHopHopIdRoute,
   KbRecipeRecipeIdRoute: KbRecipeRecipeIdRoute,
