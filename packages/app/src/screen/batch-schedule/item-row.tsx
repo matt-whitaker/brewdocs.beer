@@ -85,7 +85,7 @@ function BatchScheduleItemDetail({ detail, value, onChange }: BatchScheduleItemD
     return (
         <DataGridRow zebra={false}>
             <DataGridLabel tiny cols={3}>{detail.name}</DataGridLabel>
-            <DataGridInput label={detail.name} cols={3} type={detail.input === "date" ? "date" : undefined} value={value} onChange={onChange} />
+            <DataGridInput label={detail.name} cols={2} colStart={5} type={detail.input === "date" ? "date" : undefined} value={value} onChange={onChange} />
         </DataGridRow>
     );
 }
