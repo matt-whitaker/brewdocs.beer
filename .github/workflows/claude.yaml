@@ -256,7 +256,7 @@ jobs:
       # is not "script or model", it is "read the issue or guess".
       - id: route-schema
         name: Load the routing schema
-        if: steps.route.outputs.defaulted == 'true'
+        if: steps.route.outputs.defaulted == 'true' || steps.route.outputs.consult == 'true'
         run: |
           # same constraints as the handoff and findings schemas: one line, and no single quote,
           # because it is inlined into a single-quoted claude_args flag
@@ -267,13 +267,13 @@ jobs:
           echo "body=$body" >> "$GITHUB_OUTPUT"
           echo "routing schema loaded (${#body} chars)"
       - id: route-prompt
-        if: steps.route.outputs.defaulted == 'true'
+        if: steps.route.outputs.defaulted == 'true' || steps.route.outputs.consult == 'true'
         uses: ./.github/actions/load-prompt
         with:
           role: route
       - id: custodian
         name: Ask the root role which role this is
-        if: steps.route.outputs.defaulted == 'true'
+        if: steps.route.outputs.defaulted == 'true' || steps.route.outputs.consult == 'true'
         # ⚠️ A FAILED INTERCEPTION MUST NOT MEAN NOTHING RUNS. The script's default is the floor:
         # `resolve` falls back to it whenever this step produces no usable answer, and this keeps
         # the job green so it gets there. Degrading to the old behaviour is the correct failure.
@@ -352,8 +352,11 @@ jobs:
           # correct. Everything needed to tell them apart exists here and was being discarded.
           raw_role="$role"
 
+          # ⚠️ `claude` is in the list now, and it is not a no-op: on a bare @claude comment it is
+          # the custodian saying "this is a question, answer it" — the same route the script would
+          # have taken, but chosen rather than assumed.
           case "$role" in
-            architect|researcher|implementor|designer|tester|writer) ;;
+            claude|architect|researcher|implementor|designer|tester|writer) ;;
             *) role="" ;;
           esac
 
@@ -406,6 +409,12 @@ jobs:
           REASON: ${{ steps.resolve.outputs.reason }}
           REMEDY: ${{ steps.resolve.outputs.remedy }}
           RESOLVED_BY: ${{ steps.resolve.outputs.resolved_by }}
+          # ⚠️ A consultation is not a gap. `defaulted` means state was missing and the issue needs
+          # fixing; `consult` means someone typed `@claude` and the only open question was whether
+          # they wanted words or work. Announcing every one of those would be noise, so the hook
+          # speaks only when the answer changed what runs.
+          CONSULT: ${{ steps.route.outputs.consult }}
+          SCRIPT_ROLES: ${{ steps.route.outputs.roles }}
         run: "$RUNNER_TEMP/agent-bin/report-route.py"
 
       # ⚠️ THE ROUTING STEP WAS THE ONLY MODEL STEP HERE SHIPPING NO TRANSCRIPT, which is why #807

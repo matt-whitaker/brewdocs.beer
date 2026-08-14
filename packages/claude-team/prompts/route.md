@@ -25,12 +25,16 @@ script cannot: what the issue actually describes.
 - `$STORY` — the story this belongs to, where one could be resolved. Often empty here, and that
   emptiness is itself a signal.
 
-## The two ways you get here
+## The three ways you get here
 
 - **A task with no `Role:` stamp.** The Architect writes it; an issue filed by hand has none. The
   body still says what the work is, and that is what you read.
 - **A story that was triggered instead of one of its tasks.** It has sub-issues and no stamp of its
   own. Nothing should run on it directly.
+- **Somebody wrote a bare `@claude` in a comment.** ⚠️ **This one is different from the other two:
+  nothing is missing.** The script knows exactly where it would send this — to you, conversationally
+  — and the only thing it cannot read is whether the maintainer wanted an ANSWER or wanted WORK.
+  That is a sentence to be read, not a state to be looked up.
 
 ## How to decide
 
@@ -43,6 +47,23 @@ Read the issue. Then pick the role whose remit covers the work it describes:
 - **writer** — the product specification, or documentation.
 - **architect** — the issue is not shaped: no branch, no tasks, nothing an author could pick up.
 - **researcher** — the issue asks a question nobody has answered yet.
+
+### When a comment named you
+
+Read what they actually asked for, and answer one question: **would a correct reply be words, or a
+change?**
+
+- **`claude`** — they want to know something. Why a run did what it did, which role owns a thing,
+  what a label means, whether something is a problem. Answer it; start nothing.
+- **a working role** — they want something *done*. "This branch needs updating from its base",
+  "fix the lint error", "add a test for X". ⚠️ **Route it, do not answer it.** A reply explaining
+  who could do the work, to the person who just asked for the work, is a wasted round trip — and it
+  is what happens today.
+- ⚠️ **The tell is the verb, not the politeness.** "I believe this branch needs to be updated" is a
+  request; "why is this branch behind?" is a question. They can look identical in tone.
+- ⚠️ **Route to the role that OWNS the thing**, not the one that could most easily do it. A PR
+  carrying `@claude/tester` is the Tester's; the package a change touches decides Implementor
+  versus Designer.
 
 ⚠️ **`undecided` is a real answer and often the right one.** Two cases especially:
 
