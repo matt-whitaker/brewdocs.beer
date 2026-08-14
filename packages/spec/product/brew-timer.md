@@ -86,6 +86,11 @@ the note above.
 > *Why:* the planned amount is already sitting in the recipe — making the brewer retype it
 > while standing at the kettle is exactly where a transcription slip creeps in.
 
+**BREW-TIMER-14** — The Reading tab's Value field shows the same kind of example placeholder as
+the batch schedule's reading fields (BATCH-SCHEDULE-16) when empty, matching whichever of
+Gravity, Volume or Temperature is the selected reading kind. Selecting Pressure, Water, Keg date
+or Bottle date shows no such placeholder.
+
 ## Known gaps
 
 - Which specific item a reading, an ingredient addition, or an equipment check-off actually
