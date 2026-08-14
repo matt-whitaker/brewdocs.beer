@@ -37,7 +37,7 @@ const Section = ({title, children}: {title: string; children: React.ReactNode}) 
 );
 
 const DesignSystem = () => (
-    <div className="max-w-3xl">
+    <div className="mx-auto max-w-3xl">
         <ScreenH1>Design system</ScreenH1>
         <ScreenP>
             The visual language every BrewDocs surface is built from: one palette, one type scale, one
