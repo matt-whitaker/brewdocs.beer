@@ -72,6 +72,20 @@ Phase, whether or not anything on screen shows that time yet.
 value. Submitting with a label uses it as the recorded reading's name; submitting without one
 keeps the reading kind's default label, unchanged from BREW-TIMER-02.
 
+**BREW-TIMER-13** — Selecting an ingredient in the Ingredients tab pre-fills the value field
+with that item's own planned value from the recipe (a planned weight, for grain, hop, or
+additive) when the recipe records one, instead of leaving the field blank; picking a different
+item replaces it with that item's own planned value rather than carrying over the previous
+one. The brewer can still type over the pre-filled value or clear it, and whatever is
+submitted — including left blank — is recorded exactly as before (BREW-TIMER-03). An item with
+nothing planned for that field, including a yeast (which has no planned value tracked on this
+tab), shows a blank field, the same as before this pre-fill existed. Which ingredients the tab
+offers, and in what order, is unchanged by this — that remains out of scope of this panel, per
+the note above.
+
+> *Why:* the planned amount is already sitting in the recipe — making the brewer retype it
+> while standing at the kettle is exactly where a transcription slip creeps in.
+
 ## Known gaps
 
 - Which specific item a reading, an ingredient addition, or an equipment check-off actually
