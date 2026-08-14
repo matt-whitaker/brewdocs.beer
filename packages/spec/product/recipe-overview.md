@@ -10,7 +10,9 @@ credited to, its headline figures — ABV, IBUs, original gravity and final grav
 description.
 
 **RECIPE-OVERVIEW-02** — The overview lists the recipe's ingredients grouped by kind — hops,
-grain, yeast, additives — each group naming the ingredients it holds.
+grain, yeast, additives — each group naming the ingredients it holds and the weight assigned to
+each one. An additive carries that weight the same way a grain's or hop's does, whether or not it
+also carries a boil time.
 
 **RECIPE-OVERVIEW-03** — A catalogue recipe and one of the brewer's own read identically: the same
 figures, the same ingredient grouping, the same actions offered. Nothing about *reading* a recipe
@@ -53,7 +55,8 @@ start of the brew, rather than leaving them on the recipe.
 **RECIPE-OVERVIEW-11** — The new batch starts with the recipe's ingredients already laid out
 across the phases of the brew — grains in the mash, hops and additives in the boil, yeast at
 fermentation — carrying their quantities with them, so a brewer never re-enters a recipe they
-have just chosen to brew.
+have just chosen to brew. An additive's weight carries over the same way a grain's or hop's does,
+whether or not the addition also carries a boil time.
 
 **RECIPE-OVERVIEW-12** — A batch keeps a way back to the recipe it was brewed from, and that is
 the recipe actually brewed — the catalogue's, or the brewer's own copy of it, whichever they

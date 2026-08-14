@@ -20,7 +20,7 @@ export type RecipeEditResourceAddRowProps = {
     phaseId: string;
     /** the phase's display label, used for the accessible names of this row's controls */
     phaseLabel: string;
-    /** which additive shape a new "Additive" entry defaults to — weight for Conditioning, boil everywhere else */
+    /** whether a new "Additive" entry gets a boil time alongside its weight — Conditioning additives don't */
     phaseType: PhaseType;
     resourceType: ResourceType;
     add: AddFn;
@@ -69,7 +69,7 @@ export default function RecipeEditResourceAddRow({
         if (isAdditive) {
             const name = additiveName.trim();
             if (!name) return;
-            add("assignments", { phaseId, resourceType: "additive", slug: name, resource: defaultAdditive(name, phaseType === "conditioning" ? "weight" : "boil") });
+            add("assignments", { phaseId, resourceType: "additive", slug: name, resource: defaultAdditive(name, phaseType) });
             setAdditiveName("");
             return;
         }

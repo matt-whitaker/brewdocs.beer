@@ -41,7 +41,9 @@ the order the brewer arranged while planning.
 
 **BATCH-SCHEDULE-09** — Planning lists ingredients in the order the brewer put them in, and
 nothing re-orders them there. Changing an addition's boil time moves it on the brew-day schedule
-and leaves it where it is in Planning.
+and leaves it where it is in Planning. Every ingredient assignment carries a configurable weight,
+set there the same way regardless of kind — an additive's weight is set independently of whether
+that addition also carries a boil time.
 
 > *Why:* the two screens answer different questions. Planning is where the brewer arranges the
 > recipe, and re-sorting under their hands while they type would fight them. The brew day is
@@ -58,6 +60,15 @@ that value is recorded against the same item.
 > an arbitrary pick dressed as a resolution for the other two — the same reason equipment is named
 > (BATCH-SCHEDULE-06). Ingredients and equipment now behave alike, which is one rule for a brewer
 > to hold instead of three.
+
+**BATCH-SCHEDULE-15** — The Brewing schedule offers an additive's weight as a plan/actual field
+the same way it already does for a grain's or hop's weight: the planned weight is shown, and if
+the brewer enters a value against it, that value is recorded against the same item
+(BATCH-SCHEDULE-10).
+
+> *Why:* an addition's boil time and its weight answer different questions — one is when, the
+> other is how much — so recording what actually went in must not depend on whether that
+> addition also carries a boil time (BATCH-SCHEDULE-08).
 
 **BATCH-SCHEDULE-11** — The items are offered in the order the phase lists them
 (BATCH-SCHEDULE-08), with the first not-yet-completed one already selected, and an item that has

@@ -89,19 +89,18 @@ export function kbYeastToRecipeYeast(kbYeast: KbYeast): Yeast {
     };
 }
 
-/** Default boil time or priming-sugar weight for a freeform additive — there's no kb catalog for additives, so the name is typed rather than picked. */
-export function defaultAdditive(name: string, kind: "boil" | "weight"): Additive {
-    if (kind === "weight") {
-        return {
-            name,
-            weight: {
-                value: "1.0oz",
-                unit: UNITS.OUNCES
-            },
-        };
-    }
-    return {
+/** Default weight — plus a boil time outside Conditioning — for a freeform additive; there's no kb catalog for additives, so the name is typed rather than picked. */
+export function defaultAdditive(name: string, phaseType: PhaseType): Additive {
+    const additive: Additive = {
         name,
+        weight: {
+            value: "1.0oz",
+            unit: UNITS.OUNCES
+        },
+    };
+    if (phaseType === "conditioning") return additive;
+    return {
+        ...additive,
         boil: {
             value: "15min",
             unit: UNITS.MINUTES
