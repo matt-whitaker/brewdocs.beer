@@ -31,6 +31,21 @@ HANDOFF = os.environ.get("HANDOFF", "")
 if not team.REPO:
     team.fail("REPO is required")
 
+# ⚠️ A TASK NO LONGER HAS A PR AT ALL — `land-on-story.py` pushes its commits onto the story's
+# branch and closes it. Everything below this point is about a PR, so for a task there is nothing
+# here to do, and doing it would recreate the per-task PRs the model was changed to remove.
+#
+# ⚠️ THE STORY-WORKED-AS-IS PATH IS UNTOUCHED and must stay that way: that issue owns its own
+# `Branch:` line, nothing sits between it and the default branch, and its PR is the whole point.
+# The test is the existing structural one — a task's Branch line names a *different* issue's
+# branch, so the number it starts with is not its own. Reusing it is what keeps this hook and the
+# landing hook from ever disagreeing about what a task is.
+if ISSUE:
+    _named = team.branch_line(team.issue_body(ISSUE))
+    if _named and team.story_from_branch(_named) != str(ISSUE):
+        print(f"#{ISSUE} is a task — its work lands on `{_named}`; no PR to finish.")
+        raise SystemExit(0)
+
 branch = subprocess.run(
     ["git", "rev-parse", "--abbrev-ref", "HEAD"], capture_output=True, text=True, check=False
 ).stdout.strip()
