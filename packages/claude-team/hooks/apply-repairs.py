@@ -38,8 +38,16 @@ import team
 REPAIRS = os.environ.get("REPAIRS", "")
 OWNER = os.environ.get("PROJECT_OWNER", "")
 PROJECT = os.environ.get("PROJECT_NUMBER", "")
+ISSUE = os.environ.get("ISSUE", "")
+PR = os.environ.get("PR", "")
+
+TARGET = ISSUE or PR
 
 MARKER = "<!-- claude-team:custodian-log -->"
+HEADER = (
+    "🔧 **Custodian log.** What a run put right, and what it found and deliberately did not. "
+    "Nothing here changed any content."
+)
 CLASSIFICATION = {"epic", "spike", "bug", "task", "story"}
 
 if not team.REPO:
@@ -154,17 +162,60 @@ for repair in repairs:
             target, MARKER,
             f"**`{kind}`** — {changed}.\n\n_What was wrong:_ {repair.get('wrong')}\n\n"
             f"_Why:_ {repair.get('why')}{team.run_link()}",
-            "🔧 **Custodian repairs.** Process state put right by a run, each with what was wrong "
-            "and why. Nothing here changed any content.",
+            HEADER,
         )
         applied.append(f"{kind} on #{target}: {changed}")
+
+
+def report_unrepairable() -> None:
+    """Put what the run would NOT fix where a human reads it, not only in the job log.
+
+    ⚠️ THIS WAS A `print` TO THE ACTIONS LOG, AND THAT MADE IT THE FIFTH DEAD CHANNEL HERE — after
+    `DEFAULTED`, the author handoff appended in a job its readers never run in, `decisions` on the
+    PR path, and `docsCandidates`. Every one had the same shape: a required output with nothing
+    reading it, shipped and believed to work.
+
+    ⚠️ IT IS THE HALF THAT CARRIES THE WEIGHT, which is what made losing it expensive. `repairs`
+    are the things already put right; `unrepairable` is the finding a human must act on — usually
+    naming the role that owns it. A measured instance: a run identified a stale task title and
+    said which role should rename it. That sentence reached a job log and nobody else, so from the
+    outside the custodian had said "not my job" and offered nothing.
+
+    ⚠️ SAME MARKER AS THE REPAIRS, deliberately: everything the custodian has done to an issue
+    reads as one history. The section prefix is what distinguishes them, so a reader can never
+    mistake "I did not fix this" for "I fixed this".
+
+    ⚠️ APPENDS RATHER THAN UPSERTS, matching `repairs`. A finding is a record, not a derived
+    status — and a *repeated* finding is itself the signal that the cause is still there, which an
+    upsert would erase.
+    """
+    if not unrepairable:
+        return
+
+    lines = [
+        f"⚠️ **Not repaired** — {item.get('what')}\n\n_What would fix it:_ {item.get('wouldFix')}"
+        for item in unrepairable
+    ]
+    for item in unrepairable:
+        print(f"reported only — {item.get('what')} (would fix: {item.get('wouldFix')})")
+
+    if not TARGET:
+        team.warn(
+            f"{len(unrepairable)} unrepairable finding(s) had no issue or PR to report on — "
+            "ISSUE and PR were both empty, so they reached the job log only."
+        )
+        return
+
+    if not team.append_to_comment(TARGET, MARKER, "\n\n".join(lines) + team.run_link(), HEADER):
+        team.warn(f"could not report {len(unrepairable)} unrepairable finding(s) on #{TARGET}")
+
 
 for line in applied:
     print(f"repaired — {line}")
 for line in withheld:
     print(f"withheld — {line}")
-for item in unrepairable:
-    print(f"reported only — {item.get('what')} (would fix: {item.get('wouldFix')})")
 
-if not (applied or withheld):
+report_unrepairable()
+
+if not (applied or withheld or unrepairable):
     print("no repairs applied.")
