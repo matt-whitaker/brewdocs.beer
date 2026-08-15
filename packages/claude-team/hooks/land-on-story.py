@@ -33,6 +33,24 @@ import subprocess
 
 import team
 
+
+def emit(closed: bool) -> None:
+    """Say whether the task actually closed, so the board step can follow.
+
+    ⚠️ THE BOARD MOVE IS A SEPARATE STEP, NOT CODE IN HERE. `set-issue-status.py` already knows how
+    to place an issue and set its Status, and it is the only place `PROJECTS_TOKEN` is allowed to
+    live — in the step env of a scripted step, out of reach of the model steps beside it. Doing the
+    board write here would mean a second copy of that logic and a second place the token has to be.
+
+    ⚠️ FALSE IS A REAL ANSWER, and the reason this is an output rather than an inference. A task
+    that reported `remaining` is still open and still In Progress; a consumer that treated "the
+    hook ran" as "the task finished" would march an unfinished task to Done.
+    """
+    out = os.environ.get("GITHUB_OUTPUT")
+    if out:
+        with open(out, "a", encoding="utf-8") as handle:
+            handle.write(f"closed={'true' if closed else 'false'}\n")
+
 ISSUE = os.environ.get("ISSUE", "")
 HANDOFF = os.environ.get("HANDOFF", "")
 
@@ -43,11 +61,13 @@ if not team.REPO:
 
 if not ISSUE:
     print("no issue — a PR follow-up commits to the branch it was triggered on. Nothing to land.")
+    emit(False)
     raise SystemExit(0)
 
 named = team.branch_line(team.issue_body(ISSUE))
 if not named:
     print(f"#{ISSUE} carries no Branch line — nothing to land onto.")
+    emit(False)
     raise SystemExit(0)
 
 # ⚠️ THE SAME STRUCTURAL TEST THE PR-BASE RULE USED, so the two can never disagree about what a
@@ -56,6 +76,7 @@ if not named:
 # still opens its own PR, and this hook must not touch it.
 if team.story_from_branch(named) == str(ISSUE):
     print(f"#{ISSUE} owns `{named}` — it is worked as-is and opens its own PR. Not landing.")
+    emit(False)
     raise SystemExit(0)
 
 
@@ -70,6 +91,7 @@ if not branch or branch == "HEAD":
 ahead = git("rev-list", "--count", f"origin/{named}..HEAD").stdout.strip()
 if ahead in ("", "0"):
     print(f"nothing to land — HEAD is not ahead of `{named}`. The run produced no commits.")
+    emit(False)
     raise SystemExit(0)
 
 # ⚠️ An explicit refspec, not a checkout-and-merge. Nothing is merged, rebased or rewritten: either
@@ -103,6 +125,7 @@ if remaining:
         f"work remaining, so the issue stays open:\n\n{items}\n\nRe-trigger it to continue.{link}",
     )
     print(f"#{ISSUE} left open — {len(remaining)} item(s) remaining")
+    emit(False)
     raise SystemExit(0)
 
 team.upsert_comment(
@@ -114,5 +137,7 @@ team.upsert_comment(
 
 if team.gh("issue", "close", ISSUE, "--repo", team.REPO, "--reason", "completed") is None:
     team.warn(f"landed on `{named}` but could not close #{ISSUE}")
+    emit(False)
 else:
     print(f"closed #{ISSUE}")
+    emit(True)
