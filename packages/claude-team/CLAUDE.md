@@ -226,10 +226,12 @@ and its stranded-commit recovery never fires. That recovery is for a run that co
 4. The **story's** PR accumulates all of it. The maintainer reviews and merges the story as
    a whole.
 
-⚠️ **The story's PR opens on the first task merge, from the merge hook — not from an
-authoring run.** The story branch is cut empty, and GitHub will not open a PR with no
-commits between base and head, so the first task landing is the earliest moment it can
-exist.
+⚠️ **The story's PR opens when the LAST task completes.** The target experience: trigger the
+story, come back to a finished PR carrying the whole story's work. The all-tasks-closed gate lives
+in `open-story-pr.py` itself, so the authors-job call and the merge-path net inherit it
+identically; every earlier landing just reports how many tasks remain. ⚠️ An unreadable or empty
+task list degrades to open-when-ahead with a warning — an early PR is a nuisance, a story that can
+never get its PR is lost work.
 
 ⚠️ **A TASK IS CLOSED BY THE LANDING HOOK, NOT BY A KEYWORD.** There is no task PR, so there is no
 closing keyword and nothing for GitHub to act on. `work-completion.py` closes the issue once its
@@ -648,8 +650,8 @@ yet.
 - ⚠️ **Both keys are required and `[]` is a real answer** — "I looked, there is nothing",
   which a consumer can act on. A missing key says nothing at all. That distinction is the
   entire reason this is a schema and not a prose section.
-- ⚠️ **The story's issue, not its PR.** The PR does not exist until the first task merges,
-  so a handoff written during the first task would have nowhere to go.
+- ⚠️ **The story's issue, not its PR.** The PR does not exist until the last task completes,
+  so a handoff written during any earlier task would have nowhere to go.
 - ⚠️ **A PR follow-up must reach the story too, and for a long time it did not.** The workflow
   blanks `ISSUE` on a PR trigger and the hook returned on that alone — before ever reading
   `STORY`, which `delegate.py` rule 2 had already resolved from the head branch. So the one run

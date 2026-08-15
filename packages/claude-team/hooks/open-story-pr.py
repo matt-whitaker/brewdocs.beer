@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
-"""Runs on every merged PR. Opens the STORY's PR the first time a task PR lands on a story
-branch, so the story is reviewable as it accumulates rather than arriving whole.
+"""Opens the STORY's PR when the LAST task completes — not before. The target experience is:
+trigger the story, come back to a finished PR carrying the whole story's work.
 
-IT RUNS HERE, NOT IN AN AUTHORING RUN, and that is forced rather than chosen. Under
-sub-branching an author commits to its own task branch, so the story branch stays empty until
-a task PR merges into it — and GitHub will not open a PR with no commits between base and
-head. The first task merge is the earliest moment the story's PR can exist.
+⚠️ THE ALL-TASKS-CLOSED GATE LIVES HERE, IN THE HOOK, so every call site inherits it: the
+authors job calls this after each landing, and the merge path still calls it as a net. A landing
+that is not the last simply reports how many remain.
 
-BASE is the merged PR's base ref. A task PR's base is the story branch; a story PR's base is
-the default branch. So a story branch base means "a task just landed".
+⚠️ AN UNREADABLE OR EMPTY TASK LIST DEGRADES TO OPEN-WHEN-AHEAD, WITH A WARNING. A rate-limited
+minute must not permanently block the story's PR — and a story branch with no tasks at all is
+off-model, worth a warning in its own right. Failing "open" here is deliberate: an early PR is a
+nuisance, a story that can never get its PR is lost work.
+
+BASE is the story branch. On the merge path it is the merged PR's base ref; merged into the
+default branch it is a story PR itself, and there is nothing to open.
 """
 
 import os
@@ -41,21 +45,33 @@ if existing:
     print(f"PR #{existing[0]['number']} already open for {BASE}.")
     raise SystemExit(0)
 
+tasks = team.sub_issues(story)
+if not tasks:
+    team.warn(
+        f"#{story} has no readable tasks — a story branch without tasks is off-model, so this "
+        "degrades to the old open-when-ahead rule rather than blocking the PR forever."
+    )
+else:
+    remaining = [t_ for t_ in tasks if t_.get("state") != "closed"]
+    if remaining:
+        print(
+            f"{len(remaining)} of {len(tasks)} task(s) still open — the story PR opens when the "
+            "last one completes."
+        )
+        raise SystemExit(0)
+
 compare = team.gh_json("api", f"repos/{team.REPO}/compare/{default}...{BASE}") or {}
 if not compare.get("ahead_by"):
     print(f"{BASE} is not ahead of {default} — nothing to open a PR for.")
     raise SystemExit(0)
 
 title = team.issue(story, "title").get("title") or f"Story #{story}"
-tasks = team.sub_issues(story)
 
 lines = [
     f"Story PR for `{BASE}`.",
     "",
-    "⚠️ **This PR stays open until the story is complete.** Each task lands here by its",
-    "own PR into this branch, so it grows as the story does — code, tests and docs",
-    "together — rather than arriving as several. One task merging is not a signal to",
-    "merge this.",
+    "**Every task has landed** — this PR carries the story's combined work to the default",
+    "branch, and is its only review surface.",
     "",
     f"Closes #{story}",
 ]
@@ -66,16 +82,11 @@ if tasks:
         lines.append(f"- [{mark}] #{task['number']} — {task.get('title', '')}")
     # ⚠️ NO CLOSING KEYWORDS IN THIS LIST, and the reason changed even though the rule did not.
     # It used to be "each task is closed by its own PR merging into this branch" — false since a
-    # task stopped having a PR at all. The rule survives because `land-on-story.py` has ALREADY
+    # task stopped having a PR at all. The rule survives because `work-completion.py` has ALREADY
     # closed these tasks by the time this list is written: repeating keywords here would re-close
     # finished ones on the story's merge, and close any that were abandoned rather than finished.
     # ⚠️ Kept explicit because the correct rule with a stale reason attached is exactly what gets
     # "simplified" away by someone who notices only that the reason is wrong.
-    lines += [
-        "",
-        "Each was closed as its work landed on this branch. This PR carries their combined "
-        "work to the default branch, and is the only review surface for the story.",
-    ]
 
 if team.gh(
     "pr", "create", "--repo", team.REPO, "--base", default, "--head", BASE,
