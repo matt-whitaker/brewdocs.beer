@@ -189,10 +189,9 @@ message you report is the one that survives, so put the care there.)
   story branch and closes your issue; the story's PR opens when its last task completes and
   carries everything to the default branch.
 - **You are a STORY worked as-is** — the **Branch** line names *your own* issue number, so nothing
-  sits between you and the default branch. ⚠️ **This is the one case where the git is still
-  yours**: commit, push, and open a PR against the default branch with **`Closes #<your issue>`**
-  in its body. A hook nets a forgotten PR, but write it yourself — the netted body is a recovery
-  notice, not a description of your work.
+  sits between you and the default branch. Same rule as a task: edit, report, stop. The hooks land
+  your work on your named branch and open its PR against the default branch; your issue closes
+  when that PR merges, not before.
 
 ⚠️ **A task that opens a PR has made work for the maintainer, not less of it.** One story is one
 review. Per-task PRs split that review across several places and were removed deliberately.

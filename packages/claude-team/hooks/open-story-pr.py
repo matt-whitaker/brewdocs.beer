@@ -46,11 +46,12 @@ if existing:
     raise SystemExit(0)
 
 tasks = team.sub_issues(story)
+# ⚠️ NO TASKS IS THE AS-IS CASE, not an error: a story worked directly lands on its own ref and
+# its PR opens the moment it is ahead. (An unreadable task list on a real task-story arrives here
+# too and opens early — accepted, because an early PR is a nuisance and a story that can never get
+# its PR is lost work.)
 if not tasks:
-    team.warn(
-        f"#{story} has no readable tasks — a story branch without tasks is off-model, so this "
-        "degrades to the old open-when-ahead rule rather than blocking the PR forever."
-    )
+    print(f"#{story} has no tasks — worked as-is; its PR opens as soon as the branch is ahead.")
 else:
     remaining = [t_ for t_ in tasks if t_.get("state") != "closed"]
     if remaining:
@@ -67,11 +68,16 @@ if not compare.get("ahead_by"):
 
 title = team.issue(story, "title").get("title") or f"Story #{story}"
 
+if tasks:
+    summary = ("**Every task has landed** — this PR carries the story's combined work to the "
+               "default branch, and is its only review surface.")
+else:
+    summary = ("**Worked as-is** — this story was small enough for one author, and this PR is "
+               "its whole delivery.")
 lines = [
     f"Story PR for `{BASE}`.",
     "",
-    "**Every task has landed** — this PR carries the story's combined work to the default",
-    "branch, and is its only review surface.",
+    summary,
     "",
     f"Closes #{story}",
 ]

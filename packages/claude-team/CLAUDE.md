@@ -796,7 +796,7 @@ forgotten by a model that ran out of turns or simply skipped it.
 | `file-sub-issues.py` | post, Architect | parents stories to their epic, tasks to their story |
 | `work-completion.py` | post, authors | commits the run's changes (message from the handoff's `commitMessage`), lands them on the story's branch — reconciling a rejected push by merge — and closes the task; a **conflicted** merge fails the step with `unlandable=true` |
 | `capture-failure.py` | post, authors — only when a model step failed or the landing conflicted | pushes the run's changes to `failure/<task#>-<run#>-<attempt>` and appends a recovery report on the issue; never fails, never masks the real error |
-| `finish-pr.py` | post, authors | **a story worked as-is only** — labels its PR and ensures it closes its issue, or, when the author reported work `remaining`, that it does not. Returns immediately for a task, which has no PR |
+| `finish-pr.py` | post, authors | the net behind `open-story-pr.py` on the as-is path — labels the PR and reconciles the closing keyword with `remaining`. Returns immediately for a task, which has no PR |
 | `apply-repairs.py` | post, the root role | applies the process repairs it named, records each with what was wrong and why, **reports what it would not fix onto the trigger**, and files an issue rather than repairing the same thing twice |
 | `post-findings.py` | post, Researcher | renders its schema-forced findings onto the spike — the role has no shell, so this is the only way they reach anyone |
 | `post-handoff.py` | post, authors | posts the JSON handoff to the story's issue, and appends its `decisions` to one running log there |
@@ -925,7 +925,11 @@ this system briefly had is gone.
 Architect's call sits **after** `file-sub-issues.py`, so "does this story have tasks" is answerable
 at creation time and the custodial job no longer creates branches at all. The authors' pre-call is
 the #744 net unchanged: a task whose story branch is missing gets it created before `setupBranch`
-can 404. A story worked as-is still gets no branch anywhere.
+can 404. A story worked as-is gets no branch from navigation — its named ref is CREATED by its
+own landing: `work-completion.py` handles the owns-line case identically to a task except at the
+end, where the issue is **never closed** (its PR targets the default branch, so GitHub closes it
+natively on merge) and `open-story-pr.py` opens the PR immediately — no tasks to wait for. The
+author's git exception is gone; every issue-triggered run edits, reports, and stops.
 
 ⚠️ **The obsolete note below is kept deliberately** — the sweep it describes was real, shipped, and
 removed one PR later. Whoever reaches for deletion again should find the reason it was the wrong
