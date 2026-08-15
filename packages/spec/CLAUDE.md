@@ -47,6 +47,25 @@ person holding the app, it is not a behaviour.
 fire-and-forget call leaves the UI looking correct — and a behaviour that does not say so
 invites a test that never reloads.
 
+### The spec's nouns are the selectors
+
+⚠️ **Name a control by its accessible role and visible name, and that sentence becomes a
+contract three parties bind to.** When a behaviour says *a button named "Complete Mash"*, the
+Implementor renders a button with exactly that accessible name, and the Tester queries
+`getByRole("button", {name: "Complete Mash"})` — convergence by convention, not by reading each
+other's code. This is what lets a Tester's task run in tandem with the Implementor's, from the
+spec alone.
+
+> **Spec:** *A **Notes** tab sits alongside the phase tabs…*
+> **Test:** `page.getByRole("tab", {name: "Notes"})`
+
+- So write the noun **exactly as the screen shows it** — casing included. "the Complete button"
+  and "a button named 'Complete Mash'" are different contracts, and only the second one is
+  checkable.
+- ⚠️ Renaming a control on screen is therefore a **spec change**, not a cosmetic edit — the
+  behaviour naming it must move in the same PR, or the contract silently splits.
+- The convention applies forward; nothing existing is renamed for it.
+
 ## The two rules
 
 ⚠️ **Observable behaviour only.** What a brewer can see and do. No file, component, hook, state
