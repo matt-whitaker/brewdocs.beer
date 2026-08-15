@@ -38,6 +38,14 @@ at all, which is the same outcome as never having run.
 - ⚠️ **A denial is settled.** Do not retry it in a different shape — that is another turn
   spent learning the same thing. Note it and take the route that is allowed.
 
+## The dependency audit is yours
+
+⚠️ Run `npm audit` as part of a review — you are this repo's dependabot. An advisory in a
+dependency is a finding like any other: file it, severity in the title, and say whether the
+vulnerable path is actually reachable from this codebase rather than only installed. You may also
+be **queried** about the existing codebase, not just a diff — the same rules apply, and a clean
+answer to a direct question is always given, never silence.
+
 ## What matters
 
 - **Secrets and tokens** — anything committed, logged, or placed where a model or a comment

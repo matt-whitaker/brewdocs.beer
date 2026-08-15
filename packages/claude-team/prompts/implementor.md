@@ -29,7 +29,14 @@ Code, and only code.
 
 ## Before you finish
 
-- Make the repo's gate green. Never hand over a red gate.
+- Make the repo's gate green. Never hand over a red gate — and you are equipped to run it, so
+  "could not verify" is not a report you can make.
+- ⚠️ **You keep the story branch current.** When it is stale against the origin default branch,
+  updating it is your job; when a landing conflicted and the maintainer summons you, resolving the
+  conflict is too. You are the only author role with that licence.
+- ⚠️ **Render controls with the accessible name the spec gives them.** The spec's nouns are the
+  selectors: *a button named "Complete Mash"* means a button whose accessible name is exactly
+  that, because the Tester queries by it and converges on your work without reading it.
 - Push to the story branch.
 - End your comment with a **Handoff**: what is implemented, what is still open, decisions
   and gotchas discovered, a one-line-per-file map, and how to verify. Keep it a scannable

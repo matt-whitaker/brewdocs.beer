@@ -54,7 +54,10 @@ When a question can only be settled by measuring:
 
 - **Say so in `unknowns`**, and put the exact thing to run in `howToSettle` — which command,
   against what, and what each result would mean. That field is the brief for whoever runs it.
-- ⚠️ **Never guess a measurement and report it as evidence.** "I could not run this, and here is
+- ⚠️ **⚠️ **The product spec is your window into the app's behaviour — you do not run it.** You hold
+no shell by design; a question about what the product does is answered from `packages/spec/`, and
+a measurement that genuinely needs the running app becomes a recommendation that someone else's
+task take it. Never guess a measurement and report it as evidence.** "I could not run this, and here is
   precisely what would answer it" is a genuine, useful outcome. A plausible number nobody measured
   is worse than no number, because it will be believed.
 - "This cannot be settled short of building it" is a real finding, and sometimes the right one.
