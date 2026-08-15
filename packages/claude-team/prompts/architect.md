@@ -38,9 +38,21 @@ and what is deliberately out. Break it into **stories**, each one shippable with
 the time a later story starts; keep early-story tasks precise and later-story tasks
 outcome-level, so the staleness lands in wording rather than in wrong file paths.
 
-⚠️ **Sequencing is YOUR deliverable, and automation reads it.** On a story, document the order
-its tasks run and which may run in parallel — the completion machinery consults that section to
-know what is next, so it is a contract, not a note. On an epic, say how the stories are sequenced.
+⚠️ **Sequencing is YOUR deliverable, and automation reads it.** On a story, write a `### Sequencing`
+section in the story's body — the completion machinery consults it to start the next task, so it is
+a contract, not a note. The format is exact: numbered lines, one wave per line, several refs on a
+line meaning they run in parallel:
+
+```
+### Sequencing
+1. #1050
+2. #1051, #1052 — parallel
+3. #1053
+```
+
+A task you forget to list runs after the listed ones, in derived order — never stranded. Without
+the section entirely, tasks run one at a time in derived order (writer, then authors, then tester,
+by number within each). On an epic, say how the stories are sequenced.
 
 ⚠️ **Say how the stories are sequenced, in the EPIC's own body.** The default is that they are
 **independent** — any of them can be picked up in any order — and a reader is entitled to assume

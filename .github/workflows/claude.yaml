@@ -167,6 +167,9 @@ jobs:
   # note, and delegate.py for the precedence rules.
   delegate:
     if: |
+      # ⚠️ `brewdocs-claude[bot]` — the Phase-2 dispatch App — is INTENDED to pass this guard:
+      # its label-adds are how a story cascades. The two exclusions below stay the loop guard,
+      # because every event a role run creates is authored by one of them.
       github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]' && (
         (github.event_name == 'issues' && github.event.label.name == '@claude') ||
         (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
@@ -1510,6 +1513,32 @@ jobs:
           PROJECT_NUMBER: "4"
           STATUS: "Done"
         run: MODE=status "$RUNNER_TEMP/agent-bin/labels-and-status.py"
+
+      # ⚠️ PHASE 2: after a task lands and closes, start the next one. The token is minted from
+      # the brewdocs-claude App — issues:write on this repo and nothing else, valid one hour —
+      # because events created with the workflow's own token start no runs, by design. The
+      # dispatch is a label add: the same @claude button the maintainer presses, so no new entry
+      # path exists. ⚠️ `continue-on-error` + the token-empty gate below keep the cascade DARK
+      # when the secrets are absent — the maintainer's manual gesture still works unchanged.
+      - name: Mint the dispatch token
+        id: dispatch-token
+        if: always() && steps.completion.outputs.closed == 'true'
+        continue-on-error: true
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.DISPATCH_APP_ID }}
+          private-key: ${{ secrets.DISPATCH_APP_PRIVATE_KEY }}
+      # ⚠️ Gated on the landing having CLOSED the task: a failed run, an unlandable merge, or
+      # work remaining all leave `closed` false, and the cascade halts right there — the failure
+      # capture and report have already told the maintainer where to look. No retry loops: the
+      # @claude label is the in-flight marker, and re-adding a present label fires nothing.
+      - name: Dispatch the next task
+        if: always() && steps.completion.outputs.closed == 'true' && steps.dispatch-token.outputs.token != ''
+        env:
+          GH_TOKEN: ${{ steps.dispatch-token.outputs.token }}
+          REPO: ${{ github.repository }}
+          STORY: ${{ needs.delegate.outputs.story }}
+        run: "$RUNNER_TEMP/agent-bin/dispatch-next.py"
 
       # ⚠️ The primary call site. After each landing the hook checks whether that was the LAST
       # task — every earlier landing just reports how many remain. The merge-path call is the net.

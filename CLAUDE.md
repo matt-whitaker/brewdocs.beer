@@ -264,18 +264,19 @@ handle. The workflow `if:` guards only the arm reading the comment body directly
 reading `needs.delegate.outputs.roles` carries no such guard, so a PR comment naming the handle
 still routes through unguarded (#873).
 
-⚠️ Every run is started by hand — a label or a comment — and the delegator picks the role from
-there. No role chains off another. **Tester and Writer briefly chained off the Implementor via
-`needs:` and it was reverted** — the job graph left them queued behind every run, and a role
-that skips after waiting reports as cancelled, so the history filled with cancelled jobs. If
-it is ever retried, the constraint that shaped it still holds: a comment cannot chain the
-roles, because GitHub refuses to start a run from an event created with `GITHUB_TOKEN` and the
-`if:` guards exclude `github-actions[bot]` besides. `needs:` within the one workflow was the
-only route without a new `repo`-scoped PAT in reach of a step — and `needs:` is what produced
-the noise. Cost the chain carried, for whoever revisits it: `!cancelled()` in both `if:` blocks
-(without it a skipped Implementor skips them, so a hand-typed handle could never run), and
-`trigger_phrase: "@claude/"` (tag mode gates on the phrase independently of the `if:`, and a
-chained run's comment says `@claude/implementor`).
+⚠️ **The maintainer starts the STORY; the cascade carries it.** A landed-and-closed task
+dispatches the next one via the **brewdocs-claude App** — a token minted per run
+(`actions/create-github-app-token`, `DISPATCH_APP_ID`/`DISPATCH_APP_PRIVATE_KEY`), whose whole
+grant is issues:write on this repo, adding the same `@claude` label a human would. No new entry
+path exists; the front door does the rest, and the `@claude` label doubles as the in-flight
+marker, so nothing double-dispatches or loops. ⚠️ **Missing secrets leave the cascade dark** and
+the manual gesture untouched. ⚠️ `brewdocs-claude[bot]` passes the delegate actor guard **on
+purpose** — the guard's exclusions remain the loop guard, since every event a role run creates is
+authored by `claude[bot]` or `github-actions[bot]`.
+⚠️ **`needs:`-based chaining was tried and reverted** — a role that skips after waiting reports as
+cancelled, so the history filled with cancelled jobs — and comment-based chaining is impossible
+(`GITHUB_TOKEN` events start no runs). The App dispatch is the third design, and the first that
+works: it starts a real event from a real (narrowly-scoped) identity.
 ⚠️ Workflow changes to any of this **cannot be tested before merge**: `issues` and
 `issue_comment` both always run the workflow from the default branch, so a PR branch's version
 is never the one that fires.
