@@ -621,7 +621,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       # reads to answer, writes only its own reply. No branch, no code.
-      contents: read
+      contents: write
       # ⚠️ Present only so the transcript step can assume the AWS role by OIDC. It does NOT
       # re-open the OIDC path for GitHub auth — `github_token` below short-circuits that — and
       # it does not reach the agent: `parse-sdk-options.ts` deletes ACTIONS_ID_TOKEN_REQUEST_*
@@ -636,8 +636,10 @@ jobs:
       # ⚠️ This role reaches PRs by design — rule 1b routes a bare `@claude` on a PR here rather
       # than to an Implementor — so the PR path is the normal case, not an edge.
       # ⚠️ It does NOT widen what the role may change. Commenting on and labelling a PR is process
-      # state; `contents: read` is what still bounds it away from content, and that is the load-
-      # bearing half (it neuters the `git rm`/`git-push.sh` the action's base allowlist unions in).
+      # state. The Custodian holds DIRECT GIT and `contents: write` by the maintainer's decision
+      # (spec OQ-5): branch management is part of its remit, for convenience. "Authors no code" is
+      # therefore an instructed bound, not a structural one — the captured transcript is its audit,
+      # and `github_token` is passed so this block is what the model's token actually gets.
       pull-requests: write
     steps:
       - uses: actions/checkout@v4
@@ -708,13 +710,14 @@ jobs:
           # `parent`, `subIssues` and `subIssuesSummary` — checked before narrowing this, since
           # Security already taught us that too narrow starves a role *silently* (#494).
           #
-          # ⚠️ The residual, written down rather than claimed away: the action's base allowlist
-          # unions in `Bash(git add|commit|rm:*)` and `git-push.sh` and cannot be removed. There is
-          # no `Write`/`Edit` here, so there is nothing to author worth committing, and
-          # `contents: read` bounds the token — which holds only because `github_token` is passed.
+          # ⚠️ Direct git by decision (spec OQ-5): the Custodian manages branches, so the git
+          # family is granted whole and `contents: write` backs it. There is still no
+          # `Write`/`Edit`, so authoring content stays out of reach by construction; what it can do
+          # with git is move refs, and every run's transcript is captured. `github_token` is
+          # passed, so the job's `permissions:` block is what the model's token actually gets.
           claude_args: |
             --model sonnet
-            --allowedTools "Read,Glob,Grep,Bash(gh issue view:*),Bash(gh issue list:*),Bash(gh pr view:*),Bash(gh pr list:*),Bash(gh pr diff:*),Bash(gh run view:*),Bash(gh run list:*),Bash(gh label list:*),Bash(git log:*),Bash(git show:*),Bash(git diff:*),Bash(git status:*),Bash(git ls-remote:*),Bash(git rev-parse:*)"
+            --allowedTools "Read,Glob,Grep,Bash(gh issue view:*),Bash(gh issue list:*),Bash(gh pr view:*),Bash(gh pr list:*),Bash(gh pr diff:*),Bash(gh run view:*),Bash(gh run list:*),Bash(gh label list:*),Bash(git:*)"
             --json-schema '${{ steps.repairs-schema.outputs.body }}'
             --max-turns 40
 
@@ -1232,7 +1235,7 @@ jobs:
           # sub-issue filing: a consumer cannot tell "nothing to report" from "forgot".
           claude_args: |
             --model opus
-            --allowedTools "Edit,Write,Bash(git:*),Bash(gh:*),Bash(npm:*)"
+            --allowedTools "Edit,Write,Bash(git:*),Bash(gh:*),Bash(npm:*),Bash(npx:*),Bash(node:*)"
             --max-turns 80
             --json-schema '${{ steps.schema.outputs.body }}'
 
@@ -1297,7 +1300,7 @@ jobs:
           prompt: ${{ steps.p_designer.outputs.body }}
           claude_args: |
             --model opus
-            --allowedTools "Edit,Write,Bash(git:*),Bash(gh:*),Bash(npm:*)"
+            --allowedTools "Edit,Write,Bash(git:*),Bash(gh:*),Bash(npm:*),Bash(npx:*),Bash(node:*)"
             --max-turns 80
             --json-schema '${{ steps.schema.outputs.body }}'
 
@@ -1655,7 +1658,7 @@ jobs:
           # actually stops a push, not the allowlist.
           claude_args: |
             --model sonnet
-            --allowedTools "Read,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*),Bash(gh pr checks:*),Bash(gh pr comment:*),Bash(gh issue create:*),Bash(gh issue view:*),Bash(gh issue list:*),Bash(gh repo view:*),Bash(gh project item-add:*),Bash(git log:*),Bash(git show:*),Bash(git diff:*),Bash(git status:*),Bash(git rev-parse:*),Bash(git ls-files:*),Bash(git blame:*)"
+            --allowedTools "Read,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*),Bash(gh pr checks:*),Bash(gh pr comment:*),Bash(gh issue create:*),Bash(gh issue view:*),Bash(gh issue list:*),Bash(gh repo view:*),Bash(gh project item-add:*),Bash(git log:*),Bash(git show:*),Bash(git diff:*),Bash(git status:*),Bash(git rev-parse:*),Bash(git ls-files:*),Bash(git blame:*),Bash(npm audit:*)"
             --max-turns 40
 
       # ⚠️ Diagnostics only, and it must never redden a good run — hence continue-on-error, and
