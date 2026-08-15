@@ -91,7 +91,7 @@ relabel an epic. It only ever adds, never removes.
 its tasks. It is what an author bases on and merges back into, never a branch for the task
 itself. Anything deriving a story from a branch name reads that prefix.
 
-⚠️ **A story's Branch line carries a compare link**, appended by `ensure-story-branch.py` after
+⚠️ **A story's Branch line carries a compare link**, appended by `branch-navigation.py` after
 the closing backtick, so opening its PR is one click instead of a walk through the UI. One link
 serves the branch's whole life — GitHub redirects a compare URL to the existing PR once one is
 open. ⚠️ The link sits **outside** the backticks because `branch_line` is anchored and captures
@@ -154,7 +154,7 @@ the real work sat one branch further down, and the PR pointed at the empty branc
 ⚠️ **The doubled branch is not the thing to fix, and the obvious fix is worse.** `setupBranch`
 always *creates* a branch on an issue trigger — it has no mode that checks out an existing one, so
 a second branch is structurally guaranteed and the author cannot avoid it. Making the story branch
-itself the working branch would mean not pre-creating it, and **`ensure-story-branch.py` runs before
+itself the working branch would mean not pre-creating it, and **the old pre-parenting hook ran before
 `file-sub-issues.py`**, so at that moment `sub_issues()` returns 0 for *every* story — including one
 the Architect just decomposed. That test cannot be evaluated there, and acting on it would strand
 every story with no branch at all. Changing the PR's **base** costs none of that.
@@ -778,7 +778,7 @@ forgotten by a model that ran out of turns or simply skipped it.
 | `delegate.py` | the router job | picks the role from issue state — routing is scripted, not judged |
 | `report-route.py` | the router job, last | says on the issue that this run did not route from state alone — whether the script guessed or the root role was asked |
 | `labels-and-status.py` | around every run | one hook, three modes — `stamp`: `@claude/<role>` on the trigger; `kind`: the classification label (`INCLUDE_SUB_ISSUES` reaches the tasks); `status`: board place + Status (column and flags are inputs) |
-| `ensure-story-branch.py` | post, Architect + Researcher; **pre, authors** | creates the story's branch if it is missing; an epic and a spike have none, and it says so rather than warning |
+| `branch-navigation.py` | post, Architect (after `file-sub-issues.py`) + Researcher; **pre, authors** | one decision at every site: task case creates the missing story branch (the #744 net); story case creates only when the story **has tasks**; epic and spike have none, said rather than warned; an existing branch is never touched, and creation appends the compare link |
 | `file-sub-issues.py` | post, Architect | parents stories to their epic, tasks to their story |
 | `work-completion.py` | post, authors | commits the run's changes (message from the handoff's `commitMessage`), lands them on the story's branch — reconciling a rejected push by merge — and closes the task; a **conflicted** merge fails the step with `unlandable=true` |
 | `finish-pr.py` | post, authors | **a story worked as-is only** — labels its PR and ensures it closes its issue, or, when the author reported work `remaining`, that it does not. Returns immediately for a task, which has no PR |
@@ -824,7 +824,7 @@ turns and cannot be forgotten.
   line plus an `epic #N` reference, and adopted a meta-issue that quoted the convention as an
   example. Checking the author is a bot is what makes it sound — with the accepted cost that a
   hand-written sub-issue is never auto-parented.
-- ⚠️ **`ensure-story-branch.py` runs on the AUTHORS path too, and that is not redundancy.**
+- ⚠️ **`branch-navigation.py` runs on the AUTHORS path too, and that is not redundancy.**
   `delegate.py` rule 4 routes straight to the stamped role whenever a `Branch:` line is present, so
   an issue filed with both routing lines already written — **which is what a good agent-filed bug
   looks like** — never reaches the Architect, and so never reached the hook that creates its branch.
@@ -884,8 +884,8 @@ turns and cannot be forgotten.
 checks behind, and both consult a model only where a script cannot decide.
 
 ⚠️ **The back half exists because the front half cannot answer its questions.** "Does this story
-have tasks?" reads 0 for *every* story at branch-creation time, since `ensure-story-branch.py` runs
-before `file-sub-issues.py`. "Was this branch ever used?" is not knowable until work lands, or does
+have tasks?" read 0 for *every* story at branch-creation time while creation ran before
+`file-sub-issues.py` — dissolved by moving the Architect's `branch-navigation.py` call after it. "Was this branch ever used?" is not knowable until work lands, or does
 not. "Did the Architect deliver?" is only knowable once it has stopped. Each of these was attempted
 at the front and produced fragile logic; observing them at the back is simply cheaper. **Reach for
 the back half before adding a predicate to the front.**
@@ -906,11 +906,11 @@ blanks `story_branch` so its author cuts off the default branch, which is where 
 the PR. Nothing unnecessary is made, so nothing needs removing — and the one destructive capability
 this system briefly had is gone.
 
-⚠️ **`ensure-story-branch.py` stays, as the net and only as the net.** It creates only when the
-executing issue does **not** own its `Branch:` line — a task whose story branch is missing, the
-#744/#777 case for hand-filed issues that never met an Architect. An issue that owns its own line
-defers to the custodial phase, because the question there is "does this story have tasks", and that
-is exactly what cannot be answered before `file-sub-issues.py`.
+⚠️ **`branch-navigation.py` is one hook at every site, and the front/back split is gone.** The
+Architect's call sits **after** `file-sub-issues.py`, so "does this story have tasks" is answerable
+at creation time and the custodial job no longer creates branches at all. The authors' pre-call is
+the #744 net unchanged: a task whose story branch is missing gets it created before `setupBranch`
+can 404. A story worked as-is still gets no branch anywhere.
 
 ⚠️ **The obsolete note below is kept deliberately** — the sweep it describes was real, shipped, and
 removed one PR later. Whoever reaches for deletion again should find the reason it was the wrong
