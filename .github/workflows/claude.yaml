@@ -96,11 +96,11 @@ run-name: >-
 #   post  authors job     log-to-epic.py           rewrites the epic's rolling work log
 #   merge (no role)       close-merged-work.py     closes the PR's issues, files them on the board
 #   merge (no role)       log-to-story.py          the same list, now the merged task has closed
-#   merge (no role)       open-story-pr.py         opens the story's PR once a task has landed
+#   merge (no role)       open-story-pr.py         opens the story's PR when the last task completes
 #
-# ⚠️ `open-story-pr.py` runs ON MERGE, not in an authoring run, and it moved there for a
-# reason: the story branch is cut empty and GitHub will not open a PR with no commits between
-# base and head, so the first task PR merging is the earliest moment the story's PR can exist.
+# ⚠️ `open-story-pr.py` opens the story's PR when the LAST task completes — the target
+# experience is: trigger the story, come back to a finished PR. The all-tasks-closed gate lives
+# in the hook, so both call sites (authors job and merge) inherit it identically.
 #
 # ⚠️ The authors job's post-hooks run ONCE at the end of the job, not once per role. The
 # stamps are the exception: each role stamps immediately before its own model step, so a run
@@ -1511,11 +1511,10 @@ jobs:
           STATUS: "Done"
         run: MODE=status "$RUNNER_TEMP/agent-bin/labels-and-status.py"
 
-      # ⚠️ Second call site. It used to run only on merge, because a story branch cut empty has
-      # nothing to open a PR from and the first task PR merging was the earliest moment one could
-      # exist. With task work landing directly there, that moment is now — and its own
-      # already-exists and 0-ahead guards make running it here idempotent.
-      - name: Open the story's PR if it has none
+      # ⚠️ The primary call site. After each landing the hook checks whether that was the LAST
+      # task — every earlier landing just reports how many remain. The merge-path call is the net.
+      # Its own already-exists and 0-ahead guards keep re-runs idempotent.
+      - name: Open the story's PR when the last task lands
         if: always() && steps.roles.outputs.list != '' && needs.delegate.outputs.story_branch != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
