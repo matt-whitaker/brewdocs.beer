@@ -89,6 +89,7 @@ run-name: >-
 #   post  architect       branch-navigation.py     creates the story's branch — only if it has tasks
 #   post  architect       labels-and-status.py     MODE=kind — the classification label
 #   post  architect       file-sub-issues.py       parents stories to epics, tasks to stories
+#   post  authors job     capture-failure.py       failure branch + report when a run cannot land
 #   post  authors job     finish-pr.py             labels the PR, appends `Closes #<issue>`
 #   post  authors job     post-handoff.py          puts the JSON handoff on the story's ISSUE
 #   post  arch + authors  log-to-story.py          rewrites the story's task list in trigger order
@@ -1453,9 +1454,13 @@ jobs:
       # the story is resolved). A merge that CONFLICTS fails the step with `unlandable=true`, the
       # signal the failure-capture step keys on: a script must not pick a side, and the commits
       # stay safe on the run's branch.
+      # ⚠️ GATED OFF WHEN A MODEL STEP FAILED — landing half-done work is worse than landing
+      # nothing. The failed run's changes are not lost: the capture step below is the other exit,
+      # and between them every author run ends in a scripted landing or a scripted failure
+      # capture. There is no third exit.
       - name: Complete the work
         id: completion
-        if: always() && steps.roles.outputs.list != ''
+        if: always() && steps.roles.outputs.list != '' && steps.implementor.outcome != 'failure' && steps.designer.outcome != 'failure' && steps.tester.outcome != 'failure' && steps.writer.outcome != 'failure'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
@@ -1464,6 +1469,20 @@ jobs:
           # it did not finish. `commitMessage` names the commit the hook makes.
           HANDOFF: ${{ steps.implementor.outputs.structured_output || steps.designer.outputs.structured_output }}
         run: "$RUNNER_TEMP/agent-bin/work-completion.py"
+
+      # ⚠️ THE OTHER EXIT. A failed model step or a conflicted landing pushes the run's changes to
+      # `failure/<task#>-<run#>` and reports on the issue — recovery becomes checkout, not
+      # transcript archaeology. It never fails and never masks: the run is already red for the
+      # real reason.
+      - name: Capture the failure
+        if: always() && steps.roles.outputs.list != '' && (steps.implementor.outcome == 'failure' || steps.designer.outcome == 'failure' || steps.tester.outcome == 'failure' || steps.writer.outcome == 'failure' || steps.completion.outputs.unlandable == 'true')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
+          MODEL_FAILED: ${{ (steps.implementor.outcome == 'failure' || steps.designer.outcome == 'failure' || steps.tester.outcome == 'failure' || steps.writer.outcome == 'failure') && 'true' || 'false' }}
+          UNLANDABLE: ${{ steps.completion.outputs.unlandable || 'false' }}
+        run: "$RUNNER_TEMP/agent-bin/capture-failure.py"
 
       # ⚠️ A TASK REACHES DONE HERE OR NOWHERE. `close-merged-work.py` sets Done from a merged PR,
       # and a task has none — so before this, every task closed while sitting in In Progress
