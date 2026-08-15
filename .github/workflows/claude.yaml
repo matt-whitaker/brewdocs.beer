@@ -339,7 +339,10 @@ jobs:
             raw=$(printf '%s' "$CUSTODIAN" | jq -r "$1 // \"\"" 2>/dev/null) || raw=""
             printf '%s' "$raw" | tr '\n\t' '  ' | sed -e 's/  */ /g' -e 's/^ //' -e 's/ *$//'
           }
-          role=$(field .role)
+          # ⚠️ PLURAL: the Delegator may name several roles, in run order, joined by spaces —
+          # downstream gates use contains(), which reads a space-joined list natively.
+          roles_raw=$(printf '%s' "$CUSTODIAN" | jq -r '(.roles // []) | join(" ")' 2>/dev/null) || roles_raw=""
+          roles_raw=$(printf '%s' "$roles_raw" | tr '\n\t' '  ' | sed -e 's/  */ /g' -e 's/^ //' -e 's/ *$//')
           why=$(field .why)
           remedy=$(field .remedy)
 
@@ -351,15 +354,19 @@ jobs:
           # undecided", "it named something invalid" and "it answered nothing at all" indis-
           # tinguishable downstream — and that ambiguity is why #807 sat inert for days looking
           # correct. Everything needed to tell them apart exists here and was being discarded.
-          raw_role="$role"
+          raw_role="$roles_raw"
 
-          # ⚠️ `claude` is in the list now, and it is not a no-op: on a bare @claude comment it is
-          # the custodian saying "this is a question, answer it" — the same route the script would
-          # have taken, but chosen rather than assumed.
-          case "$role" in
-            claude|architect|researcher|implementor|designer|tester|writer) ;;
-            *) role="" ;;
-          esac
+          # ⚠️ `claude` is in the list and is not a no-op: on a bare @claude comment it is the
+          # custodian saying "this is a question, answer it". Each member is filtered against the
+          # allowlist independently; an invalid member is dropped rather than voiding the answer,
+          # and `undecided` is never a member of a real route — alone it means "fall back".
+          role=""
+          for member in $roles_raw; do
+            case "$member" in
+              claude|architect|researcher|implementor|designer|tester|writer) role="$role $member" ;;
+            esac
+          done
+          role=$(printf '%s' "$role" | sed -e 's/^ //')
 
           if [ -n "$role" ] && [ -n "$why" ]; then
             {
@@ -378,9 +385,9 @@ jobs:
             elif [ "$raw_role" = "undecided" ]; then
               cause="the custodian answered 'undecided' — the issue itself does not say which role owns it"
             elif [ -z "$raw_role" ]; then
-              cause="the structured output carried no 'role' field"
+              cause="the structured output carried no 'roles' field"
             elif [ -z "$role" ]; then
-              cause="the custodian answered '$raw_role', which is not a role this repo runs"
+              cause="the custodian answered '$raw_role', none of which is a role this repo runs"
             else
               cause="the custodian named '$raw_role' but gave no 'why', and a route without a reason is not actionable"
             fi
