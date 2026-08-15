@@ -1142,7 +1142,11 @@ jobs:
       # `playwright.config.ts` sets no channel and uses the bundled chromium, so without this
       # step a Writer reaches a running dev server and then dies on a missing executable —
       # which reads as "cannot verify" rather than as a failure (#1012, and see packages/e2e).
-      - if: contains(steps.roles.outputs.list, 'tester') || contains(steps.roles.outputs.list, 'writer')
+      # ⚠️ ALL FOUR AUTHORS: the spec grants every author the ability to run the app and view it,
+      # and an acceptance criterion asking for a browser check is unfulfillable without a binary —
+      # #1037's Implementor reported exactly that. Same accepted trade as the Writer's grant:
+      # every author run pays the download, and most never open a browser.
+      - if: contains(steps.roles.outputs.list, 'implementor') || contains(steps.roles.outputs.list, 'designer') || contains(steps.roles.outputs.list, 'tester') || contains(steps.roles.outputs.list, 'writer')
         run: npx playwright install --with-deps chromium
 
       # ⚠️ THE STORY BRANCH MUST EXIST BEFORE ANY MODEL STEP, and until #777 nothing guaranteed
