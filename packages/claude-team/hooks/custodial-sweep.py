@@ -17,7 +17,8 @@ TWO MODES, because the two checks become true at different moments:
 
   MODE=deliverable  did the role leave the artifact it exists to produce?
   MODE=branch       does this story need a branch at all — and if so, make it
-  MODE=kinds        does every issue this run touched or created say what it IS
+
+(The kinds sweep moved to labels-and-status.py MODE=kind, with the rest of the labelling.)
 
 ⚠️ NOTHING HERE DELETES. An earlier version swept branches that nothing had used; the branches
 should not have been created, and here they are not. Putting the decision where the knowledge is
@@ -122,46 +123,9 @@ def ensure_branch() -> None:
     print(f"created `{named}` at {default}@{sha[:7]} — empty, for #{ISSUE}'s {tasks} task(s)")
 
 
-def ensure_kinds() -> None:
-    """Give the triggering issue and every task it owns a classification label.
-
-    ⚠️ THE TASKS ARE WHY THIS IS HERE AND NOT IN `sync-kind-label.py`. That hook runs against the
-    TRIGGERING issue, so a story gets labelled and the tasks the Architect just created never do —
-    and tasks are the most numerous kind. The back half runs after `file-sub-issues.py`, so it is
-    the first point at which those children are discoverable at all.
-
-    ⚠️ `kind()` derives a task from STRUCTURE, not a marker: its `Branch:` line names its story's
-    branch, so the number it starts with is not its own. Nothing new has to be stamped for this to
-    work, which is the whole reason it is reliable.
-
-    ⚠️ It only ever ADDS. An issue already carrying a kind is left alone — a maintainer who
-    relabelled something by hand meant it, and a hook that argues with them every run is worse than
-    no hook.
-    """
-    if not ISSUE:
-        return
-
-    targets = [str(ISSUE)] + [str(i["number"]) for i in team.sub_issues(ISSUE)]
-    for number in targets:
-        data = team.issue(number, "title", "labels")
-        if not data.get("title"):
-            team.warn(f"could not read #{number} — leaving its kind alone rather than guessing")
-            continue
-        names = {(l.get("name") or "").lower() for l in data.get("labels", [])}
-        if names & set(team.KIND_LABELS.values()):
-            continue
-        label = team.KIND_LABELS[team.kind(number, data)]
-        if team.gh("issue", "edit", number, "--repo", team.REPO, "--add-label", label) is None:
-            team.warn(f"could not label #{number} `{label}` — does that label exist in this repo?")
-        else:
-            print(f"#{number} -> {label}")
-
-
 if MODE == "deliverable":
     check_deliverable()
 elif MODE == "branch":
     ensure_branch()
-elif MODE == "kinds":
-    ensure_kinds()
 else:
-    team.fail(f"MODE must be 'deliverable', 'branch' or 'kinds', got {MODE!r}")
+    team.fail(f"MODE must be 'deliverable' or 'branch', got {MODE!r}")
