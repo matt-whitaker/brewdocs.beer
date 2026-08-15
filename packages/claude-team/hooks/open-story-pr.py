@@ -64,11 +64,18 @@ if tasks:
     for task in tasks:
         mark = "x" if task.get("state") == "closed" else " "
         lines.append(f"- [{mark}] #{task['number']} — {task.get('title', '')}")
-    # Each task is closed by its OWN PR merging into this branch, so this list needs no
-    # closing keywords — and must not carry them. Repeating them here would make the story's
-    # merge re-close tasks already done, and close any that were abandoned rather than
-    # finished.
-    lines += ["", "Each is closed by its own PR merging into this branch."]
+    # ⚠️ NO CLOSING KEYWORDS IN THIS LIST, and the reason changed even though the rule did not.
+    # It used to be "each task is closed by its own PR merging into this branch" — false since a
+    # task stopped having a PR at all. The rule survives because `land-on-story.py` has ALREADY
+    # closed these tasks by the time this list is written: repeating keywords here would re-close
+    # finished ones on the story's merge, and close any that were abandoned rather than finished.
+    # ⚠️ Kept explicit because the correct rule with a stale reason attached is exactly what gets
+    # "simplified" away by someone who notices only that the reason is wrong.
+    lines += [
+        "",
+        "Each was closed as its work landed on this branch. This PR carries their combined "
+        "work to the default branch, and is the only review surface for the story.",
+    ]
 
 if team.gh(
     "pr", "create", "--repo", team.REPO, "--base", default, "--head", BASE,
