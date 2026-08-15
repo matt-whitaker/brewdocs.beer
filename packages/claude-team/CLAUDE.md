@@ -301,6 +301,18 @@ assumed from its shape.
 and the root role can say there is no such role — where rule 3 would previously have shaped the
 issue as a story instead.
 
+⚠️ **A bare `@claude` on a TASK routes to the Custodian, deterministically.** A task's runs happen
+from its story, so a human landing on the task itself is there because something did not happen —
+presumed stuck, diagnosed rather than re-run. Decidable from structure (a task's Branch line names
+another issue's branch), so it is a script rule, not a consultation: the Delegator is for
+judgement, not for facts.
+
+⚠️ **The Delegator may answer in the PLURAL** — a `roles` array, in run order, for a request that
+genuinely names two deliverables ("fix it and cover it" is an Implementor then a Tester). Each
+member is filtered against the allowlist independently: an invalid member is dropped rather than
+voiding the answer, and `undecided` is only ever alone. A plural answer gates multiple model steps
+in the one authors job, so the roles run in sequence with no extra wiring.
+
 ⚠️ **This changes PR follow-ups.** A bare `@claude` on a PR used to run an Implementor; it now
 answers. `@claude/implementor` is the way to ask for the work, and it is unchanged.
 

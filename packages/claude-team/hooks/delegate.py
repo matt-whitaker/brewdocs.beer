@@ -177,9 +177,14 @@ for role in ("architect", "researcher", "implementor", "tester", "writer", "desi
 # question-or-work BEFORE the role jobs gate on the answer — which is the only point at which
 # the decision can still change what runs. `claude` remains the fallback, so a failed, skipped or
 # undecided interception lands exactly where this rule used to send it outright.
+#
+# ⚠️ EXCEPT ON A TASK, WHERE THERE IS NO QUESTION TO ASK. A task reached by a bare `@claude` is
+# presumed STUCK — its runs happen from its story, so a human landing on the task itself is
+# there because something did not happen. That is the Custodian's job (diagnose, repair,
+# report), and it is decidable from structure: a task's Branch line names another issue's
+# branch. Deterministic, so no consultation — the Delegator is for judgement, not for facts.
 if COMMENT_BODY and "@claude" in COMMENT_BODY:
     ROLES = "claude"
-    CONSULT = True
     REASON = "@claude named in a comment with no role handle — asking whether this is a question or work"
     # the same context a handle gets: being conversational is no reason to arrive uninformed
     if NUMBER:
@@ -188,6 +193,13 @@ if COMMENT_BODY and "@claude" in COMMENT_BODY:
         else:
             STORY_BRANCH = team.branch_line(team.issue_body(NUMBER))
             STORY = team.story_from_branch(STORY_BRANCH)
+    if not IS_PR and STORY_BRANCH and STORY and STORY != str(NUMBER):
+        REASON = (
+            f"bare @claude on task #{NUMBER} — presumed stuck; the Custodian diagnoses "
+            "rather than re-running it"
+        )
+    else:
+        CONSULT = True
     emit()
     raise SystemExit(0)
 
