@@ -289,7 +289,7 @@ whole session without anyone noticing.
 
 What is BrewDocs-specific:
 
-- ⚠️ **`PROJECTS_TOKEN` appears in `close-merged-work.py` and `set-issue-status.py`, and
+- ⚠️ **`PROJECTS_TOKEN` appears in `close-merged-work.py` and `labels-and-status.py`, and
   nowhere else.** It is a long-lived classic PAT needing `project` **and** `read:org` (a
   fine-grained token cannot reach user-owned Projects v2), covering every project the
   maintainer owns. It is safe because it lives in *step* env on a **scripted** step, and step env is
@@ -318,7 +318,7 @@ applies it.
 - **Overlays** live in `.github/agent-prompts/` — `_shared.md` plus an optional
   `<role>.md`, appended to the package's prompt of the same name.
 - **Board.** Issues and PRs go on project #4 (`gh project item-add 4 --owner "@me"`);
-  `set-issue-status.py` and `close-merged-work.py` move them, and are the only steps holding
+  `labels-and-status.py` and `close-merged-work.py` move them, and are the only steps holding
   `PROJECTS_TOKEN`.
 - **The front door is the `@claude` label.** ⚠️ It and every `@claude/<role>` label must
   exist in the repo — the front door triggers nothing if absent, and a missing role label

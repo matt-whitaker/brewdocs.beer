@@ -67,7 +67,7 @@ itself. `kind()` uses exactly the test the PR-base rule uses, so the two cannot 
 a task is. ⚠️ It is checked **after** the marker kinds: an `Epic:`/`Spike:`/`Bug:` title is an
 explicit statement, a branch line is an inference, and the explicit one wins.
 
-⚠️ **The custodial phase labels the TASKS; `sync-kind-label.py` only ever reached the trigger.**
+⚠️ **The custodial phase labels the TASKS; the trigger-time pass only ever reached the trigger.**
 That hook runs against the issue that triggered the run, so a story got a label and the tasks the
 Architect had just created never did — and tasks are the most numerous kind. The back half runs
 after `file-sub-issues.py`, which is the first moment those children are discoverable at all. It
@@ -79,7 +79,7 @@ relabelled something by hand meant it.
 Architect handed an open question decomposes a solution nobody has chosen. Removing it changes
 routing, not labelling.
 
-⚠️ **`sync-kind-label.py` asks `kind()`, not the title.** Keying on the title worked only while
+⚠️ **The kind pass (`labels-and-status.py MODE=kind`) asks `kind()`, not the title.** Keying on the title worked only while
 every kind announced itself — a story has no prefix to match and would never have been labelled.
 ⚠️ And it refuses to write when it cannot read the issue: `kind()` falls back to `story` on a
 failed API call exactly as it does for a plain issue, so a rate-limited minute would otherwise
@@ -777,10 +777,8 @@ forgotten by a model that ran out of turns or simply skipped it.
 | `acknowledge.py` | the router job, first | reacts 👀 so the trigger is visibly received |
 | `delegate.py` | the router job | picks the role from issue state — routing is scripted, not judged |
 | `report-route.py` | the router job, last | says on the issue that this run did not route from state alone — whether the script guessed or the root role was asked |
-| `stamp-role-label.py` | pre, every role | stamps `@claude/<role>` on the triggering issue or PR |
-| `set-issue-status.py` | pre, authors + post, Architect | puts an issue **on** the board and sets its Status; column and flags are inputs |
+| `labels-and-status.py` | around every run | one hook, three modes — `stamp`: `@claude/<role>` on the trigger; `kind`: the classification label (`INCLUDE_SUB_ISSUES` reaches the tasks); `status`: board place + Status (column and flags are inputs) |
 | `ensure-story-branch.py` | post, Architect + Researcher; **pre, authors** | creates the story's branch if it is missing; an epic and a spike have none, and it says so rather than warning |
-| `sync-kind-label.py` | post, Architect + Researcher | applies the `epic`/`spike`/`bug`/`story` label `kind()` derives |
 | `file-sub-issues.py` | post, Architect | parents stories to their epic, tasks to their story |
 | `work-completion.py` | post, authors | commits the run's changes (message from the handoff's `commitMessage`), lands them on the story's branch — reconciling a rejected push by merge — and closes the task; a **conflicted** merge fails the step with `unlandable=true` |
 | `finish-pr.py` | post, authors | **a story worked as-is only** — labels its PR and ensures it closes its issue, or, when the author reported work `remaining`, that it does not. Returns immediately for a task, which has no PR |
