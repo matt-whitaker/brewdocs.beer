@@ -419,11 +419,13 @@ token has. Relationships survive that narrowing because `gh issue view` exposes 
 `subIssues` and `subIssuesSummary`; **that was checked before narrowing**, because Security already
 taught this package that too narrow starves a role *silently*.
 
-⚠️ **Creating a missing branch is NOT in the repertoire, though it is the case that motivated the
-role.** Writing a ref needs `contents: write`, and the action's base allowlist unions in
-`Bash(git rm:*)` and `git-push.sh` which no role can remove — so `contents: write` would let a run
-delete files and push them, and the no-content claim would rest on holding no `Write` tool rather
-than on the token. `contents: read` is load-bearing. The branch case is prevented upstream anyway.
+⚠️ **The Custodian holds DIRECT GIT and `contents: write`, by the maintainer's decision** (spec
+OQ-5 on the workflow spec): branch management is part of its remit, granted whole for convenience.
+The earlier posture — `contents: read` as the structural guarantee that this role touches no
+content — is superseded. What remains structural: it holds no `Write`/`Edit`, so it can move refs
+but has nothing of its own to commit; `github_token` is passed, so the job's `permissions:` block
+is what its token actually gets; and every run's transcript is captured, which is the audit for
+the bound that is now instructed rather than enforced.
 
 ⚠️ **Fix AND report, never fix quietly**, and this is the rule most likely to be eroded by a
 well-meaning change. Every repair appends to one log comment on its target carrying *what was
