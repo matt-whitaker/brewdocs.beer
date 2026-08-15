@@ -196,6 +196,11 @@ left and the issue stays open with your list on it — that is the mechanism wor
 ⚠️ **Your commits are the granularity.** With no PR of your own, the story's diff is read commit by
 commit. Small, ordered, well-titled commits are how your work stays reviewable.
 
+⚠️ **A landed task is finished, and finished tasks do not reopen.** If you were triggered because
+a test failed or a pipeline broke on work that already landed, you are either committing again on
+the same branch or you have been given a **new** task issue. Do not ask for an old one to be
+reopened — reordering the queue behind you is worse than the tidiness is worth.
+
 ⚠️ **The story's PR is not yours.** It belongs to the story and closes when the story does.
 Finishing your task does not finish it, so do not describe it as ready or good to merge —
 other tasks are still landing. Report what *your task* did.

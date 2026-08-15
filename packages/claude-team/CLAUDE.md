@@ -240,6 +240,23 @@ with its outstanding list posted on it.
 ⚠️ **The story's PR still needs its keyword**, and that is unchanged: it targets the default branch,
 so GitHub closes the story on merge the ordinary way.
 
+⚠️ **A TASK REACHES DONE FROM THE LANDING HOOK, AND NOWHERE ELSE.** `close-merged-work.py` sets
+Done from a merged PR, and a task has none — so a task closed while sitting in In Progress forever
+until `land-on-story.py` emitted `closed` and a scripted step moved it. ⚠️ That step is gated on
+`closed`, not on the hook succeeding: a task reporting work `remaining` is deliberately left open,
+and marching it to Done would erase the one signal saying it is unfinished.
+
+⚠️ **A LANDED TASK IS DONE. IT DOES NOT REOPEN.** A Tester finding, or a pipeline failure, against
+work that has already landed becomes either an **ad-hoc commit on the story branch** or a **new
+task** — never a reopened one.
+
+- ⚠️ **This is not bookkeeping.** Trigger order is derived from `(phase, issue number)`, so
+  reopening an early number puts that task back *ahead* of ones that have already landed, and the
+  next thing anyone triggers is work that is already done. A new task takes the next number and
+  sorts where it belongs.
+- Nothing is lost by not reopening: every commit is on the one story branch either way, and the
+  story's PR is where all of it is reviewed.
+
 ⚠️ **A task still open when its story merges is a signal, not a gap.** Nothing closes it
 implicitly: it was abandoned, or its PR never landed. An earlier version closed a merged
 issue's open children, which hid exactly the case worth seeing.
