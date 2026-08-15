@@ -106,8 +106,11 @@ must be stated where it can be seen:
   written only in the dependent story is not enough: #603's body opened with "Depends on #602
   landing first", the epic said nothing, #603's tasks were started while #602's PR was open, and
   its Tester found no feature to test.
-- **Within a story** — its tasks run in order, and the story says so. A hook already derives the
-  order from `(phase, issue number)`; the sentence is for the human deciding what to trigger.
+- **Within a story** — the Architect's `### Sequencing` section is the contract: numbered lines,
+  one wave per line, several refs on a line running in parallel. `dispatch-next.py` consults it to
+  start the next wave; a task the section forgot is appended in derived `(phase, issue number)`
+  order rather than stranded, and with no section at all tasks run one at a time in that derived
+  order. The same section is what the human reads when driving by hand.
 
 ⚠️ **"Depends on" means MERGED.** A story whose tasks are all closed but whose PR is open has
 delivered nothing to any other branch — which is why the epic's work log carries a **landed**
@@ -584,8 +587,11 @@ change whose consumer side is purely keeping the build green makes every primiti
 tasks and a stall.
 
 ⚠️ **The Tester and Writer are tasks the Architect cuts** — the Writer ahead of the authoring
-tasks, the Tester after them. No role chains off another; nothing runs that a maintainer did
-not trigger.
+tasks, the Tester after them. ⚠️ **The maintainer triggers the STORY; automation extends inside
+it** — a landed-and-closed task dispatches the next via an App-minted issues:write token adding
+the same `@claude` label a human would. The label doubles as the in-flight marker (`labeled` only
+fires on an actual add), so a failed or unfinished task halts its wave rather than looping, and
+absent secrets leave the cascade dark with the manual gesture untouched.
 
 ⚠️ **A test derived from the implementation is worthless, and looks exactly like coverage.**
 It asserts what the code does, so it passes by construction and cannot fail for the only
@@ -796,6 +802,7 @@ forgotten by a model that ran out of turns or simply skipped it.
 | `file-sub-issues.py` | post, Architect | parents stories to their epic, tasks to their story |
 | `work-completion.py` | post, authors | commits the run's changes (message from the handoff's `commitMessage`), lands them on the story's branch — reconciling a rejected push by merge — and closes the task; a **conflicted** merge fails the step with `unlandable=true` |
 | `capture-failure.py` | post, authors — only when a model step failed or the landing conflicted | pushes the run's changes to `failure/<task#>-<run#>-<attempt>` and appends a recovery report on the issue; never fails, never masks the real error |
+| `dispatch-next.py` | post, authors — only when the landing **closed** the task | reads the story's `### Sequencing` section (derived order without one), and adds `@claude` to every open, unlabelled task in the earliest incomplete wave — the cascade, dark when the App secrets are absent |
 | `finish-pr.py` | post, authors | the net behind `open-story-pr.py` on the as-is path — labels the PR and reconciles the closing keyword with `remaining`. Returns immediately for a task, which has no PR |
 | `apply-repairs.py` | post, the root role | applies the process repairs it named, records each with what was wrong and why, **reports what it would not fix onto the trigger**, and files an issue rather than repairing the same thing twice |
 | `post-findings.py` | post, Researcher | renders its schema-forced findings onto the spike — the role has no shell, so this is the only way they reach anyone |
