@@ -86,7 +86,7 @@ run-name: >-
 #   pre   every role      labels-and-status.py     MODE=stamp — @claude/<role> on the issue or PR
 #   pre   authors job     labels-and-status.py     MODE=status — board: place + set Status
 #   post  architect       labels-and-status.py     MODE=status — places the story + tasks as Todo
-#   post  architect       ensure-story-branch.py   creates the story's branch if it is missing
+#   post  architect       branch-navigation.py     creates the story's branch — only if it has tasks
 #   post  architect       labels-and-status.py     MODE=kind — the classification label
 #   post  architect       file-sub-issues.py       parents stories to epics, tasks to stories
 #   post  authors job     finish-pr.py             labels the PR, appends `Closes #<issue>`
@@ -531,15 +531,6 @@ jobs:
       # ⚠️ POST, never pre: the action falls back to `claude/<entity>-<n>-<timestamp>` if the
       # name it is about to generate already exists remotely, so pushing it up front would
       # strand the whole run on a branch nobody looks at.
-      - name: Ensure the story's branch exists
-        if: always()
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
-          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
-          # an epic has no branch, and a missing one there must not warn
-          KIND: ${{ needs.delegate.outputs.kind }}
-        run: "$RUNNER_TEMP/agent-bin/ensure-story-branch.py"
       - name: Update the story's task order
         if: always()
         env:
@@ -573,6 +564,18 @@ jobs:
           REPO: ${{ github.repository }}
           ISSUE: ${{ github.event.issue.number }}
         run: "$RUNNER_TEMP/agent-bin/file-sub-issues.py"
+      # ⚠️ AFTER file-sub-issues, and the position is the point: whether a story needs a branch
+      # depends on whether it has tasks, and the count is only real once parenting is done. This
+      # is what dissolved the old front/back split — the custodial job no longer creates branches.
+      - name: Navigate the story's branch
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
+          # an epic has no branch, and a missing one there must not warn
+          KIND: ${{ needs.delegate.outputs.kind }}
+        run: "$RUNNER_TEMP/agent-bin/branch-navigation.py"
       # ⚠️ AFTER file-sub-issues, which is what makes the children discoverable — this places
       # them too, and sub_issues() would return nothing if it ran first.
       # ⚠️ PROJECTS_TOKEN is safe here on the same argument as the authors job: step env is
@@ -923,7 +926,7 @@ jobs:
           REPO: ${{ github.repository }}
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
           KIND: ${{ needs.delegate.outputs.kind }}
-        run: "$RUNNER_TEMP/agent-bin/ensure-story-branch.py"
+        run: "$RUNNER_TEMP/agent-bin/branch-navigation.py"
       - name: Label the issue kind
         if: always()
         env:
@@ -1147,13 +1150,13 @@ jobs:
       #
       # ⚠️ KIND is deliberately unset here. `delegate.py` only emits it on the Architect path, and
       # the hook skips epics and spikes by that value — neither of which ever reaches an author.
-      - name: Ensure the story's branch exists
+      - name: Navigate the story's branch
         if: steps.roles.outputs.list != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
-        run: "$RUNNER_TEMP/agent-bin/ensure-story-branch.py"
+        run: "$RUNNER_TEMP/agent-bin/branch-navigation.py"
 
       # ⚠️ ANY role that ran, not the three that build. This shared the `npm ci` gate, which
       # is correct there — the Writer compiles nothing — and wrong here: a Writer's task is as
@@ -1708,27 +1711,13 @@ jobs:
           cp packages/claude-team/hooks/*.py "$RUNNER_TEMP/agent-bin/"
           chmod +x "$RUNNER_TEMP/agent-bin"/*.py
       # ⚠️ FAILS THE RUN when an Architect left no Branch line. That stall reports success today —
-      # measured on #834 and #866 — and `ensure-story-branch.py` already says the right thing about
+      # measured on #834 and #866 — and `branch-navigation.py` already says the right thing about
       # it as a warning nobody reads. This is the same sentence with teeth.
       - name: Check the role left its deliverable
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           MODE: deliverable
-          ROLE: ${{ needs.delegate.outputs.roles }}
-          KIND: ${{ needs.delegate.outputs.kind }}
-          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
-        run: "$RUNNER_TEMP/agent-bin/custodial-sweep.py"
-      # ⚠️ THE ONLY PLACE A STORY BRANCH IS MADE on the shaped path, and the first moment the
-      # question can be answered: `ensure-story-branch.py` runs before `file-sub-issues.py`, so
-      # `sub_issues()` reads 0 for every story where creation used to happen. A story with no tasks
-      # gets no branch at all — its author works off the default branch and opens its PR there.
-      - name: Give the story a branch, if it needs one
-        if: always()
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
-          MODE: branch
           ROLE: ${{ needs.delegate.outputs.roles }}
           KIND: ${{ needs.delegate.outputs.kind }}
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}

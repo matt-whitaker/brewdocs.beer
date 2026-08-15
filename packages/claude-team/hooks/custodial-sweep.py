@@ -16,9 +16,10 @@ a channel with no reader.
 TWO MODES, because the two checks become true at different moments:
 
   MODE=deliverable  did the role leave the artifact it exists to produce?
-  MODE=branch       does this story need a branch at all — and if so, make it
 
-(The kinds sweep moved to labels-and-status.py MODE=kind, with the rest of the labelling.)
+(The kinds sweep moved to labels-and-status.py MODE=kind; branch creation moved to
+branch-navigation.py, which runs after file-sub-issues.py where the has-tasks question is
+answerable at last.)
 
 ⚠️ NOTHING HERE DELETES. An earlier version swept branches that nothing had used; the branches
 should not have been created, and here they are not. Putting the decision where the knowledge is
@@ -67,65 +68,7 @@ def check_deliverable() -> None:
     )
 
 
-def ensure_branch() -> None:
-    """Create the story's branch — but only for a story that actually has tasks.
-
-    ⚠️ THIS IS THE FIRST MOMENT THE QUESTION CAN BE ANSWERED. `ensure-story-branch.py` runs before
-    `file-sub-issues.py`, so `sub_issues()` reads 0 for *every* story where creation used to happen
-    — including one the Architect had just decomposed. Here the parenting is done and the count is
-    real. Everything else about branch handling follows from putting the decision where the
-    knowledge is.
-
-    ⚠️ A STORY WITH NO TASKS GETS NO BRANCH, EVER. Its author cuts off the default branch
-    (`delegate.py` blanks `story_branch`) and opens its PR there (#877/#878). Creating one would
-    produce a branch nothing ever commits to — which is what #883 then had to delete. Not creating
-    it is the same outcome with no destructive capability anywhere in the system.
-
-    ⚠️ NOT REDUNDANT WITH THE PRE-AUTHORS NET, though the net would eventually cover correctness.
-    A story's `Branch:` line carries a compare link the maintainer clicks to open the story's PR;
-    with no branch it 404s until the first task happens to run. That is user-visible.
-    """
-    if ROLE != "architect" or not ISSUE:
-        return
-    if KIND in ("epic", "spike"):
-        return
-
-    named = team.branch_line(team.issue_body(ISSUE))
-    if not named:
-        return
-    if team.story_from_branch(named) != str(ISSUE):
-        print(f"#{ISSUE} does not own `{named}` — not this issue's branch to make.")
-        return
-
-    tasks = len(team.sub_issues(ISSUE))
-    if not tasks:
-        print(f"#{ISSUE} has no tasks — it is worked as-is, so it needs no branch of its own.")
-        return
-
-    if team.gh_json("api", f"repos/{team.REPO}/git/ref/heads/{named}") is not None:
-        print(f"`{named}` already exists.")
-        return
-
-    repo = team.gh_json("repo", "view", team.REPO, "--json", "defaultBranchRef") or {}
-    default = (repo.get("defaultBranchRef") or {}).get("name") or ""
-    base = team.gh_json("api", f"repos/{team.REPO}/git/ref/heads/{default}") or {}
-    sha = (base.get("object") or {}).get("sha")
-    if not sha:
-        team.warn(f"could not read {default}'s head, so `{named}` was not created")
-        return
-
-    if team.gh(
-        "api", "--method", "POST", f"repos/{team.REPO}/git/refs",
-        "-f", f"ref=refs/heads/{named}", "-f", f"sha={sha}",
-    ) is None:
-        team.warn(f"could not create `{named}` at {default}@{sha[:7]}")
-        return
-    print(f"created `{named}` at {default}@{sha[:7]} — empty, for #{ISSUE}'s {tasks} task(s)")
-
-
 if MODE == "deliverable":
     check_deliverable()
-elif MODE == "branch":
-    ensure_branch()
 else:
-    team.fail(f"MODE must be 'deliverable' or 'branch', got {MODE!r}")
+    team.fail(f"MODE must be 'deliverable', got {MODE!r}")
