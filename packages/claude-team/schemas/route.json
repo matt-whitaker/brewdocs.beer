@@ -4,8 +4,17 @@
   "properties": {
     "role": {
       "type": "string",
-      "enum": ["architect", "researcher", "implementor", "designer", "tester", "writer", "undecided"],
-      "description": "The role to run. Pick undecided when the issue does not tell you - it is a real answer, and the script default runs instead with its guess notice intact. ⚠️ Prefer undecided to a coin flip: the script default is already recoverable, and a confident wrong role is worse because the notice that would have flagged it is suppressed."
+      "enum": [
+        "claude",
+        "architect",
+        "researcher",
+        "implementor",
+        "designer",
+        "tester",
+        "writer",
+        "undecided"
+      ],
+      "description": "The role that should handle this trigger. `claude` means the maintainer asked a QUESTION - answer it, start nothing. Any working role means they asked for WORK and that role should do it. `undecided` means the trigger does not say which, and is a real answer: it falls back to the route the script chose rather than manufacturing a guess."
     },
     "why": {
       "type": "string",
@@ -13,9 +22,13 @@
     },
     "remedy": {
       "type": "string",
-      "description": "The one-line change to the issue that would let the script route it next time without asking - usually the Role: stamp it is missing, or which task to trigger instead. ⚠️ Deciding correctly does not repair the issue: the next run reaches the same fallback, so the fix still has to be said out loud."
+      "description": "The one-line change to the issue that would let the script route it next time without asking - usually the Role: stamp it is missing, or which task to trigger instead. \u26a0\ufe0f Deciding correctly does not repair the issue: the next run reaches the same fallback, so the fix still has to be said out loud."
     }
   },
-  "required": ["role", "why", "remedy"],
+  "required": [
+    "role",
+    "why",
+    "remedy"
+  ],
   "additionalProperties": false
 }

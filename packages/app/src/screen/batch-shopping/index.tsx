@@ -7,6 +7,7 @@ import DataGridSelect from "@/component/data-grid/select";
 import Screen from "@/component/screen";
 import useJsonEdit from "@/hooks/useJsonEdit";
 import Batch, {ShoppingItem, ShoppingTag} from "@/model/batch";
+import BatchShoppingAddRow from "@/screen/batch-shopping/add-row";
 import ShoppingItemRow from "@/screen/batch-shopping/item-row";
 import {useBatch} from "@/state/batches";
 import {saveSession, useSession} from "@/state/session";
@@ -27,6 +28,8 @@ const TAG_LABELS: Record<ShoppingTag, string> = {
 };
 
 const TAG_ORDER: ShoppingTag[] = ["hops", "grains", "yeasts", "additives"];
+
+const TAG_OPTIONS = TAG_ORDER.map(tag => ({ value: tag, name: TAG_LABELS[tag] }));
 
 /** the sort key doubles as the grouping; "name" is ungrouped */
 function groupOf(item: ShoppingItem, sort: SortKey): string|null {
@@ -54,7 +57,7 @@ export default function BatchShopping({ batchId, onChange }: BatchShoppingProps)
     const session = useSession();
     const batch = useBatch(batchId);
 
-    const [data, update, updateScalar, toggle] = useJsonEdit<Batch>(batch, onChange);
+    const [data, update, updateScalar, toggle, add, remove] = useJsonEdit<Batch>(batch, onChange);
 
     const sort = (session?.["shopping.sort"] as SortKey) ?? "type";
     const onChangeSort = useCallback((value: string) => saveSession("shopping.sort", value), []);
@@ -89,17 +92,18 @@ export default function BatchShopping({ batchId, onChange }: BatchShoppingProps)
                 )}
                 {entries.map(({ item, index }) => (
                     <ShoppingItemRow
-                        key={`${item.tags[0]}-${item.name}`}
+                        key={index}
                         row={index}
                         item={item}
                         toggle={toggle}
                         update={update}
                         updateScalar={updateScalar}
+                        remove={remove}
                     />
                 ))}
             </DataGrid>
         ));
-    }, [ordered, sort, toggle, update, updateScalar, session]);
+    }, [ordered, sort, toggle, update, updateScalar, remove, session]);
 
     return (
         <Screen>
@@ -115,6 +119,9 @@ export default function BatchShopping({ batchId, onChange }: BatchShoppingProps)
                 </DataGridRow>
             </DataGrid>
             {shoppingGroups}
+            <DataGrid>
+                <BatchShoppingAddRow tagOptions={TAG_OPTIONS} defaultTag={TAG_ORDER[0]} add={add} />
+            </DataGrid>
         </Screen>
     );
 }

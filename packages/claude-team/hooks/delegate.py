@@ -41,6 +41,14 @@ if not team.REPO:
 ROLES = STORY = STORY_BRANCH = REASON = KIND = REMEDY = ""
 DEFAULTED = False
 
+# ⚠️ CONSULT IS NOT DEFAULTED, AND CONFLATING THEM WOULD BE WRONG IN BOTH DIRECTIONS.
+# `defaulted` means the state that should have decided is MISSING — a real gap, worth announcing
+# and worth a remedy. `consult` means the script decided correctly as far as it can, but the
+# question it cannot answer is whether the maintainer wanted a conversation or wanted work. That
+# is a judgement, not a gap: there is nothing to fix on the issue, and announcing it every time
+# someone types `@claude` would be pure noise.
+CONSULT = False
+
 
 def emit() -> None:
     """Write the route to `$GITHUB_OUTPUT`. This does NOT announce a default.
@@ -58,7 +66,8 @@ def emit() -> None:
         with open(out, "a", encoding="utf-8") as handle:
             handle.write(
                 f"roles={ROLES}\nstory={STORY}\nstory_branch={STORY_BRANCH}\nkind={KIND}\n"
-                f"defaulted={str(DEFAULTED).lower()}\nreason={REASON}\nremedy={REMEDY}\n"
+                f"defaulted={str(DEFAULTED).lower()}\nconsult={str(CONSULT).lower()}\n"
+                f"reason={REASON}\nremedy={REMEDY}\n"
             )
     print(
         f"roles={ROLES} story={STORY or 'none'} branch={STORY_BRANCH or 'none'} "
@@ -156,9 +165,22 @@ for role in ("architect", "researcher", "implementor", "tester", "writer", "desi
 # ⚠️ An unknown handle lands here too (`@claude/nonsense` matches no role), and that is the right
 # home for it — the root role can say there is no such role, where rule 3 would have silently
 # shaped the issue as a story instead.
+#
+# ⚠️ AND IT ASKS RATHER THAN ASSUMING, because "a bare @claude is a question" is true most of the
+# time and expensively wrong the rest. Measured: a maintainer commented "@claude I believe this
+# branch needs to be updated from its base" — a request for WORK. The script had a clear
+# path straight to the conversational role, so the delegate-phase custodian never ran, and the
+# role that answered was structurally unable to do anything about it. The path was clear and
+# wrong, which no amount of scripted state can detect: only reading the sentence tells you.
+#
+# So this sets `consult`, not a settled route. The custodian in the delegate phase decides
+# question-or-work BEFORE the role jobs gate on the answer — which is the only point at which
+# the decision can still change what runs. `claude` remains the fallback, so a failed, skipped or
+# undecided interception lands exactly where this rule used to send it outright.
 if COMMENT_BODY and "@claude" in COMMENT_BODY:
     ROLES = "claude"
-    REASON = "@claude named in a comment with no role handle — answering rather than routing"
+    CONSULT = True
+    REASON = "@claude named in a comment with no role handle — asking whether this is a question or work"
     # the same context a handle gets: being conversational is no reason to arrive uninformed
     if NUMBER:
         if IS_PR:

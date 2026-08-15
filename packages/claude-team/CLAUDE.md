@@ -18,7 +18,7 @@ state, not from something a model was asked to leave behind.
 | **Epic** | none | — | its stories closing |
 | **Spike** | none | — | the maintainer, once they have decided |
 | **Story** | `<story#>-<summary>`, cut by the Architect | the **default** branch | its PR merging |
-| **Task** | `<task#>-<summary>`, cut by its author off the story branch | the **story** branch | its own PR merging |
+| **Task** | none of its own — its work lands on the story's branch | — | `land-on-story.py`, once its work has landed |
 
 - An epic never has a branch and never has a PR. If something needs a PR, it is a story.
 - ⚠️ **An unprocessed issue is a STORY.** An epic has to say so — by an `epic` label or a
@@ -85,7 +85,7 @@ every kind announced itself — a story has no prefix to match and would never h
 failed API call exactly as it does for a plain issue, so a rate-limited minute would otherwise
 relabel an epic. It only ever adds, never removes.
 - A story owns one branch and one PR against the default branch, and it accumulates.
-- A task is a slice of a story with its own branch and its own PR **into the story branch**.
+- A task is a slice of a story. It has **no PR**; its commits land on the story's branch.
 
 ⚠️ **The Branch line always names the STORY's branch** — on the story and on every one of
 its tasks. It is what an author bases on and merges back into, never a branch for the task
@@ -126,8 +126,8 @@ and it went both ways. Three pieces replace it:
 - **A task's branch** — the action's own `base_branch` input, set to the story's branch. The
   branch it creates is then the right one, so its injected instruction becomes true instead of
   something to argue with. Configure the action rather than fight it.
-- **A task PR's base** — `finish-pr.py` retargets it onto the story branch. The model still
-  writes `--base` for the human-readable reason; the hook is the net.
+- **A task's commits** — `land-on-story.py` pushes them onto the story branch. There is no task
+  PR and no base to get wrong, so the whole retarget-and-net apparatus is gone.
 
 ⚠️ **The story-branch hook must run POST, and this inverts the obvious implementation.**
 `setupBranch` checks whether the name it is about to generate already exists remotely and, if
@@ -159,10 +159,31 @@ itself the working branch would mean not pre-creating it, and **`ensure-story-br
 the Architect just decomposed. That test cannot be evaluated there, and acting on it would strand
 every story with no branch at all. Changing the PR's **base** costs none of that.
 
-⚠️ **Tasks must not share one branch.** They did once, and it was a race: if a consumer keys
-its concurrency group on issue number, two tasks are in *different* groups and can commit to
-the same branch at the same time. Sub-branching removes the possibility rather than relying
-on runs being triggered one at a time.
+⚠️ **TASKS SHARE THE STORY'S BRANCH, AND THIS PARAGRAPH USED TO SAY THE OPPOSITE.** Sub-branching
+with a PR per task was correct about the race and wrong about the cost: one story became one PR per
+task plus its own, splitting the only review anyone actually performs across several places. The
+maintainer's call was that review sanity beats the guarantee. What replaces the guarantee:
+
+- ⚠️ **The race is real and CANNOT be closed.** `concurrency.group` is keyed on the issue, and it
+  cannot be keyed on the story — the group is evaluated before any job runs, so only the event
+  context is available, the story is not resolved yet, and expressions have no regex to pull it
+  from the issue body. Anyone reaching for that fix should stop here.
+- ⚠️ **What makes it survivable is that git refuses a non-fast-forward.** `land-on-story.py` pushes
+  an explicit refspec and **fails the step** when it is rejected, so a collision is loud and the
+  commits are still on the branch the run made. Swallowing that would convert a correct failure
+  into silently lost work.
+- **Trigger a story's tasks one at a time**, which the sequencing rules already say.
+
+⚠️ **A task still gets a branch, and it is unavoidable rather than intended.** `setupBranch` always
+*creates* one on an issue trigger — it has no mode that checks out an existing branch — so a run
+cannot start on the story branch. That branch is a staging area: the hook pushes its commits onto
+the story branch afterwards. ⚠️ **Nothing deletes it.** After landing it is 0-ahead and harmless,
+and adding a delete would put back the one destructive capability this system removed on purpose.
+
+⚠️ **Nothing gates a task any more, and that was chosen with the cost stated.** Verify runs on
+`pull_request`; with no task PR it first fires on the story's PR, with every task's diff
+accumulated — which is exactly what a consuming repo's no-branches-filter comment was written to
+prevent. A `push:` trigger restores it and was declined.
 
 ### Where work goes, and why there is only ever one PR
 
@@ -198,9 +219,10 @@ and its stranded-commit recovery never fires. That recovery is for a run that co
 
 1. **Architect** shapes the story, **names** its branch on a `Branch:` line, and creates its
    tasks — each stamped with the role that should pick it up. A hook creates the branch.
-2. Each **task** is triggered on its own. Its author starts on a branch already cut off the
-   story branch, works there, and opens a PR into the story branch.
-3. Merging that task PR closes the task and lands its work on the story.
+2. Each **task** is triggered on its own. Its author commits on the branch the host action
+   cut for it and opens nothing.
+3. `land-on-story.py` fast-forwards the story's branch to those commits and closes the task —
+   unless the author reported work `remaining`, which leaves it open with the list on it.
 4. The **story's** PR accumulates all of it. The maintainer reviews and merges the story as
    a whole.
 
@@ -209,18 +231,14 @@ authoring run.** The story branch is cut empty, and GitHub will not open a PR wi
 commits between base and head, so the first task landing is the earliest moment it can
 exist.
 
-⚠️ **A task PR's closing keyword links but does not close.** Two behaviours, easy to
-conflate — and they were, wrongly, until measured:
+⚠️ **A TASK IS CLOSED BY THE LANDING HOOK, NOT BY A KEYWORD.** There is no task PR, so there is no
+closing keyword and nothing for GitHub to act on. `land-on-story.py` closes the issue once its
+commits are on the story branch — and **only** when the author reported no `remaining`, which is
+the same signal that used to govern whether the keyword was written. An unfinished task stays open
+with its outstanding list posted on it.
 
-- **Linking works at any base.** A keyword in the body populates `closingIssuesReferences`
-  whatever the PR targets: #536 → [521], #542 → [522], #443 → [441], all into story branches.
-- **Auto-closing needs the default branch.** A task PR targets its story's branch, so GitHub
-  never closes it. The merge hook does.
-
-An author writes the line for both reasons, and the hook's body-parse is a net for a keyword
-GitHub did not link — not the mechanism. ⚠️ There is also **no public GraphQL mutation** for
-linking a PR to an issue: introspection shows only `createLinkedBranch` and `addSubIssue`,
-and the UI's "link an issue" control edits the PR body. The keyword *is* the API.
+⚠️ **The story's PR still needs its keyword**, and that is unchanged: it targets the default branch,
+so GitHub closes the story on merge the ordinary way.
 
 ⚠️ **A task still open when its story merges is a signal, not a gap.** Nothing closes it
 implicitly: it was abandoned, or its PR never landed. An earlier version closed a merged
@@ -236,10 +254,31 @@ the issue's state to pick the role. The same label named in a comment does the s
 `@claude/<role>` handle in a comment names the role outright and skips the inspection — the
 way to override a bad guess.
 
-⚠️ **The label does the work; a comment talks about it.** That split is the whole ergonomics of
-the root role. The `@claude` **label** routes to a working role exactly as it always has. A comment
-naming `@claude` with **no** role handle now reaches the root role instead of falling through to
-rules 2-4 — so "@claude what happened here?" answers rather than starting an Implementor.
+⚠️ **The label does the work; a comment talks about it — but a comment can ASK for work, and the
+script cannot tell.** The `@claude` **label** routes to a working role exactly as it always has. A
+comment naming `@claude` with no role handle used to settle straight to the conversational role, and
+that was right most of the time and expensively wrong the rest: *"@claude I believe this branch
+needs to be updated from its base"* is a request, and the role that answered it was structurally
+unable to act.
+
+⚠️ **So rule 1b now CONSULTS rather than settles.** It sets `consult`, the delegate-phase custodian
+reads the comment, and it answers `claude` for a question or a working role for a request — before
+the role jobs gate on the result, which is the only moment the decision can still change what runs.
+`claude` stays the fallback, so a failed, skipped or `undecided` interception lands exactly where
+the rule used to send it outright.
+
+⚠️ **`consult` IS NOT `defaulted`, and merging them would be wrong both ways.** `defaulted` means
+the state that should decide is **missing** — a real gap, worth announcing, and it carries a remedy
+the maintainer can apply. `consult` means the script decided as far as state allows and the only
+open question is a judgement about a sentence. Nothing is broken, there is nothing to fix on the
+issue, and announcing every one would bury the notices that matter. ⚠️ `report-route.py` therefore
+stays **silent** on a consultation that changed nothing, and speaks only when the custodian routed
+somewhere the script would not have.
+
+⚠️ **This is not a role chaining off another**, which remains forbidden. The maintainer triggered
+the run; the router is deciding which role serves that trigger. Nothing starts work nobody asked
+for — the difference is that "who should serve this" is now read from the request rather than
+assumed from its shape.
 
 ⚠️ **An unknown handle lands there too.** `@claude/nonsense` matches no role, so rule 1b catches it
 and the root role can say there is no such role — where rule 3 would previously have shaped the
@@ -287,6 +326,22 @@ shell step accepts a known role and discards anything else, so a malformed answe
 skipped step and `undecided` all arrive as the same thing: the script's default, with its notice
 intact. **A failed interception must never mean nothing runs** — degrading to the old behaviour is
 the correct failure, and the step carries `continue-on-error` so the job reaches the fallback.
+
+⚠️ **"ALL ARRIVE AS THE SAME THING" IS CORRECT FOR THE ROUTE AND WRONG FOR THE REPORT**, and that
+distinction cost the feature. Collapsing every failure to the script's default is the right
+*behaviour*; collapsing them in the *log* means "the model declined" and "the model's answer never
+arrived" — opposite problems — look identical from outside. Measured: across every `defaulted`
+route on record the fallback fired **100%** of the time, the interception model step ran for a real
+33s rather than the sub-second dead-run fingerprint, and nothing anywhere recorded which cause it
+was. The fallback branch now names it: no output at all, `undecided`, no `role` field, an unknown
+role, or a role with no `why`.
+
+⚠️ **AND THE INTERCEPTION MUST SHIP A TRANSCRIPT LIKE EVERY OTHER MODEL STEP.** It was the only one
+that did not. A routing decision is the *cheapest* thing to leave unrecorded and the most expensive
+to lose: it runs for a second, it decides what the whole rest of the run does, and its output is
+consumed by a shell step that keeps nothing. ⚠️ **A decision with no record is worse than a channel
+with no reader** — with a dead channel you can at least go and read the producer; here there is
+nothing to read, so the only evidence is that the outcome never changed.
 
 ⚠️ **`undecided` has to be a real answer, or the schema manufactures a guess.** An enum of roles
 alone leaves no way to say "the issue does not tell me", so a model obliged to pick one produces
@@ -369,6 +424,31 @@ state on the issue, not a memory of the last run.
 needing content changed, and anything whose real fix is upstream in a rule goes there with what
 would fix it. Keeping it separate from `repairs` is the point: a custodian that quietly fixed
 everything would erase the evidence that the rule is wrong.
+
+⚠️ **AND IT HAS TO REACH THE ISSUE, WHICH FOR A LONG TIME IT DID NOT.** `apply-repairs.py` posted
+`repairs` as a comment and `print`ed `unrepairable` to the job log — so the half that carries the
+weight reached nobody. That is the **fifth** instance of this exact shape here, after `DEFAULTED`,
+the author handoff appended in a job its readers never run in, `decisions` on the PR path, and
+`docsCandidates`: a required output with no consumer, shipped and believed to work.
+
+⚠️ **The user-visible symptom was the custodian looking unhelpful.** A run identified a stale task
+title and named the role that should rename it — a perfectly good redirect, written to a job log.
+From outside, the role had said "not my job" and offered nothing, which is exactly the complaint
+the design was meant to answer. **A role that answers into a channel nobody reads has not
+answered.**
+
+⚠️ **It reports on the TRIGGER, because a finding carries no target of its own** — the schema gives
+it `what` and `wouldFix`, deliberately, since most findings are about a rule rather than an issue.
+So the hook needs the triggering issue *or* PR; the root role answers on both, and each workflow
+expression blanks for the other. ⚠️ Commenting on a PR needs `pull-requests: write`, not
+`issues: write` — the endpoint reads as `issues` and the permission checked is not.
+
+⚠️ **Same comment marker as the repairs, and it APPENDS.** One marker so everything the custodian
+has done to an issue reads as one history, with the section prefix — `⚠️ **Not repaired**` — as the
+only thing distinguishing it, so "I did not fix this" can never be misread as "I fixed this".
+Appending rather than upserting matches `repairs` and is load-bearing for the same reason a repeat
+repair escalates: **a finding that recurs is the signal that its cause is still there**, and an
+upsert would erase it.
 
 ⚠️ **The answer still goes in the tracking comment.** With `--json-schema` the final message is
 JSON, so `track_progress: true` stops being cosmetic and becomes the only place a human reads a
@@ -613,8 +693,33 @@ house rules.
 ⚠️ **The prompt forbids planning-and-stopping, not just stating an intention**, and the two are
 easy to conflate. The observed failure is never a sentence saying "I'll get to it" — it is a
 **tidy checklist with the boxes unticked**, which reads as progress at a glance. Measured twice
-(#834, #866): ~6 turns, ~30s, a good plan, nothing done, run reports success. Both completed on a
-plain re-trigger, so nothing was blocking them.
+(#834, #866): ~6 turns, ~30s, a good plan, nothing done, run reports success.
+
+⚠️ **THE UNTICKED CHECKLIST IS THE SYMPTOM; BACKGROUNDING IS THE CAUSE.** This was documented for
+a long time as a model that plans and then idles, which is what it looks like from the comment. A
+captured transcript (#1018) shows otherwise: the model launched a **background subagent**, called a
+**schedule-a-wake-up** tool to wait for it, and signed off with *"I'll wait for the research agent
+to complete."* 7 turns, 24s, `is_error: false`, `subtype: success`, nothing written. The boxes are
+unticked because the work was **delegated to a continuation that never comes**, not because nothing
+was attempted.
+
+⚠️ **"Both completed on a plain re-trigger, so nothing was blocking them" was the wrong inference
+from a true observation.** Re-triggering works because the failure is **nondeterministic** — it
+depends on whether the model reaches for the background tool at all. That is a coin flip, and
+reading it as "nothing was wrong" is what kept the real mechanism hidden across three runs.
+
+⚠️ **The fix is the prompt, and it has to be specific, because the general rule did not bind.**
+"Never end a run with an intention" was already there and the model did not think it was ending on
+one — it believed it had *scheduled a resumption*, and the tool call had returned success. The rule
+therefore names the behaviour (backgrounding) rather than the feeling (giving up), and it must
+preserve synchronous delegation: a subagent invoked in-turn returns its result and works correctly.
+⚠️ **Forbidding delegation outright would be the wrong fix** — it removes a useful capability to
+correct a default.
+
+⚠️ **A denylist is not available as the fix, and that is a finding in itself.** The tools involved
+were in **neither** the role's `--allowedTools` **nor** the action's base set, and executed anyway.
+An allowlist that does not bind cannot be tightened into a denylist that does; the prompt is the
+only lever the consuming repo actually holds.
 
 ⚠️ **The host action's own scaffolding contributes**, which is why the prompt has to push back
 explicitly. Tag mode asks the model to keep a todo list in its tracking comment; writing that list
@@ -658,8 +763,9 @@ forgotten by a model that ran out of turns or simply skipped it.
 | `ensure-story-branch.py` | post, Architect + Researcher; **pre, authors** | creates the story's branch if it is missing; an epic and a spike have none, and it says so rather than warning |
 | `sync-kind-label.py` | post, Architect + Researcher | applies the `epic`/`spike`/`bug`/`story` label `kind()` derives |
 | `file-sub-issues.py` | post, Architect | parents stories to their epic, tasks to their story |
-| `finish-pr.py` | post, authors | labels the PR, and ensures it closes its issue — or, when the author reported work `remaining`, that it does not |
-| `apply-repairs.py` | post, the root role | applies the process repairs it named, records each with what was wrong and why, and files an issue rather than repairing the same thing twice |
+| `land-on-story.py` | post, authors | pushes a task's commits onto the story's branch and closes the task; **fails the step** if the push is refused |
+| `finish-pr.py` | post, authors | **a story worked as-is only** — labels its PR and ensures it closes its issue, or, when the author reported work `remaining`, that it does not. Returns immediately for a task, which has no PR |
+| `apply-repairs.py` | post, the root role | applies the process repairs it named, records each with what was wrong and why, **reports what it would not fix onto the trigger**, and files an issue rather than repairing the same thing twice |
 | `post-findings.py` | post, Researcher | renders its schema-forced findings onto the spike — the role has no shell, so this is the only way they reach anyone |
 | `post-handoff.py` | post, authors | posts the JSON handoff to the story's issue, and appends its `decisions` to one running log there |
 | `log-to-story.py` | post, Architect + authors + on merge | rewrites one comment on the story listing its tasks in trigger order |
