@@ -65,12 +65,11 @@ if not named:
 
 # ⚠️ THE SAME STRUCTURAL TEST THE ROUTING RULES USE, so the two can never disagree about what a
 # task is: a task's Branch line names its STORY's branch, so the number it starts with is not its
-# own. When they are equal the issue owns that branch and its work is the whole story — that case
-# goes through the pull-request hook instead, and this one must not touch it.
-if team.story_from_branch(named) == str(ISSUE):
-    print(f"#{ISSUE} owns `{named}` — it is worked as-is and opens its own PR. Not landing.")
-    emit(False)
-    raise SystemExit(0)
+# own. When they are EQUAL the issue owns that branch — a story worked as-is. It lands exactly the
+# same way, onto its own named ref (created by the push if absent), with two differences at the
+# end: the issue is NEVER closed here (its PR merging closes it, GitHub-natively), and the PR is
+# opened by the next step rather than at some later task's completion.
+OWNS = team.story_from_branch(named) == str(ISSUE)
 
 
 def git(*args: str) -> subprocess.CompletedProcess:
@@ -101,11 +100,19 @@ if dirty:
         team.fail(f"could not commit the run's changes: {(committed.stderr or committed.stdout).strip()}")
     print(f"committed the run's changes: {message.splitlines()[0]}")
 
-ahead = git("rev-list", "--count", f"origin/{named}..HEAD").stdout.strip()
-if ahead in ("", "0"):
-    print(f"nothing to land — HEAD is not ahead of `{named}`. The run produced no changes.")
-    emit(False)
-    raise SystemExit(0)
+# ⚠️ Fetch the target explicitly: a task's story branch was fetched by the action's own setup,
+# but an as-is story's named ref may not exist anywhere yet — a failed fetch means the push will
+# CREATE it, and everything on this branch is the landing.
+ref_exists = git("fetch", "origin", named).returncode == 0
+if ref_exists:
+    ahead = git("rev-list", "--count", f"origin/{named}..HEAD").stdout.strip()
+    if ahead in ("", "0"):
+        print(f"nothing to land — HEAD is not ahead of `{named}`. The run produced no changes.")
+        emit(False)
+        raise SystemExit(0)
+else:
+    ahead = git("rev-list", "--count", "HEAD").stdout.strip() or "?"
+    print(f"`{named}` does not exist yet — the landing creates it.")
 
 
 def push() -> subprocess.CompletedProcess:
@@ -138,8 +145,11 @@ if pushed.returncode != 0:
             f"{(pushed.stderr or pushed.stdout).strip()}"
         )
 
-landed = git("rev-list", "--count", f"origin/{named}..HEAD").stdout.strip()
 print(f"landed {ahead} commit(s) from `{branch}` onto `{named}`")
+out = os.environ.get("GITHUB_OUTPUT")
+if out:
+    with open(out, "a", encoding="utf-8") as handle:
+        handle.write(f"landed_ref={named}\n")
 
 remaining = handoff.get("remaining") or []
 
@@ -152,6 +162,19 @@ if remaining:
         f"work remaining, so the issue stays open:\n\n{items}\n\nRe-trigger it to continue.{link}",
     )
     print(f"#{ISSUE} left open — {len(remaining)} item(s) remaining")
+    emit(False)
+    raise SystemExit(0)
+
+if OWNS:
+    # ⚠️ An as-is story is NOT closed here. Its PR targets the default branch, so GitHub closes it
+    # natively on merge — closing it now would mark the story done with nothing merged, which is
+    # the exact confusion the task/story split exists to prevent.
+    team.upsert_comment(
+        ISSUE, MARKER,
+        f"{MARKER}\n✅ **Landed on `{named}`.** {ahead} commit(s), no work reported remaining. This "
+        f"story is worked as-is: its PR opens next and closes this issue when it merges.{link}",
+    )
+    print(f"#{ISSUE} is worked as-is — left open for its PR's merge")
     emit(False)
     raise SystemExit(0)
 

@@ -1514,12 +1514,15 @@ jobs:
       # ⚠️ The primary call site. After each landing the hook checks whether that was the LAST
       # task — every earlier landing just reports how many remain. The merge-path call is the net.
       # Its own already-exists and 0-ahead guards keep re-runs idempotent.
+      # ⚠️ `landed_ref` first: an as-is story has NO `story_branch` output (the delegator blanks
+      # it so the run cuts from the default branch), so the ref the completion hook just landed on
+      # is the only name for it. A task run emits the same ref as `story_branch` carries anyway.
       - name: Open the story's PR when the last task lands
-        if: always() && steps.roles.outputs.list != '' && needs.delegate.outputs.story_branch != ''
+        if: always() && steps.roles.outputs.list != '' && (steps.completion.outputs.landed_ref || needs.delegate.outputs.story_branch) != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
-          BASE: ${{ needs.delegate.outputs.story_branch }}
+          BASE: ${{ steps.completion.outputs.landed_ref || needs.delegate.outputs.story_branch }}
         run: "$RUNNER_TEMP/agent-bin/open-story-pr.py"
 
       - name: Label and link the PR
