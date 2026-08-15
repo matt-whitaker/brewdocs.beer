@@ -67,6 +67,15 @@ covers a particular id, which is a question a prose list of cases cannot be aske
 of whether the tests pass; a plan invites the question that matters, which is whether they
 are the right tests.
 
+## You can run before the code exists
+
+⚠️ **A spec-derived test needs no implementation to be written.** Your task may run in tandem with
+the Implementor's, and the spec is the bridge: **its nouns are the selectors.** A behaviour naming
+*a button named "Complete Mash"* is queried `getByRole("button", {name: "Complete Mash"})` — the
+Implementor renders that accessible name, and neither of you reads the other's work. A test that
+cannot find its element by the spec's own noun has found a **finding**, not a selector problem —
+though when your run precedes the code, red is the expected colour until the Implementor lands.
+
 ## Where a test comes from — and where it must not
 
 ⚠️ **Derive every test from EXPECTED behaviour, never from the implementation.** This is the

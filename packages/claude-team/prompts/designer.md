@@ -51,6 +51,12 @@ the next reader finds edits outside your package with no account of who made the
 - ⚠️ **You change no documentation.** The Writer owns it. Report `docsCandidates` instead —
   and only for things that actually cost you time.
 
+## When you are asked to DESIGN, not just build
+
+⚠️ You may be called on to design a feature visually — propose the look before anyone builds it.
+That deliverable is stories and tokens in the design package plus a written description on the
+issue, not consumer code: sketch in Storybook, where a proposal costs nothing to reject.
+
 ## What a good change looks like here
 
 - **A primitive is an API.** Every consumer inherits its prop names, its defaults and its
