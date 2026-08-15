@@ -1439,22 +1439,25 @@ jobs:
       # until the commits it would describe are actually on the branch, or `open-story-pr.py`
       # finds 0-ahead and correctly declines — leaving the story with no PR until something else
       # happens to trigger it.
-      # ⚠️ A TASK HAS NO PR. The branch the action minted is a staging area; this pushes it onto
-      # the story branch as a fast-forward and closes the task. A refused push FAILS THE STEP —
-      # two tasks of one story can run concurrently (the concurrency group is keyed on the issue
-      # and cannot be keyed on the story, since it is evaluated before the story is resolved), so
-      # git's refusal is the only thing standing between a collision and lost work.
-      - name: Land the task on its story branch
-        id: land
+      # ⚠️ A TASK HAS NO PR. The branch the action minted is a staging area; this commits the
+      # run's changes (message from the author's structured output), lands them on the story
+      # branch, and closes the task. A refused push reconciles by MERGE — pull latest, commit the
+      # merge commit, push — because two tasks of one story can run concurrently (the concurrency
+      # group is keyed on the issue and cannot be keyed on the story, since it is evaluated before
+      # the story is resolved). A merge that CONFLICTS fails the step with `unlandable=true`, the
+      # signal the failure-capture step keys on: a script must not pick a side, and the commits
+      # stay safe on the run's branch.
+      - name: Complete the work
+        id: completion
         if: always() && steps.roles.outputs.list != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
           # `remaining` decides whether the task closes — the author's only structured way to say
-          # it did not finish.
+          # it did not finish. `commitMessage` names the commit the hook makes.
           HANDOFF: ${{ steps.implementor.outputs.structured_output || steps.designer.outputs.structured_output }}
-        run: "$RUNNER_TEMP/agent-bin/land-on-story.py"
+        run: "$RUNNER_TEMP/agent-bin/work-completion.py"
 
       # ⚠️ A TASK REACHES DONE HERE OR NOWHERE. `close-merged-work.py` sets Done from a merged PR,
       # and a task has none — so before this, every task closed while sitting in In Progress
@@ -1465,7 +1468,7 @@ jobs:
       # ⚠️ PROJECTS_TOKEN is safe here for the usual reason and only that reason — step env is
       # per-step, so the model steps above cannot read it.
       - name: Move the task to Done
-        if: always() && steps.land.outputs.closed == 'true'
+        if: always() && steps.completion.outputs.closed == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PROJECTS_TOKEN: ${{ secrets.PROJECTS_TOKEN }}

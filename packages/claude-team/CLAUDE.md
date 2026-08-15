@@ -18,7 +18,7 @@ state, not from something a model was asked to leave behind.
 | **Epic** | none | — | its stories closing |
 | **Spike** | none | — | the maintainer, once they have decided |
 | **Story** | `<story#>-<summary>`, cut by the Architect | the **default** branch | its PR merging |
-| **Task** | none of its own — its work lands on the story's branch | — | `land-on-story.py`, once its work has landed |
+| **Task** | none of its own — its work lands on the story's branch | — | `work-completion.py`, once its work has landed |
 
 - An epic never has a branch and never has a PR. If something needs a PR, it is a story.
 - ⚠️ **An unprocessed issue is a STORY.** An epic has to say so — by an `epic` label or a
@@ -126,7 +126,7 @@ and it went both ways. Three pieces replace it:
 - **A task's branch** — the action's own `base_branch` input, set to the story's branch. The
   branch it creates is then the right one, so its injected instruction becomes true instead of
   something to argue with. Configure the action rather than fight it.
-- **A task's commits** — `land-on-story.py` pushes them onto the story branch. There is no task
+- **A task's commits** — `work-completion.py` commits and lands them on the story branch. There is no task
   PR and no base to get wrong, so the whole retarget-and-net apparatus is gone.
 
 ⚠️ **The story-branch hook must run POST, and this inverts the obvious implementation.**
@@ -168,10 +168,10 @@ maintainer's call was that review sanity beats the guarantee. What replaces the 
   cannot be keyed on the story — the group is evaluated before any job runs, so only the event
   context is available, the story is not resolved yet, and expressions have no regex to pull it
   from the issue body. Anyone reaching for that fix should stop here.
-- ⚠️ **What makes it survivable is that git refuses a non-fast-forward.** `land-on-story.py` pushes
-  an explicit refspec and **fails the step** when it is rejected, so a collision is loud and the
-  commits are still on the branch the run made. Swallowing that would convert a correct failure
-  into silently lost work.
+- ⚠️ **A rejected landing reconciles by merge**: `work-completion.py` pulls latest, commits the
+  merge commit, and pushes. A merge that **conflicts** is not resolved by script — the step fails
+  with `unlandable=true`, the commits stay on the run's branch, and resolution is an Implementor
+  call. Never a force-push, never silence.
 - **Trigger a story's tasks one at a time**, which the sequencing rules already say.
 
 ⚠️ **A task still gets a branch, and it is unavoidable rather than intended.** `setupBranch` always
@@ -221,7 +221,7 @@ and its stranded-commit recovery never fires. That recovery is for a run that co
    tasks — each stamped with the role that should pick it up. A hook creates the branch.
 2. Each **task** is triggered on its own. Its author commits on the branch the host action
    cut for it and opens nothing.
-3. `land-on-story.py` fast-forwards the story's branch to those commits and closes the task —
+3. `work-completion.py` commits the run's changes, lands them on the story's branch and closes the task —
    unless the author reported work `remaining`, which leaves it open with the list on it.
 4. The **story's** PR accumulates all of it. The maintainer reviews and merges the story as
    a whole.
@@ -232,7 +232,7 @@ commits between base and head, so the first task landing is the earliest moment 
 exist.
 
 ⚠️ **A TASK IS CLOSED BY THE LANDING HOOK, NOT BY A KEYWORD.** There is no task PR, so there is no
-closing keyword and nothing for GitHub to act on. `land-on-story.py` closes the issue once its
+closing keyword and nothing for GitHub to act on. `work-completion.py` closes the issue once its
 commits are on the story branch — and **only** when the author reported no `remaining`, which is
 the same signal that used to govern whether the keyword was written. An unfinished task stays open
 with its outstanding list posted on it.
@@ -242,7 +242,7 @@ so GitHub closes the story on merge the ordinary way.
 
 ⚠️ **A TASK REACHES DONE FROM THE LANDING HOOK, AND NOWHERE ELSE.** `close-merged-work.py` sets
 Done from a merged PR, and a task has none — so a task closed while sitting in In Progress forever
-until `land-on-story.py` emitted `closed` and a scripted step moved it. ⚠️ That step is gated on
+until the completion hook emitted `closed` and a scripted step moved it. ⚠️ That step is gated on
 `closed`, not on the hook succeeding: a task reporting work `remaining` is deliberately left open,
 and marching it to Done would erase the one signal saying it is unfinished.
 
@@ -780,7 +780,7 @@ forgotten by a model that ran out of turns or simply skipped it.
 | `ensure-story-branch.py` | post, Architect + Researcher; **pre, authors** | creates the story's branch if it is missing; an epic and a spike have none, and it says so rather than warning |
 | `sync-kind-label.py` | post, Architect + Researcher | applies the `epic`/`spike`/`bug`/`story` label `kind()` derives |
 | `file-sub-issues.py` | post, Architect | parents stories to their epic, tasks to their story |
-| `land-on-story.py` | post, authors | pushes a task's commits onto the story's branch and closes the task; **fails the step** if the push is refused |
+| `work-completion.py` | post, authors | commits the run's changes (message from the handoff's `commitMessage`), lands them on the story's branch — reconciling a rejected push by merge — and closes the task; a **conflicted** merge fails the step with `unlandable=true` |
 | `finish-pr.py` | post, authors | **a story worked as-is only** — labels its PR and ensures it closes its issue, or, when the author reported work `remaining`, that it does not. Returns immediately for a task, which has no PR |
 | `apply-repairs.py` | post, the root role | applies the process repairs it named, records each with what was wrong and why, **reports what it would not fix onto the trigger**, and files an issue rather than repairing the same thing twice |
 | `post-findings.py` | post, Researcher | renders its schema-forced findings onto the spike — the role has no shell, so this is the only way they reach anyone |

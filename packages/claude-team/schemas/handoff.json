@@ -29,13 +29,16 @@
             "description": "What this replaces and where that still reads the old way - the acceptance criteria on an issue, a spec id, a function that now contradicts it. Omit only when this is new ground rather than a correction."
           }
         },
-        "required": ["decision", "why"],
+        "required": [
+          "decision",
+          "why"
+        ],
         "additionalProperties": false
       }
     },
     "testingNotes": {
       "type": "array",
-      "description": "For the Tester. Behaviour that a test written to distrust this change should cover — not a description of what was built. Empty when the change genuinely warrants no new coverage.",
+      "description": "For the Tester. Behaviour that a test written to distrust this change should cover \u2014 not a description of what was built. Empty when the change genuinely warrants no new coverage.",
       "items": {
         "type": "object",
         "properties": {
@@ -48,13 +51,16 @@
             "description": "What could break here and stay invisible to lint, typecheck and build. A note with no plausible silent failure behind it is not worth a test."
           }
         },
-        "required": ["area", "why"],
+        "required": [
+          "area",
+          "why"
+        ],
         "additionalProperties": false
       }
     },
     "docsCandidates": {
       "type": "array",
-      "description": "For the Writer. Things that cost you time to work out and would cost the next reader the same. A proposal, never an instruction — the Writer decides what earns a place. Empty when nothing cost you time.",
+      "description": "For the Writer. Things that cost you time to work out and would cost the next reader the same. A proposal, never an instruction \u2014 the Writer decides what earns a place. Empty when nothing cost you time.",
       "items": {
         "type": "object",
         "properties": {
@@ -71,11 +77,26 @@
             "description": "The concrete cost you paid for not knowing it. This is the field that decides whether the note survives; with no real cost behind it, it usually should not."
           }
         },
-        "required": ["file", "note", "why"],
+        "required": [
+          "file",
+          "note",
+          "why"
+        ],
         "additionalProperties": false
       }
+    },
+    "commitMessage": {
+      "type": "string",
+      "maxLength": 400,
+      "description": "The commit message for the changes this run made - imperative subject, one line, optionally a short body after a blank line. A scripted hook makes the commit; never run git commit yourself. Left empty, the hook writes a deterministic fallback from the task title."
     }
   },
-  "required": ["remaining", "decisions", "testingNotes", "docsCandidates"],
+  "required": [
+    "remaining",
+    "decisions",
+    "testingNotes",
+    "docsCandidates",
+    "commitMessage"
+  ],
   "additionalProperties": false
 }
