@@ -37,6 +37,32 @@ import re
 import team
 
 STORY = os.environ.get("STORY", "")
+HAVE_SECRETS = os.environ.get("HAVE_SECRETS", "").lower() == "true"
+
+# ⚠️ THE MISSING TOKEN IS DIAGNOSED HERE, NOT GATED AWAY IN THE WORKFLOW. The dispatch step used
+# to require a non-empty token in its `if:`, so a mint that FAILED produced a silently skipped
+# step — and `continue-on-error` on the mint reports `conclusion: success`, so from outside a
+# broken cascade and a deliberately-dark one looked identical. Measured on run 31928714016: every
+# step green, #1093 landed and closed, #1094 never started, nothing anywhere said why.
+#
+# ⚠️ THE TWO CASES NEED DIFFERENT VOLUMES, which is the whole reason this is a branch and not a
+# single warning. No secrets is the CONFIGURED-OFF state and must stay quiet; secrets present but
+# no token is a MISCONFIGURATION that only a human can fix, and it must be loud.
+if not team.GH_TOKEN:
+    if HAVE_SECRETS:
+        print(
+            "::error::the dispatch App secrets are set but no token was minted — the App is "
+            "almost certainly not INSTALLED on this repository. The mint step's 404 is "
+            "`get-a-repository-installation-for-the-authenticated-app`, which means authenticated "
+            "as the App but not installed here. The next task will NOT start on its own; label it "
+            "by hand, then install the App to restore the cascade."
+        )
+    else:
+        print(
+            "::notice::cascade dark — no dispatch App secrets configured. The next task must be "
+            "labelled by hand. This is the configured-off state, not a failure."
+        )
+    raise SystemExit(0)
 
 if not team.REPO:
     team.warn("REPO is not set — nothing dispatched.")
