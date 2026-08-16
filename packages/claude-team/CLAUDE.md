@@ -118,6 +118,16 @@ must be stated where it can be seen:
     **inside `delegate`** for a story that arrives already shaped. Three call sites, one hook: it
     finds the earliest incomplete wave, so "the first wave" is just the general case with nothing
     closed yet.
+  - ⚠️ **A DARK CASCADE MUST SAY WHY, AND FOR ONE RELEASE IT COULD NOT.** The dispatch step
+    required a non-empty token in its `if:`, so a mint that FAILED produced a silently *skipped*
+    step — and `continue-on-error` on the mint reports `conclusion: success`, so a broken cascade
+    and a deliberately-dark one were indistinguishable from outside. Measured on run 31928714016:
+    every step green, the task landed and closed, the next task never started, nothing anywhere
+    said why. ⚠️ The token check now lives in the **hook**, which separates the two cases by
+    volume — no secrets is the configured-off state and stays a `::notice::`; secrets present with
+    no token is a misconfiguration only a human can fix and is an `::error::`. The commonest cause
+    is an App that is authenticated but **not installed on the repository**, whose signature is a
+    404 on `get-a-repository-installation-for-the-authenticated-app`.
   - ⚠️ The Architect's call sits **after** `branch-navigation.py`. A task's run bases on the story
     branch, and dispatching before that ref exists reproduces #744 — the authoring job 404s in
     ~3s, before the model is called.
