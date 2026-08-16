@@ -895,6 +895,28 @@ turns and cannot be forgotten.
   ⚠️ Two runs have now been diagnosed only as far as their result payload — `num_turns`, cost,
   denials — because nothing collected the file before the runner was destroyed. That payload can
   say a run stopped early; it cannot say **why**.
+- ⚠️ **A HOOK CANNOT INHERIT THE HOST ACTION'S GIT CREDENTIAL, AND ASSUMING IT COULD MADE EVERY
+  LANDING IMPOSSIBLE.** `actions/checkout` persists its token as `http.<server>/.extraheader`;
+  the action's `replaceCheckoutCredentials` **unsets exactly that entry** and substitutes its own
+  short-lived token in the remote URL, so the agent cannot read the job's credential out of
+  `.git/config` (`src/github/operations/git-config.ts`). Correct for the agent, fatal for a
+  post-hook: after a long model step the inherited token has expired and a bare `git push origin`
+  fails `Invalid username or token`. Measured on run 31918402971 — twelve minutes in, the capture
+  branch was never created and the run's work died with the runner.
+  - ⚠️ **`git-push.sh` is NOT the fix**, though its presence in the base allowlist suggests it is.
+    Reading it settles the question: it is a security wrapper that rejects flags and non-`origin`
+    remotes, ending in a bare `exec git push origin "$REF"`. It supplies no credential.
+  - **`team.authenticate_git()` is the contract** — it points `origin` at an explicitly
+    authenticated URL built from the hook step's own `GH_TOKEN`, and every hook doing network git
+    calls it first. ⚠️ It sets the **remote**, not a per-command URL: `git fetch <url> <branch>`
+    writes `FETCH_HEAD` and never updates `refs/remotes/origin/<branch>`, so a caller comparing
+    against `origin/<branch>` would silently read a stale ref.
+  - ⚠️ **`team.scrub()` is not optional wherever git output is reported.** The token is in the
+    remote URL, git echoes that URL in its errors, and Actions masks secrets in the **log** only —
+    a hook posting git's stderr into an issue comment is writing outside that protection.
+  - ⚠️ **A failed fetch used to read as "the ref does not exist."** `work-completion.py` derives
+    the as-is case from `fetch` returning non-zero, so an auth failure presented as a missing
+    branch — the wrong diagnosis, on the path that then pushes.
 - ⚠️ **Keep long-lived credentials out of any job a model step shares** unless the workflow
   puts them in *step* env. Step env is per-step, so a scripted step can hold a token the
   model step beside it cannot read. Secret masking covers logs only — not an API payload a
