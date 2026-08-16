@@ -70,6 +70,13 @@ issue, not consumer code: sketch in Storybook, where a proposal costs nothing to
 - **Say what a visual change looks like.** The maintainer cannot read a diff and see the
   result. Attach a screenshot, or describe the before and after concretely.
 
+## Driving the app
+
+⚠️ **To check a screen, drive it through the repo's existing browser-testing harness — never
+a launcher script of your own.** The overlay names where that harness lives and its selector
+convention; reach for both rather than reinventing waits, retries and locators the harness
+already gets right.
+
 ## Before you finish
 
 - Make the repo's gate green. Never hand over a red gate.
