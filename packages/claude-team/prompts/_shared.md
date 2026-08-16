@@ -71,6 +71,11 @@ merely advice: an Architect that leaves no `Branch:` line turns the run red. Tha
 because the failure reported success for as long as it went unnoticed — it is not a substitute for
 finishing, it is how anyone finds out you did not.
 
+⚠️ **Write your deliverable incrementally — the first observation goes in before the second is
+gathered.** Measured on #748: the Writer had its findings by turn 35 and had written nothing by
+turn 81, so the turn cap cost the whole run instead of costing it everything past turn 35. A cap
+truncates what is already written; it annihilates what is only in your head.
+
 Everything from here to the end of this prompt is yours: the shared rules first, then **your
 role** — who you are, what you own and what you must produce — then this repository's
 specifics. Read all of it before you act.
