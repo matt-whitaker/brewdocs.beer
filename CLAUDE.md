@@ -147,6 +147,18 @@ editing its markdown, not hunting a block scalar; the workflow went 1102 lines t
   Same trap as the claude-team hooks. The ordering is load-bearing.
 - ⚠️ **Random heredoc delimiter.** A fixed `EOF` truncates at any prompt line that is itself
   bare `EOF`, and these prompts carry fenced examples.
+- ⚠️ **A `#` line inside `if: |` is NOT a comment — it is part of the expression**, and it
+  invalidates the whole workflow file. A literal block scalar has no comment syntax, so an
+  annotation indented under `if: |` is read as expression text; GitHub then rejects the file
+  outright. Put such comments *above* the `if:`, at its indent. Same family as the `run-name:`
+  folded-scalar trap at the top of the file (#1085).
+  - ⚠️ **This is invisible to `yaml.safe_load`** — the file parses perfectly, the string is
+    simply wrong. Validating a workflow by parsing it therefore proves nothing about this class
+    of error; the check is `if` values must contain no line starting with `#`.
+  - ⚠️ **Its fingerprint:** a **push**-event run of a workflow that has no `push:` trigger,
+    **0 jobs**, `log not found`, and the run named for the *file path* instead of `run-name`.
+    GitHub creates that run solely to report the parse failure, so it appears on **any branch**
+    — which makes a scratch-branch push the fastest way to bisect one.
 - ⚠️ **A prompt file cannot hold `${{ }}`** — it is never evaluated inside a file. Security
   needed the merged PR number, so it arrives as `PR` in the model step's env and the prompt
   says `gh pr diff "$PR"`. The authoring roles get `ISSUE` and `STORY` the same way.
