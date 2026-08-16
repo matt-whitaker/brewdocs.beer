@@ -110,12 +110,32 @@ if not team.authenticate_git():
 # but an as-is story's named ref may not exist anywhere yet — a failed fetch means the push will
 # CREATE it, and everything on this branch is the landing.
 ref_exists = git("fetch", "origin", named).returncode == 0
+
+# ⚠️ "DID THE RUN PRODUCE ANYTHING" IS MEASURED AGAINST WHERE THE RUN STARTED, NOT AGAINST THE
+# NAMED REF, AND CONFLATING THE TWO REPORTED A CONFLICT FOR A RUN THAT CHANGED NOTHING. A task's
+# base IS its story branch, so for a task the two questions coincide and this changes nothing. An
+# as-is story is different: its run is cut from the DEFAULT branch while its named ref may be days
+# old, so `origin/<named>..HEAD` counts the default branch's own history and is non-zero however
+# little the run did. Measured on #748 — a Writer correctly changed nothing, and the landing
+# reported "could not land 1 commit(s)" and a merge conflict against a ref from four days earlier.
+default = ((team.gh_json("repo", "view", team.REPO, "--json", "defaultBranchRef") or {})
+           .get("defaultBranchRef") or {}).get("name") or ""
+base = f"origin/{named}" if not OWNS else (f"origin/{default}" if default else "")
+
+# ⚠️ NO BASE MEANS FALL BACK TO THE OLD TEST RATHER THAN LAND BLIND. An unreadable default branch
+# is a rate-limited minute, not a reason to push something nobody measured.
+if not base:
+    team.warn("could not resolve the default branch — falling back to comparing against the named ref.")
+    base = f"origin/{named}"
+
+produced = git("rev-list", "--count", f"{base}..HEAD").stdout.strip() if ref_exists or OWNS else ""
+if ref_exists and produced in ("", "0"):
+    print(f"nothing to land — this run produced no commits beyond `{base}`.")
+    emit(False)
+    raise SystemExit(0)
+
 if ref_exists:
     ahead = git("rev-list", "--count", f"origin/{named}..HEAD").stdout.strip()
-    if ahead in ("", "0"):
-        print(f"nothing to land — HEAD is not ahead of `{named}`. The run produced no changes.")
-        emit(False)
-        raise SystemExit(0)
 else:
     ahead = git("rev-list", "--count", "HEAD").stdout.strip() or "?"
     print(f"`{named}` does not exist yet — the landing creates it.")
@@ -139,7 +159,9 @@ if pushed.returncode != 0:
         emit(False, unlandable=True)
         team.fail(
             f"could not land {ahead} commit(s) on `{named}` — the merge conflicts, and a script "
-            f"must not resolve it. The commits are safe on `{branch}`; resolution is an "
+            f"must not resolve it. ⚠️ The commits exist ONLY on the runner's `{branch}`, which is "
+            f"destroyed with this job: they survive only if the failure capture pushes them, and "
+            f"its comment on this issue is the record of whether it did. Resolution is an "
             f"Implementor call. git said: {team.scrub((merged.stderr or merged.stdout).strip())}"
         )
     pushed = push()
