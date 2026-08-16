@@ -294,6 +294,14 @@ jobs:
           ROUTE_DEFAULT: ${{ steps.route.outputs.roles }}
           ROUTE_REASON: ${{ steps.route.outputs.reason }}
         with:
+          # ⚠️ THE HOST ACTION HAS ITS OWN ACTOR GUARD, INDEPENDENT OF OURS, and it rejected every
+          # cascaded run: "Workflow initiated by non-human actor: brewdocs-claude (type: Bot)".
+          # Our delegate guard admits this App on purpose — that is how a story cascades — but
+          # admitting it there only gets the job started; the action then refuses at setup, before
+          # the model is called. Measured on run 31929531465 (#1094).
+          # ⚠️ NAMED, NEVER `*`. The action's own warning is that `*` lets any external App invoke
+          # it with a prompt it controls. One private App with issues:write is the whole grant.
+          allowed_bots: brewdocs-claude
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # ⚠️ Required, not optional — the same pairing #668 established. It short-circuits
           # `setupGitHubToken` before OIDC, which is why this job needs no `id-token`; and it is
@@ -532,6 +540,14 @@ jobs:
           # is the only thing that overrides it.
           KIND: ${{ needs.delegate.outputs.kind }}
         with:
+          # ⚠️ THE HOST ACTION HAS ITS OWN ACTOR GUARD, INDEPENDENT OF OURS, and it rejected every
+          # cascaded run: "Workflow initiated by non-human actor: brewdocs-claude (type: Bot)".
+          # Our delegate guard admits this App on purpose — that is how a story cascades — but
+          # admitting it there only gets the job started; the action then refuses at setup, before
+          # the model is called. Measured on run 31929531465 (#1094).
+          # ⚠️ NAMED, NEVER `*`. The action's own warning is that `*` lets any external App invoke
+          # it with a prompt it controls. One private App with issues:write is the whole grant.
+          allowed_bots: brewdocs-claude
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # ⚠️ THE EXACT HANDLE, and this is load-bearing. trigger_phrase does NOT gate
           # anything for us — checkContainsTrigger() returns early on `if (prompt) return
@@ -747,6 +763,14 @@ jobs:
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
           STORY: ${{ needs.delegate.outputs.story }}
         with:
+          # ⚠️ THE HOST ACTION HAS ITS OWN ACTOR GUARD, INDEPENDENT OF OURS, and it rejected every
+          # cascaded run: "Workflow initiated by non-human actor: brewdocs-claude (type: Bot)".
+          # Our delegate guard admits this App on purpose — that is how a story cascades — but
+          # admitting it there only gets the job started; the action then refuses at setup, before
+          # the model is called. Measured on run 31929531465 (#1094).
+          # ⚠️ NAMED, NEVER `*`. The action's own warning is that `*` lets any external App invoke
+          # it with a prompt it controls. One private App with issues:write is the whole grant.
+          allowed_bots: brewdocs-claude
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # ⚠️ Supplied for the two reasons #668 established: it short-circuits `setupGitHubToken`
           # before OIDC, so this job needs no `id-token`; and it makes the `permissions:` block
@@ -907,6 +931,14 @@ jobs:
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
           KIND: ${{ needs.delegate.outputs.kind }}
         with:
+          # ⚠️ THE HOST ACTION HAS ITS OWN ACTOR GUARD, INDEPENDENT OF OURS, and it rejected every
+          # cascaded run: "Workflow initiated by non-human actor: brewdocs-claude (type: Bot)".
+          # Our delegate guard admits this App on purpose — that is how a story cascades — but
+          # admitting it there only gets the job started; the action then refuses at setup, before
+          # the model is called. Measured on run 31929531465 (#1094).
+          # ⚠️ NAMED, NEVER `*`. The action's own warning is that `*` lets any external App invoke
+          # it with a prompt it controls. One private App with issues:write is the whole grant.
+          allowed_bots: brewdocs-claude
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # ⚠️ THE ONE ROLE THAT PASSES ITS OWN TOKEN, and it does two jobs at once.
           #
@@ -1270,6 +1302,14 @@ jobs:
           # trigger, where $STORY is the one to read.
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
         with:
+          # ⚠️ THE HOST ACTION HAS ITS OWN ACTOR GUARD, INDEPENDENT OF OURS, and it rejected every
+          # cascaded run: "Workflow initiated by non-human actor: brewdocs-claude (type: Bot)".
+          # Our delegate guard admits this App on purpose — that is how a story cascades — but
+          # admitting it there only gets the job started; the action then refuses at setup, before
+          # the model is called. Measured on run 31929531465 (#1094).
+          # ⚠️ NAMED, NEVER `*`. The action's own warning is that `*` lets any external App invoke
+          # it with a prompt it controls. One private App with issues:write is the whole grant.
+          allowed_bots: brewdocs-claude
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # ⚠️ THE EXACT HANDLE, and this is load-bearing. trigger_phrase does NOT gate
           # anything for us — checkContainsTrigger() returns early on `if (prompt) return
@@ -1342,6 +1382,14 @@ jobs:
           # trigger, where $STORY is the one to read.
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
         with:
+          # ⚠️ THE HOST ACTION HAS ITS OWN ACTOR GUARD, INDEPENDENT OF OURS, and it rejected every
+          # cascaded run: "Workflow initiated by non-human actor: brewdocs-claude (type: Bot)".
+          # Our delegate guard admits this App on purpose — that is how a story cascades — but
+          # admitting it there only gets the job started; the action then refuses at setup, before
+          # the model is called. Measured on run 31929531465 (#1094).
+          # ⚠️ NAMED, NEVER `*`. The action's own warning is that `*` lets any external App invoke
+          # it with a prompt it controls. One private App with issues:write is the whole grant.
+          allowed_bots: brewdocs-claude
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # ⚠️ THE EXACT HANDLE, and this is load-bearing. trigger_phrase does NOT gate
           # anything for us — checkContainsTrigger() returns early on `if (prompt) return
@@ -1402,6 +1450,14 @@ jobs:
           # trigger, where $STORY is the one to read.
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
         with:
+          # ⚠️ THE HOST ACTION HAS ITS OWN ACTOR GUARD, INDEPENDENT OF OURS, and it rejected every
+          # cascaded run: "Workflow initiated by non-human actor: brewdocs-claude (type: Bot)".
+          # Our delegate guard admits this App on purpose — that is how a story cascades — but
+          # admitting it there only gets the job started; the action then refuses at setup, before
+          # the model is called. Measured on run 31929531465 (#1094).
+          # ⚠️ NAMED, NEVER `*`. The action's own warning is that `*` lets any external App invoke
+          # it with a prompt it controls. One private App with issues:write is the whole grant.
+          allowed_bots: brewdocs-claude
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # ⚠️ THE EXACT HANDLE, and this is load-bearing. trigger_phrase does NOT gate
           # anything for us — checkContainsTrigger() returns early on `if (prompt) return
@@ -1466,6 +1522,14 @@ jobs:
           # trigger, where $STORY is the one to read.
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
         with:
+          # ⚠️ THE HOST ACTION HAS ITS OWN ACTOR GUARD, INDEPENDENT OF OURS, and it rejected every
+          # cascaded run: "Workflow initiated by non-human actor: brewdocs-claude (type: Bot)".
+          # Our delegate guard admits this App on purpose — that is how a story cascades — but
+          # admitting it there only gets the job started; the action then refuses at setup, before
+          # the model is called. Measured on run 31929531465 (#1094).
+          # ⚠️ NAMED, NEVER `*`. The action's own warning is that `*` lets any external App invoke
+          # it with a prompt it controls. One private App with issues:write is the whole grant.
+          allowed_bots: brewdocs-claude
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # ⚠️ THE EXACT HANDLE, and this is load-bearing. trigger_phrase does NOT gate
           # anything for us — checkContainsTrigger() returns early on `if (prompt) return
@@ -1747,6 +1811,14 @@ jobs:
           # merge review and always answers a requested one.
           TRIGGER: ${{ github.event_name == 'pull_request' && 'merge' || 'request' }}
         with:
+          # ⚠️ THE HOST ACTION HAS ITS OWN ACTOR GUARD, INDEPENDENT OF OURS, and it rejected every
+          # cascaded run: "Workflow initiated by non-human actor: brewdocs-claude (type: Bot)".
+          # Our delegate guard admits this App on purpose — that is how a story cascades — but
+          # admitting it there only gets the job started; the action then refuses at setup, before
+          # the model is called. Measured on run 31929531465 (#1094).
+          # ⚠️ NAMED, NEVER `*`. The action's own warning is that `*` lets any external App invoke
+          # it with a prompt it controls. One private App with issues:write is the whole grant.
+          allowed_bots: brewdocs-claude
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # ⚠️ The exact handle, for the reason in #488: with no value this defaults to
           # "@claude", and "@claude/security review this" would extract as

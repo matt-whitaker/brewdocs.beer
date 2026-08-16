@@ -282,7 +282,13 @@ dispatches the next one via the **brewdocs-claude App** — a token minted per r
 grant is issues:write on this repo, adding the same `@claude` label a human would. No new entry
 path exists; the front door does the rest, and the `@claude` label doubles as the in-flight
 marker, so nothing double-dispatches or loops. ⚠️ **Missing secrets leave the cascade dark** and
-the manual gesture untouched. ⚠️ `brewdocs-claude[bot]` passes the delegate actor guard **on
+the manual gesture untouched. ⚠️ **THERE ARE TWO ACTOR GUARDS AND BOTH MUST ADMIT THE APP.** Ours starts the job; the host
+action has its own, which refuses at setup — *"Workflow initiated by non-human actor:
+brewdocs-claude (type: Bot)"* — before the model is called and before any hook runs. Every model
+step therefore carries `allowed_bots: brewdocs-claude`. ⚠️ **Named, never `*`**: the action's own
+warning is that a wildcard lets any external App invoke it with a prompt it controls. Measured on
+run 31929531465 — the cascade dispatched correctly and the cascaded run died at setup (#1104).
+⚠️ `brewdocs-claude[bot]` passes the delegate actor guard **on
 purpose** — the guard's exclusions remain the loop guard, since every event a role run creates is
 authored by `claude[bot]` or `github-actions[bot]`.
 ⚠️ **`needs:`-based chaining was tried and reverted** — a role that skips after waiting reports as
