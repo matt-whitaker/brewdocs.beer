@@ -431,6 +431,30 @@ jobs:
           SCRIPT_ROLES: ${{ steps.route.outputs.roles }}
         run: "$RUNNER_TEMP/agent-bin/report-route.py"
 
+      # ⚠️ START THE STORY'S FIRST WAVE. Phase 2 chained task N to task N+1 and never wired the
+      # ignition, so the cascade could continue a story but not begin one (#1095) — the maintainer
+      # still had to hand-label task 1, the exact gesture #31 set out to remove.
+      # ⚠️ Same guards as the authors-job call: `continue-on-error` on the mint plus the token-empty
+      # gate keep it DARK without the App secrets, and the hook never fails a run.
+      # ⚠️ `dispatch-next.py` needs no change for this — it already finds the earliest incomplete
+      # wave and skips anything already carrying the label, so "the first wave" is just the general
+      # case with nothing closed yet.
+      - name: Mint the dispatch token
+        id: shaped-dispatch-token
+        if: always() && steps.route.outputs.dispatch == 'true'
+        continue-on-error: true
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.DISPATCH_APP_ID }}
+          private-key: ${{ secrets.DISPATCH_APP_PRIVATE_KEY }}
+      - name: Dispatch the story's first wave
+        if: always() && steps.route.outputs.dispatch == 'true' && steps.shaped-dispatch-token.outputs.token != ''
+        env:
+          GH_TOKEN: ${{ steps.shaped-dispatch-token.outputs.token }}
+          REPO: ${{ github.repository }}
+          STORY: ${{ steps.route.outputs.story }}
+        run: "$RUNNER_TEMP/agent-bin/dispatch-next.py"
+
       # ⚠️ THE ROUTING STEP WAS THE ONLY MODEL STEP HERE SHIPPING NO TRANSCRIPT, which is why #807
       # could sit inert for days while every visible signal — green steps, a posted notice, a
       # plausible role — said it worked. A decision with no record is worse than a channel with no
@@ -590,6 +614,31 @@ jobs:
           # an epic has no branch, and a missing one there must not warn
           KIND: ${{ needs.delegate.outputs.kind }}
         run: "$RUNNER_TEMP/agent-bin/branch-navigation.py"
+
+      # ⚠️ START THE STORY'S FIRST WAVE. Phase 2 chained task N to task N+1 and never wired the
+      # ignition, so the cascade could continue a story but not begin one (#1095) — the maintainer
+      # still had to hand-label task 1, the exact gesture #31 set out to remove.
+      # ⚠️ Same guards as the authors-job call: `continue-on-error` on the mint plus the token-empty
+      # gate keep it DARK without the App secrets, and the hook never fails a run.
+      # ⚠️ `dispatch-next.py` needs no change for this — it already finds the earliest incomplete
+      # wave and skips anything already carrying the label, so "the first wave" is just the general
+      # case with nothing closed yet.
+      - name: Mint the dispatch token
+        id: shaped-dispatch-token
+        if: always() && needs.delegate.outputs.kind != 'epic' && needs.delegate.outputs.kind != 'spike'
+        continue-on-error: true
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.DISPATCH_APP_ID }}
+          private-key: ${{ secrets.DISPATCH_APP_PRIVATE_KEY }}
+      - name: Dispatch the story's first wave
+        if: always() && needs.delegate.outputs.kind != 'epic' && needs.delegate.outputs.kind != 'spike' && steps.shaped-dispatch-token.outputs.token != ''
+        env:
+          GH_TOKEN: ${{ steps.shaped-dispatch-token.outputs.token }}
+          REPO: ${{ github.repository }}
+          STORY: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
+        run: "$RUNNER_TEMP/agent-bin/dispatch-next.py"
+
       # ⚠️ AFTER file-sub-issues, which is what makes the children discoverable — this places
       # them too, and sub_issues() would return nothing if it ran first.
       # ⚠️ PROJECTS_TOKEN is safe here on the same argument as the authors job: step env is

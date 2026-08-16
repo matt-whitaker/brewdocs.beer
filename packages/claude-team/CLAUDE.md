@@ -111,6 +111,16 @@ must be stated where it can be seen:
   start the next wave; a task the section forgot is appended in derived `(phase, issue number)`
   order rather than stranded, and with no section at all tasks run one at a time in that derived
   order. The same section is what the human reads when driving by hand.
+  - ⚠️ **THE FIRST WAVE NEEDS ITS OWN IGNITION, and for one release it had none.** The hook chains
+    task N to task N+1 from the authors job, so a story could be *continued* but never *begun* —
+    the maintainer still hand-labelled task 1, which is the gesture the cascade existed to remove
+    (#1095). It now also runs **post-Architect**, once a freshly-shaped story has its branch, and
+    **inside `delegate`** for a story that arrives already shaped. Three call sites, one hook: it
+    finds the earliest incomplete wave, so "the first wave" is just the general case with nothing
+    closed yet.
+  - ⚠️ The Architect's call sits **after** `branch-navigation.py`. A task's run bases on the story
+    branch, and dispatching before that ref exists reproduces #744 — the authoring job 404s in
+    ~3s, before the model is called.
 
 ⚠️ **"Depends on" means MERGED.** A story whose tasks are all closed but whose PR is open has
 delivered nothing to any other branch — which is why the epic's work log carries a **landed**
@@ -305,6 +315,16 @@ assumed from its shape.
 ⚠️ **An unknown handle lands there too.** `@claude/nonsense` matches no role, so rule 1b catches it
 and the root role can say there is no such role — where rule 3 would previously have shaped the
 issue as a story instead.
+
+⚠️ **A STORY WITH TASKS IS NEVER AN AUTHOR'S TO WORK — triggering it means START IT.** Rule 4
+short-circuits on the `Branch:` line and used to default a missing `Role:` stamp to the
+Implementor, so an already-shaped story — a branch named, tasks written, which is exactly what the
+Architect produces and what a careful human files — spent an `opus` run producing nothing (#1096,
+measured on #1092). ⚠️ **The disqualifying fact was already in hand**: the rule computes `kids` and
+spent it entirely on the remedy text, which read *"trigger one of its tasks instead"* while routing
+to an author anyway. It now emits `dispatch` and no role, every role job skips on the empty
+`roles`, and the first wave starts. ⚠️ **A story with NO tasks still falls through to its stamped
+author** — the as-is path — and that bound is what keeps the two cases apart.
 
 ⚠️ **A bare `@claude` on a TASK routes to the Custodian, deterministically.** A task's runs happen
 from its story, so a human landing on the task itself is there because something did not happen —
@@ -802,7 +822,7 @@ forgotten by a model that ran out of turns or simply skipped it.
 | `file-sub-issues.py` | post, Architect | parents stories to their epic, tasks to their story |
 | `work-completion.py` | post, authors | commits the run's changes (message from the handoff's `commitMessage`), lands them on the story's branch — reconciling a rejected push by merge — and closes the task; a **conflicted** merge fails the step with `unlandable=true` |
 | `capture-failure.py` | post, authors — only when a model step failed or the landing conflicted | pushes the run's changes to `failure/<task#>-<run#>-<attempt>` and appends a recovery report on the issue; never fails, never masks the real error |
-| `dispatch-next.py` | post, authors — only when the landing **closed** the task | reads the story's `### Sequencing` section (derived order without one), and adds `@claude` to every open, unlabelled task in the earliest incomplete wave — the cascade, dark when the App secrets are absent |
+| `dispatch-next.py` | post, authors when the landing **closed** the task; **post, Architect** (after the branch exists); **in `delegate`** when an already-shaped story is triggered | reads the story's `### Sequencing` section (derived order without one), and adds `@claude` to every open, unlabelled task in the earliest incomplete wave — the cascade, dark when the App secrets are absent |
 | `finish-pr.py` | post, authors | the net behind `open-story-pr.py` on the as-is path — labels the PR and reconciles the closing keyword with `remaining`. Returns immediately for a task, which has no PR |
 | `apply-repairs.py` | post, the root role | applies the process repairs it named, records each with what was wrong and why, **reports what it would not fix onto the trigger**, and files an issue rather than repairing the same thing twice |
 | `post-findings.py` | post, Researcher | renders its schema-forced findings onto the spike — the role has no shell, so this is the only way they reach anyone |
