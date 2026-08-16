@@ -803,6 +803,19 @@ only lever the consuming repo actually holds.
 explicitly. Tag mode asks the model to keep a todo list in its tracking comment; writing that list
 is a real, satisfying, visible action, and it is the one thing both stalled runs accomplished.
 
+⚠️ **AND THE PROMPT NOW GUARDS BOTH ENDS, WHICH IT DID NOT.** Everything above concerns stopping
+too early; a role can also stop too **late**, and that costs more — it produces nothing *and*
+explains nothing. Measured on a Writer run: 81 turns, the target screen driven and read by roughly
+turn 35, not one line of the deliverable written when the cap hit. ⚠️ **The two halves read as a
+contradiction unless the discriminator is stated**, and it is non-convergence rather than
+difficulty: attacking the same obstacle with variations rather than steps forward is the signal to
+bank and report. ⚠️ **Stopping is not permission to invent** — that is the failure the stop exists
+to avoid, and it is worse than either, because nothing about it looks wrong. ⚠️ **And no issue body
+can require a role to spend the whole budget**: an unmeetable acceptance criterion is a finding.
+An issue that removes a role's permission to stop converts a cheap, informative failure into an
+expensive, opaque one — measured across five runs on one story, where the first three reported
+precisely what blocked them in 1–4 minutes and the last two ground to the cap with nothing.
+
 ⚠️ **"Confirm scope" is the tell.** A plan step whose natural completion is asking a human has
 planned its own failure — nobody is reading while a run executes. The prompt says ambiguity is not
 a stop condition: choose a defensible reading, ship, and raise the question in the 🔔 Maintainer
