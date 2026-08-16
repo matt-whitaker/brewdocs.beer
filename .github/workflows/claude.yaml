@@ -166,10 +166,13 @@ jobs:
   # almost none of it needs judgement. See the header for the loop guard and the `needs:`
   # note, and delegate.py for the precedence rules.
   delegate:
+    # ⚠️ `brewdocs-claude[bot]` — the Phase-2 dispatch App — is INTENDED to pass this guard:
+    # its label-adds are how a story cascades. The two exclusions below stay the loop guard,
+    # because every event a role run creates is authored by one of them.
+    # ⚠️ THESE LINES MUST STAY OUTSIDE THE `if: |` BLOCK. A literal block scalar has no
+    # comments — a `#` line indented under it becomes part of the EXPRESSION, and GitHub
+    # rejects the whole file (0 jobs, no log, run named for the path). See #1085.
     if: |
-      # ⚠️ `brewdocs-claude[bot]` — the Phase-2 dispatch App — is INTENDED to pass this guard:
-      # its label-adds are how a story cascades. The two exclusions below stay the loop guard,
-      # because every event a role run creates is authored by one of them.
       github.actor != 'claude[bot]' && github.actor != 'github-actions[bot]' && (
         (github.event_name == 'issues' && github.event.label.name == '@claude') ||
         (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
