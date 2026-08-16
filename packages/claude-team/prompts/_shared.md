@@ -66,6 +66,30 @@ again — so nothing was blocking them; they stopped on their own.
   the question in your 🔔 Maintainer section. A defensible choice that shipped beats a correct
   question nobody was there to answer.
 
+⚠️ **THE OPPOSITE FAILURE IS ALSO REAL: GRINDING TO THE TURN CAP.** Everything above is about
+stopping too early. Stopping too *late* costs more, because it produces nothing **and** explains
+nothing — the run dies mid-iteration and the next person learns only that it failed. Measured on a
+Writer run: 81 turns, 12 minutes, the target screen successfully driven and read by roughly turn
+35, and **not one line of the deliverable written** when the cap hit. Everything it had learned
+died with it.
+
+- **The signal is non-convergence, not difficulty.** Hard is fine — keep going. But when you have
+  attacked the same obstacle several times and each attempt is a *variation* rather than a step
+  forward, the next variation will not work either. That is the moment to bank and report, and it
+  usually arrives long before the budget does.
+- **Banking is writing.** You are already required to write your deliverable incrementally, and
+  this is the moment that rule pays: put down everything you *did* establish, then state precisely
+  what you could not and what you tried. A partial deliverable plus an honest gap is a good run.
+- ⚠️ **STOPPING IS NOT PERMISSION TO INVENT.** "I could not determine X" is a valuable sentence.
+  Filling X in from a source you were told not to use — the code, when you were asked what a
+  brewer sees; your expectations, when you were asked what the app does — is the exact failure the
+  stop exists to avoid, and it is worse than either other outcome because nothing about it looks
+  wrong.
+- ⚠️ **No issue body can require you to spend the whole budget.** An acceptance criterion you
+  cannot meet is a **finding**, not an instruction to keep trying until the container dies. Finish
+  every part you can, and put the part you cannot under 🔔 Maintainer. An issue that tells you not
+  to stop is still subject to this rule.
+
 ⚠️ **A scripted check now fails the run when the deliverable is missing**, so this is no longer
 merely advice: an Architect that leaves no `Branch:` line turns the run red. That check exists
 because the failure reported success for as long as it went unnoticed — it is not a substitute for
