@@ -430,6 +430,15 @@ of the work starts".
 ⚠️ **The role stamp is a record, not a route.** Roles stamp `@claude/<role>` as they start,
 so the labels read as "these agents have been here". Nothing routes off them.
 
+⚠️ **A CASCADE MUST BE ADMITTED BY EVERY ACTOR GUARD, NOT JUST THIS PACKAGE'S.** Dispatching by
+App means every cascaded run is authored by a bot, and the host action carries its own human-actor
+check that refuses **at setup** — before the model is called and before any hook here runs.
+Admitting the App in the workflow's own `if:` only gets the job started. A consuming repo must
+also name it in the action's `allowed_bots`, and name it **explicitly** rather than allowing all
+bots: the action's warning is that a wildcard lets any external App invoke it with a prompt it
+controls. ⚠️ It is a **setup** failure, so there is no result payload and `num_turns` cannot
+diagnose it — read the failing step instead.
+
 ⚠️ **Guard the loop.** Every stamp is another `labeled` event. Gate the trigger on the label
 name being *exactly* the front-door label, and exclude bot actors. Both hold independently.
 (A third guard comes free: a stamp applied with `GITHUB_TOKEN` does not start a workflow run
