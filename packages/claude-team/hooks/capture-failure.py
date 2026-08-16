@@ -51,6 +51,11 @@ def git(*args: str) -> subprocess.CompletedProcess:
     return subprocess.run(["git", *GIT_IDENTITY, *args], capture_output=True, text=True, check=False)
 
 
+# ⚠️ Same credential problem as the landing, and worse consequences: this hook IS the net. A
+# capture that cannot push loses the run's work entirely — measured on run 31918402971.
+if not team.authenticate_git():
+    team.warn("no GH_TOKEN for git — the capture will use whatever credential the runner has.")
+
 if git("status", "--porcelain").stdout.strip():
     git("add", "-A")
     git("commit", "-m", f"WIP capture from failed run {RUN_ID}")
@@ -74,7 +79,7 @@ pushed = git("push", "origin", f"HEAD:refs/heads/{ref}")
 if pushed.returncode != 0:
     team.warn(
         f"could not push the capture to `{ref}` — the work is still on the runner's `{branch}` "
-        f"and dies with it. git said: {(pushed.stderr or pushed.stdout).strip()}"
+        f"and dies with it. git said: {team.scrub((pushed.stderr or pushed.stdout).strip())}"
     )
     raise SystemExit(0)
 

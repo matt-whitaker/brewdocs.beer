@@ -18,6 +18,46 @@ import subprocess
 import sys
 
 REPO = os.environ.get("REPO", "")
+GH_TOKEN = os.environ.get("GH_TOKEN", "")
+SERVER = os.environ.get("GITHUB_SERVER_URL", "https://github.com")
+
+
+def scrub(text: str) -> str:
+    """Remove the token from anything about to be printed or posted.
+
+    ⚠️ REQUIRED WHEREVER GIT OUTPUT IS REPORTED. `authenticate_git` puts the token in the remote
+    URL, and git echoes that URL in its errors. Actions masks secrets in the LOG only — a hook
+    that posts git's stderr to an issue comment is writing outside that protection.
+    """
+    return text.replace(GH_TOKEN, "***") if GH_TOKEN and text else text
+
+
+def authenticate_git() -> bool:
+    """Point `origin` at an explicitly authenticated URL before any network git.
+
+    ⚠️ THE HOOKS CANNOT INHERIT THE HOST ACTION'S CREDENTIAL, AND ASSUMING THEY COULD COST EVERY
+    LANDING. `actions/checkout` persists its token as an `http.<server>/.extraheader` entry, and
+    the action's `replaceCheckoutCredentials` UNSETS exactly that entry and substitutes its own
+    short-lived token in the remote URL (`src/github/operations/git-config.ts`) so the agent
+    cannot read the job's credential out of `.git/config`. That is correct for the agent and
+    fatal for us: a post-hook running after a long model step inherits a token that has expired,
+    and a bare `git push origin` fails with `Invalid username or token` — measured on run
+    31918402971, twelve minutes in.
+
+    ⚠️ Set the REMOTE rather than passing a URL per command. `git fetch <url> <branch>` writes
+    FETCH_HEAD and never updates `refs/remotes/origin/<branch>`, so callers comparing against
+    `origin/<branch>` would silently read a stale ref.
+
+    Returns False when no token is available, leaving `origin` untouched.
+    """
+    if not (GH_TOKEN and REPO):
+        return False
+    host = SERVER.split("://", 1)[-1].rstrip("/")
+    url = f"https://x-access-token:{GH_TOKEN}@{host}/{REPO}.git"
+    return subprocess.run(
+        ["git", "remote", "set-url", "origin", url],
+        capture_output=True, text=True, check=False,
+    ).returncode == 0
 
 
 def fail(message: str) -> None:

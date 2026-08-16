@@ -97,8 +97,14 @@ if dirty:
     git("add", "-A")
     committed = git("commit", "-m", message)
     if committed.returncode != 0:
-        team.fail(f"could not commit the run's changes: {(committed.stderr or committed.stdout).strip()}")
+        team.fail(f"could not commit the run's changes: {team.scrub((committed.stderr or committed.stdout).strip())}")
     print(f"committed the run's changes: {message.splitlines()[0]}")
+
+# ⚠️ Authenticate before ANY network git. The host action strips the checkout credential and
+# leaves its own expiring one; without this the fetch below reads as "the ref does not exist" and
+# the push fails outright. See team.authenticate_git.
+if not team.authenticate_git():
+    team.warn("no GH_TOKEN for git — the landing will use whatever credential the runner has.")
 
 # ⚠️ Fetch the target explicitly: a task's story branch was fetched by the action's own setup,
 # but an as-is story's named ref may not exist anywhere yet — a failed fetch means the push will
@@ -134,7 +140,7 @@ if pushed.returncode != 0:
         team.fail(
             f"could not land {ahead} commit(s) on `{named}` — the merge conflicts, and a script "
             f"must not resolve it. The commits are safe on `{branch}`; resolution is an "
-            f"Implementor call. git said: {(merged.stderr or merged.stdout).strip()}"
+            f"Implementor call. git said: {team.scrub((merged.stderr or merged.stdout).strip())}"
         )
     pushed = push()
     if pushed.returncode != 0:
@@ -142,7 +148,7 @@ if pushed.returncode != 0:
         team.fail(
             f"could not land on `{named}` even after merging — another run landed again while "
             f"this one reconciled. The commits are safe on `{branch}`. git said: "
-            f"{(pushed.stderr or pushed.stdout).strip()}"
+            f"{team.scrub((pushed.stderr or pushed.stdout).strip())}"
         )
 
 print(f"landed {ahead} commit(s) from `{branch}` onto `{named}`")
