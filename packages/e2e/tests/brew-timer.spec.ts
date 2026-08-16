@@ -122,6 +122,48 @@ test("logs a quick milestone that lands on the timeline and in the phase's readi
     await expect(page.getByLabel("Reading reading")).toBeVisible();
 });
 
+// BATCH-SCHEDULE-16: an empty Gravity, Volume or Temperature reading's value field — an
+// existing reading row's value cell, and the "add reading" row's value field alike — shows a
+// greyed-out example placeholder.
+test("empty Gravity, Volume and Temperature reading value inputs show an example placeholder", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Reading Placeholder Batch");
+    await openSchedulePhase(page, "1. Mash");
+
+    await expect(page.getByLabel("Gravity value to add")).toHaveAttribute("placeholder", "12");
+    await expect(page.getByLabel("Volume value to add")).toHaveAttribute("placeholder", "5.5");
+    await expect(page.getByLabel("Temperature value to add")).toHaveAttribute("placeholder", "68");
+
+    // an existing row's own value cell, left blank, shows the same example — not just the add row
+    await page.getByRole("button", {name: "Quick actions"}).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole("button", {name: "Confirm"}).click();
+    await expect(dialog).not.toBeVisible();
+
+    await expect(page.getByLabel("Reading reading")).toHaveAttribute("placeholder", "12");
+});
+
+// BREW-TIMER-14: the Reading tab's Value field shows the same kind of example placeholder as
+// the batch schedule's reading fields (BATCH-SCHEDULE-16), matching whichever of Gravity,
+// Volume or Temperature is the selected reading kind.
+test("the quick-log Reading tab's Value field placeholder follows the selected reading kind", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Reading Tab Placeholder Batch");
+    await page.getByRole("tab", {name: "Brewing", exact: true}).click();
+
+    await page.getByRole("button", {name: "Quick actions"}).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+
+    // defaults to Gravity, the first reading kind offered
+    await expect(dialog.getByLabel("Reading value")).toHaveAttribute("placeholder", "12");
+
+    await dialog.getByLabel("Reading kind").selectOption("volume");
+    await expect(dialog.getByLabel("Reading value")).toHaveAttribute("placeholder", "5.5");
+
+    await dialog.getByLabel("Reading kind").selectOption("temperature");
+    await expect(dialog.getByLabel("Reading value")).toHaveAttribute("placeholder", "68");
+});
+
 // BREW-TIMER-12: a typed label names the recorded reading instead of the kind's
 // default, and that name is a real write, not just a moment's UI state.
 test("logs a quick reading with a typed label that names the resulting reading", async ({page}) => {
