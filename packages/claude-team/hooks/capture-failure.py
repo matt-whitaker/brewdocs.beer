@@ -73,6 +73,31 @@ if not head:
     team.warn("could not resolve HEAD — nothing captured.")
     raise SystemExit(0)
 
+# ⚠️ A CAPTURE THAT PRESERVES NOTHING MUST NOT CLAIM TO. A run can fail before producing anything
+# — a setup failure always does — and pushing then leaves a branch identical to the default branch
+# plus a comment telling the reader their work is safe on it. Measured on #748: the comment named
+# `failure/748-…` at the default branch's own HEAD, 0 commits ahead, and its recovery command
+# produced a clean checkout of mainline. ⚠️ That is the most dangerous message this system can
+# write, because it tells a reader not to look further (#1107, #1110).
+#
+# ⚠️ FAIL OPEN. If ahead-ness cannot be determined, PUSH ANYWAY. An empty branch is noise; a lost
+# capture is the thing this hook exists to prevent, and that asymmetry is why the unconditional
+# push was right until it started lying about what it had preserved.
+if ahead == "0":
+    print(
+        "nothing to capture — this run produced no commits beyond the branch it started from. "
+        "No failure branch was created, because there is nothing on it to recover."
+    )
+    team.append_to_comment(
+        ISSUE, MARKER,
+        f"⚠️ **This run did not land — {'its landing hit a merge conflict' if UNLANDABLE else 'its model step failed'}** "
+        f"— and it produced **no changes**, so there is nothing to recover. No failure branch was "
+        f"created.{team.run_link()}",
+        "🪂 **Failure captures.** Runs that could not land, each preserved on a `failure/*` branch. "
+        "Nothing here is merged anywhere; these are recovery points, appended newest last.",
+    )
+    raise SystemExit(0)
+
 # run id + attempt, the same scheme as the transcript key — a re-attempt shares the run id
 ref = f"failure/{ISSUE}-{RUN_ID}-{RUN_ATTEMPT}"
 pushed = git("push", "origin", f"HEAD:refs/heads/{ref}")

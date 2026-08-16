@@ -191,7 +191,27 @@ maintainer's call was that review sanity beats the guarantee. What replaces the 
   cannot be keyed on the story — the group is evaluated before any job runs, so only the event
   context is available, the story is not resolved yet, and expressions have no regex to pull it
   from the issue body. Anyone reaching for that fix should stop here.
-- ⚠️ **A rejected landing reconciles by merge**: `work-completion.py` pulls latest, commits the
+- ⚠️ **"DID THE RUN PRODUCE ANYTHING" IS MEASURED AGAINST WHERE THE RUN STARTED, NOT THE NAMED
+REF.** For a **task** the two coincide — its base *is* the story branch — which is exactly why the
+distinction went unnoticed. An **as-is story** is cut from the default branch while its named ref
+may be days old, so `origin/<named>..HEAD` counts the default branch's own history and is non-zero
+however little the run did. Measured on #748: a Writer correctly changed nothing, and the landing
+announced *"could not land 1 commit(s)"* and a merge conflict against a ref from four days earlier.
+⚠️ **A fresh branch hides this entirely**, so every sandbox that built one passed.
+⚠️ **A stale-but-ancestor ref is NOT itself a problem** — checked against real repos: the push
+fast-forwards. Staleness only ever surfaced through the wrong measurement.
+
+⚠️ **A FAILED LANDING MUST NOT NAME THE RUNNER'S BRANCH AS SAFE.** It said *"The commits are safe on
+`<runner branch>`"* — a ref that is never pushed and dies with the container. Nothing was safe
+there. ⚠️ The same defect in the capture: it pushed unconditionally and wrote *"your changes are
+preserved on `failure/…`"* even when that ref was byte-identical to the default branch, handing the
+reader a recovery command that produces a clean checkout. **A message that tells someone not to
+look further is the most dangerous thing this system can write**, and every previous lost-work
+incident here was caught precisely because something looked wrong. ⚠️ The capture now **fails open**:
+when ahead-ness cannot be determined it pushes anyway, because an empty branch is noise and a lost
+capture is the thing the hook exists to prevent.
+
+⚠️ **A rejected landing reconciles by merge**: `work-completion.py` pulls latest, commits the
   merge commit, and pushes. A merge that **conflicts** is not resolved by script — the step fails
   with `unlandable=true`, the commits stay on the run's branch, and resolution is an Implementor
   call. Never a force-push, never silence.
