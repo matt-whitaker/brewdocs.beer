@@ -1,0 +1,102 @@
+name: Verify Workflows
+run-name: "Verify Workflows"
+
+# ⚠️ SEPARATE FROM `verify.yaml` ON PURPOSE, AND THE AXIS IS ITS PATHS FILTER. Verify is scoped
+# to code — `packages/**` and the manifests — so a PR touching only `.github/workflows/**` skips
+# it entirely. That is why #1083 shipped an invalid workflow file with a green PR: the gate never
+# ran. Folding this into Verify would mean either widening that filter (running npm ci, lint and
+# build for a workflow-only PR) or a job-level path filter Actions has no native form for.
+#
+# ⚠️ REQUIRE THIS CHECK IN BRANCH PROTECTION. Unrequired, it is advisory — the "channel with no
+# reader" shape this repo has shipped five times.
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/**'
+      - '.github/actions/**'
+  # ⚠️ ALSO ON PUSH TO THE DEFAULT BRANCH. The issue/comment-triggered workflows always run from
+  # the default branch, so a workflow change cannot be exercised before merge — this is the only
+  # thing that says mainline's own workflows are valid after something lands. #1085 left every
+  # agent run dead with no signal anywhere; GitHub's own report is a zero-job push run that is
+  # easy to miss.
+  push:
+    branches: [mainline]
+    paths:
+      - '.github/workflows/**'
+      - '.github/actions/**'
+
+concurrency:
+  group: verify-workflows-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # pinned: an unpinned linter turns someone else's release into a red gate on an unrelated PR
+  ACTIONLINT_VERSION: "1.7.7"
+
+jobs:
+  Workflows:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install actionlint
+        run: |
+          url="https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          curl -fsSL -o /tmp/actionlint.tar.gz "$url"
+          tar -xzf /tmp/actionlint.tar.gz -C /tmp actionlint
+          sudo mv /tmp/actionlint /usr/local/bin/actionlint
+          actionlint --version
+
+      # ⚠️ THE INSTRUMENT IS TESTED BEFORE IT IS TRUSTED, and this step is the whole reason this
+      # gate is worth having. A linter that silently stops covering the case it was added for is
+      # indistinguishable from a green build. This asserts BOTH directions against the exact #1085
+      # construct — a `#` line inside `if: |`, which is expression text rather than a comment and
+      # which `yaml.safe_load` parses perfectly happily.
+      - name: "Prove the linter still catches a comment inside an if: block scalar"
+        run: |
+          probe="$(mktemp -d)"
+          mkdir -p "$probe/.github/workflows"
+          git -C "$probe" init -q
+          cat > "$probe/.github/workflows/fixture.yaml" <<'YAML'
+          name: fixture
+          on: push
+          jobs:
+            probe:
+              runs-on: ubuntu-latest
+              if: |
+                # a literal block scalar has no comments - this line is EXPRESSION TEXT
+                github.actor != 'nobody'
+              steps:
+                - run: echo hi
+          YAML
+          if (cd "$probe" && actionlint -shellcheck= -pyflakes= >/dev/null 2>&1); then
+            echo "::error::actionlint ACCEPTED a '#' line inside 'if: |' — the #1085 guard is dead, do not trust this gate"
+            exit 1
+          fi
+          cat > "$probe/.github/workflows/fixture.yaml" <<'YAML'
+          name: fixture
+          on: push
+          jobs:
+            probe:
+              runs-on: ubuntu-latest
+              # the same annotation, sitting above the block scalar
+              if: |
+                github.actor != 'nobody'
+              steps:
+                - run: echo hi
+          YAML
+          if ! (cd "$probe" && actionlint -shellcheck= -pyflakes= >/dev/null 2>&1); then
+            echo "::error::actionlint REJECTED the corrected form — the guard would fail valid workflows"
+            exit 1
+          fi
+          rm -rf "$probe"
+          echo "guard live: rejects the #1085 construct, accepts its fix"
+
+      # ⚠️ `-shellcheck= -pyflakes=` DISABLES the embedded shell/python linting, deliberately and
+      # reversibly. Those runners are preinstalled on ubuntu-latest but absent on a laptop, so
+      # leaving them on makes local and CI results differ — and this gate's job is workflow
+      # VALIDITY. Auditing 87 steps of embedded shell is a separate piece of work; deleting the
+      # two flags is how it starts.
+      - name: Lint the workflows
+        run: actionlint -shellcheck= -pyflakes=

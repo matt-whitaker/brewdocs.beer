@@ -92,6 +92,14 @@ The **Verify** workflow (`.github/workflows/verify.yaml`) runs `npm ci`, then `n
 
 **Functional tests.** `.github/workflows/functional-test.yaml` runs the Playwright suite (`packages/e2e`) on PRs **to `mainline` only**, independently of Verify — it installs the chromium browser and lets Playwright's `webServer` auto-start the app dev server, uploading the HTML report/traces as an artifact on failure. See `packages/e2e/CLAUDE.md`.
 
+**Workflow lint.** `.github/workflows/verify-workflows.yaml` runs [actionlint](https://github.com/rhysd/actionlint) (pinned) over `.github/workflows/**` on PRs touching them, **and on push to `mainline`**.
+
+⚠️ **It is separate from Verify because Verify's `paths:` filter excludes workflows.** Verify is scoped to code (`packages/**` plus the manifests), so a PR touching only `.github/workflows/**` skips it entirely — which is how #1083 shipped an invalid workflow file with a green PR and left every agent run dead. Folding it in would mean widening that filter (npm ci + lint + build for a workflow-only PR) or a job-level path filter Actions has no native form for.
+⚠️ **The push-to-`mainline` trigger is the other half.** Issue- and comment-triggered workflows always run from the default branch, so a workflow change cannot be exercised before merge; this is the only thing that says mainline's own workflows are valid *after* something lands.
+⚠️ **It self-tests before it lints.** A step asserts actionlint both rejects the #1085 construct and accepts its correction, because a linter that silently stops covering the case it was added for is indistinguishable from a green build.
+⚠️ **`-shellcheck= -pyflakes=` is deliberate and reversible** — those runners ship on `ubuntu-latest` but not on a laptop, so leaving them on makes local and CI disagree. Auditing the embedded shell is separate work; deleting the two flags is how it starts.
+⚠️ **Require it in branch protection.** Unrequired it is advisory, which is the channel-with-no-reader shape this repo has shipped five times.
+
 ⚠️ **The two differ on purpose, and the axis is base branch.** `pull_request.branches` matches the PR's **base**, so scoping it to `mainline` would exclude any PR that is not aimed there. Verify carries no filter because it is the cheap half; functional test keeps the `mainline` scope because it is the expensive half (browser install, a real dev server) and the story PR is the right granularity for it. ⚠️ **Since tasks no longer open PRs, neither workflow runs on a task at all** — both first fire on the story's PR, with every task's diff accumulated. That is a known cost of removing task PRs (#1057), not an oversight: a `push:` trigger on Verify would restore per-task feedback and was declined.
 
 ## Contributing
