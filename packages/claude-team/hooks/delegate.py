@@ -40,6 +40,7 @@ if not team.REPO:
 
 ROLES = STORY = STORY_BRANCH = REASON = KIND = REMEDY = ""
 DEFAULTED = False
+DISPATCH = False
 
 # ⚠️ CONSULT IS NOT DEFAULTED, AND CONFLATING THEM WOULD BE WRONG IN BOTH DIRECTIONS.
 # `defaulted` means the state that should have decided is MISSING — a real gap, worth announcing
@@ -67,6 +68,7 @@ def emit() -> None:
             handle.write(
                 f"roles={ROLES}\nstory={STORY}\nstory_branch={STORY_BRANCH}\nkind={KIND}\n"
                 f"defaulted={str(DEFAULTED).lower()}\nconsult={str(CONSULT).lower()}\n"
+                f"dispatch={str(DISPATCH).lower()}\n"
                 f"reason={REASON}\nremedy={REMEDY}\n"
             )
     print(
@@ -280,6 +282,28 @@ STORY_BRANCH = branch
 # which is also where #878 sends the PR.
 if team.story_from_branch(branch) == str(NUMBER) and not kids:
     STORY_BRANCH = ""
+
+# ⚠️ A STORY WITH TASKS IS NEVER AN AUTHOR'S TO WORK — TRIGGERING IT MEANS "START IT".
+# This rule used to route one to an Implementor while writing a remedy that read "trigger one of
+# its tasks instead": the disqualifying fact was already in hand, computed as `kids`, and spent
+# entirely on the message (#1096). Measured on #1092 — an `opus` run that correctly produced no
+# changes, on a story whose work lives in its tasks.
+#
+# ⚠️ AND IT IS A DISPATCH, NOT A MODEL RUN. Starting a story means starting its first wave, which
+# is what `dispatch-next.py` already does for every LATER wave. Nothing here needs judgement, so
+# no role is selected and every role job skips on the empty `roles`.
+#
+# ⚠️ `not kids` STILL FALLS THROUGH, and must. A story with no tasks is worked as-is by its
+# stamped author — the path #1082 built — and this block is bounded by `kids` so it cannot reach it.
+if team.story_from_branch(branch) == str(NUMBER) and kids:
+    DISPATCH = True
+    ROLES = ""
+    REASON = (
+        f"#{NUMBER} is a story with {kids} task(s) — dispatching its first wave rather than "
+        "working the story directly"
+    )
+    emit()
+    raise SystemExit(0)
 
 stamped = team.role_stamp(body)
 if stamped in ("implementor", "tester", "writer", "designer"):
