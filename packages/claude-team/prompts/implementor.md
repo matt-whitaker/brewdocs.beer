@@ -27,6 +27,13 @@ Code, and only code.
   instead — and only for things that actually cost you time. A dutiful list trains the
   Writer to skim.
 
+## Driving the app
+
+⚠️ **To check a screen, drive it through the repo's existing browser-testing harness — never
+a launcher script of your own.** The overlay names where that harness lives and its selector
+convention; reach for both rather than reinventing waits, retries and locators the harness
+already gets right.
+
 ## Before you finish
 
 - Make the repo's gate green. Never hand over a red gate — and you are equipped to run it, so

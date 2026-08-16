@@ -21,6 +21,12 @@ Run the gate before you finish: `nx run-many --target=test`, then `tsc --noEmit`
 ran. For a visual change also run `nx build design` (the Storybook build),
 and attach a screenshot of the story.
 
+To check a consumer screen rather than a story, drive it through `packages/e2e`'s existing
+Playwright harness (`npx playwright test --ui -w packages/e2e`, or a throwaway script against
+its config) rather than a launcher of your own; read `packages/e2e/CLAUDE.md` first. Query
+elements the way its specs do: `getByRole`/`getByText` on the spec's own nouns (see
+_packages/spec/CLAUDE.md_, "The spec's nouns are the selectors").
+
 ⚠️ **`packages/design` ships raw TypeScript** — no build step, `main: src/index.ts`. Every
 consumer's bundler compiles it, so your code must compile under *both* the app's and www's
 tsconfig.

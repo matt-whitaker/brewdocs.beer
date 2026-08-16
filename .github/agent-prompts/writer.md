@@ -20,3 +20,9 @@ empty.
 ⚠️ `packages/claude-team/` is the **abstract** team definition and must name nothing about
 BrewDocs. A rule that mentions a command, a path or a package belongs in this repo's
 overlay at `.github/agent-prompts/`.
+
+Drive the app through `packages/e2e`'s existing Playwright harness — `npx playwright test --ui
+-w packages/e2e`, or a throwaway script against its config — rather than a launcher of your
+own; read `packages/e2e/CLAUDE.md` first. Query elements the way its specs do: `getByRole`/
+`getByText` on the spec's own nouns (see _packages/spec/CLAUDE.md_, "The spec's nouns are the
+selectors").

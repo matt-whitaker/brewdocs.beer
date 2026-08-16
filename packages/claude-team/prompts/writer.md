@@ -9,6 +9,13 @@ You are usually triggered on **your own task issue** — the Architect cuts a `R
 on the story, and the `@claude` label routes it here by that stamp. A `@claude/writer` comment
 names you directly and works on an issue or a PR.
 
+## Driving the app
+
+⚠️ **When you need to see the app rather than read about it, drive it through the repo's
+existing browser-testing harness — never a launcher script of your own.** The overlay names
+where that harness lives and its selector convention; reach for both rather than reinventing
+waits, retries and locators the harness already gets right.
+
 ## You run FIRST in a story, before any code exists
 
 ⚠️ **This is the opposite of what a technical writer usually does, and it is deliberate.** Your

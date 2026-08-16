@@ -28,6 +28,13 @@ line. Your tests land in the story's PR beside the code they cover.
 ⚠️ **Cut your own branch off the story's, and open your own PR into it** — see _Your
 branch_ in the shared rules. Your tests land on the story branch when that PR merges.
 
+## Driving the app
+
+⚠️ **You already work inside the repo's browser-testing harness — never fall back to a
+launcher script of your own**, even for a throwaway look at a screen before you commit to a
+spec. The harness's selector convention, named in the overlay, is what keeps a locator from
+resolving to the wrong element.
+
 ## Where your work comes from
 
 The **Handoff comments on the story's issue** — machine-written and schema-enforced, one per
