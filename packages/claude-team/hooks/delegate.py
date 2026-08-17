@@ -122,6 +122,18 @@ def resolve_pr_story() -> str:
     return found.group(1) if found else ""
 
 
+# ⚠️ KIND IS RESOLVED FOR EVERY ISSUE TRIGGER, NOT ONLY ON THE UNSHAPED PATH. It used to be set
+# in rule 3 alone, so an explicit handle, a PR and a stamped role all emitted an empty kind — and
+# a workflow guard reading it could not tell an epic from anything else. Measured on #1112: a
+# `@claude/architect` handle emitted `kind=n/a`, the architect job's `kind != 'epic'` guard was
+# therefore true, and a freshly created issue was dispatched to an Implementor nobody asked for.
+#
+# ⚠️ IT BELONGS HERE FOR THE SAME REASON THE STORY AND ITS BRANCH DO: it is read from state and is
+# never in doubt. A handle short-circuits the ROLE decision — that is the point of a handle — and
+# must not also cost the run a fact nobody was judging.
+if NUMBER and not IS_PR:
+    KIND = team.kind(NUMBER)
+
 # ---- 1. an explicit handle wins, with no further inspection
 for role in ("architect", "researcher", "implementor", "tester", "writer", "designer", "security"):
     if f"@claude/{role}" in COMMENT_BODY:
@@ -242,7 +254,7 @@ parent = team.parent(NUMBER)
 # is a report someone already grounded, and the Architect is told to preserve it rather than
 # rewrite it into a story.
 if not branch:
-    KIND = team.kind(NUMBER)
+    # resolved above for every issue trigger — do not recompute, or two sources own one fact
     article = "an epic" if KIND == "epic" else f"a {KIND}"
     # ⚠️ A SPIKE IS THE ONE UNSHAPED ISSUE THE ARCHITECT MUST NOT TAKE. Its answer is not known
     # yet, so there is nothing to decompose — handed one, the Architect cuts implementation tasks

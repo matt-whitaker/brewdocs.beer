@@ -432,6 +432,22 @@ alone leaves no way to say "the issue does not tell me", so a model obliged to p
 exactly the confident-wrong route this is meant to remove — and worse than the script's, because
 answering suppresses the guess notice that would have flagged it.
 
+⚠️ **`kind` IS RESOLVED FOR EVERY ISSUE TRIGGER, AND FOR A LONG TIME IT WAS SET ON ONE PATH ONLY.**
+Rule 3 — the unshaped-issue path — computed it; rules 1, 2 and 4 emitted empty, which prints as
+`n/a`. Nothing read it, so nothing broke, until a workflow guard did: the Architect's dispatch step
+tested `kind != 'epic'`, and `'n/a' != 'epic'` is **true**. Measured on #1112 — a maintainer's
+comment asking the Architect for a task had that task dispatched to an Implementor a minute later.
+⚠️ **The guard worked on the path it was written for and failed on a sibling**: a *label* trigger
+routes through rule 3 and resolves `epic` correctly, which is what made it look proven. A *handle*
+reaches the same job through rule 1.
+⚠️ It belongs with the story and the branch for the same reason they do — **read from state, never
+in doubt.** A handle short-circuits the ROLE decision; it must not also cost the run a fact nobody
+was judging.
+⚠️ **AND A GUARD THAT STARTS WORK MUST FAIL CLOSED.** Written negatively, an unresolved kind
+dispatched. Written positively — only a kind recognised as workable proceeds — an unknown one
+cannot. That also survives `team.kind()` falling back to `story` on a failed API call, which the
+negative form could not.
+
 ⚠️ **It decides the ROLE and nothing else.** The story, its branch and the issue kind stay on the
 script's outputs. They are read from state and are not in doubt; letting a model restate them puts
 two sources on one fact.
