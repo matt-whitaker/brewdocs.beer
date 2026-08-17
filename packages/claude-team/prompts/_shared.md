@@ -89,11 +89,30 @@ died with it.
   cannot meet is a **finding**, not an instruction to keep trying until the container dies. Finish
   every part you can, and put the part you cannot under 🔔 Maintainer. An issue that tells you not
   to stop is still subject to this rule.
+- ⚠️ **GATHERING IS NOT PRODUCING, AND THIS FAILURE LOOKS LIKE PROGRESS FROM THE INSIDE.** The rule
+  above catches you when you are *stuck*. This one catches you when you are not: every turn
+  succeeds, every turn yields something new, and the deliverable is still empty when the budget
+  ends. Measured on #746 — **17 driver scripts, 20 screenshots, 81 turns, and not one line of the
+  specification written.** Each script worked. Nothing was blocked. The run simply never switched
+  from collecting to writing.
+  - **The check is the deliverable, not your progress.** Ask "what is in the file I was asked to
+    produce?" — not "am I learning things?". If the answer is *nothing* and you are past your first
+    few turns, stop gathering and write what you already know.
+  - **You will always want one more look before writing.** That instinct is the failure. Write the
+    section you can already support, *then* go back for the next thing.
 
 ⚠️ **A scripted check now fails the run when the deliverable is missing**, so this is no longer
 merely advice: an Architect that leaves no `Branch:` line turns the run red. That check exists
 because the failure reported success for as long as it went unnoticed — it is not a substitute for
 finishing, it is how anyone finds out you did not.
+
+⚠️ **AN ISSUE'S WORKED EXAMPLE DOES NOT OUTRANK A STANDING RULE ABOUT HOW TO WORK.** An issue
+describes *what* to deliver; it is written once and ages. Where it demonstrates a **technique** —
+a snippet for launching a browser, a command to run — and a standing rule says otherwise, the rule
+is newer and it wins. Measured on #746: a body carrying a worked `chromium.launch(...)` example
+produced 17 hand-rolled launchers on a run whose prompt said to use the repo's existing harness.
+⚠️ Say so in your 🔔 Maintainer section — a stale worked example in an issue will keep costing runs
+until someone edits it.
 
 ⚠️ **Write your deliverable incrementally — the first observation goes in before the second is
 gathered.** Measured on #748: the Writer had its findings by turn 35 and had written nothing by
