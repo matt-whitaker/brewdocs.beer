@@ -288,12 +288,11 @@ STORY = team.story_from_branch(branch) or (parent or NUMBER)
 # branch instead of the default one. Emitting it here costs nothing — the line is already read.
 STORY_BRANCH = branch
 
-# ⚠️ AN AS-IS STORY EXPOSES NO BASE BRANCH. When the executing issue owns the line, no branch is
-# created for it (see the custodial phase), so handing it to the host action as `base_branch` would
-# 404 before the model is ever called. Empty makes `setupBranch` fall back to the default branch,
-# which is also where #878 sends the PR.
-if team.story_from_branch(branch) == str(NUMBER) and not kids:
-    STORY_BRANCH = ""
+# ⚠️ ALWAYS EMITTED, INCLUDING FOR A STORY THAT OWNS ITS OWN LINE. This used to be blanked for an
+# as-is story, because no branch was created for one and handing the host action a ref that does
+# not exist 404s before the model is called. `branch-navigation.py` now upserts it on every issue
+# trigger, so the ref always exists and the blanking is not merely unnecessary — it was actively
+# harmful, since rule 1 never applied it and a handle trigger therefore 404'd anyway (#1133).
 
 # ⚠️ A STORY WITH TASKS IS NEVER AN AUTHOR'S TO WORK — TRIGGERING IT MEANS "START IT".
 # This rule used to route one to an Implementor while writing a remedy that read "trigger one of

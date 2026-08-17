@@ -86,7 +86,7 @@ run-name: >-
 #   pre   every role      labels-and-status.py     MODE=stamp — @claude/<role> on the issue or PR
 #   pre   authors job     labels-and-status.py     MODE=status — board: place + set Status
 #   post  architect       labels-and-status.py     MODE=status — places the story + tasks as Todo
-#   post  architect       branch-navigation.py     creates the story's branch — only if it has tasks
+#   pre   authors         branch-navigation.py     upserts the story's branch — authors only
 #   post  architect       labels-and-status.py     MODE=kind — the classification label
 #   post  architect       file-sub-issues.py       parents stories to epics, tasks to stories
 #   post  authors job     capture-failure.py       failure branch + report when a run cannot land
@@ -619,18 +619,11 @@ jobs:
           REPO: ${{ github.repository }}
           ISSUE: ${{ github.event.issue.number }}
         run: "$RUNNER_TEMP/agent-bin/file-sub-issues.py"
-      # ⚠️ AFTER file-sub-issues, and the position is the point: whether a story needs a branch
-      # depends on whether it has tasks, and the count is only real once parenting is done. This
-      # is what dissolved the old front/back split — the custodial job no longer creates branches.
-      - name: Navigate the story's branch
-        if: always()
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
-          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
-          # an epic has no branch, and a missing one there must not warn
-          KIND: ${{ needs.delegate.outputs.kind }}
-        run: "$RUNNER_TEMP/agent-bin/branch-navigation.py"
+      # ⚠️ THE ARCHITECT NO LONGER CUTS THE BRANCH, AND THAT IS THE POINT OF #1133. A branch exists
+      # because an AUTHOR is about to work, not because an issue was shaped. Shaping produces
+      # nothing to commit, so a branch cut here sits empty until — and unless — someone is
+      # dispatched to it. The authors job upserts it in its own pre-step, which is the first moment
+      # the branch is actually needed and the only job that passes `base_branch` to the action.
 
       # ⚠️ THE GATE IS POSITIVE, AND FAILING OPEN HERE STARTED WORK NOBODY ASKED FOR. It read
       # "not an epic and not a spike", so an UNRESOLVED kind dispatched — and `kind` was set on the
@@ -1022,16 +1015,10 @@ jobs:
           ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
           FINDINGS: ${{ steps.research.outputs.structured_output }}
         run: "$RUNNER_TEMP/agent-bin/post-findings.py"
-      # A spike has no branch, so nothing creates one — the hook is here only to say so out loud
-      # rather than leave a silent gap where every other kind gets one.
-      - name: Confirm the spike needs no branch
-        if: always()
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
-          ISSUE: ${{ !github.event.issue.pull_request && github.event.issue.number || '' }}
-          KIND: ${{ needs.delegate.outputs.kind }}
-        run: "$RUNNER_TEMP/agent-bin/branch-navigation.py"
+      # ⚠️ NO BRANCH STEP HERE EITHER. The Researcher answers a question and ships no code, so it is
+      # not an author and nothing about it should create a ref. This used to call the branch hook
+      # purely to log that a spike needs none; that is a sentence, not a mechanism, and the rule is
+      # now legible from the workflow itself — only the authors job touches branches.
       - name: Label the issue kind
         if: always()
         env:

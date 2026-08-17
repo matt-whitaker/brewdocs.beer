@@ -119,11 +119,31 @@ if team.gh("api", f"repos/{team.REPO}/branches/{named}") is not None:
     link_branch_line(named, default)
     raise SystemExit(0)
 
-owns = team.story_from_branch(named) == str(ISSUE)
-if owns and not team.sub_issues(ISSUE):
-    print(f"#{ISSUE} has no tasks — it is worked as-is, so it needs no branch of its own.")
-    raise SystemExit(0)
-
+# ⚠️ A BRANCH EXISTS BECAUSE AN AUTHOR IS ABOUT TO WORK, NOT BECAUSE AN ISSUE WAS SHAPED. This
+# hook is now called from the authors job alone — the Architect and the Researcher no longer call
+# it. Shaping and answering produce nothing to commit, so a branch cut at those moments sits empty
+# unless and until someone is dispatched to it. The authors job is also the only one that passes
+# `base_branch` to the host action, so it is the only place a missing ref can 404.
+#
+# ⚠️ IT FOLLOWS THAT THE BRANCH APPEARS LATE, AND THAT IS INTENDED. A story shaped today and worked
+# next week has no ref in between; its `Branch:` line is a name the first author run makes real.
+# Nothing resolves that name before then.
+#
+# ⚠️ UPSERT, UNCONDITIONALLY. This used to return early for a story with no tasks — "worked
+# as-is, so it needs no branch of its own" — and that single exception was the root of three
+# failures. Its `Branch:` line named a ref that did not exist and the compare link beside it 404'd;
+# `delegate.py` had to blank `story_branch` to stop the host action resolving it, which rule 1 (an
+# explicit handle) did not do, so `@claude/writer` on such a story 404'd in 3.6s before the model
+# was called (#746); and `work-completion.py` needed a "does the named ref exist yet" fork.
+#
+# ⚠️ It did not even save a branch. #746 produced two `failure/*` branches and no story branch —
+# create-nothing made the debris unpredictable rather than absent. Nothing deletes branches here
+# (that capability was removed on purpose), so avoiding creation was never balanced by cleanup.
+#
+# ⚠️ AND IT FIXES A CLASS OF ARITHMETIC BUG STRUCTURALLY. With the branch always present,
+# `base_branch` is always set, so a run STARTS at the story branch and `origin/<named>..HEAD` is
+# exactly what that run contributed. The stale-ref comparison that made a no-op run look like it
+# had commits to land (#1110/#1111) cannot arise.
 head = team.gh_json("api", f"repos/{team.REPO}/git/ref/heads/{default}") or {}
 sha = (head.get("object") or {}).get("sha")
 if not sha:
