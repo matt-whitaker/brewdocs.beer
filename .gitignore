@@ -18,3 +18,8 @@ dist
 .nx/migrate-runs
 # python bytecode from packages/claude-team/hooks
 __pycache__/
+
+# agent scratch space — driver scripts and screenshots a run makes while
+# driving the app. #746 accumulated 17 scripts and 20 screenshots here, and
+# without this they land on the story branch and into its PR.
+.scratch/

@@ -852,6 +852,21 @@ An issue that removes a role's permission to stop converts a cheap, informative 
 expensive, opaque one — measured across five runs on one story, where the first three reported
 precisely what blocked them in 1–4 minutes and the last two ground to the cap with nothing.
 
+⚠️ **AND THE THIRD SHAPE IS GATHERING WITHOUT PRODUCING, which neither of the other two catches.**
+Stopping early is a plan with unticked boxes; stopping late is grinding on one obstacle. This is
+neither: every turn succeeds, every turn yields something genuinely new, and the deliverable is
+still empty when the budget ends. Measured on #746 — **17 driver scripts, 20 screenshots, 81 turns,
+no specification**. Nothing was blocked and nothing was repeated, so the non-convergence
+discriminator never fired. ⚠️ **The check has to be the deliverable, not the sense of progress**:
+"what is in the file I was asked to produce" rather than "am I learning things".
+
+⚠️ **AN ISSUE'S WORKED EXAMPLE OUTRANKED A STANDING RULE, AND THAT ORDERING IS NOW STATED.** #746's
+body carried a `chromium.launch(...)` snippet from before the harness convention existed, and the
+run followed it 17 times on a prompt that said to use the repo's own harness. An issue says *what*
+to deliver and ages in place; a rule about *how to work* is newer and wins — and the role is told
+to flag the stale example so it stops costing runs. ⚠️ This is the general hazard of putting
+technique in an issue body: the issue cannot know what changed after it was written.
+
 ⚠️ **"Confirm scope" is the tell.** A plan step whose natural completion is asking a human has
 planned its own failure — nobody is reading while a run executes. The prompt says ambiguity is not
 a stop condition: choose a defensible reading, ship, and raise the question in the 🔔 Maintainer
