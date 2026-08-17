@@ -4,6 +4,9 @@ import SearchBar from "@/component/search-bar";
 import EverywhereSearchItem from "@/screen/everywhere-search/item";
 import {useRecentBatches, useSearchEverywhere} from "@/state/search";
 
+const PAGE = "w-[calc(100vw-2rem)] lg:w-[calc(100vw-24rem)] lg:max-w-3xl"
+    + " min-h-[calc(100vh-5rem)] lg:min-h-[calc(100vh-2rem)]";
+
 const TILE_GRID = "mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4";
 
 export default function EverywhereSearch() {
@@ -13,7 +16,7 @@ export default function EverywhereSearch() {
     const searched = query.trim().length > 0;
 
     return (
-        <div className="w-full">
+        <div className={PAGE}>
             <div className="flex justify-end">
                 <SearchBar
                     value={query}
