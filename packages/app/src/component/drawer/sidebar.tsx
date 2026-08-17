@@ -1,3 +1,4 @@
+import {Link} from "@tanstack/react-router";
 import {StatusBadge} from "@brewdocs.beer/design";
 import Navlist from "@/component/navlist";
 
@@ -9,7 +10,9 @@ export default function DrawerSidebar({ nav, close }: DrawerSidebarProps) {
             <div className="bg-primary menu min-h-full w-80 p-4 flex" onClick={close}>
                 <div className="indicator">
                     <StatusBadge className="indicator-item indicator-bottom translate-y-6 translate-x-8">alpha</StatusBadge>
-                    <h1 className="mt-2 pl-5 text-4xl font-semibold text-primary-content">Brew<span className="font-light">Docs</span></h1>
+                    <Link to="/">
+                        <h1 className="mt-2 pl-5 text-4xl font-semibold text-primary-content">Brew<span className="font-light">Docs</span></h1>
+                    </Link>
                 </div>
                 <Navlist nav={nav} />
             </div>
