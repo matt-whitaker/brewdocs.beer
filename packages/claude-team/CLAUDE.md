@@ -914,6 +914,21 @@ turns and cannot be forgotten.
   across three roles would otherwise bury itself in thirty comments. They are also derived
   entirely from GitHub state — no model writes any part of them, which is the only reason
   they can be trusted as a status board.
+- ⚠️ **AN EPIC'S ONLY DETERMINISTIC ANCHOR IS ITS OWN `Sequencing` SECTION**, and until it was read
+  an epic's stories were never parented at all. A story's Branch line names *itself*, so it can
+  never point at its epic; the fallback was a prose `epic #N` reference that **no prompt requires**
+  — a risk this hook's own docstring names, and then depended on. Measured on epic #1112: six
+  issues created, zero parented, the step green and reporting success.
+  ⚠️ The section is **not a new marker** — `Sequencing` is the Architect's stated deliverable and
+  `dispatch-next.py` already reads it, so parentage now derives from something the model must
+  produce for another reason. ⚠️ **Scoped to the section, never the whole body**: an epic cites
+  prior art, superseded issues and out-of-scope work, and adopting every `#N` would irreversibly
+  parent unrelated issues.
+- ⚠️ **IT RECURSES EXACTLY ONE LEVEL, because an Architect decomposing an epic creates TWO
+  generations in one run.** The hook only ever ran for the triggering issue, so when the trigger
+  was an epic the story→task pass never happened — the tasks' Branch lines resolved perfectly and
+  nothing ever asked them. One level only: a task has no children, and unbounded recursion over a
+  parent-derived rule is how a cycle gets built out of a convention.
 - ⚠️ **`file-sub-issues.py` cannot key on prose alone.** Its first version matched a branch
   line plus an `epic #N` reference, and adopted a meta-issue that quoted the convention as an
   example. Checking the author is a bot is what makes it sound — with the accepted cost that a
