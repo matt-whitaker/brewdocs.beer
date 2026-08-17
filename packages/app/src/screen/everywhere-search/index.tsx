@@ -17,14 +17,11 @@ export default function EverywhereSearch() {
 
     return (
         <div className={PAGE}>
-            <div className="flex justify-end">
-                <SearchBar
-                    value={query}
-                    onChange={setQuery}
-                    placeholder="What are you looking for?"
-                    className="sm:max-w-xs"
-                />
-            </div>
+            <SearchBar
+                value={query}
+                onChange={setQuery}
+                placeholder="What are you looking for?"
+            />
             {searched
                 ? (results.length > 0
                     ? (
