@@ -32,7 +32,7 @@ export type SearchResultLink =
     | {to: "/kb/yeast/$yeastId"; params: {yeastId: string}}
     | {to: "/kb/equipment/$equipmentId"; params: {equipmentId: string}};
 
-export type SearchMatchedOn = "title" | "ingredient";
+export type SearchMatchedOn = "title" | "ingredient" | "recent";
 
 export interface SearchResult {
     id: string;
@@ -79,6 +79,8 @@ const searchByNameOrIngredient = <T extends WithIngredients>(items: T[], query: 
         return [];
     });
 
+const batchLink: LinkFor<Batch> = batch => ({to: "/batch/$batchId", params: {batchId: batch.id}});
+
 const tier = (matchedOn: SearchMatchedOn): number => matchedOn === "title" ? 0 : 1;
 
 const byTierThenTitle = (a: SearchResult, b: SearchResult): number =>
@@ -95,8 +97,7 @@ export const searchEverywhere = (query: string, sources: SearchSources): SearchR
     }
 
     return [
-        ...searchByNameOrIngredient(sources.batches, q, "batch",
-            batch => ({to: "/batch/$batchId", params: {batchId: batch.id}})),
+        ...searchByNameOrIngredient(sources.batches, q, "batch", batchLink),
         ...searchByNameOrIngredient(sources.recipes, q, "recipe",
             recipe => ({to: "/recipe/$recipeId", params: {recipeId: recipe.id}})),
         ...searchByNameOrIngredient(sources.kbRecipes, q, "kbRecipe",
@@ -112,6 +113,23 @@ export const searchEverywhere = (query: string, sources: SearchSources): SearchR
         ...searchByName(sources.kbEquipment, q, "kbEquipment",
             item => ({to: "/kb/equipment/$equipmentId", params: {equipmentId: item.id}}))
     ].sort(byTierThenTitle);
+};
+
+const RECENT_BATCH_LIMIT = 8;
+
+const byBrewDateDesc = (a: Batch, b: Batch): number =>
+    (b.brewDate ?? "").localeCompare(a.brewDate ?? "") || a.name.localeCompare(b.name);
+
+export const recentBatches = (batches: Batch[]): SearchResult[] =>
+    [...batches]
+        .sort(byBrewDateDesc)
+        .slice(0, RECENT_BATCH_LIMIT)
+        .map(batch => toResult(batch, "batch", "recent", batchLink));
+
+export const useRecentBatches = (): SearchResult[] => {
+    const batches = useBatches();
+
+    return useMemo(() => recentBatches(batches), [batches]);
 };
 
 export const useSearchEverywhere = (query: string): SearchResult[] => {
