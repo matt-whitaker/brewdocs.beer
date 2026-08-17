@@ -10,12 +10,15 @@ export default function EverywhereSearch() {
     const searched = query.trim().length > 0;
 
     return (
-        <div className="w-full max-w-md">
-            <SearchBar
-                value={query}
-                onChange={setQuery}
-                placeholder="What are you looking for?"
-            />
+        <div className="w-full">
+            <div className="flex justify-end">
+                <SearchBar
+                    value={query}
+                    onChange={setQuery}
+                    placeholder="What are you looking for?"
+                    className="sm:max-w-xs"
+                />
+            </div>
             {searched && (results.length > 0
                 ? (
                     <ul className="mt-4 flex flex-col gap-2">
