@@ -117,11 +117,14 @@ export const searchEverywhere = (query: string, sources: SearchSources): SearchR
 
 const RECENT_BATCH_LIMIT = 8;
 
+const isBrewed = (batch: Batch): boolean => (batch.brewDate ?? "").trim().length > 0;
+
 const byBrewDateDesc = (a: Batch, b: Batch): number =>
-    (b.brewDate ?? "").localeCompare(a.brewDate ?? "") || a.name.localeCompare(b.name);
+    b.brewDate.localeCompare(a.brewDate) || a.name.localeCompare(b.name);
 
 export const recentBatches = (batches: Batch[]): SearchResult[] =>
-    [...batches]
+    batches
+        .filter(isBrewed)
         .sort(byBrewDateDesc)
         .slice(0, RECENT_BATCH_LIMIT)
         .map(batch => toResult(batch, "batch", "recent", batchLink));
