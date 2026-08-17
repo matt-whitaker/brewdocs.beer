@@ -119,14 +119,57 @@ removes the swatch again.
 **BATCH-SCHEDULE-20** — SRM and notes entered on this tab persist across reloads, the same as
 everything else recorded on a batch.
 
+**BATCH-SCHEDULE-21** — A **Prep** tab sits at the start of the phase tab strip, where a brewer
+records the batch's **Brewed on** date and its **Packaging** (Keg or Bottle). Both persist across
+reloads, independently of any phase.
+
+**BATCH-SCHEDULE-22** — Checking off an equipment or ingredient item directly on a phase's
+schedule grid marks it checked immediately — indistinguishable from using the quick action
+(BATCH-SCHEDULE-05) — and it stays checked after a reload.
+
+**BATCH-SCHEDULE-23** — Typing a value straight into a planned ingredient's field on the schedule
+grid (its weight, or another actual field, such as a hop's boil time) records it as that
+ingredient's actual without changing the plan: the planned value keeps showing alongside it,
+the same as an actual entered via the quick action (BATCH-SCHEDULE-10).
+
+**BATCH-SCHEDULE-24** — Expanding a yeast row's details reveals a **Yeast Pitched** date the
+brewer can set, which persists across reloads the same as everything else recorded on the
+schedule.
+
+**BATCH-SCHEDULE-25** — Every phase's schedule grid offers Gravity, Volume and Temperature
+readings: a brewer can add one, name it, set its value, and expand it to set its date — each
+survives a reload.
+
+**BATCH-SCHEDULE-26** — Removing a reading deletes it outright: it does not come back after a
+reload.
+
+**BATCH-SCHEDULE-27** — Water Chemistry readings are offered only on a Mash phase; no other
+phase's schedule grid offers them.
+
+**BATCH-SCHEDULE-28** — Pressure and Keg date readings are offered only on a Carbonation phase.
+
+**BATCH-SCHEDULE-29** — A Bottle date reading is offered only on a Conditioning phase.
+
+> *Why (BATCH-SCHEDULE-27–29):* each of these only means something once the batch is actually in
+> the state it describes — water chemistry is a mash-in concern, a keg date and its pressure
+> belong to the batch once it's in a keg, a bottle date once it's in bottles. Offering them on
+> every phase would let a brewer log one against a phase that hasn't happened yet.
+
+**BATCH-SCHEDULE-30** — A phase with no equipment or ingredients assigned to it shows an empty
+schedule grid, and its own tab in the Brewing strip is disabled: a brewer can't switch to it by
+hand. It can still become the batch's current phase — reached by completing the phase before it —
+and, once current, it can still be completed itself even though there is nothing on it to check
+off.
+
 ## Known gaps
 
-_None._
+- The Prep tab's **Brewed on** date field has no accessible name, unlike **Packaging** right next
+  to it — [#1126](https://github.com/matt-whitaker/brewdocs.beer/issues/1126).
 
 ## Out of scope
 
 - The quick-action entry point itself — how it is opened, and how a kind or equipment is
   picked — is a behaviour of the BrewTimer, specified alongside it rather than here.
 - Correcting the time an item was checked off — future work, not yet specified.
-- Everything else this screen shows or lets a brewer do with the schedule grid directly — real
-  behaviours of this screen, but not yet specified by any story.
+- What the Summary tab does with the values recorded here (deriving O.G./F.G./ABV/IBU from
+  readings, for instance) — that derivation belongs to Summary's own spec, not this one.
