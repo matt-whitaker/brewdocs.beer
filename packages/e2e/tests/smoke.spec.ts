@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test("home renders the hero", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("heading", { name: "Welcome back!" })).toBeVisible();
+    await expect(page.getByRole("textbox", { name: "What are you looking for?" })).toBeVisible();
 });
 
 test("disclaimer route renders its content", async ({ page }) => {

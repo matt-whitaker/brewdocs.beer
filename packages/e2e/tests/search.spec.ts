@@ -46,17 +46,19 @@ async function setBrewDate(page: Page, date: string) {
     await settleSave(page);
 }
 
-// SEARCH-01: visiting "/" on its own is unaffected by this story at all.
-test("/ with no query param still shows the unchanged welcome hero", async ({page}) => {
+// #1124: "/" always shows the everywhere-search box now, no gate required —
+// no tabs alongside it, and no accessible name beyond its own placeholder.
+test("/ with no query param shows the everywhere-search box, with no tabs", async ({page}) => {
     await page.goto("/");
 
-    await expect(page.getByRole("heading", {name: "Welcome back!"})).toBeVisible();
-    await expect(page.getByRole("textbox", {name: "What are you looking for?"})).toHaveCount(0);
+    await expect(page.getByRole("heading", {name: "Welcome back!"})).toHaveCount(0);
+    await expect(page.getByRole("textbox", {name: "What are you looking for?"})).toBeVisible();
+    await expect(page.getByRole("tab")).toHaveCount(0);
 });
 
-// SEARCH-02: the gate replaces the hero with a single centered search box —
-// no tabs alongside it, and no accessible name beyond its own placeholder.
-test("/?search=everywhere shows only the search box, with no tabs", async ({page}) => {
+// #1124: the old gate param is now inert rather than rejected or erroring —
+// dropping validateSearch changes how the router treats an unknown search key.
+test("/?search=everywhere still resolves and renders the same screen", async ({page}) => {
     await page.goto("/?search=everywhere");
 
     await expect(page.getByRole("heading", {name: "Welcome back!"})).toHaveCount(0);
@@ -67,7 +69,7 @@ test("/?search=everywhere shows only the search box, with no tabs", async ({page
 // SEARCH-08: an empty box shows nothing below it — not a stray results list,
 // not a no-match message.
 test("an empty query shows no results and no no-match message", async ({page}) => {
-    await page.goto("/?search=everywhere");
+    await page.goto("/");
 
     await expect(page.getByText("Nothing found.")).toHaveCount(0);
     await expect(page.locator(".hero-content").getByRole("listitem")).toHaveCount(0);
@@ -76,7 +78,7 @@ test("an empty query shows no results and no no-match message", async ({page}) =
 // SEARCH-09 + SEARCH-03: a no-match query says so, distinctly from the empty
 // state, and clearing the box returns to that empty state.
 test("a no-match query shows a message, and clearing the box returns to the empty state", async ({page}) => {
-    await page.goto("/?search=everywhere");
+    await page.goto("/");
 
     const search = page.getByRole("textbox", {name: "What are you looking for?"});
     await search.fill("zzznosuchbrewingtermzzz");
@@ -90,7 +92,7 @@ test("a no-match query shows a message, and clearing the box returns to the empt
 // SEARCH-04 + SEARCH-05: a case-insensitive, mid-word substring match on a kb
 // entity's own name returns a card that navigates to that entity's own page.
 test("a title match on a kb hop links to that hop's own page", async ({page}) => {
-    await page.goto("/?search=everywhere");
+    await page.goto("/");
 
     const search = page.getByRole("textbox", {name: "What are you looking for?"});
     await search.fill("imco"); // mid-word, wrong case relative to "Simcoe"
@@ -111,7 +113,7 @@ test("a title match on a user recipe links to that recipe's own page", async ({p
     await createRecipeFromTemplate(page, "E2E Everywhere Search Nav Recipe", "Empty");
     await settleSave(page);
 
-    await page.goto("/?search=everywhere");
+    await page.goto("/");
     const search = page.getByRole("textbox", {name: "What are you looking for?"});
     await search.fill("Everywhere Search Nav");
 
@@ -136,7 +138,7 @@ test("a title match on a hop ranks before a recipe that only contains it", async
     await page.getByRole("button", {name: "Add hop to 2. Boil"}).click();
     await settleSave(page);
 
-    await page.goto("/?search=everywhere");
+    await page.goto("/");
     const search = page.getByRole("textbox", {name: "What are you looking for?"});
     await search.fill("cascade");
 
@@ -161,7 +163,7 @@ test("the BrewDocs wordmark navigates to /", async ({page}) => {
     await page.getByRole("link", {name: "BrewDocs"}).click();
 
     await expect(page).toHaveURL(/\/$/);
-    await expect(page.getByRole("heading", {name: "Welcome back!"})).toBeVisible();
+    await expect(page.getByRole("textbox", {name: "What are you looking for?"})).toBeVisible();
 });
 
 // SEARCH-10 + SEARCH-03: with the box empty, only a batch that has actually
@@ -178,7 +180,7 @@ test("recent batches shows only a brewed batch, and typing replaces it with resu
 
     await brewBatchFromKbRecipe(page, "E2E Recent Batch Undated");
 
-    await page.goto("/?search=everywhere");
+    await page.goto("/");
 
     await expect(page.getByRole("heading", {name: "Recent batches"})).toBeVisible();
     const tiles = page.locator(".hero-content").getByRole("listitem");
