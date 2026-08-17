@@ -127,7 +127,39 @@ base = f"origin/{named}"
 
 produced = git("rev-list", "--count", f"{base}..HEAD").stdout.strip() if ref_exists or OWNS else ""
 if ref_exists and produced in ("", "0"):
-    print(f"nothing to land — this run produced no commits beyond `{base}`.")
+    # ⚠️ NO COMMITS IS NOT THE SAME AS UNFINISHED, AND CONFLATING THEM HALTED THE CASCADE. Some
+    # tasks are checks — "confirm whether any spec document encodes positioning in offline terms" —
+    # and their correct outcome is that nothing changed. This path used to `emit(False)` for all of
+    # them, so a task that had done exactly what it was asked stayed open, never reached Done, and
+    # stopped the story. Measured on #1140: the run reported success and #1139's next task was
+    # never dispatched.
+    #
+    # ⚠️ THE DISCRIMINATOR ALREADY EXISTS AND WAS SIMPLY NOT REACHED. `remaining` is the author's
+    # own structured statement of whether it finished, `[]` meaning "I looked, there is nothing" —
+    # and the closing logic below already keys on it. This path returned thirty lines too early.
+    nothing_remaining = not (handoff.get("remaining") or [])
+    if nothing_remaining and not OWNS:
+        team.upsert_comment(
+            ISSUE, MARKER,
+            f"{MARKER}\n✅ **Nothing to do, and that is the finding.** This task produced no commits "
+            f"and the author reported nothing remaining, so it is complete. Recorded here because "
+            f"an empty result and a run that did nothing look identical otherwise."
+            f"{team.run_link()}",
+        )
+        if team.gh("issue", "close", ISSUE, "--repo", team.REPO, "--reason", "completed") is None:
+            team.warn(f"#{ISSUE} had nothing to do but could not be closed")
+            emit(False)
+            raise SystemExit(0)
+        print(f"#{ISSUE} had nothing to do — closed; the story continues.")
+        emit(True)
+        raise SystemExit(0)
+
+    # ⚠️ An as-is story is never closed here — its PR targets the default branch and GitHub closes
+    # it natively on merge. And a task that DID report `remaining` is genuinely unfinished.
+    if OWNS:
+        print(f"nothing to land — #{ISSUE} is worked as-is and produced no commits.")
+    else:
+        print(f"nothing to land, and the author reported work remaining — #{ISSUE} stays open.")
     emit(False)
     raise SystemExit(0)
 

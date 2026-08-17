@@ -276,6 +276,21 @@ identically; every earlier landing just reports how many tasks remain. ⚠️ An
 task list degrades to open-when-ahead with a warning — an early PR is a nuisance, a story that can
 never get its PR is lost work.
 
+⚠️ **NO COMMITS IS NOT THE SAME AS UNFINISHED, AND CONFLATING THEM HALTED A STORY.** Some tasks are
+**checks** — *"confirm whether any spec document encodes positioning in offline terms"* — and their
+correct outcome is that nothing changed. The landing used to treat every no-commit run as not
+closed, so a task that had done exactly what it was asked stayed open, never reached Done, and
+stopped the cascade. Measured on #1140: the run reported success and #1139's next task was never
+dispatched.
+⚠️ **The discriminator already existed and was simply not reached.** `remaining` is the author's own
+structured statement of whether it finished — `[]` means *"I looked, there is nothing"* — and the
+closing logic keys on it thirty lines further down. The empty path returned before it.
+⚠️ **An empty result is now recorded, not inferred from silence.** "Checked, nothing to do" and "the
+run did nothing" are indistinguishable to a reader otherwise, which is the shape this package keeps
+paying for.
+⚠️ An **as-is story** producing no commits still stays open: its PR targets the default branch and
+GitHub closes it natively on merge.
+
 ⚠️ **A TASK IS CLOSED BY THE LANDING HOOK, NOT BY A KEYWORD.** There is no task PR, so there is no
 closing keyword and nothing for GitHub to act on. `work-completion.py` closes the issue once its
 commits are on the story branch — and **only** when the author reported no `remaining`, which is
