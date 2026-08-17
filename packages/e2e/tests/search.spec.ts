@@ -21,6 +21,31 @@ async function createRecipeFromTemplate(page: Page, name: string, template: stri
     await expect(page).toHaveURL(/\/recipe\/.+\/edit/);
 }
 
+async function brewBatchFromKbRecipe(page: Page, batchName: string) {
+    await page.goto("/kb/recipe/anchor-steam-beer-clone");
+    await page.getByRole("button", {name: "Brew"}).click();
+
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await dialog.getByLabel(/Batch name/).fill(batchName);
+    await dialog.getByRole("button", {name: "Confirm"}).click();
+
+    await expect(page).toHaveURL(/\/batch\//);
+}
+
+// The "Brewed on" date input (screen/batch-schedule/index.tsx) carries no
+// label/aria-label, so it has no accessible name — addressed mechanically by
+// its type, which is unique on the mounted Prep panel (PanelSwitcher unmounts
+// every other tab).
+async function setBrewDate(page: Page, date: string) {
+    await page.getByRole("tab", {name: "Brewing", exact: true}).click();
+    await page.getByRole("tab", {name: "Prep", exact: true}).click();
+    await expect(page.getByRole("tab", {name: "Prep", exact: true})).toHaveAttribute("aria-selected", "true");
+
+    await page.locator("input[type=\"date\"]").fill(date);
+    await settleSave(page);
+}
+
 // SEARCH-01: visiting "/" on its own is unaffected by this story at all.
 test("/ with no query param still shows the unchanged welcome hero", async ({page}) => {
     await page.goto("/");
@@ -137,4 +162,33 @@ test("the BrewDocs wordmark navigates to /", async ({page}) => {
 
     await expect(page).toHaveURL(/\/$/);
     await expect(page.getByRole("heading", {name: "Welcome back!"})).toBeVisible();
+});
+
+// SEARCH-10 + SEARCH-03: with the box empty, only a batch that has actually
+// been brewed shows under "Recent batches" — a created-but-undated batch
+// (brewDate defaults to "") does not — and typing replaces the list with
+// search results. Regression test for the recentBatches() bug fixed in
+// 95b4843, where every batch was included regardless of brewDate. Written to
+// discriminate rather than assert absence alone: per the Implementor's #1123
+// handoff, a bare toHaveCount(0) can pass before the suspense-backed list
+// renders and would pass against the bug too.
+test("recent batches shows only a brewed batch, and typing replaces it with results", async ({page}) => {
+    await brewBatchFromKbRecipe(page, "E2E Recent Batch Dated");
+    await setBrewDate(page, "2026-01-05");
+
+    await brewBatchFromKbRecipe(page, "E2E Recent Batch Undated");
+
+    await page.goto("/?search=everywhere");
+
+    await expect(page.getByRole("heading", {name: "Recent batches"})).toBeVisible();
+    const tiles = page.locator(".hero-content").getByRole("listitem");
+    await expect(tiles).toHaveCount(1);
+    await expect(tiles.filter({hasText: "E2E Recent Batch Dated"})).toBeVisible();
+    await expect(page.getByText("E2E Recent Batch Undated")).toHaveCount(0);
+
+    const search = page.getByRole("textbox", {name: "What are you looking for?"});
+    await search.fill("zzznosuchbrewingtermzzz");
+
+    await expect(page.getByRole("heading", {name: "Recent batches"})).toHaveCount(0);
+    await expect(page.getByText("Nothing found.")).toBeVisible();
 });
