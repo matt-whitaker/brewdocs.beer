@@ -7,10 +7,10 @@ export type EverywhereSearchItemProps = {
 
 export default function EverywhereSearchItem({ result }: EverywhereSearchItemProps) {
     return (
-        <li className="card bg-base-100 shadow-sm">
-            <Link {...result.link} className="flex flex-row items-center gap-3 p-3 text-left">
-                <span aria-hidden className="size-6 shrink-0 rounded bg-base-300" />
-                <span className="truncate">{result.title}</span>
+        <li className="card bg-base-100 shadow-sm aspect-[3/4]">
+            <Link {...result.link} className="flex h-full flex-col items-center justify-center gap-3 p-3 text-center">
+                <span aria-hidden className="size-10 shrink-0 rounded bg-base-300" />
+                <span className="line-clamp-3 text-sm">{result.title}</span>
             </Link>
         </li>
     );

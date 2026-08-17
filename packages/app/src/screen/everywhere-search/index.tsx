@@ -4,6 +4,8 @@ import SearchBar from "@/component/search-bar";
 import EverywhereSearchItem from "@/screen/everywhere-search/item";
 import {useRecentBatches, useSearchEverywhere} from "@/state/search";
 
+const TILE_GRID = "mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4";
+
 export default function EverywhereSearch() {
     const [query, setQuery] = useState("");
     const results = useSearchEverywhere(query);
@@ -23,7 +25,7 @@ export default function EverywhereSearch() {
             {searched
                 ? (results.length > 0
                     ? (
-                        <ul className="mt-4 flex flex-col gap-2">
+                        <ul className={TILE_GRID}>
                             {results.map(result => (
                                 <EverywhereSearchItem key={`${result.kind}:${result.id}`} result={result} />
                             ))}
@@ -33,7 +35,7 @@ export default function EverywhereSearch() {
                 : recent.length > 0 && (
                     <>
                         <ScreenH2 className="mt-4 text-left">Recent batches</ScreenH2>
-                        <ul className="mt-2 flex flex-col gap-2">
+                        <ul className={TILE_GRID}>
                             {recent.map(result => (
                                 <EverywhereSearchItem key={`${result.kind}:${result.id}`} result={result} />
                             ))}
