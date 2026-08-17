@@ -1,6 +1,6 @@
 # BrewDocs
 
-BrewDocs is an offline homebrewing application and info handbook.
+BrewDocs is a homebrewing application and info handbook for planning and recording brew days.
 
 ## Packages
 
