@@ -632,6 +632,14 @@ jobs:
           KIND: ${{ needs.delegate.outputs.kind }}
         run: "$RUNNER_TEMP/agent-bin/branch-navigation.py"
 
+      # ⚠️ THE GATE IS POSITIVE, AND FAILING OPEN HERE STARTED WORK NOBODY ASKED FOR. It read
+      # "not an epic and not a spike", so an UNRESOLVED kind dispatched — and `kind` was set on the
+      # unshaped-issue path only, so an explicit `@claude/<role>` handle emitted `n/a` and sailed
+      # straight through. Measured on #1112: a comment asking the Architect for a task had that task
+      # dispatched to an Implementor a minute later (#1128).
+      # ⚠️ A GUARD THAT STARTS WORK MUST FAIL CLOSED — only a kind positively recognised as workable
+      # proceeds. That also survives `team.kind()` falling back to `story` on a failed API call,
+      # which the negative form could not.
       # ⚠️ START THE STORY'S FIRST WAVE. Phase 2 chained task N to task N+1 and never wired the
       # ignition, so the cascade could continue a story but not begin one (#1095) — the maintainer
       # still had to hand-label task 1, the exact gesture #31 set out to remove.
@@ -642,14 +650,14 @@ jobs:
       # case with nothing closed yet.
       - name: Mint the dispatch token
         id: shaped-dispatch-token
-        if: always() && needs.delegate.outputs.kind != 'epic' && needs.delegate.outputs.kind != 'spike'
+        if: always() && (needs.delegate.outputs.kind == 'story' || needs.delegate.outputs.kind == 'bug')
         continue-on-error: true
         uses: actions/create-github-app-token@v2
         with:
           app-id: ${{ secrets.DISPATCH_APP_ID }}
           private-key: ${{ secrets.DISPATCH_APP_PRIVATE_KEY }}
       - name: Dispatch the story's first wave
-        if: always() && needs.delegate.outputs.kind != 'epic' && needs.delegate.outputs.kind != 'spike'
+        if: always() && (needs.delegate.outputs.kind == 'story' || needs.delegate.outputs.kind == 'bug')
         env:
           GH_TOKEN: ${{ steps.shaped-dispatch-token.outputs.token }}
           REPO: ${{ github.repository }}

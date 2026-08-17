@@ -153,6 +153,15 @@ for child in sorted(children):
     else:
         # this API wants the child's integer REST id, not its issue number
         data = team.gh_json("api", f"repos/{team.REPO}/issues/{child}")
+        # ⚠️ REJECT PULL REQUESTS HERE, WHERE BOTH ANCHORS PASS THROUGH. `discover()` filters
+        # `pull_request` out of the issue listing; `sequenced()` reads raw `#N` references from a
+        # Sequencing section and had no equivalent, so a story PR named there was offered up as a
+        # child. Measured on #1112: `discovered for #1112: 1114 1123 1124`, and #1123 is a PR — it
+        # escaped only because the API refused it. Guarding at the parenting step covers every
+        # anchor, present and future, rather than patching one of them.
+        if (data or {}).get("pull_request"):
+            print(f"#{child} is a pull request, not an issue — not parented.")
+            continue
         cid = (data or {}).get("id")
         if cid and team.gh(
             "api", "--method", "POST", f"repos/{team.REPO}/issues/{ISSUE}/sub_issues",
