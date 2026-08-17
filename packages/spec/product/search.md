@@ -5,15 +5,14 @@ without knowing in advance which list it lives on.
 
 ## Behaviours
 
-**SEARCH-01** — Visiting "/" on its own shows the same "Welcome back!" hero it always has.
-A brewer who never adds `?search=everywhere` to the address sees no change here at all.
+~~**SEARCH-01**~~ — *retired: visiting "/" always shows the everywhere-search box now
+(SEARCH-02) — there is no separate hero shown only when a query param is absent.*
 
-**SEARCH-02** — Visiting "/" with `?search=everywhere` shows a single search box in place of
-that hero — no tabs alongside it — right-aligned at the top of a fixed-width column that holds
-its position and width whether the space below it is empty, full of recent batches, or full of
-search results. The placeholder is "What are you looking for?", and the box has no accessible
-name of its own beyond that placeholder, since it is the only control on the page before the
-brewer types.
+**SEARCH-02** — Visiting "/" shows a single search box — no tabs alongside it — right-aligned
+at the top of a fixed-width column that holds its position and width whether the space below it
+is empty, full of recent batches, or full of search results. The placeholder is "What are you
+looking for?", and the box has no accessible name of its own beyond that placeholder, since it
+is the only control on the page before the brewer types.
 
 **SEARCH-03** — Typing into the box returns results as the brewer types. Nothing has to be
 submitted, and clearing the box returns to the empty state (SEARCH-08).
@@ -59,6 +58,10 @@ most recently brewed batches show as tiles under a "Recent batches" heading, mos
 brewed first — a starting point rather than a blank page. Typing anything replaces this with
 search results (SEARCH-03).
 
+**SEARCH-11** — Visiting "/" with an unrecognized query string, such as the retired
+`?search=everywhere`, shows the same screen as visiting "/" alone — the param is inert rather
+than changing what renders or producing an error.
+
 ## Known gaps
 
 _None._
@@ -71,5 +74,3 @@ _None._
 - Real, per-entity-kind icons — only that each card reserves the space for one.
 - Fuzzy or typo-tolerant matching, and any debouncing or performance tuning of the search
   itself.
-- Removing the `?search=everywhere` gate, or otherwise changing what a brewer sees at "/"
-  without it (SEARCH-01) — a later story's work.
