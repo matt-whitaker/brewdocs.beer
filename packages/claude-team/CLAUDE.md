@@ -1063,10 +1063,39 @@ no agent in it.
 ⚠️ **THE BACK HALF CREATES BRANCHES; NOTHING DELETES THEM.** An earlier version swept branches
 nothing had used — the wrong end of the problem, since they should never have existed. Branch
 creation now happens **only** in the custodial phase, which is the first moment `sub_issues()` tells
-the truth, and only when the story actually has tasks. A story worked as-is gets none: `delegate.py`
-blanks `story_branch` so its author cuts off the default branch, which is where #878 already sends
-the PR. Nothing unnecessary is made, so nothing needs removing — and the one destructive capability
-this system briefly had is gone.
+the truth. ⚠️ **THE "ONLY WHEN IT HAS TASKS" HALF IS GONE (#1133), AND THAT EXCEPTION WAS THE ROOT
+OF THREE FAILURES.** A story with no tasks used to get no branch, `delegate.py` blanked its
+`story_branch`, and its `Branch:` line named a ref that did not exist with a compare link beside it
+that 404'd. ⚠️ Rule 1 (an explicit handle) never applied that blanking, so `@claude/<role>` on such
+a story handed the host action a ref it could not resolve and the run died in **3.6s before the
+model was called** — while a *label* trigger on the same issue worked. ⚠️ **And it saved no branch
+anyway**: #746 produced two `failure/*` branches and no story branch, so create-nothing made the
+debris unpredictable rather than absent.
+
+⚠️ **The rule is now an UPSERT, and it is CONTINGENT ON AN AUTHOR**: exists, leave it; absent,
+create it at the default branch's head — from the **authors job alone**, whatever the author and
+whichever routing rule matched. The Architect and the Researcher no longer call the hook at all.
+⚠️ **A branch exists because an author is about to work, not because an issue was shaped.** Shaping
+and answering produce nothing to commit, so a branch cut at those moments sits empty unless and
+until someone is dispatched to it — and the authors job is the only one that passes `base_branch`
+to the host action, so it is the only place a missing ref can 404. That makes the rule checkable
+from the workflow rather than argued from the hook's internals.
+⚠️ **It follows that the branch appears late, and that is intended.** A story shaped today and
+worked next week has no ref in between; its `Branch:` line is a name the first author run makes
+real, and nothing resolves that name before then. It also covers the case where an author is added
+to a story that previously had none — a Researcher ran, an author was added later — with no
+detection needed, because the upsert happens whenever an author runs.
+⚠️ Epics and spikes still get none, and a PR trigger no-ops because `ISSUE` is blanked for it — the
+host action checks out the PR's head and ignores `base_branch` entirely.
+⚠️ **It also removes a class of arithmetic bug structurally.** With the ref always present,
+`base_branch` is always set, so a run STARTS at the story branch and `origin/<named>..HEAD` is
+exactly that run's contribution. The stale-ref comparison that made a no-op run look like it had
+commits to land (#1110/#1111) cannot arise.
+⚠️ **The cost, accepted:** a story branch that exists even when a run produces nothing. One
+predictable branch per story beats an unpredictable absence — and nothing deletes branches here,
+so "avoid creating one" was never balanced by cleanup.
+⚠️ **Authors still run no git.** The hook commits and pushes; that is what made landings
+deterministic and it is not reopened by this.
 
 ⚠️ **`branch-navigation.py` is one hook at every site, and the front/back split is gone.** The
 Architect's call sits **after** `file-sub-issues.py`, so "does this story have tasks" is answerable

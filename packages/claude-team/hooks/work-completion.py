@@ -118,15 +118,12 @@ ref_exists = git("fetch", "origin", named).returncode == 0
 # old, so `origin/<named>..HEAD` counts the default branch's own history and is non-zero however
 # little the run did. Measured on #748 — a Writer correctly changed nothing, and the landing
 # reported "could not land 1 commit(s)" and a merge conflict against a ref from four days earlier.
-default = ((team.gh_json("repo", "view", team.REPO, "--json", "defaultBranchRef") or {})
-           .get("defaultBranchRef") or {}).get("name") or ""
-base = f"origin/{named}" if not OWNS else (f"origin/{default}" if default else "")
-
-# ⚠️ NO BASE MEANS FALL BACK TO THE OLD TEST RATHER THAN LAND BLIND. An unreadable default branch
-# is a rate-limited minute, not a reason to push something nobody measured.
-if not base:
-    team.warn("could not resolve the default branch — falling back to comparing against the named ref.")
-    base = f"origin/{named}"
+# ⚠️ THE NAMED REF IS THE BASE FOR EVERY CASE, because `branch-navigation.py` upserts it before
+# any author runs and the host action is handed it as `base_branch`. The run therefore STARTS at
+# this ref, so `origin/<named>..HEAD` is exactly what this run contributed — no default-branch
+# arithmetic, and no as-is special case. Previously an as-is run was cut from the default branch
+# while `<named>` might be days old, which is what made a no-op run look like it had work to land.
+base = f"origin/{named}"
 
 produced = git("rev-list", "--count", f"{base}..HEAD").stdout.strip() if ref_exists or OWNS else ""
 if ref_exists and produced in ("", "0"):
