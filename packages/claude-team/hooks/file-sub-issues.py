@@ -72,6 +72,33 @@ listing = team.gh_json(
 refers = re.compile(rf"(?i)(epic|story) +#{ISSUE}([^0-9]|$)")
 
 
+def sequenced(parent: str) -> set[int]:
+    """Issue numbers the parent's own `Sequencing` section names.
+
+    ⚠️ THIS IS THE ONLY DETERMINISTIC ANCHOR AN EPIC HAS, and its absence is what left epic #1112
+    with six orphaned issues and a hook reporting success. A story's Branch line names *itself*, so
+    it can never point at its epic; the prose `epic #N` reference the hook fell back on is a marker
+    **no prompt requires** — a risk this file's own docstring names and then depended on anyway.
+
+    ⚠️ The section is not a new marker. `Sequencing` is the Architect's stated deliverable and
+    `dispatch-next.py` already reads it, so this derives parentage from something the model must
+    produce for another reason — the rule this package applies everywhere else.
+
+    ⚠️ SCOPED TO THE SECTION, never the whole body. An epic body cites prior art, superseded issues
+    and out-of-scope work; adopting every `#N` in it would parent unrelated issues irreversibly.
+    """
+    body = team.issue_body(parent)
+    match = re.search(r"(?im)^(?:#{2,4}\s*sequencing\b|\*\*sequencing[.:]?\*\*)", body)
+    if not match:
+        return set()
+    found: set[int] = set()
+    for line in body[match.end():].splitlines():
+        if re.match(r"^#{1,6}\s", line):
+            break
+        found.update(int(n) for n in re.findall(r"#(\d+)", line))
+    return {n for n in found if n > int(parent)}
+
+
 def claims_parent(body: str) -> bool:
     """Two anchors, unioned. The Branch line is the reliable one.
 
@@ -92,17 +119,25 @@ def claims_parent(body: str) -> bool:
     return team.story_from_branch(team.branch_line(body)) == str(ISSUE) or bool(refers.search(body))
 
 
-discovered = sorted(
-    i["number"] for i in listing
-    if not i.get("pull_request")
-    and i.get("number", 0) > int(ISSUE)
-    and (i.get("user") or {}).get("type") == "Bot"
-    and claims_parent(i.get("body") or "")
-)
+def discover(parent: str) -> set[int]:
+    """Bot-authored issues, numbered above the parent, whose Branch line resolves to it."""
+    branch_of = re.compile(rf"(?i)(epic|story) +#{parent}([^0-9]|$)")
+    def claims(body: str) -> bool:
+        return team.story_from_branch(team.branch_line(body)) == str(parent) or bool(branch_of.search(body))
+    return {
+        i["number"] for i in listing
+        if not i.get("pull_request")
+        and i.get("number", 0) > int(parent)
+        and (i.get("user") or {}).get("type") == "Bot"
+        and claims(i.get("body") or "")
+    }
+
+
+discovered = discover(ISSUE) | sequenced(ISSUE)
 if discovered:
-    print(f"discovered for #{ISSUE}:", " ".join(str(d) for d in discovered))
+    print(f"discovered for #{ISSUE}:", " ".join(str(d) for d in sorted(discovered)))
 else:
-    print(f"no issue body references epic/story #{ISSUE}")
+    print(f"nothing claims #{ISSUE} by Branch line, prose or Sequencing section")
 children.update(discovered)
 
 if not children:
@@ -132,3 +167,31 @@ for child in sorted(children):
             print(f"#{child} -> milestone {milestone}")
         else:
             team.warn(f"could not set milestone '{milestone}' on #{child}")
+
+
+# ⚠️ ONE LEVEL DOWN, BECAUSE AN ARCHITECT DECOMPOSING AN EPIC CREATES TWO GENERATIONS IN ONE RUN.
+# This hook only ever ran for the issue that triggered it, so when the trigger was an epic the
+# story→task pass never happened at all — the tasks' Branch lines resolved perfectly and nothing
+# ever asked them. Measured on epic #1112: six issues created, zero parented, the step green.
+#
+# ⚠️ Exactly one level. A task has no children, so recursing further would only re-scan the same
+# listing to no purpose — and unbounded recursion over a parent-derived rule is how a cycle gets
+# built out of a convention.
+for parent in sorted(children):
+    below = discover(str(parent)) - {parent} - children
+    if not below:
+        continue
+    have = {i["number"] for i in team.sub_issues(parent)}
+    for grandchild in sorted(below):
+        if grandchild in have:
+            print(f"#{grandchild} already a sub-issue of #{parent}")
+            continue
+        data = team.gh_json("api", f"repos/{team.REPO}/issues/{grandchild}")
+        cid = (data or {}).get("id")
+        if cid and team.gh(
+            "api", "--method", "POST", f"repos/{team.REPO}/issues/{parent}/sub_issues",
+            "-F", f"sub_issue_id={cid}",
+        ) is not None:
+            print(f"#{grandchild} -> sub-issue of #{parent}")
+        else:
+            team.warn(f"could not parent #{grandchild} to #{parent}")
