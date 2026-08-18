@@ -47,7 +47,7 @@ export default function RecipeList({ source = "all",  filterFn }: RecipeListProp
     return (
         <Screen>
             <SearchBar value={query} onChange={setQuery} label="Search recipes" />
-            <CardGrid>
+            <CardGrid className="mt-2">
                 {recipeListItems}
             </CardGrid>
         </Screen>

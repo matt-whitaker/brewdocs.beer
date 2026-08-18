@@ -41,7 +41,7 @@ export default function EquipmentList({ source = "all" }: EquipmentListProps) {
     return (
         <Screen>
             <SearchBar value={query} onChange={setQuery} label="Search equipment" />
-            <CardGrid>
+            <CardGrid className="mt-2">
                 {equipmentListItems}
             </CardGrid>
         </Screen>

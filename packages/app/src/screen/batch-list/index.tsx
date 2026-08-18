@@ -41,7 +41,7 @@ export default function BatchList({ filter }: BatchListProps) {
     return (
         <Screen>
             <SearchBar value={query} onChange={setQuery} label="Search batches" />
-            <CardGrid>
+            <CardGrid className="mt-2">
                 {batchList}
             </CardGrid>
         </Screen>
