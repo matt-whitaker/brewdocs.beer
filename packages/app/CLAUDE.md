@@ -53,6 +53,13 @@ Package-specific guidance. See the repo-root `CLAUDE.md` for universal rules (co
 **How it works.** Wrapper hooks use `useSuspenseQuery`, return non-null data, throw on failure; screens wrap them in `<Suspense>` at the route level. All four kb resources are prefetched at boot (`main.tsx`).
 **Invariants.** ⚠️ `queryClient` sets `staleTime: Infinity` — every write must explicitly `queryClient.invalidateQueries(...)` (`saveBatch`, `saveSession`, actions in `src/actions/`).
 **Gotchas.** Stale data after a mutation ⇒ a missing invalidation is the first suspect.
+
+_The signal bus (`src/signalBus.ts`)._ A src-level singleton beside `queryClient.ts`: `emit(topic)` / `on(topic, handler)` (returns an unsubscribe) plus a **pending-writes counter** — `startPendingWrite()` / `endPendingWrite()` around a persistence write, `pendingWrites()` to read it, and the `PENDING_WRITES` topic emitted on every transition. It exists to make save completion **observable**; saves themselves stay fire-and-forget and nothing about what or when the app saves changed.
+
+- Instrumented in **one** place — `Forage<T>.save`/`.delete` (`storage/forage.ts`), the base every persisted store extends — so batches, recipes, session, the kb cache and the migration backup/failure stores all report through it without each knowing about the bus. The decrement is in a `finally`, so a **rejected** write still counts down; a leak here would hang every consumer forever.
+- The count is mirrored to `window.__brewdocsPendingWrites` on each transition (a module-level side effect, typed by a `declare global` in the same file — the app's only `Window` extension). That mirror is what a Playwright `page.evaluate` reads: `packages/e2e` polls it to zero in place of a blind sleep.
+- ⚠️ **Zero means "no write in flight", not "the app has saved what you just typed".** `useJsonEdit` debounces 350 ms (see _Editing pattern_), so a poll started immediately after a keystroke sees `0` before the save has even been scheduled. A consumer that must not miss the debounce has to bound the wait below as well as above.
+- `on` has no call site yet — deliberate surface, same treatment as `utils/func.ts`'s unused exports.
 **Example.** _None._
 
 ## Offline-first kb data flow

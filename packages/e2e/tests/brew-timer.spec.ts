@@ -1,4 +1,5 @@
 import {expect, Page, test} from "@playwright/test";
+import {settleSave} from "./settleSave";
 
 // A fresh context has no batches, so each test brews its own (mirrors
 // batch-edit.spec.ts). Tests stay independent at the cost of a few seconds each.
@@ -12,12 +13,6 @@ async function brewBatchFromKbRecipe(page: Page, batchName: string) {
     await dialog.getByRole("button", {name: "Confirm"}).click();
 
     await expect(page).toHaveURL(/\/batch\//);
-}
-
-// See batch-edit.spec.ts for why this is a fixed wait, not a flake patch: saves
-// are fire-and-forget, so reloading immediately after an edit races the write.
-async function settleSave(page: Page) {
-    await page.waitForTimeout(1000);
 }
 
 async function openSchedulePhase(page: Page, phase: string) {

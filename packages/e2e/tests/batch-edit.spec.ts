@@ -1,4 +1,5 @@
 import {expect, Page, test} from "@playwright/test";
+import {settleSave} from "./settleSave";
 
 /**
  * Persistence coverage for the brew-day editing flows.
@@ -22,23 +23,6 @@ async function brewBatchFromKbRecipe(page: Page, batchName: string) {
     await dialog.getByRole("button", {name: "Confirm"}).click();
 
     await expect(page).toHaveURL(/\/batch\//);
-}
-
-/**
- * Let an edit reach IndexedDB before reloading.
- *
- * ⚠️ Load-bearing, not a flake patch. Saves are **fire-and-forget**: typed edits
- * debounce 350ms through `useJsonEdit` before calling `updateBatch`, and even the
- * "immediate" paths (checkoffs, add-rows) hand off to an async write nothing
- * awaits. Reloading straight after an edit therefore races the write and reads
- * back the pre-edit value — which is exactly what happens without this, and what
- * made the first CI run fail three of these tests.
- *
- * The interval is bounded by that known 350ms debounce plus one IndexedDB write,
- * so this waits for a fixed cost rather than papering over a race.
- */
-async function settleSave(page: Page) {
-    await page.waitForTimeout(1000);
 }
 
 /** open a batch tab, then one of the Schedule screen's per-phase sub-tabs */

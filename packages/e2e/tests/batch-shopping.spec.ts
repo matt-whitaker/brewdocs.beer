@@ -1,4 +1,5 @@
 import {expect, Page, test} from "@playwright/test";
+import {settleSave} from "./settleSave";
 
 /**
  * Persistence coverage for `batch.shopping` — the only persisted derivation
@@ -21,12 +22,6 @@ async function brewBatchFromKbRecipe(page: Page, batchName: string) {
     await dialog.getByRole("button", {name: "Confirm"}).click();
 
     await expect(page).toHaveURL(/\/batch\//);
-}
-
-// See batch-edit.spec.ts's settleSave: bounded by the known 350ms
-// useJsonEdit debounce plus one IndexedDB write, not a guess.
-async function settleSave(page: Page) {
-    await page.waitForTimeout(1000);
 }
 
 async function openShopping(page: Page) {
