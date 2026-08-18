@@ -1,11 +1,11 @@
 import {createFileRoute} from "@tanstack/react-router";
 import {useCallback} from "react";
-import {Crumb, useBreadcrumbs} from "@/component/breadcrumbs/context";
 import PanelSwitcher from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
 import Batch from "@/model/batch";
 import {batchProgress} from "@/model/batchProgress";
 import {PhaseType} from "@/model/brewable";
+import {Crumb, useBreadcrumbs} from "@/providers/breadcrumbs";
 import BrewList from "@/screen/batch-list";
 
 // module const so the array is stable across renders (see useBreadcrumbs)

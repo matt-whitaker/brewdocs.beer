@@ -1,6 +1,6 @@
 import {createFileRoute} from "@tanstack/react-router";
 import {Suspense, useMemo} from "react";
-import {Crumb, dynamicCrumb, useBreadcrumbs} from "@/component/breadcrumbs/context";
+import {Crumb, dynamicCrumb, useBreadcrumbs} from "@/providers/breadcrumbs";
 import HopOverview from "@/screen/hop-overview";
 import Loading from "@/screen/loading";
 import {useKbHop} from "@/state/kbHops";

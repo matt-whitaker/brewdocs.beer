@@ -1,9 +1,9 @@
 import {createFileRoute} from "@tanstack/react-router";
 import {useMemo} from "react";
 import requireRecord from "@/actions/requireRecord";
-import {Crumb, dynamicCrumb, useBreadcrumbs} from "@/component/breadcrumbs/context";
 import PanelSwitcher from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
+import {Crumb, dynamicCrumb, useBreadcrumbs} from "@/providers/breadcrumbs";
 import RecipeEdit from "@/screen/recipe-edit";
 import {findRecipeResource, useRecipeResource} from "@/state/disambiguation";
 
