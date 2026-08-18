@@ -37,7 +37,7 @@ Cross-references name the target section in _italics_. A section's deep-dive may
 Run from the repo root via nx:
 
 ```bash
-nx dev app       # app dev server (auto-symlinks kb dist via predev)
+nx dev app       # app dev server (predev resolves /kb data: sibling brewdocs.beer-kb checkout, else prod fetch)
 nx build app     # tsc --noEmit && vite build → dist/
 nx preview app   # serve the production build (needed to test PWA/service worker)
 nx test app      # eslint — the verification gate (see Linting)
