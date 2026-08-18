@@ -85,7 +85,7 @@ Each package's deep-dive (Purpose / Where / Surface / Invariants / Gotchas …) 
 GitHub Actions, path-filtered on push to `mainline` (the sole deploy branch), all delegating to the reusable `matt-whitaker/aws-static-site` workflow (S3 + CloudFront):
 
 - `build-test-deploy.app-prod.yaml` — app dist → app S3 bucket (app.brewdocs.beer).
-- `build-test-deploy.app-kb-prod.yaml` — **kb dist deploys independently** to a dedicated kb bucket behind the app's CloudFront distribution (invalidates `/kb`). This is why `importResource` fetches the relative `/kb/*` — same origin in prod, symlink in dev, and kb data updates ship without an app rebuild.
+- **kb data deploys from [`brewdocs.beer-kb`](https://github.com/matt-whitaker/brewdocs.beer-kb)**, not from this repo — its own workflow ships `dist` to the kb bucket behind the app's CloudFront distribution (invalidates `/kb`). This is why `importResource` fetches the relative `/kb/*`: same origin in prod, and locally `predev` resolves the data via `packages/app/scripts/ensure-kb.mjs` (sibling checkout, else prod fetch). kb data updates ship without an app rebuild.
 - `build-test-deploy.www-prod.yaml` — www dist → www bucket (brewdocs.beer).
 
 The **Verify** workflow (`.github/workflows/verify.yaml`) runs `npm ci`, then `nx run-many --target=test` (lint) and `nx run-many --target=build` across **every project**, on every PR **whatever its base** (no deploy) — the real pre-merge gate; the `build-test-deploy.*` workflows run only *post*-merge on push.

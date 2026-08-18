@@ -292,13 +292,19 @@ _Versioned entities._ `Entity` (`packages/core/src/models.ts`) carries an option
 **Example.** The unlayered `--radius-selector` override at the bottom of `styles.css`. `packages/www/src/styles/global.css` is the minimal working example of the shared-tokens stack; `packages/app/src/styles.css` is the maximal one (adds its own app-only tokens on top).
 
 ## kb serving during dev/build
-**Purpose.** Serve kb data from a symlink in dev, and deliberately keep kb **out** of the app's build output.
-**Where.** `npm run build-kb` (`npm --prefix ../kb run build`) then `npm run link-kb` (symlinks `public/kb → ../../kb/dist`), both wired to `predev` only.
-**How it works.** `predev` is `build-kb && link-kb`, and both run **only via `predev`** (dev). The pre-`build` hook is named `devprebuild`, *not* `prebuild`, on purpose — so neither fires before `vite build`, keeping the kb symlink/JSON out of `dist` and the app S3 bucket. kb ships independently to its own bucket (`app-kb-prod`, served at `/kb/*`), so the app must not carry its own copy. ⚠️ `build-kb` uses `npm --prefix ../kb` rather than `npm run build -w packages/kb` — kb's builder resolves `data/`/`dist/` off `process.cwd()`, and `-w` doesn't resolve from inside a workspace package (only from the repo root).
-**Invariants.** ⚠️ **Don't "fix" `devprebuild` to `prebuild`** — that reintroduces kb into the app publish.
+**Purpose.** Resolve `/kb` catalog data for dev and e2e now that **none of it lives in this monorepo** (it moved to `brewdocs.beer-kb`), while deliberately keeping kb **out of the deployed app build**.
+**Where.** `packages/app/scripts/ensure-kb.mjs`, wired to `predev` and to `serve-e2e` (the e2e serving script). The old `build-kb`/`link-kb` pair is gone.
+**How it works.** A resolution ladder, first hit wins, and the script prints which source it chose:
+1. `KB_DIST` env — explicit override.
+2. A **sibling `brewdocs.beer-kb` checkout** (`../brewdocs.beer-kb` beside this repo) — built there if its `dist` is empty, then symlinked as `public/kb`.
+3. **Fetched from prod** — the seven resource files copied from `https://app.brewdocs.beer/kb` into a real `public/kb` directory. This is what CI uses, and it makes the functional suite depend on prod `/kb` being reachable — accepted deliberately when the ladder was chosen.
+⚠️ **It hard-fails when nothing can supply a catalog.** An app without kb data renders screens the suite cannot honestly exercise; the old failure mode was a dangling symlink whose missing JSON came back as `index.html` with a `200`, surfacing as a parse error far from its cause (#367). `importResource` still names that cause when a response isn't a `{version, data}` envelope.
+**Invariants.**
+- ⚠️ **No `prebuild` hook, still.** Deploy builds must not include kb — CI deploy builds have no `public/kb`, so the app bucket never carries a copy; kb ships from `brewdocs.beer-kb`'s own deploy.
+- ⚠️ `serve-e2e` populating `public/kb` **before its local `vite build` is intended** — the e2e preview serves the catalog and its SW precaches it. That artifact is test-only; it is not the deploy build.
 **Gotchas.**
-- ⚠️ **The symlink alone is not enough — kb must be *built* first.** kb's own `build` runs on `postinstall` only, so `git pull && npm run dev` used to point the symlink at a `dist/` predating any newly-added resource. Vite's SPA fallback then answers the missing `/kb/<resource>.json` with **`index.html` and a `200`**, so the failure surfaces as a JSON parse error inside `importResource` — a *"Failed to load static resource"* far from its cause, pointing at the network where nothing is wrong (seen live as #367: `Recipes → My Recipes` dying on a missing `recipe-templates.json`). Two guards: `predev` now builds kb before linking it, and `importResource` names the stale-`dist` cause when a response isn't a `{version, data}` envelope.
-- A clean/CI build (no `public/kb`) produces `dist` with **no `dist/kb`** — so in prod the SW does *not* precache kb; offline kb comes entirely from the IndexedDB hydration flow (_Offline-first kb data flow_). But once you've run the dev server, the leftover `public/kb` symlink makes a **local** `npm run build` include + precache `dist/kb/*.json` — so a local `build`/`preview` misrepresents prod offline behavior (`rm public/kb` to reproduce CI).
+- A leftover `public/kb` makes a **local** `npm run build` include and precache `dist/kb/*.json`, misrepresenting prod offline behavior (prod hydrates kb into IndexedDB instead — see _Offline-first kb data flow_). `rm public/kb` to reproduce CI.
+- ⚠️ **A stale sibling `dist` is used as-is.** The script builds the sibling only when its `dist` is *empty*; after changing data in `brewdocs.beer-kb`, rebuild there (`npm run build`) or the app dev server serves yesterday's catalog.
 **Example.** _None._
 
 ## Linting
