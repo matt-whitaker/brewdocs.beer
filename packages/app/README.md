@@ -14,6 +14,7 @@ The BrewDocs PWA — brew-day companion + knowledge base. Deployed to [app.brewd
 - `nx dev app` — dev server
 - `nx build app` — typecheck + build
 - `nx test app` — lint (the verification gate)
+- `nx preview app` — serve the production build (needed to test PWA/service worker)
 
 ## Stack
 

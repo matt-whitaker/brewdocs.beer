@@ -4,8 +4,7 @@
   "description": "",
   "main": "./src/index.ts",
   "scripts": {
-    "build": "./bin/build-json.js",
-    "postinstall": "npm run build",
+    "build": "echo 'No build'",
     "test": "echo 'No tests'"
   },
   "author": "",
