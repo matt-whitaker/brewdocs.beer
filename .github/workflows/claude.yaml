@@ -1236,7 +1236,19 @@ jobs:
       # runs hung here for hours in one night, each headed for GitHub's 6-hour ceiling, and the
       # UI's cancel was ignored (only force-cancel killed them). Healthy runs take ~1-2 minutes;
       # a timeout here fails BEFORE any model runs, so a re-trigger is cheap (#1175).
-      - if: contains(steps.roles.outputs.list, 'implementor') || contains(steps.roles.outputs.list, 'designer') || contains(steps.roles.outputs.list, 'tester') || contains(steps.roles.outputs.list, 'writer')
+      - id: pw-version
+        if: contains(steps.roles.outputs.list, 'implementor') || contains(steps.roles.outputs.list, 'designer') || contains(steps.roles.outputs.list, 'tester') || contains(steps.roles.outputs.list, 'writer')
+        run: echo "version=$(jq -r '.packages["node_modules/@playwright/test"].version' package-lock.json)" >> "$GITHUB_OUTPUT"
+      - id: pw-cache
+        if: contains(steps.roles.outputs.list, 'implementor') || contains(steps.roles.outputs.list, 'designer') || contains(steps.roles.outputs.list, 'tester') || contains(steps.roles.outputs.list, 'writer')
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw-version.outputs.version }}
+      # ⚠️ SKIPPED ENTIRELY ON A CACHE HIT, apt included — ubuntu-latest ships chromium's OS
+      # dependencies, and apt is the half that hung three runs (#1175). Fallback if an image
+      # update ever breaks a launch: `npx playwright install-deps chromium` on hit (#1179).
+      - if: (contains(steps.roles.outputs.list, 'implementor') || contains(steps.roles.outputs.list, 'designer') || contains(steps.roles.outputs.list, 'tester') || contains(steps.roles.outputs.list, 'writer')) && steps.pw-cache.outputs.cache-hit != 'true'
         timeout-minutes: 10
         run: npx playwright install --with-deps chromium
 
