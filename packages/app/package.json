@@ -10,7 +10,8 @@
     "build": "tsc --noEmit && vite build",
     "lint": "eslint .",
     "test": "npm run lint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "serve-e2e": "npm run build-kb && npm run link-kb && VITE_E2E=true vite build && vite preview --port 4173 --strictPort"
   },
   "dependencies": {
     "@brewdocs.beer/core": "^0.0.1",
