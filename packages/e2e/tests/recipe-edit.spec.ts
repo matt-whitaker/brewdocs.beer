@@ -1,4 +1,5 @@
 import {expect, Locator, Page, test} from "@playwright/test";
+import {settleSave} from "./settleSave";
 
 /**
  * Persistence + sibling-panel-clobbering coverage for the recipe editor.
@@ -27,10 +28,6 @@ async function createRecipeFromTemplate(page: Page, name: string, template: stri
     await dialog.getByRole("button", {name: "Confirm"}).click();
 
     await expect(page).toHaveURL(/\/recipe\/.+\/edit/);
-}
-
-async function settleSave(page: Page) {
-    await page.waitForTimeout(1000);
 }
 
 // "Estimated IBU" (Details panel's Targets subsection) is a read-only computed

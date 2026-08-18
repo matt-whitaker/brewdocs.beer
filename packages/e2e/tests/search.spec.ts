@@ -1,11 +1,8 @@
 import {expect, Page, test} from "@playwright/test";
+import {settleSave} from "./settleSave";
 
 // packages/spec/product/search.md is the source for every case here — never
 // the implementation. Behaviour ids are cited per test.
-
-async function settleSave(page: Page) {
-    await page.waitForTimeout(1000);
-}
 
 async function createRecipeFromTemplate(page: Page, name: string, template: string) {
     await page.goto("/recipes");

@@ -1,4 +1,5 @@
 import {expect, Locator, Page, test} from "@playwright/test";
+import {settleSave} from "./settleSave";
 
 // A fresh context has no batches, so this drives the same Brew flow as
 // batch-detail.spec.ts to reach the Summary tab's Vitals grid.
@@ -88,12 +89,6 @@ async function openSchedulePhase(page: Page, phase: string) {
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
     await page.getByRole("tab", {name: phase, exact: true}).click();
     await expect(page.getByRole("tab", {name: phase, exact: true})).toHaveAttribute("aria-selected", "true");
-}
-
-// see batch-edit.spec.ts for why this is a fixed wait, not a flake patch: the
-// date field's save is debounced, so reading it back races the write
-async function settleSave(page: Page) {
-    await page.waitForTimeout(1000);
 }
 
 async function addGravityReading(page: Page, phase: string, platoValue: string, date: string) {
