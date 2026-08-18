@@ -35,6 +35,8 @@ env:
 jobs:
   functional-test:
     runs-on: ubuntu-latest
+    # the suite executes in ~4 minutes; a hang otherwise burns the 6-hour ceiling (#1175's class)
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -42,7 +44,21 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      - id: pw-version
+        run: echo "version=$(jq -r '.packages["node_modules/@playwright/test"].version' package-lock.json)" >> "$GITHUB_OUTPUT"
+      - id: pw-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw-version.outputs.version }}
+      # ⚠️ SKIPPED ENTIRELY ON A CACHE HIT, apt included — deliberately. ubuntu-latest ships
+      # chromium's OS dependencies, and apt is the half that hangs (#1175 measured three runs
+      # burning toward the 6-hour ceiling on it). If a browser-launch failure ever appears after
+      # a runner-image update, the fallback is `npx playwright install-deps chromium` on hit.
+      # The key carries the playwright version, so an upgrade re-seeds the cache (#1179).
+      - if: steps.pw-cache.outputs.cache-hit != 'true'
+        timeout-minutes: 10
+        run: npx playwright install --with-deps chromium
       - run: npm run test:e2e -w packages/e2e
       - uses: actions/upload-artifact@v4
         if: failure()
