@@ -1,6 +1,8 @@
 
 export * from "./components/typography";
 export * from "./components/brew-timer";
+export * from "./components/card-grid";
+export * from "./components/card-grid/item";
 export * from "./components/data-grid";
 export * from "./components/error-message";
 export * from "./components/hero";

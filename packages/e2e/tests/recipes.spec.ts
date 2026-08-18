@@ -239,3 +239,38 @@ test("search filters the My Recipes tab to matching recipes and clearing restore
     await expect(recipeRow(page, "E2E Search Mine Alpha")).toBeVisible();
     await expect(recipeRow(page, "E2E Search Mine Beta")).toBeVisible();
 });
+
+// The first two <li>s inside CardGrid's <ul class="grid">, in DOM order — CSS grid auto-flow
+// guarantees they're adjacent regardless of how many other cards exist or what order the
+// list renders in, unlike filtering by a specific card's name.
+async function expectCardGridResponsive(page: Page) {
+    const grid = page.locator("ul.grid");
+    const cardOne = grid.getByRole("listitem").nth(0);
+    const cardTwo = grid.getByRole("listitem").nth(1);
+    await expect(cardTwo).toBeVisible();
+
+    const desktopOne = await cardOne.boundingBox();
+    const desktopTwo = await cardTwo.boundingBox();
+    if (!desktopOne || !desktopTwo) throw new Error("a card has no bounding box");
+    expect(Math.abs(desktopOne.y - desktopTwo.y), "cards share a row at desktop width").toBeLessThanOrEqual(2);
+    expect(Math.abs(desktopOne.x - desktopTwo.x), "cards sit in different columns at desktop width").toBeGreaterThan(100);
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    const mobileOne = await cardOne.boundingBox();
+    const mobileTwo = await cardTwo.boundingBox();
+    if (!mobileOne || !mobileTwo) throw new Error("a card has no bounding box");
+    expect(Math.abs(mobileOne.x - mobileTwo.x), "cards share a column at phone width").toBeLessThanOrEqual(2);
+    expect(Math.abs(mobileOne.y - mobileTwo.y), "cards stack into separate rows at phone width").toBeGreaterThan(20);
+}
+
+// RECIPE-LIST-19 (packages/spec/product/recipe-list.md): a desktop-width screen arranges
+// recipe cards into a grid of several per row; a phone-width screen returns to one per row.
+// A fresh context already has one kb recipe (Anchor Steam Beer Clone), so only one new
+// recipe needs creating to get a second card on the default All tab.
+test("recipe cards arrange in a grid at desktop width and stack in one column at phone width", async ({ page }) => {
+    await createRecipeFromTemplate(page, "E2E Grid Recipe", "Empty");
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/recipes");
+    await expectCardGridResponsive(page);
+});
