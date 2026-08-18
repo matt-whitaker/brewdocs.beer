@@ -285,6 +285,14 @@ dispatched.
 ⚠️ **The discriminator already existed and was simply not reached.** `remaining` is the author's own
 structured statement of whether it finished — `[]` means *"I looked, there is nothing"* — and the
 closing logic keys on it thirty lines further down. The empty path returned before it.
+⚠️ **AND AN ABSENT HANDOFF IS NOT AN EMPTY `remaining` — the fix's first version collapsed them and
+closed a task whose author NEVER RAN.** A setup step failed (the playwright CDN hang), the model
+step was *skipped*, the completion gate read skipped as not-failed, and the hook saw a clean tree
+plus an empty `HANDOFF` env — parsed it to `{}`, called `remaining` empty, closed #1159 as "nothing
+to do" and dispatched the next wave. The handoff contract's own three-states rule names this exact
+trap: *no handoff at all means no author ran, or its run died before posting*. The schema forces a
+real author to emit `remaining`, so only an **explicit** `[]` closes; absence leaves the task open
+with "the author never reported — re-trigger it".
 ⚠️ **An empty result is now recorded, not inferred from silence.** "Checked, nothing to do" and "the
 run did nothing" are indistinguishable to a reader otherwise, which is the shape this package keeps
 paying for.

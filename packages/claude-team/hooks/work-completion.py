@@ -137,7 +137,21 @@ if ref_exists and produced in ("", "0"):
     # ⚠️ THE DISCRIMINATOR ALREADY EXISTS AND WAS SIMPLY NOT REACHED. `remaining` is the author's
     # own structured statement of whether it finished, `[]` meaning "I looked, there is nothing" —
     # and the closing logic below already keys on it. This path returned thirty lines too early.
-    nothing_remaining = not (handoff.get("remaining") or [])
+    # ⚠️ AN ABSENT HANDOFF IS NOT AN EMPTY `remaining`, AND COLLAPSING THEM CLOSED A TASK WHOSE
+    # AUTHOR NEVER RAN. The handoff contract already states it: entries mean the author found
+    # something, [] means it looked and found nothing, and NO handoff at all means no author ran
+    # or its run died before posting. A setup step failing (the playwright CDN hang) skips the
+    # model step, the workflow's completion gate reads skipped as not-failed, and this hook then
+    # saw a clean tree plus an empty HANDOFF env — and closed the task as "nothing to do" while
+    # dispatching the next wave (#1159, measured). The schema FORCES a real author to emit
+    # `remaining`, so absence is proof the author never spoke — only an explicit [] closes.
+    nothing_remaining = bool(HANDOFF) and handoff.get("remaining") == []
+    if HANDOFF and not handoff:
+        nothing_remaining = False
+    if not HANDOFF:
+        print(f"no commits and no handoff — the author never reported. #{ISSUE} stays open; re-trigger it.")
+        emit(False)
+        raise SystemExit(0)
     if nothing_remaining and not OWNS:
         team.upsert_comment(
             ISSUE, MARKER,
