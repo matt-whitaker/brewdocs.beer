@@ -1,6 +1,7 @@
 import {createFileRoute} from "@tanstack/react-router";
 import {Suspense, useMemo} from "react";
-import {Crumb, dynamicCrumb, useBreadcrumbs} from "@/providers/breadcrumbs";
+import {Crumb, dynamicCrumb} from "@/model/crumb";
+import {useBreadcrumbs} from "@/providers/breadcrumbs";
 import Loading from "@/screen/loading";
 import YeastOverview from "@/screen/yeast-overview";
 import {useKbYeast} from "@/state/kbYeasts";

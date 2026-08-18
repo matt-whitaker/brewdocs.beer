@@ -1,8 +1,5 @@
 import {createContext, ReactNode, useCallback, useContext, useEffect, useId, useMemo, useState} from "react";
-import {Crumb} from "@/component/breadcrumbs/crumb";
-
-export type {Crumb, CrumbLink, DynamicCrumb, StaticCrumb} from "@/component/breadcrumbs/crumb";
-export {dynamicCrumb} from "@/component/breadcrumbs/crumb";
+import {Crumb} from "@/model/crumb";
 
 type BreadcrumbContextValue = {
     register: (id: string, crumbs: Crumb[]) => void;

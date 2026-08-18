@@ -1,7 +1,7 @@
 import {Link} from "@tanstack/react-router";
 import classNames from "classnames";
 import {ReactNode, Suspense} from "react";
-import {CrumbLink, DynamicCrumb, isDynamic, StaticCrumb} from "@/component/breadcrumbs/crumb";
+import {CrumbLink, DynamicCrumb, isDynamic, StaticCrumb} from "@/model/crumb";
 import {useBreadcrumbTrail} from "@/providers/breadcrumbs";
 
 // the label is wrapped in a real element so it can ellipsize: daisyui makes both
