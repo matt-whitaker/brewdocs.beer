@@ -1,5 +1,4 @@
 import {useMemo, useState} from "react";
-import {CardGrid} from "@brewdocs.beer/design";
 import ErrorBoundary from "@/component/error-boundary";
 import Screen from "@/component/screen";
 import SearchBar from "@/component/search-bar";
@@ -41,9 +40,9 @@ export default function EquipmentList({ source = "all" }: EquipmentListProps) {
     return (
         <Screen>
             <SearchBar value={query} onChange={setQuery} label="Search equipment" />
-            <CardGrid>
+            <ul className="w-full menu px-0">
                 {equipmentListItems}
-            </CardGrid>
+            </ul>
         </Screen>
     );
 }

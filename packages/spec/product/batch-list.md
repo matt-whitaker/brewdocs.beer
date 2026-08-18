@@ -40,10 +40,6 @@ status. There is no search box or other filter, and batches are not grouped by r
 **BATCH-LIST-07** — There is no way to start a new batch from this screen. A batch is started
 from a recipe's own "Brew" action, which creates the batch and opens it directly.
 
-**BATCH-LIST-08** — At a wide enough screen — a laptop or desktop — the list arranges its
-batches into a grid of several cards per row, rather than one per line. Narrowed to a
-phone-sized screen, it returns to a single column, one card per row.
-
 ## Known gaps
 
 - The order batches appear in within a tab does not follow the batch's name, when it was

@@ -1,5 +1,4 @@
 import {useMemo, useState} from "react";
-import {CardGrid} from "@brewdocs.beer/design";
 import {KbRecipe} from "@brewdocs.beer/kb/src";
 import ErrorBoundary from "@/component/error-boundary";
 import Screen from "@/component/screen";
@@ -47,9 +46,9 @@ export default function RecipeList({ source = "all",  filterFn }: RecipeListProp
     return (
         <Screen>
             <SearchBar value={query} onChange={setQuery} label="Search recipes" />
-            <CardGrid>
+            <ul className="w-full menu px-0">
                 {recipeListItems}
-            </CardGrid>
+            </ul>
         </Screen>
     );
 }
