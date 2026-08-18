@@ -1,15 +1,17 @@
-import {expect, Page} from "@playwright/test";
+import {Page} from "@playwright/test";
+
+interface SignalLike<T> {
+    when(predicate: (value: T) => boolean, options?: {timeout?: number}): Promise<T>;
+}
 
 declare global {
     interface Window {
-        __brewdocsPendingWrites?: number;
+        __signals?: {pendingWrites: SignalLike<number>};
     }
 }
 
 export async function settleSave(page: Page) {
-    await page.waitForTimeout(400);
-    await expect.poll(() => page.evaluate(() => window.__brewdocsPendingWrites ?? 0), {
-        timeout: 5000,
-        intervals: [50]
-    }).toBe(0);
+    await page.evaluate(() =>
+        window.__signals!.pendingWrites.when((value) => value === 0, {timeout: 5000})
+    );
 }

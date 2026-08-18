@@ -1,5 +1,6 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {Scalar} from "@brewdocs.beer/core";
+import {beginPendingWrite} from "@/signals";
 import {scalarFromNumberWithCurrency, scalarFromNumberWithUnit} from "@/utils/formatting";
 import {debounce, get, isEqual, setIn} from "@/utils/func";
 
@@ -31,9 +32,12 @@ export default function useJsonEdit<T extends object>(data: T, onChange: (data: 
         setState(prev => (isEqual(prev, data) ? prev : data));
     }, [data]);
 
+    const releaseWrite = useRef<(() => void) | null>(null);
     const settle = useCallback((next: T) => {
         pending.current = false;
-        return onChange(next);
+        const release = releaseWrite.current;
+        releaseWrite.current = null;
+        return Promise.resolve(onChange(next)).finally(() => release?.());
     }, [onChange]);
 
     const debouncedSettle = useMemo(() => debounce(settle, 350), [settle]);
@@ -42,6 +46,7 @@ export default function useJsonEdit<T extends object>(data: T, onChange: (data: 
     const commit = useCallback((next: T, immediate = false) => {
         setState(next);
         pending.current = true;
+        releaseWrite.current ??= beginPendingWrite();
         (immediate ? settle : debouncedSettle)(next);
     }, [settle, debouncedSettle]);
 
