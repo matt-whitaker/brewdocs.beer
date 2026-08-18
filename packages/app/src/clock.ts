@@ -8,58 +8,57 @@ export interface ClockControl {
     reset(): void;
 }
 
-const handlers = new Set<TickHandler>();
-
-let mockedAt: number | undefined;
-let interval: number | undefined;
-
-const fireTick = () => [...handlers].forEach((handler) => handler());
-
-function startTicking() {
-    if (interval !== undefined || mockedAt !== undefined || !handlers.size) return;
-    interval = window.setInterval(fireTick, TICK_MS);
+export interface Clock {
+    now(): Date;
+    onTick(handler: TickHandler): () => void;
+    control: ClockControl;
 }
 
-function stopTicking() {
-    if (interval === undefined) return;
-    window.clearInterval(interval);
-    interval = undefined;
-}
+export function createClock(): Clock {
+    const handlers = new Set<TickHandler>();
+    let mockedAt: number | undefined;
+    let interval: number | undefined;
 
-export function now(): Date {
-    return mockedAt === undefined ? new Date() : new Date(mockedAt);
-}
+    const fireTick = () => [...handlers].forEach((handler) => handler());
 
-export function onTick(handler: TickHandler): () => void {
-    handlers.add(handler);
-    startTicking();
+    const startTicking = () => {
+        if (interval !== undefined || mockedAt !== undefined || !handlers.size) return;
+        interval = window.setInterval(fireTick, TICK_MS);
+    };
 
-    return () => {
-        handlers.delete(handler);
-        if (!handlers.size) stopTicking();
+    const stopTicking = () => {
+        if (interval === undefined) return;
+        window.clearInterval(interval);
+        interval = undefined;
+    };
+
+    const set = (ms: number) => {
+        mockedAt = ms;
+        stopTicking();
+        fireTick();
+    };
+
+    return {
+        now: () => (mockedAt === undefined ? new Date() : new Date(mockedAt)),
+        onTick: (handler) => {
+            handlers.add(handler);
+            startTicking();
+            return () => {
+                handlers.delete(handler);
+                if (!handlers.size) stopTicking();
+            };
+        },
+        control: {
+            set,
+            advance: (ms) => set((mockedAt ?? Date.now()) + ms),
+            reset: () => {
+                mockedAt = undefined;
+                startTicking();
+                fireTick();
+            },
+        },
     };
 }
 
-function set(ms: number) {
-    mockedAt = ms;
-    stopTicking();
-    fireTick();
-}
-
-function advance(ms: number) {
-    set((mockedAt ?? Date.now()) + ms);
-}
-
-function reset() {
-    mockedAt = undefined;
-    startTicking();
-    fireTick();
-}
-
-declare global {
-    interface Window {
-        __clock?: ClockControl;
-    }
-}
-
-window.__clock = {set, advance, reset};
+const clock = createClock();
+export default clock;

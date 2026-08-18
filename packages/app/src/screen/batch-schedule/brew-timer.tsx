@@ -1,7 +1,6 @@
 import {useCallback, useMemo, useState} from "react";
 import {BrewTimer, BrewTimerMarker, BrewTimerScope, Hop, QuickActionTab, QuickActionTabState, ScreenP} from "@brewdocs.beer/design";
 import {putEntry} from "@/actions/tracker";
-import {now} from "@/clock";
 import Modal from "@/component/modal";
 import ModalScreen from "@/component/modal/screen";
 import useModal from "@/component/modal/useModal";
@@ -13,6 +12,7 @@ import {Assignment, assignmentResourceName, BrewablePhase, Milestone, phaseLabel
 import {incompleteAssignments, incompleteEquipment} from "@/model/scheduleProgress";
 import {isRunning, runningSecondsSince, TimerEventType} from "@/model/timer";
 import {key, ResourceActuals, ResourceScalarField, TrackerEntry} from "@/model/tracker";
+import {useClock} from "@/providers/clock";
 import {READING_KINDS, readingKindsForPhase, WATER_PARAMETERS} from "@/screen/batch-schedule/reading-kinds";
 import {scalarFromNumberWithUnit} from "@/utils/formatting";
 import {newId} from "@/utils/id";
@@ -44,6 +44,7 @@ export type BatchScheduleBrewTimerProps = {
 };
 
 export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }: BatchScheduleBrewTimerProps) {
+    const {now} = useClock();
     const phases = batch.brewable.schedule.phases;
     const [scope, setScope] = useState<BrewTimerScope>("global");
     const [completeModalRef, toggleCompleteModal] = useModal();

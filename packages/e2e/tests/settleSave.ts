@@ -1,17 +1,8 @@
 import {Page} from "@playwright/test";
-
-interface SignalLike<T> {
-    when(predicate: (value: T) => boolean, options?: {timeout?: number}): Promise<T>;
-}
-
-declare global {
-    interface Window {
-        __signals?: {pendingWrites: SignalLike<number>};
-    }
-}
+import "./bridge";
 
 export async function settleSave(page: Page) {
     await page.evaluate(() =>
-        window.__signals!.pendingWrites.when((value) => value === 0, {timeout: 5000})
+        window.__e2e!.pendingWrites.when((value) => value === 0, {timeout: 5000})
     );
 }
