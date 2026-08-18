@@ -1,4 +1,5 @@
 import {expect, Page, test} from "@playwright/test";
+import {seedBatch} from "./seedBatch";
 import {settleSave} from "./settleSave";
 
 /**
@@ -9,20 +10,6 @@ import {settleSave} from "./settleSave";
  * "Planning edit rebuilds the list" case is the one that actually exercises
  * that re-attachment machinery.
  */
-
-// A fresh context has no batches, so each test brews its own (mirrors
-// batch-detail.spec.ts / batch-edit.spec.ts).
-async function brewBatchFromKbRecipe(page: Page, batchName: string) {
-    await page.goto("/kb/recipe/anchor-steam-beer-clone");
-    await page.getByRole("button", {name: "Brew"}).click();
-
-    const dialog = page.getByRole("dialog");
-    await expect(dialog).toBeVisible();
-    await dialog.getByLabel(/Batch name/).fill(batchName);
-    await dialog.getByRole("button", {name: "Confirm"}).click();
-
-    await expect(page).toHaveURL(/\/batch\//);
-}
 
 async function openShopping(page: Page) {
     await page.getByRole("tab", {name: "Shopping", exact: true}).click();
@@ -57,7 +44,7 @@ function purchasedCheckbox(page: Page, name: string) {
  * limits) — reported instead.
  */
 test("keeps a shopping item's cost and purchased state after a reload", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Shopping Persist Batch");
+    await seedBatch(page, {name: "E2E Shopping Persist Batch"});
     await openShopping(page);
 
     const purchased = purchasedCheckbox(page, "Crystal Malt 40L");
@@ -77,7 +64,7 @@ test("keeps a shopping item's cost and purchased state after a reload", async ({
 });
 
 test("keeps cost and purchased after a Planning edit rebuilds the shopping list", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Shopping Rebuild Batch");
+    await seedBatch(page, {name: "E2E Shopping Rebuild Batch"});
     await openShopping(page);
 
     // settleSave between these two: an immediate (checkbox) and a debounced
@@ -107,7 +94,7 @@ test("keeps cost and purchased after a Planning edit rebuilds the shopping list"
 });
 
 test("removing an ingredient in Planning drops its shopping row without disturbing the others", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Shopping Removal Batch");
+    await seedBatch(page, {name: "E2E Shopping Removal Batch"});
     await openShopping(page);
 
     // settleSave between each checkbox/cost pair — see the reported finding
@@ -146,7 +133,7 @@ test("removing an ingredient in Planning drops its shopping row without disturbi
  * must not be duplicated or dropped in the merge.
  */
 test("a freeform additive that collides with an existing row's name keeps that row's cost and purchased state", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Shopping Collision Batch");
+    await seedBatch(page, {name: "E2E Shopping Collision Batch"});
     await openShopping(page);
 
     // settleSave between these two — see the reported finding on the

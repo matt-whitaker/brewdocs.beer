@@ -1,4 +1,5 @@
-import {expect, Page, test} from "@playwright/test";
+import {expect, test} from "@playwright/test";
+import {seedBatch} from "./seedBatch";
 
 // BATCH-LIST-03 (packages/spec/product/batch-list.md): a bad batch id returns the
 // brewer to /batches, with the page's normal navigation intact, instead of RootError.
@@ -23,24 +24,8 @@ test("a bad batch id does not leave the bad URL in browser history", async ({pag
     await expect(page).toHaveURL(/\/$/);
 });
 
-// A fresh context has no batches, so every test here drives the Brew flow
-// itself: /kb/recipe/<id> -> Brew action -> modal (name + Confirm) -> navigates
-// to /batch/<id> on the Planning tab. This re-drives the same flow the
-// KB-recipe spec exercises, but goes on to confirm it (see issue #231).
-async function brewBatchFromKbRecipe(page: Page, batchName: string) {
-    await page.goto("/kb/recipe/anchor-steam-beer-clone");
-    await page.getByRole("button", {name: "Brew"}).click();
-
-    const dialog = page.getByRole("dialog");
-    await expect(dialog).toBeVisible();
-    await dialog.getByLabel(/Batch name/).fill(batchName);
-    await dialog.getByRole("button", {name: "Confirm"}).click();
-
-    await expect(page).toHaveURL(/\/batch\//);
-}
-
-test("brewing a KB recipe creates a batch and lands on the Planning tab", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Steam Batch");
+test("a batch's detail page opens on the Planning tab with its recipe's sub-tabs", async ({page}) => {
+    await seedBatch(page, {name: "E2E Steam Batch"});
 
     await expect(page.getByRole("tab", {name: "Planning", exact: true})).toHaveAttribute("aria-selected", "true");
     await expect(page.getByRole("heading", {name: "E2E Steam Batch"})).toBeVisible();
@@ -53,7 +38,7 @@ test("brewing a KB recipe creates a batch and lands on the Planning tab", async 
 });
 
 test("switches between the Planning/Shopping/Brewing/Summary tabs", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Tab Switch Batch");
+    await seedBatch(page, {name: "E2E Tab Switch Batch"});
 
     const planningTab = page.getByRole("tab", {name: "Planning", exact: true});
     const shoppingTab = page.getByRole("tab", {name: "Shopping", exact: true});
@@ -96,7 +81,7 @@ test("switches between the Planning/Shopping/Brewing/Summary tabs", async ({page
 // always targets the current (first incomplete) phase, independent of which sub-tab is
 // showing, so no manual tab navigation is needed between confirmations.
 test("completing a phase advances the Brewing tab to the phase that follows it, and stays put on the last one", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Phase Advance Batch");
+    await seedBatch(page, {name: "E2E Phase Advance Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
     const mashTab = page.getByRole("tab", {name: "1. Mash"});
@@ -138,7 +123,7 @@ test("completing a phase advances the Brewing tab to the phase that follows it, 
 // phases are made adjacent (Mash/Boil/Boil/Ferment) via Planning's Phases panel so
 // completing the first Boil can only be verified correct by landing on the second one.
 test("advancing past a repeated phase type lands on the next position, not any tab of that type", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Repeated Phase Type Batch");
+    await seedBatch(page, {name: "E2E Repeated Phase Type Batch"});
 
     await page.getByRole("tab", {name: "Planning", exact: true}).click();
     await page.getByRole("tab", {name: "Phases", exact: true}).click();

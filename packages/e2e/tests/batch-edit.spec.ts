@@ -1,4 +1,5 @@
 import {expect, Page, test} from "@playwright/test";
+import {seedBatch} from "./seedBatch";
 import {settleSave} from "./settleSave";
 
 /**
@@ -11,20 +12,6 @@ import {settleSave} from "./settleSave";
  * shaped **edit → reload → assert**, because only the reload catches that.
  */
 
-// A fresh context has no batches, so each test brews its own (mirrors
-// batch-detail.spec.ts). Tests stay independent at the cost of a few seconds each.
-async function brewBatchFromKbRecipe(page: Page, batchName: string) {
-    await page.goto("/kb/recipe/anchor-steam-beer-clone");
-    await page.getByRole("button", {name: "Brew"}).click();
-
-    const dialog = page.getByRole("dialog");
-    await expect(dialog).toBeVisible();
-    await dialog.getByLabel(/Batch name/).fill(batchName);
-    await dialog.getByRole("button", {name: "Confirm"}).click();
-
-    await expect(page).toHaveURL(/\/batch\//);
-}
-
 /** open a batch tab, then one of the Schedule screen's per-phase sub-tabs */
 async function openSchedulePhase(page: Page, phase: string) {
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
@@ -33,7 +20,7 @@ async function openSchedulePhase(page: Page, phase: string) {
 }
 
 test("records as-brewed values without overwriting the plan", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Actuals Batch");
+    await seedBatch(page, {name: "E2E Actuals Batch"});
     await openSchedulePhase(page, "2. Boil");
 
     // the recipe ships three Northern Brewer additions; act on the first
@@ -71,7 +58,7 @@ test("records as-brewed values without overwriting the plan", async ({page}) => 
 // already does for a grain's or hop's weight — mirroring the grain/hop actuals
 // test above, but for an additive added fresh in Planning first.
 test("records an actual weight against a planned additive without overwriting the plan", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Additive Actual Batch");
+    await seedBatch(page, {name: "E2E Additive Actual Batch"});
 
     await page.getByRole("tab", {name: "Planning", exact: true}).click();
     await page.getByRole("tab", {name: "Ingredients", exact: true}).click();
@@ -99,7 +86,7 @@ test("records an actual weight against a planned additive without overwriting th
 });
 
 test("keeps equipment and ingredient checkoffs after a reload", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Checkoff Batch");
+    await seedBatch(page, {name: "E2E Checkoff Batch"});
     await openSchedulePhase(page, "1. Mash");
 
     const equipment = page.getByLabel("Mash Tun - 10gal");
@@ -120,7 +107,7 @@ test("keeps equipment and ingredient checkoffs after a reload", async ({page}) =
 });
 
 test("adds a gravity reading on a phase and persists its value", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Gravity Batch");
+    await seedBatch(page, {name: "E2E Gravity Batch"});
     // ferment starts with no readings at all — nothing is seeded
     await openSchedulePhase(page, "3. Ferment");
 
@@ -140,7 +127,7 @@ test("adds a gravity reading on a phase and persists its value", async ({page}) 
 });
 
 test("adds a volume reading on a phase and persists its value", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Volume Batch");
+    await seedBatch(page, {name: "E2E Volume Batch"});
     await openSchedulePhase(page, "2. Boil");
 
     await page.getByRole("button", {name: "Add volume reading"}).click();
@@ -160,7 +147,7 @@ test("adds a volume reading on a phase and persists its value", async ({page}) =
 });
 
 test("adds a temperature reading on a phase and persists its value", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Temperature Batch");
+    await seedBatch(page, {name: "E2E Temperature Batch"});
     await openSchedulePhase(page, "1. Mash");
 
     await page.getByRole("button", {name: "Add temperature reading"}).click();
@@ -180,7 +167,7 @@ test("adds a temperature reading on a phase and persists its value", async ({pag
 });
 
 test("gravity, volume and temperature readings coexist on the same phase without colliding", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Coexist Batch");
+    await seedBatch(page, {name: "E2E Coexist Batch"});
     await openSchedulePhase(page, "3. Ferment");
 
     await page.getByRole("button", {name: "Add reading"}).click();
@@ -212,7 +199,7 @@ test("gravity, volume and temperature readings coexist on the same phase without
 });
 
 test("a second phase of the same type gets its own tab and its own ingredients", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Phase Split Batch");
+    await seedBatch(page, {name: "E2E Phase Split Batch"});
 
     // add a second Boil in Planning -> Phases
     await page.getByRole("tab", {name: "Planning", exact: true}).click();
@@ -256,7 +243,7 @@ test("a second phase of the same type gets its own tab and its own ingredients",
  * somewhere on the page.
  */
 test("adds a hop to a phase that also has additives, and it persists under Hops", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Hops Subsection Batch");
+    await seedBatch(page, {name: "E2E Hops Subsection Batch"});
 
     await page.getByRole("tab", {name: "Planning", exact: true}).click();
     await page.getByRole("tab", {name: "Ingredients", exact: true}).click();
@@ -277,7 +264,7 @@ test("adds a hop to a phase that also has additives, and it persists under Hops"
 });
 
 test("adds a water sample on the Mash phase and persists bundled parameters", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Water Batch");
+    await seedBatch(page, {name: "E2E Water Batch"});
     await openSchedulePhase(page, "1. Mash");
 
     await page.getByRole("button", {name: "Add water sample"}).click();
@@ -303,7 +290,7 @@ test("adds a water sample on the Mash phase and persists bundled parameters", as
 });
 
 test("keeps Water Chemistry scoped to the Mash phase", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Water Gating Batch");
+    await seedBatch(page, {name: "E2E Water Gating Batch"});
 
     await openSchedulePhase(page, "1. Mash");
     await expect(page.getByRole("button", {name: "Water Chemistry"})).toBeVisible();
@@ -316,7 +303,7 @@ test("keeps Water Chemistry scoped to the Mash phase", async ({page}) => {
 });
 
 test("completes the Mash phase, advances the current phase, and keeps its water sample", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Complete Phase Batch");
+    await seedBatch(page, {name: "E2E Complete Phase Batch"});
     await openSchedulePhase(page, "1. Mash");
 
     await page.getByRole("button", {name: "Add water sample"}).click();
@@ -347,7 +334,7 @@ test("completes the Mash phase, advances the current phase, and keeps its water 
 });
 
 test("keeps a batch note and SRM value after a reload", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Notes Batch");
+    await seedBatch(page, {name: "E2E Notes Batch"});
     // Notes is the Brewing tab strip's last entry, alongside the phase tabs
     await openSchedulePhase(page, "Notes");
 
@@ -375,7 +362,7 @@ test("keeps a batch note and SRM value after a reload", async ({page}) => {
 // SrmTag is `aria-hidden` with no text, so locate it structurally like
 // batch-summary.spec.ts's srmRow — the Notes tab's only .data-grid has the SRM row
 test("shows an SRM colour swatch on the Notes tab only for a parseable value", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Notes SRM Swatch Batch");
+    await seedBatch(page, {name: "E2E Notes SRM Swatch Batch"});
     await openSchedulePhase(page, "Notes");
 
     const srm = page.getByRole("textbox", {name: "SRM"});
@@ -405,7 +392,7 @@ test("shows an SRM colour swatch on the Notes tab only for a parseable value", a
  * both — a missing date and an unread entry are indistinguishable from the UI.
  */
 test("completing a phase puts a marker on the brew timer's live timeline", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Timer Marker Batch");
+    await seedBatch(page, {name: "E2E Timer Marker Batch"});
     await openSchedulePhase(page, "1. Mash");
 
     // markers are placed as an offset from the session start, so the timer has to
@@ -435,7 +422,7 @@ test("completing a phase puts a marker on the brew timer's live timeline", async
  */
 test("the phase tab bar stays one row on a phone and keeps every tab reachable", async ({page}) => {
     await page.setViewportSize({width: 390, height: 844});
-    await brewBatchFromKbRecipe(page, "E2E Tab Scroll Batch");
+    await seedBatch(page, {name: "E2E Tab Scroll Batch"});
 
     for (let i = 0; i < 4; i++) {
         await page.getByRole("tab", {name: "Planning", exact: true}).click();
@@ -476,7 +463,7 @@ test("the phase tab bar stays one row on a phone and keeps every tab reachable",
  * what catches that: on screen the lost write looks identical to a saved one.
  */
 test("creates a reading with its name and value in one action", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Reading Create Batch");
+    await seedBatch(page, {name: "E2E Reading Create Batch"});
     await openSchedulePhase(page, "1. Mash");
 
     await page.getByLabel("Gravity name to add").fill("Pre-boil");
@@ -492,7 +479,7 @@ test("creates a reading with its name and value in one action", async ({page}) =
 });
 
 test("quick reading records against the current phase, and offers water parameters", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Quick Reading Batch");
+    await seedBatch(page, {name: "E2E Quick Reading Batch"});
     await openSchedulePhase(page, "1. Mash");
     await page.getByRole("button", {name: "Start timer"}).click();
     await settleSave(page);
@@ -527,7 +514,7 @@ test("quick reading records against the current phase, and offers water paramete
  * a neighbour instead still leaves two rows, just with the wrong weights.
  */
 test("removes the middle of three ingredients and keeps the other two", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Remove Ingredient Batch");
+    await seedBatch(page, {name: "E2E Remove Ingredient Batch"});
     await page.getByRole("tab", {name: "Planning", exact: true}).click();
     await page.getByRole("tab", {name: "Ingredients", exact: true}).click();
 
@@ -550,7 +537,7 @@ test("removes the middle of three ingredients and keeps the other two", async ({
 });
 
 test("adds and removes equipment on a phase, persisting each change", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Equipment Batch");
+    await seedBatch(page, {name: "E2E Equipment Batch"});
     await page.getByRole("tab", {name: "Planning", exact: true}).click();
     await page.getByRole("tab", {name: "Equipment", exact: true}).click();
 
@@ -582,7 +569,7 @@ test("adds and removes equipment on a phase, persisting each change", async ({pa
 // typed, with no interpretation — non-numeric text is what distinguishes this
 // from the retired `count` field, which ran input through `Number()`.
 test("types a freeform note on an equipment row, persisting it across a reload", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Equipment Notes Batch");
+    await seedBatch(page, {name: "E2E Equipment Notes Batch"});
     await page.getByRole("tab", {name: "Planning", exact: true}).click();
     await page.getByRole("tab", {name: "Equipment", exact: true}).click();
 
@@ -608,7 +595,7 @@ test("types a freeform note on an equipment row, persisting it across a reload",
 // testing note that clearing a note to empty persists as cleared, not as a
 // stray stored value.
 test("seeds an equipment row's note from the catalog default, and persists a clear", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Equipment Catalog Notes Batch");
+    await seedBatch(page, {name: "E2E Equipment Catalog Notes Batch"});
     await page.getByRole("tab", {name: "Planning", exact: true}).click();
     await page.getByRole("tab", {name: "Equipment", exact: true}).click();
 
@@ -646,7 +633,7 @@ test("seeds an equipment row's note from the catalog default, and persists a cle
  * a reason from here.
  */
 test("keeps the last phase of a required type from being removed", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Locked Phase Batch");
+    await seedBatch(page, {name: "E2E Locked Phase Batch"});
     await page.getByRole("tab", {name: "Planning", exact: true}).click();
     await page.getByRole("tab", {name: "Phases", exact: true}).click();
 
@@ -669,7 +656,7 @@ test("keeps the last phase of a required type from being removed", async ({page}
 });
 
 test("removing a phase drops its own reading but leaves a sibling phase's reading untouched", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Phase Prune Batch");
+    await seedBatch(page, {name: "E2E Phase Prune Batch"});
 
     await openSchedulePhase(page, "2. Boil");
     await page.getByRole("button", {name: "Add reading"}).click();
@@ -712,7 +699,7 @@ test("removing a phase drops its own reading but leaves a sibling phase's readin
 });
 
 test("reorders a phase, renumbering its label, and survives a reload", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Reorder Batch");
+    await seedBatch(page, {name: "E2E Reorder Batch"});
 
     await page.getByRole("tab", {name: "Planning", exact: true}).click();
     await page.getByRole("tab", {name: "Phases", exact: true}).click();
@@ -746,7 +733,7 @@ test("keeps Planning's collapsed equipment section on its own phase after a reor
     // weaken the assertion, so a fix flips it back to green instead of silently
     // regressing again
     test.fail();
-    await brewBatchFromKbRecipe(page, "E2E Reorder Collapse Batch");
+    await seedBatch(page, {name: "E2E Reorder Collapse Batch"});
 
     await page.getByRole("tab", {name: "Planning", exact: true}).click();
     await page.getByRole("tab", {name: "Equipment", exact: true}).click();
@@ -782,7 +769,7 @@ test("keeps the Brewing screen's active tab on the same phase after a reorder", 
     // weaken the assertion, so a fix flips it back to green instead of silently
     // regressing again
     test.fail();
-    await brewBatchFromKbRecipe(page, "E2E Reorder Active Tab Batch");
+    await seedBatch(page, {name: "E2E Reorder Active Tab Batch"});
 
     await openSchedulePhase(page, "2. Boil");
     await expect(page.getByRole("tab", {name: "2. Boil", exact: true})).toHaveAttribute("aria-selected", "true");
@@ -820,7 +807,7 @@ function overlaps(a: {x: number; y: number; width: number; height: number}, b: t
 }
 
 test("reading rows lay out without overlapping fields", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "Reading layout");
+    await seedBatch(page, {name: "Reading layout"});
     await openSchedulePhase(page, "1. Mash");
 
     // the add row, before anything exists
@@ -854,7 +841,7 @@ test("reading rows lay out without overlapping fields", async ({page}) => {
  * constant.
  */
 test("the Water Chemistry name field starts at the same left edge as the other reading grids", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "Water layout");
+    await seedBatch(page, {name: "Water layout"});
     await openSchedulePhase(page, "1. Mash");
 
     const gravity = await boxOf(page, "Gravity name to add");
