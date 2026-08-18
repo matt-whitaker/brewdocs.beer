@@ -1,4 +1,5 @@
 import {expect, Page, test} from "@playwright/test";
+import {seedBatch} from "./seedBatch";
 import {settleSave} from "./settleSave";
 
 // packages/spec/product/search.md is the source for every case here — never
@@ -16,18 +17,6 @@ async function createRecipeFromTemplate(page: Page, name: string, template: stri
     await dialog.getByRole("button", {name: "Confirm"}).click();
 
     await expect(page).toHaveURL(/\/recipe\/.+\/edit/);
-}
-
-async function brewBatchFromKbRecipe(page: Page, batchName: string) {
-    await page.goto("/kb/recipe/anchor-steam-beer-clone");
-    await page.getByRole("button", {name: "Brew"}).click();
-
-    const dialog = page.getByRole("dialog");
-    await expect(dialog).toBeVisible();
-    await dialog.getByLabel(/Batch name/).fill(batchName);
-    await dialog.getByRole("button", {name: "Confirm"}).click();
-
-    await expect(page).toHaveURL(/\/batch\//);
 }
 
 // The "Brewed on" date input (screen/batch-schedule/index.tsx) carries no
@@ -172,10 +161,10 @@ test("the BrewDocs wordmark navigates to /", async ({page}) => {
 // handoff, a bare toHaveCount(0) can pass before the suspense-backed list
 // renders and would pass against the bug too.
 test("recent batches shows only a brewed batch, and typing replaces it with results", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Recent Batch Dated");
+    await seedBatch(page, {name: "E2E Recent Batch Dated"});
     await setBrewDate(page, "2026-01-05");
 
-    await brewBatchFromKbRecipe(page, "E2E Recent Batch Undated");
+    await seedBatch(page, {name: "E2E Recent Batch Undated"});
 
     await page.goto("/");
 

@@ -1,19 +1,6 @@
 import {expect, Locator, Page, test} from "@playwright/test";
+import {seedBatch} from "./seedBatch";
 import {settleSave} from "./settleSave";
-
-// A fresh context has no batches, so this drives the same Brew flow as
-// batch-detail.spec.ts to reach the Summary tab's Vitals grid.
-async function brewBatchFromKbRecipe(page: Page, batchName: string) {
-    await page.goto("/kb/recipe/anchor-steam-beer-clone");
-    await page.getByRole("button", {name: "Brew"}).click();
-
-    const dialog = page.getByRole("dialog");
-    await expect(dialog).toBeVisible();
-    await dialog.getByLabel(/Batch name/).fill(batchName);
-    await dialog.getByRole("button", {name: "Confirm"}).click();
-
-    await expect(page).toHaveURL(/\/batch\//);
-}
 
 // Vitals' SRM decoration (SrmTag) is `aria-hidden` with no text content, so it
 // has no accessible name or role to query — locate it structurally instead: the
@@ -23,7 +10,7 @@ function srmRow(page: Page, column: string): Locator {
 }
 
 test("shows an SRM colour swatch beside the number in both Target and Actuals", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Vitals Batch");
+    await seedBatch(page, {name: "E2E Vitals Batch"});
     await page.getByRole("tab", {name: "Summary", exact: true}).click();
 
     // anchor-steam-beer-clone targets srm "9"; a fresh batch's actuals default to "0"
@@ -42,7 +29,7 @@ function vitalsRow(page: Page, column: string, label: string): Locator {
 }
 
 test("shows the recipe's target vitals, a fresh batch's zeroed actuals, and the batch's organics", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Summary Vitals Batch");
+    await seedBatch(page, {name: "E2E Summary Vitals Batch"});
     await page.getByRole("tab", {name: "Summary", exact: true}).click();
 
     // anchor-steam-beer-clone's own targets (packages/kb/data/recipes/anchor-steam-beer-clone.json)
@@ -77,7 +64,7 @@ test("shows the recipe's target vitals, a fresh batch's zeroed actuals, and the 
 // An IBU wrong by an order of magnitude is the failure most worth catching here,
 // and a substring match cannot see it.
 test("Summary derives a non-zero Actuals IBU from the batch's own hop bill", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Summary IBU Batch");
+    await seedBatch(page, {name: "E2E Summary IBU Batch"});
     await page.getByRole("tab", {name: "Summary", exact: true}).click();
 
     await expect(vitalsRow(page, "Actuals", "IBU")).toHaveText(/^IBU\s*37$/);
@@ -113,7 +100,7 @@ function expectedAbv(ogPlato: number, fgPlato: number): string {
 }
 
 test("computes Actuals O.G./F.G./ABV from two dated gravity readings, ordered by date rather than entry order", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Actuals ABV Batch");
+    await seedBatch(page, {name: "E2E Actuals ABV Batch"});
 
     // entered first but dated later — this is the F.G.
     await addGravityReading(page, "3. Ferment", "2.5", "2026-02-20");
@@ -130,7 +117,7 @@ test("computes Actuals O.G./F.G./ABV from two dated gravity readings, ordered by
 });
 
 test("a single dated gravity reading shows equal Actuals O.G./F.G. and 0.0% ABV", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Actuals Single Reading Batch");
+    await seedBatch(page, {name: "E2E Actuals Single Reading Batch"});
 
     await addGravityReading(page, "1. Mash", "12.5", "2026-02-10");
 
@@ -149,7 +136,7 @@ async function addUndatedGravityReading(page: Page, phase: string, platoValue: s
 }
 
 test("an undated gravity reading sorts after a dated one, becoming F.G. regardless of entry order", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Actuals Undated Reading Batch");
+    await seedBatch(page, {name: "E2E Actuals Undated Reading Batch"});
 
     // entered first but never dated — must still sort last (F.G.), not first
     await addUndatedGravityReading(page, "3. Ferment", "8.5");
@@ -169,7 +156,7 @@ async function addEmptyGravityReading(page: Page, phase: string, label: string) 
 }
 
 test("a gravity reading left without a value, even after being typed then cleared, is excluded from Actuals", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Actuals Empty Reading Batch");
+    await seedBatch(page, {name: "E2E Actuals Empty Reading Batch"});
 
     // no value on add -> no tracker entry at all yet; typing a value then
     // clearing it writes a tracker entry with a present but empty
