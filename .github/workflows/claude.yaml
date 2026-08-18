@@ -1126,6 +1126,9 @@ jobs:
         || contains(github.event.review.body, '@claude/writer')
       )
     runs-on: ubuntu-latest
+    # ⚠️ A backstop for every step, model steps included — a hung API call has no step guard, and
+    # the longest healthy run observed is ~15 minutes. Without this a hang burns the 6-hour ceiling.
+    timeout-minutes: 60
     permissions:
       contents: write
       pull-requests: write
@@ -1215,6 +1218,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
       - if: contains(steps.roles.outputs.list, 'implementor') || contains(steps.roles.outputs.list, 'designer') || contains(steps.roles.outputs.list, 'tester') || contains(steps.roles.outputs.list, 'writer')
+        timeout-minutes: 10
         run: npm ci
       # Browser install as a workflow step, not a Claude turn. Without it the Tester can
       # write specs but never run them, and an unrun test is worse than no test.
@@ -1227,7 +1231,25 @@ jobs:
       # and an acceptance criterion asking for a browser check is unfulfillable without a binary —
       # #1037's Implementor reported exactly that. Same accepted trade as the Writer's grant:
       # every author run pays the download, and most never open a browser.
-      - if: contains(steps.roles.outputs.list, 'implementor') || contains(steps.roles.outputs.list, 'designer') || contains(steps.roles.outputs.list, 'tester') || contains(steps.roles.outputs.list, 'writer')
+      # ⚠️ TIMED OUT ON PURPOSE, both this and `npm ci` above. `--with-deps` runs apt-get and then
+      # pulls chromium from Playwright's CDN, and either can stall forever on a bad mirror — three
+      # runs hung here for hours in one night, each headed for GitHub's 6-hour ceiling, and the
+      # UI's cancel was ignored (only force-cancel killed them). Healthy runs take ~1-2 minutes;
+      # a timeout here fails BEFORE any model runs, so a re-trigger is cheap (#1175).
+      - id: pw-version
+        if: contains(steps.roles.outputs.list, 'implementor') || contains(steps.roles.outputs.list, 'designer') || contains(steps.roles.outputs.list, 'tester') || contains(steps.roles.outputs.list, 'writer')
+        run: echo "version=$(jq -r '.packages["node_modules/@playwright/test"].version' package-lock.json)" >> "$GITHUB_OUTPUT"
+      - id: pw-cache
+        if: contains(steps.roles.outputs.list, 'implementor') || contains(steps.roles.outputs.list, 'designer') || contains(steps.roles.outputs.list, 'tester') || contains(steps.roles.outputs.list, 'writer')
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw-version.outputs.version }}
+      # ⚠️ SKIPPED ENTIRELY ON A CACHE HIT, apt included — ubuntu-latest ships chromium's OS
+      # dependencies, and apt is the half that hung three runs (#1175). Fallback if an image
+      # update ever breaks a launch: `npx playwright install-deps chromium` on hit (#1179).
+      - if: (contains(steps.roles.outputs.list, 'implementor') || contains(steps.roles.outputs.list, 'designer') || contains(steps.roles.outputs.list, 'tester') || contains(steps.roles.outputs.list, 'writer')) && steps.pw-cache.outputs.cache-hit != 'true'
+        timeout-minutes: 10
         run: npx playwright install --with-deps chromium
 
       # ⚠️ THE STORY BRANCH MUST EXIST BEFORE ANY MODEL STEP, and until #777 nothing guaranteed

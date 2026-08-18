@@ -1,5 +1,5 @@
 import {Link} from "@tanstack/react-router";
-import {ScreenH2, ScreenP, Trash} from "@brewdocs.beer/design";
+import {CardGridItem, ScreenH2, ScreenP, Trash} from "@brewdocs.beer/design";
 import {KbRecipe} from "@brewdocs.beer/kb";
 import Action from "@/component/action";
 import Recipe, {RecipeSource} from "@/model/recipe";
@@ -14,7 +14,7 @@ export type RecipeListItemProps = {
 export default function RecipeListItem({ recipe, source }: RecipeListItemProps) {
     const to = source === "kb" ? "/kb/recipe/$recipeId" : "/recipe/$recipeId";
     return (
-        <li className="odd:bg-base-200 relative">
+        <CardGridItem>
             <Link to={to} params={{recipeId: recipe.id}} className="text-left block">
                 <ScreenH2 className="text-lg">{recipe.name}</ScreenH2>
                 <ScreenP className="mb-1">by {recipe.brewer}</ScreenP>
@@ -28,14 +28,14 @@ export default function RecipeListItem({ recipe, source }: RecipeListItemProps) 
                 className="btn-xs text-error absolute top-1.5 right-1.5"
                 modalContent={<RecipeDeleteModal recipeId={recipe.id} name={recipe.name} />}
             />}
-        </li>
+        </CardGridItem>
     );
 }
 
 export function RecipeListItemFallback() {
     return (
-        <li className="odd:bg-base-200 relative">
+        <CardGridItem>
             <ScreenP>This recipe can&rsquo;t be displayed.</ScreenP>
-        </li>
+        </CardGridItem>
     );
 }
