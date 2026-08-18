@@ -17,7 +17,7 @@ This root file holds the **universal** rules. Each package's deep-dive lives in 
 | Package | Role |
 |---|---|
 | `core` | Shared, environment-agnostic types + helpers: `Entity`/`Units`/`Currencies`, React prop/event helpers, `createFetchClient`. |
-| `kb` | Knowledge base: raw JSON data → built resource files → HTTP transport adapter (`importResource`) + `Kb*` model types. |
+| `kb` | Knowledge base code: HTTP transport adapter (`importResource`) + `Kb*` model types. Data itself lives in [brewdocs.beer-kb](https://github.com/matt-whitaker/brewdocs.beer-kb). |
 | `design` | React UI primitives (typography, inputs) that emit Tailwind/DaisyUI class strings. |
 | `app` | The PWA itself: Vite + React + TanStack Router/Query. Deployed to app.brewdocs.beer. |
 | `www` | Astro marketing/info site at brewdocs.beer. |
@@ -41,7 +41,7 @@ nx dev app       # app dev server (auto-symlinks kb dist via predev)
 nx build app     # tsc --noEmit && vite build → dist/
 nx preview app   # serve the production build (needed to test PWA/service worker)
 nx test app      # eslint — the verification gate (see Linting)
-nx build kb      # rebuild kb dist JSON from data/ (also runs on postinstall)
+nx build kb      # no-op — kb ships raw source only; dist JSON is built and deployed by brewdocs.beer-kb
 nx dev www       # astro dev
 nx test design   # eslint — the verification gate (see Linting)
 nx dev design    # storybook dev -p 6006
