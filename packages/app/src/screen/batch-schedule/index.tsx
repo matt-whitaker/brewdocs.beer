@@ -1,6 +1,7 @@
 import {ReactNode, useCallback, useMemo, useRef} from "react";
 import {SrmTag, Textarea} from "@brewdocs.beer/design";
 import {putEntry} from "@/actions/tracker";
+import {now} from "@/clock";
 import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
 import DataGridInput from "@/component/data-grid/input";
@@ -76,7 +77,7 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
             ...d,
             tracker: putEntry(d.tracker, ref, {
                 completed: !d.tracker[key(ref)]?.completed,
-                date: new Date().toISOString()
+                date: now().toISOString()
             })
         }), true);
     }, [mutate]);
@@ -91,7 +92,7 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
 
     const completePhase = useCallback((phaseId: string) => {
         mutate(d => {
-            const date = new Date().toISOString();
+            const date = now().toISOString();
             return {
                 ...d,
                 tracker: putEntry(d.tracker, { on: "phase", id: phaseId }, { completed: true, date }),

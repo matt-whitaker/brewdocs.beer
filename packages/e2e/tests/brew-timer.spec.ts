@@ -1,4 +1,5 @@
 import {expect, Page, test} from "@playwright/test";
+import {advanceClock, resetClock} from "./clock";
 import {seedBatch} from "./seedBatch";
 import {settleSave} from "./settleSave";
 
@@ -25,13 +26,16 @@ test("keeps the timer running across a reload", async ({page}) => {
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
     await expect(page.getByRole("timer", {name: "Elapsed time"})).toHaveText("00:00:00");
+
+    // back-date the mock clock before starting, so the write carries a real-shaped
+    // "3s ago" timestamp with no real sleep — elapsedSeconds is derived from the stored
+    // absolute start timestamp, not an in-memory counter, so this is what proves a
+    // reload (which wipes the in-memory mock along with everything else) still reports
+    // real elapsed time
+    await advanceClock(page, -3000);
     await page.getByRole("button", {name: "Start timer"}).click();
     await expect(page.getByRole("button", {name: "Pause timer"})).toBeVisible();
 
-    // let real wall-clock time pass — elapsedSeconds is derived from the stored
-    // absolute start timestamp, not an in-memory counter, so this is what proves
-    // a reload (which wipes all in-memory state) still reports real elapsed time
-    await page.waitForTimeout(3000);
     await settleSave(page);
     await page.reload();
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
@@ -46,8 +50,12 @@ test("freezes the counter on pause, and a reload keeps it frozen", async ({page}
     await seedBatch(page, {name: "E2E Timer Paused Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
+    // back-date the mock clock so the start timestamp is 2s in the past, then reset
+    // to real time before pausing — the pause timestamp lands ~2s after the start
+    // one with no real sleep in between
+    await advanceClock(page, -2000);
     await page.getByRole("button", {name: "Start timer"}).click();
-    await page.waitForTimeout(2000);
+    await resetClock(page);
     await page.getByRole("button", {name: "Pause timer"}).click();
     await expect(page.getByRole("button", {name: "Start timer"})).toBeVisible();
 
@@ -76,7 +84,7 @@ test("logs a quick milestone that lands on the timeline and in the phase's readi
 
     // a marker only places once there's a running session with elapsed > 0
     await page.getByRole("button", {name: "Start timer"}).click();
-    await page.waitForTimeout(1000);
+    await advanceClock(page, 1000);
 
     // defaults (first kind "Gravity", first phase "1. Mash") match the reading
     // grid's own "Add reading" default label, so no need to touch the selects
@@ -467,9 +475,10 @@ test("a quick action never reaches into a later phase", async ({page}) => {
 
 // Covers the marker overlay's 24px hit target + popover work (#380): each
 // marker gets its own transparent hit box independent of its drawn dot, and
-// only one popover is open at a time. Real wall-clock separation between the
-// two milestones is what the "own popover text" claim needs — with markers at
-// very different offsets, hovering one can't accidentally hit-test the other.
+// only one popover is open at a time. Separation between the two milestones'
+// offsets is what the "own popover text" claim needs — with markers at very
+// different offsets, hovering one can't accidentally hit-test the other. The
+// mock clock gives an exact 4s gap instead of a real-time-dependent one.
 test("hovering each marker after logging two milestones shows that marker's own popover text", async ({page}) => {
     await seedBatch(page, {name: "E2E Marker Popover Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
@@ -478,7 +487,8 @@ test("hovering each marker after logging two milestones shows that marker's own 
     await page.getByRole("group", {name: "Timer scope"}).getByRole("button", {name: "Phase", exact: true}).click();
 
     await page.getByRole("button", {name: "Start timer"}).click();
-    await page.waitForTimeout(1000);
+    // a marker only places once there's a running session with elapsed > 0
+    await advanceClock(page, 1000);
 
     // defaults (Gravity kind, "Reading" label) match the first milestone
     await page.getByRole("button", {name: "Quick actions"}).click();
@@ -490,7 +500,7 @@ test("hovering each marker after logging two milestones shows that marker's own 
     const gravityMarker = page.getByRole("button", {name: /^Reading at \d{2}:\d{2}:\d{2}$/});
     await expect(gravityMarker).toBeVisible();
 
-    await page.waitForTimeout(4000);
+    await advanceClock(page, 4000);
 
     await page.getByRole("button", {name: "Quick actions"}).click();
     dialog = page.getByRole("dialog");
@@ -517,19 +527,16 @@ test("hovering each marker after logging two milestones shows that marker's own 
     await expect(volumeTooltip).not.toContainText("Gravity");
 });
 
-// A marker's offsetSeconds and the timer's elapsedSeconds must round the same
-// way (both floor), because elapsedSeconds only advances on its 1s
-// setInterval tick — `elapsed` can lag up to just under a second behind real
-// "now" between ticks. A wait-then-assert test can't pin down that gap: it's
-// racing real wall-clock time, and Playwright's own auto-retrying `expect`
-// absorbs a temporary mismatch regardless (a settleSave-style wait would hide
-// it outright). Freezing the page clock mid-gap makes the race deterministic
-// instead: run it to 5.6s (letting the real 1s, 2s, 3s, 4s, 5s ticks fire, so
-// `elapsed` lands on a real production snapshot of 5, not a synthetic one),
-// then log a milestone at that exact frozen instant with no further clock
-// advance — offsetSeconds must already satisfy elapsed on its own.
+// A marker's offsetSeconds and the timer's elapsedSeconds must round the same way
+// (both floor). window.__clock's advance() resyncs every subscriber synchronously to
+// the new mocked "now" — unlike Playwright's own page.clock, there's no simulated
+// real-tick sequence to race, so this no longer needs to reproduce a lag between
+// ticks. What it still has to prove is the rounding parity itself: advance to a
+// non-integer instant (5.6s) and log a milestone at that same mocked "now" with no
+// further clock call — if offsetSeconds and elapsedSeconds ever floored differently,
+// the marker would compute as past the counter and BrewTimerMarkerOverlay would hide
+// it (the #422 class of bug).
 test("places a freshly logged milestone marker without waiting for a tick to catch up", async ({page}) => {
-    await page.clock.install();
     await seedBatch(page, {name: "E2E Marker Clock Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
@@ -538,19 +545,10 @@ test("places a freshly logged milestone marker without waiting for a tick to cat
     // "at HH:MM:SS" match below regardless of the timing behaviour under test
     await page.getByRole("group", {name: "Timer scope"}).getByRole("button", {name: "Phase", exact: true}).click();
 
-    // pauseAt's target must be in the fake clock's future by the time the
-    // command reaches the browser, or it throws "Cannot fast-forward to the
-    // past" — a fixed lead covers the round-trip
-    await page.clock.pauseAt(Date.now() + 1000);
     await page.getByRole("button", {name: "Start timer"}).click();
     await expect(page.getByRole("button", {name: "Pause timer"})).toBeVisible();
 
-    // real (unfaked) settle: the interval that drives elapsedSeconds is
-    // registered by a passive effect after this commit, not within it — give
-    // it a moment to actually register before jumping the frozen clock, or
-    // the jump can start before there's any interval for it to fire
-    await page.waitForTimeout(100);
-    await page.clock.runFor(5600);
+    await advanceClock(page, 5600);
 
     await page.getByRole("button", {name: "Quick actions"}).click();
     const dialog = page.getByRole("dialog");
@@ -559,7 +557,7 @@ test("places a freshly logged milestone marker without waiting for a tick to cat
     await expect(dialog).not.toBeVisible();
 
     // no further clock advance past this point — a marker that only shows up
-    // once the next tick fires would time out here, not eventually pass
+    // once the display resyncs again would time out here, not eventually pass
     await expect(page.getByRole("button", {name: /^Reading at \d{2}:\d{2}:\d{2}$/})).toBeVisible();
 });
 
@@ -576,9 +574,9 @@ test("places a freshly logged milestone marker without waiting for a tick to cat
 // reading — reproduced here via a phase completed while ALREADY paused: BATCH-SCHEDULE-14
 // leaves an already-paused timer untouched, so the completion's recorded `date` is real
 // wall-clock time even though the frozen counter doesn't move to match it.
-// (page.clock isn't used here — freezing time across two consecutive immediate
-// writes races this app's query invalidation/refetch and reverts the optimistic
-// UI update within milliseconds, unrelated to the bug under test.)
+// (window.__clock, unlike Playwright's own page.clock, never freezes real browser
+// timers, so it doesn't hit the two-consecutive-immediate-writes hazard the rest of
+// this suite avoids — safe to mock across the pause/complete/resume sequence below.)
 test("keeps a phase's complete stamp on Global's timeline once resumed, even completed during a long pause", async ({page}) => {
     await seedBatch(page, {name: "E2E Timer Pause Marker Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
@@ -586,7 +584,7 @@ test("keeps a phase's complete stamp on Global's timeline once resumed, even com
     const mashStamps = page.getByRole("button", {name: /^1\. Mash at \d{2}:\d{2}:\d{2}$/});
 
     await page.getByRole("button", {name: "Start timer"}).click();
-    await page.waitForTimeout(1000);
+    await advanceClock(page, 1000);
     await page.getByRole("button", {name: "Pause timer"}).click();
     await expect(page.getByRole("button", {name: "Start timer"})).toBeVisible();
     // just Mash's own start stamp so far
@@ -594,11 +592,13 @@ test("keeps a phase's complete stamp on Global's timeline once resumed, even com
 
     const frozenValue = await page.getByRole("timer", {name: "Elapsed time"}).textContent();
 
-    // a pause much longer than the running time before it
-    await page.waitForTimeout(6000);
+    // a pause much longer than the running time before it — while paused, elapsedSeconds
+    // ignores now() entirely (see model/timer.ts), so this jump can't move the frozen
+    // counter; it only pushes forward the completion's own timestamp below
+    await advanceClock(page, 6000);
 
     // completing while already paused leaves the timer untouched (BATCH-SCHEDULE-14) — the
-    // completion's recorded date is still real wall-clock time, well past what the frozen
+    // completion's recorded date is still the mocked "now", well past what the frozen
     // counter shows
     await page.getByRole("button", {name: "Complete 1. Mash"}).click();
     const dialog = page.getByRole("dialog");
@@ -613,7 +613,8 @@ test("keeps a phase's complete stamp on Global's timeline once resumed, even com
 
     await page.getByRole("button", {name: "Start timer"}).click();
     // resuming alone must jump the counter to the true wall-clock offset and reveal the
-    // complete stamp — well inside the 6s pause a regressed implementation would need
+    // complete stamp immediately — a regressed implementation would need the whole
+    // mocked pause length in further running time to get there
     await expect(mashStamps).toHaveCount(2, {timeout: 2500});
 });
 
@@ -642,7 +643,7 @@ test("switching Global/Phase scope never disturbs the running or paused clock", 
     // still running — the toggle only picks what is displayed
     await expect(page.getByRole("button", {name: "Pause timer"})).toBeVisible();
 
-    await page.waitForTimeout(1000);
+    await advanceClock(page, 1000);
     await globalButton.click();
     await expect(globalButton).toHaveAttribute("aria-pressed", "true");
     await expect(page.getByRole("button", {name: "Pause timer"})).toBeVisible();
@@ -668,14 +669,14 @@ test("Phase's elapsed excludes a pause, and Global reads the true elapsed the mo
     const scopeGroup = page.getByRole("group", {name: "Timer scope"});
 
     await page.getByRole("button", {name: "Start timer"}).click();
-    await page.waitForTimeout(1000);
+    await advanceClock(page, 1000);
     await scopeGroup.getByRole("button", {name: "Phase", exact: true}).click();
 
     await page.getByRole("button", {name: "Pause timer"}).click();
     // a pause much longer than the running time on either side of it
-    await page.waitForTimeout(6000);
+    await advanceClock(page, 6000);
     await page.getByRole("button", {name: "Start timer"}).click();
-    await page.waitForTimeout(1000);
+    await advanceClock(page, 1000);
 
     const phaseValue = parseElapsed((await page.getByRole("timer", {name: "Elapsed time"}).textContent()) ?? "");
 
@@ -700,7 +701,7 @@ test("completing a phase while Phase is displayed re-anchors its markers to the 
     const readingMarker = page.getByRole("button", {name: /^Reading at \d{2}:\d{2}:\d{2}$/});
 
     await page.getByRole("button", {name: "Start timer"}).click();
-    await page.waitForTimeout(1000);
+    await advanceClock(page, 1000);
 
     // log a milestone on Mash (defaults: Gravity kind, current phase)
     await page.getByRole("button", {name: "Quick actions"}).click();
@@ -736,7 +737,7 @@ test("completing a phase while Phase is displayed re-anchors its markers to the 
     // completing Mash paused the timer (BATCH-SCHEDULE-14); Boil's own phase-relative
     // clock stays at zero — and plots no markers at all — until it's resumed
     await page.getByRole("button", {name: "Start timer"}).click();
-    await page.waitForTimeout(1000);
+    await advanceClock(page, 1000);
     await page.getByRole("button", {name: "Quick actions"}).click();
     dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
@@ -762,7 +763,7 @@ test("a reading logged while Phase is active lands at its phase-relative offset"
     await page.getByRole("button", {name: "Start timer"}).click();
     // build up session time before Boil's own phase clock starts, so a phase-relative
     // offset and a session-relative one for the same reading can't coincide by chance
-    await page.waitForTimeout(2000);
+    await advanceClock(page, 2000);
 
     await page.getByRole("button", {name: "Complete 1. Mash"}).click();
     const dialog = page.getByRole("dialog");
@@ -775,7 +776,7 @@ test("a reading logged while Phase is active lands at its phase-relative offset"
     // phase-relative clock has elapsed time to plot the coming reading against
     await page.getByRole("button", {name: "Start timer"}).click();
     await scopeGroup.getByRole("button", {name: "Phase", exact: true}).click();
-    await page.waitForTimeout(1000);
+    await advanceClock(page, 1000);
 
     await page.getByRole("button", {name: "Quick actions"}).click();
     const readingDialog = page.getByRole("dialog");
@@ -809,7 +810,7 @@ test("Global shows a phase's start stamp once it begins, a complete stamp once i
     await expect(mashStamp).toHaveCount(0);
 
     await page.getByRole("button", {name: "Start timer"}).click();
-    await page.waitForTimeout(1000);
+    await advanceClock(page, 1000);
 
     // Mash has begun: one stamp, its start. Boil hasn't been reached yet: none.
     await expect(mashStamp).toHaveCount(1);
@@ -836,7 +837,7 @@ test("a hop addition logged while Phase is active never plots on Global's timeli
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
     await page.getByRole("button", {name: "Start timer"}).click();
-    await page.waitForTimeout(1000);
+    await advanceClock(page, 1000);
 
     await page.getByRole("button", {name: "Complete 1. Mash"}).click();
     let dialog = page.getByRole("dialog");
@@ -848,7 +849,7 @@ test("a hop addition logged while Phase is active never plots on Global's timeli
     // completing Mash paused the timer (BATCH-SCHEDULE-14) — resume it so Boil's own
     // phase-relative clock has elapsed time to plot the coming hop addition against
     await page.getByRole("button", {name: "Start timer"}).click();
-    await page.waitForTimeout(1000);
+    await advanceClock(page, 1000);
 
     // log Boil's first hop addition (preselected, per BATCH-SCHEDULE-10/-11)
     await page.getByRole("button", {name: "Quick actions"}).click();
@@ -874,7 +875,7 @@ test("confirming a phase complete pauses a running timer", async ({page}) => {
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
     await page.getByRole("button", {name: "Start timer"}).click();
-    await page.waitForTimeout(1000);
+    await advanceClock(page, 1000);
 
     await page.getByRole("button", {name: "Complete 1. Mash"}).click();
     const dialog = page.getByRole("dialog");
@@ -886,8 +887,12 @@ test("confirming a phase complete pauses a running timer", async ({page}) => {
     await expect(page.getByRole("button", {name: "Start timer"})).toBeVisible();
     const frozenValue = await page.getByRole("timer", {name: "Elapsed time"}).textContent();
 
-    // genuinely paused, not just a stale UI read: the counter must not move further
-    await page.waitForTimeout(1500);
+    // genuinely paused, not just a stale UI read: the counter must not move further. This
+    // is real (unmocked) wall-clock time, deliberately — while paused useElapsedSeconds
+    // holds no tick subscription at all (see hooks/useElapsedSeconds.ts), so mocking
+    // now() can't exercise a stray real timer left running by a regression; only real
+    // time passing can. 1200ms comfortably exceeds one 1s tick interval.
+    await page.waitForTimeout(1200);
     await expect(page.getByRole("timer", {name: "Elapsed time"})).toHaveText(frozenValue ?? "");
 });
 
@@ -911,7 +916,7 @@ test("confirming a phase complete leaves an already-paused or not-yet-started ti
 
     // already paused
     await page.getByRole("button", {name: "Start timer"}).click();
-    await page.waitForTimeout(1000);
+    await advanceClock(page, 1000);
     await page.getByRole("button", {name: "Pause timer"}).click();
     await expect(page.getByRole("button", {name: "Start timer"})).toBeVisible();
     const frozenValue = await page.getByRole("timer", {name: "Elapsed time"}).textContent();
