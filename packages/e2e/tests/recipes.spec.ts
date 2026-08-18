@@ -1,4 +1,5 @@
 import { expect, Locator, Page, test } from "@playwright/test";
+import {settleSave} from "./settleSave";
 
 // RECIPE-LIST-04 (packages/spec/product/recipe-list.md): a bad recipe id returns the
 // brewer to /recipes, with the page's normal navigation intact, instead of RootError.
@@ -115,13 +116,6 @@ test("kb recipes show no delete affordance", async ({ page }) => {
     await expect(row).toBeVisible();
     await expect(row.getByRole("button")).toHaveCount(0);
 });
-
-// delete is fire-and-forget (the delete Action's onConfirm isn't awaited),
-// so a reload needs the same bounded wait batch-edit.spec.ts's settleSave uses
-// for a debounced save — here for the delete's own storage write + invalidation.
-async function settleSave(page: Page) {
-    await page.waitForTimeout(1000);
-}
 
 // The confirm dialog is a top-layer <dialog>, so its box is measured straight against the
 // viewport. Centred means equal margins on both axes; the width threshold is deliberately

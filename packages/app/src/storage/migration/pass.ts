@@ -4,7 +4,7 @@ import {MigratableStore} from "@/storage/forage";
 export const migratedStores: MigratableStore[] = [batchesStorage];
 
 const withDevFixtureStores = async (stores: MigratableStore[]): Promise<MigratableStore[]> => {
-    if (!import.meta.env.DEV) return stores;
+    if (!import.meta.env.DEV && !import.meta.env.VITE_E2E) return stores;
 
     const {fixtureStorage, fixtureThrowsStorage, fixtureOrphanStorage} = await import("@/storage/migration/fixture");
 

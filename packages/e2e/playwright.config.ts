@@ -19,22 +19,16 @@ export default defineConfig({
     retries: process.env.CI ? 2 : 0,
     workers: process.env.CI ? 6 : undefined,
     use: {
-        baseURL: process.env.E2E_BASE_URL ?? "http://localhost:5173",
+        baseURL: process.env.E2E_BASE_URL ?? "http://localhost:4173",
         trace: "on-first-retry",
         screenshot: "only-on-failure"
     },
     webServer: {
-        command: "npm run dev -w packages/app",
+        command: "npm run serve-e2e -w packages/app",
         cwd: "../..",
-        url: "http://localhost:5173",
+        url: "http://localhost:4173",
         reuseExistingServer: !process.env.CI,
-        timeout: 120_000,
-        // packages/app/.env.development sets VITE_DEV_TOOLS=true, so the dev server
-        // renders the TanStack devtools overlay by default. That overlay injects
-        // hidden "status:"/"statusCode:" nodes that break substring locators like
-        // getByText("Status") (strict-mode: multiple matches) and can shift layout /
-        // intercept clicks. A process env var overrides the .env file, so force it off.
-        env: { VITE_DEV_TOOLS: "false" }
+        timeout: 300_000
     },
     projects: [
         { name: "chromium", use: { ...devices["Desktop Chrome"], channel } }

@@ -1,4 +1,5 @@
 import { expect, Page, test } from "@playwright/test";
+import {settleSave} from "./settleSave";
 
 const TABS = ["Ready", "Brewing", "Fermenting", "Complete"];
 
@@ -45,13 +46,6 @@ async function brewBatchFromKbRecipe(page: Page, batchName: string) {
     await dialog.getByRole("button", { name: "Confirm" }).click();
 
     await expect(page).toHaveURL(/\/batch\//);
-}
-
-// delete is fire-and-forget (the delete Action's onConfirm isn't awaited),
-// so a reload needs the same bounded wait batch-edit.spec.ts's settleSave uses
-// for a debounced save — here for the delete's own storage write + invalidation.
-async function settleSave(page: Page) {
-    await page.waitForTimeout(1000);
 }
 
 // The confirm dialog is a top-layer <dialog>, so its box is measured straight against the
