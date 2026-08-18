@@ -1,6 +1,7 @@
 import {createFileRoute} from "@tanstack/react-router";
 import {Suspense, useMemo} from "react";
-import {Crumb, dynamicCrumb, useBreadcrumbs} from "@/component/breadcrumbs/context";
+import {Crumb, dynamicCrumb} from "@/model/crumb";
+import {useBreadcrumbs} from "@/providers/breadcrumbs";
 import KbEquipmentOverview from "@/screen/kb-equipment-overview";
 import Loading from "@/screen/loading";
 import {useKbEquipmentItem} from "@/state/kbEquipment";

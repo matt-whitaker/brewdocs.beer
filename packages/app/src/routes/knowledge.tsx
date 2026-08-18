@@ -1,5 +1,6 @@
 import {createFileRoute} from "@tanstack/react-router";
-import {Crumb, useBreadcrumbs} from "@/component/breadcrumbs/context";
+import {Crumb} from "@/model/crumb";
+import {useBreadcrumbs} from "@/providers/breadcrumbs";
 
 // module const so the array is stable across renders (see useBreadcrumbs)
 const BREADCRUMBS: Crumb[] = [{ label: "Knowledge" }];

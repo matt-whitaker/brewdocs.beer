@@ -1,9 +1,10 @@
 import {ReactQueryDevtools} from "@tanstack/react-query-devtools";
 import {createRootRoute, Outlet} from "@tanstack/react-router";
 import {TanStackRouterDevtools} from "@tanstack/react-router-devtools";
-import Breadcrumbs, {BreadcrumbProvider} from "@/component/breadcrumbs";
+import Breadcrumbs from "@/component/breadcrumbs";
 import DbCleanup from "@/component/db-cleanup";
 import Shell from "@/component/shell";
+import {BreadcrumbProvider} from "@/providers/breadcrumbs";
 import {DEV_TOOLS} from "@/utils/env";
 
 export const Route = createRootRoute({

@@ -1,7 +1,8 @@
 import {createFileRoute} from "@tanstack/react-router";
 import {Suspense, useMemo} from "react";
 import requireRecord from "@/actions/requireRecord";
-import {Crumb, dynamicCrumb, useBreadcrumbs} from "@/component/breadcrumbs/context";
+import {Crumb, dynamicCrumb} from "@/model/crumb";
+import {useBreadcrumbs} from "@/providers/breadcrumbs";
 import queryClient from "@/queryClient";
 import EquipmentOverview from "@/screen/equipment-overview";
 import Loading from "@/screen/loading";

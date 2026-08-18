@@ -1,29 +1,8 @@
 import {Link} from "@tanstack/react-router";
 import classNames from "classnames";
-import {ReactNode, Suspense, useCallback, useMemo, useState} from "react";
-import {BreadcrumbContext, Crumb, CrumbLink, DynamicCrumb, isDynamic, StaticCrumb, useBreadcrumbTrail} from "@/component/breadcrumbs/context";
-
-export function BreadcrumbProvider({ children }: { children: ReactNode }) {
-    // a Map preserves insertion order, which is what the reverse in
-    // useBreadcrumbTrail relies on
-    const [groups, setGroups] = useState<Map<string, Crumb[]>>(() => new Map());
-
-    const register = useCallback((id: string, crumbs: Crumb[]) => {
-        // set on an existing id updates its value but keeps its slot
-        setGroups((prev) => new Map(prev).set(id, crumbs));
-    }, []);
-
-    const unregister = useCallback((id: string) => {
-        setGroups((prev) => {
-            const next = new Map(prev);
-            next.delete(id);
-            return next;
-        });
-    }, []);
-
-    const value = useMemo(() => ({ register, unregister, groups }), [register, unregister, groups]);
-    return <BreadcrumbContext.Provider value={value}>{children}</BreadcrumbContext.Provider>;
-}
+import {ReactNode, Suspense} from "react";
+import {CrumbLink, DynamicCrumb, isDynamic, StaticCrumb} from "@/model/crumb";
+import {useBreadcrumbTrail} from "@/providers/breadcrumbs";
 
 // the label is wrapped in a real element so it can ellipsize: daisyui makes both
 // `li` and `li > *` display:flex, and text-overflow never applies to a flex box's
