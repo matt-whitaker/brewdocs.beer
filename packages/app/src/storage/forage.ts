@@ -1,4 +1,5 @@
 import { v4 as uuidV4} from "uuid";
+import {endPendingWrite, startPendingWrite} from "@/signalBus";
 import localforage from "@/storage/localforage";
 import {registerMigrations} from "@/storage/migration/registry";
 import {entityIdOf, entityVersionOf, messageOf, runMigrations} from "@/storage/migration/runner";
@@ -55,11 +56,21 @@ export abstract class Forage<T> {
     }
 
     async save(id: string, item: T): Promise<T> {
-        return await this._forage.setItem(this.buildKey(id), item);
+        startPendingWrite();
+        try {
+            return await this._forage.setItem(this.buildKey(id), item);
+        } finally {
+            endPendingWrite();
+        }
     }
 
     async delete(id: string): Promise<void>{
-        return await this._forage.removeItem(this.buildKey(id));
+        startPendingWrite();
+        try {
+            return await this._forage.removeItem(this.buildKey(id));
+        } finally {
+            endPendingWrite();
+        }
     }
 
     async generateId(): Promise<string> {
