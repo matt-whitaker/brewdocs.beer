@@ -230,7 +230,7 @@ inspection (rule 1) — still the way to override a bad guess.
   `pull_request` events; without it, adding the handle would have silently removed the
   automatic review.
 
-⚠️ `@claude`, every `@claude/<role>` label, and the classification labels (`epic`, `spike`, `bug`, `story`) must exist in the repo — `@claude` or nothing
+⚠️ `@claude`, every `@claude/<role>` label, **`@claude/complete`** (the closing hooks swap it in for a spent `@claude`), and the classification labels (`epic`, `spike`, `bug`, `story`) must exist in the repo — `@claude` or nothing
 triggers, and a missing role label makes the stamp hook warn and skip.
 
 ⚠️ **The delegator is its own job and every role carries `needs: delegate`.** A job cannot gate

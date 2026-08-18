@@ -53,6 +53,10 @@ for issue in issues:
     if team.issue_state(issue) == "OPEN":
         team.gh("issue", "close", issue, "--repo", team.REPO, "--comment", f"Completed by #{PR}.")
         print(f"Issue #{issue} -> closed")
+    # ⚠️ EVERY issue on the merge path gets the marker swap, not only the ones this hook closed.
+    # A story's own issue is closed NATIVELY by GitHub when its PR merges — no hook touches it —
+    # so without this, every completed story kept `@claude` forever and read as in-flight (#1108).
+    team.mark_complete(issue)
 
 token = os.environ.get("PROJECTS_TOKEN", "")
 if not token:

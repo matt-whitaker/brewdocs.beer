@@ -481,6 +481,20 @@ of the work starts".
 ⚠️ **The role stamp is a record, not a route.** Roles stamp `@claude/<role>` as they start,
 so the labels read as "these agents have been here". Nothing routes off them.
 
+⚠️ **`@claude` IS SPENT AT CLOSE — the closing hook swaps it for `@claude/complete`.** On an open
+issue the front-door label means *in flight*, and that meaning is load-bearing: `dispatch-next.py`
+skips any open task carrying it, so a stale one blocks the cascade **forever** (#1108 found six).
+The hooks keep the marker accurate by swapping it wherever work completes: both of
+`work-completion.py`'s close paths, and **every** issue on `close-merged-work.py`'s merge path —
+the merge path deliberately swaps issues it did not itself close, because a story's own issue is
+closed *natively* by GitHub when its PR merges and no hook ever touches it.
+- ⚠️ The swap fires no workflow run: hook label edits use `GITHUB_TOKEN`, whose events start no
+  runs — the third loop guard, working as intended.
+- ⚠️ `@claude/complete` must exist in the repo, like every other label the hooks apply.
+- ⚠️ A stale `@claude` on an open issue that predates the swap is a **hand-removal** — removing it
+  re-arms the issue as dispatchable, which is exactly why no sweep does it automatically.
+- The `@claude/<role>` stamps are untouched: they are the record of what ran, not a marker.
+
 ⚠️ **A CASCADE MUST BE ADMITTED BY EVERY ACTOR GUARD, NOT JUST THIS PACKAGE'S.** Dispatching by
 App means every cascaded run is authored by a bot, and the host action carries its own human-actor
 check that refuses **at setup** — before the model is called and before any hook here runs.
