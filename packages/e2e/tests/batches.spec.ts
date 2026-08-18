@@ -1,4 +1,5 @@
 import { expect, Page, test } from "@playwright/test";
+import {seedBatch, seedBatches} from "./seedBatch";
 import {settleSave} from "./settleSave";
 
 const TABS = ["Ready", "Brewing", "Fermenting", "Complete"];
@@ -34,20 +35,6 @@ test("clicking a tab moves aria-selected off the previously active tab", async (
     await expect(page.getByRole("tab", { name: "Ready" })).toHaveAttribute("aria-selected", "false");
 });
 
-// a fresh context has no batches, so a delete test brews its own first
-// (mirrors batch-edit.spec.ts's brewBatchFromKbRecipe)
-async function brewBatchFromKbRecipe(page: Page, batchName: string) {
-    await page.goto("/kb/recipe/anchor-steam-beer-clone");
-    await page.getByRole("button", { name: "Brew" }).click();
-
-    const dialog = page.getByRole("dialog");
-    await expect(dialog).toBeVisible();
-    await dialog.getByLabel(/Batch name/).fill(batchName);
-    await dialog.getByRole("button", { name: "Confirm" }).click();
-
-    await expect(page).toHaveURL(/\/batch\//);
-}
-
 // The confirm dialog is a top-layer <dialog>, so its box is measured straight against the
 // viewport. Centred means equal margins on both axes; the width threshold is deliberately
 // loose — it guards the ~185px shrink-wrapped regression (#591) without pinning to a pixel
@@ -66,10 +53,22 @@ async function expectConfirmDialogCentred(page: Page) {
     expect(box.width, "wide enough not to be shrink-wrapped").toBeGreaterThan(400);
 }
 
-test("the batch delete confirmation renders centred, not shrink-wrapped in a corner", async ({ page }) => {
-    await brewBatchFromKbRecipe(page, "E2E Centred Confirm Batch");
+test("brewing a batch from a kb recipe reaches its detail page", async ({ page }) => {
+    await page.goto("/kb/recipe/anchor-steam-beer-clone");
+    await page.getByRole("button", { name: "Brew" }).click();
 
-    await page.goto("/batches");
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await dialog.getByLabel(/Batch name/).fill("E2E UI Brewed Batch");
+    await dialog.getByRole("button", { name: "Confirm" }).click();
+
+    await expect(page).toHaveURL(/\/batch\//);
+    await expect(page.getByRole("heading", { name: "E2E UI Brewed Batch" })).toBeVisible();
+});
+
+test("the batch delete confirmation renders centred, not shrink-wrapped in a corner", async ({ page }) => {
+    await seedBatch(page, { name: "E2E Centred Confirm Batch", goto: "/batches" });
+
     const row = page.getByRole("listitem").filter({ hasText: "E2E Centred Confirm Batch" });
     await row.getByRole("button").click();
     await expect(page.getByRole("dialog")).toBeVisible();
@@ -78,10 +77,9 @@ test("the batch delete confirmation renders centred, not shrink-wrapped in a cor
 });
 
 test("deletes a batch after confirmation, and it stays gone after reload", async ({ page }) => {
-    await brewBatchFromKbRecipe(page, "E2E Delete Batch");
+    await seedBatch(page, { name: "E2E Delete Batch", goto: "/batches" });
 
-    // a freshly-brewed batch is Statuses.PREP, which lands on the default Ready tab
-    await page.goto("/batches");
+    // a freshly-seeded batch is Statuses.PREP, which lands on the default Ready tab
     const row = page.getByRole("listitem").filter({ hasText: "E2E Delete Batch" });
     await expect(row).toBeVisible();
 
@@ -102,10 +100,8 @@ test("deletes a batch after confirmation, and it stays gone after reload", async
 });
 
 test("every batch row shows a delete affordance", async ({ page }) => {
-    await brewBatchFromKbRecipe(page, "E2E Row One");
-    await brewBatchFromKbRecipe(page, "E2E Row Two");
+    await seedBatches(page, [{ name: "E2E Row One" }, { name: "E2E Row Two" }]);
 
-    await page.goto("/batches");
     await expect(page.getByRole("listitem").filter({ hasText: "E2E Row One" }).getByRole("button")).toHaveCount(1);
     await expect(page.getByRole("listitem").filter({ hasText: "E2E Row Two" }).getByRole("button")).toHaveCount(1);
 });
@@ -136,10 +132,8 @@ async function expectCardGridResponsive(page: Page) {
 // BATCH-LIST-08 (packages/spec/product/batch-list.md): a desktop-width screen arranges
 // batch cards into a grid of several per row; a phone-width screen returns to one per row.
 test("batch cards arrange in a grid at desktop width and stack in one column at phone width", async ({ page }) => {
-    await brewBatchFromKbRecipe(page, "E2E Grid Batch One");
-    await brewBatchFromKbRecipe(page, "E2E Grid Batch Two");
-
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto("/batches");
+    await seedBatches(page, [{ name: "E2E Grid Batch One" }, { name: "E2E Grid Batch Two" }]);
+
     await expectCardGridResponsive(page);
 });
