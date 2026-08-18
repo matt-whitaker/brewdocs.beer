@@ -9,8 +9,6 @@
     "test:www": "nx test www",
     "build:app": "nx build app",
     "test:app": "nx test app",
-    "build:kb": "nx build kb",
-    "test:kb": "nx test kb",
     "build:design": "nx build design",
     "test:design": "nx test design",
     "dev": "nx run-many --target=dev"
