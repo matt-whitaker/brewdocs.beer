@@ -27,12 +27,26 @@ with the page's normal navigation intact, rather than an error screen.
 > *Why:* a batch stops existing by ordinary means — it was deleted, or the store was purged —
 > so meeting a link to it should read as the app staying usable, not as something broken.
 
+**BATCH-LIST-04** — Each row shows the batch's own name, the recipe it was brewed from, its
+author, and its current status.
+
+**BATCH-LIST-05** — Clicking anywhere on a batch's row opens that batch. Clicking its delete
+button does not.
+
+**BATCH-LIST-06** — The list is split into four tabs by status — Ready, Brewing, Fermenting,
+Complete — with Ready selected by default. Each tab lists only the batches currently in that
+status. There is no search box or other filter, and batches are not grouped by recipe.
+
+**BATCH-LIST-07** — There is no way to start a new batch from this screen. A batch is started
+from a recipe's own "Brew" action, which creates the batch and opens it directly.
+
 ## Known gaps
 
-_None._
+- The order batches appear in within a tab does not follow the batch's name, when it was
+  brewed, or anything else a brewer would recognise — filed as
+  [#1144](https://github.com/matt-whitaker/brewdocs.beer/issues/1144).
 
 ## Out of scope
 
-- What the list shows about each batch, how it is ordered, and how it is filtered — those are
-  behaviours of this screen, but no story has specified them yet.
+- How the list is ordered — see **Known gaps**; no story has specified an intended order yet.
 - Deleting from anywhere other than this list.
