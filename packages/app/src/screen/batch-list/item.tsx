@@ -1,6 +1,6 @@
 import {Link} from "@tanstack/react-router";
 import {useMemo} from "react";
-import {ScreenH2, ScreenP, Trash} from "@brewdocs.beer/design";
+import {CardGridItem, ScreenH2, ScreenP, Trash} from "@brewdocs.beer/design";
 import Action from "@/component/action";
 import Batch from "@/model/batch";
 import {batchProgress} from "@/model/batchProgress";
@@ -24,7 +24,7 @@ export default function BatchListItem({ batch, recipeName, brewer }: BatchListIt
     const status = useMemo(() => progressLabel(batch), [batch]);
 
     return (
-        <li className="odd:bg-base-200 relative">
+        <CardGridItem>
             <Link to="/batch/$batchId" params={{batchId: batch.id}} className="text-left block">
                 <ScreenH2 className="text-lg">{recipeName}</ScreenH2>
                 <ScreenP>{batch.name || ""}</ScreenP>
@@ -38,6 +38,6 @@ export default function BatchListItem({ batch, recipeName, brewer }: BatchListIt
                 className="btn-xs text-error absolute top-1.5 right-1.5"
                 modalContent={<BatchDeleteModal batchId={batch.id} name={batch.name} />}
             />
-        </li>
+        </CardGridItem>
     );
 }
