@@ -4,6 +4,8 @@ import ReactDOM from "react-dom/client";
 import {registerSW} from "virtual:pwa-register";
 import MigrationGate from "@/component/migration-gate";
 import RootError from "@/component/root-error";
+import {ClockProvider} from "@/providers/clock";
+import {SignalsProvider} from "@/providers/signals";
 import {prefetchKbEquipment} from "@/state/kbEquipment";
 import {prefetchKbGrains} from "@/state/kbGrains";
 import {prefetchKbHops} from "@/state/kbHops";
@@ -14,7 +16,7 @@ import queryClient from "./queryClient";
 import {routeTree} from "./routeTree.gen";
 
 import "@fontsource-variable/urbanist";
-import "./clock";
+import "./e2eBridge";
 import "./styles.css";
 
 const router = createRouter({
@@ -42,8 +44,12 @@ prefetchKbEquipment();
 // no StrictMode: mutation actions are fire-and-forget and must not double-fire
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <QueryClientProvider client={queryClient}>
-        <MigrationGate>
-            <RouterProvider router={router} />
-        </MigrationGate>
+        <ClockProvider>
+            <SignalsProvider>
+                <MigrationGate>
+                    <RouterProvider router={router} />
+                </MigrationGate>
+            </SignalsProvider>
+        </ClockProvider>
     </QueryClientProvider>
 );

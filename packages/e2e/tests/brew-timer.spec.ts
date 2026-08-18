@@ -528,7 +528,7 @@ test("hovering each marker after logging two milestones shows that marker's own 
 });
 
 // A marker's offsetSeconds and the timer's elapsedSeconds must round the same way
-// (both floor). window.__clock's advance() resyncs every subscriber synchronously to
+// (both floor). window.__e2e.clock's advance() resyncs every subscriber synchronously to
 // the new mocked "now" — unlike Playwright's own page.clock, there's no simulated
 // real-tick sequence to race, so this no longer needs to reproduce a lag between
 // ticks. What it still has to prove is the rounding parity itself: advance to a
@@ -574,7 +574,7 @@ test("places a freshly logged milestone marker without waiting for a tick to cat
 // reading — reproduced here via a phase completed while ALREADY paused: BATCH-SCHEDULE-14
 // leaves an already-paused timer untouched, so the completion's recorded `date` is real
 // wall-clock time even though the frozen counter doesn't move to match it.
-// (window.__clock, unlike Playwright's own page.clock, never freezes real browser
+// (window.__e2e.clock, unlike Playwright's own page.clock, never freezes real browser
 // timers, so it doesn't hit the two-consecutive-immediate-writes hazard the rest of
 // this suite avoids — safe to mock across the pause/complete/resume sequence below.)
 test("keeps a phase's complete stamp on Global's timeline once resumed, even completed during a long pause", async ({page}) => {

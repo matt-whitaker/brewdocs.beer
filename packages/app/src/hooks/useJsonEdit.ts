@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {Scalar} from "@brewdocs.beer/core";
-import {beginPendingWrite} from "@/signals";
+import {useSignals} from "@/providers/signals";
 import {scalarFromNumberWithCurrency, scalarFromNumberWithUnit} from "@/utils/formatting";
 import {debounce, get, isEqual, setIn} from "@/utils/func";
 
@@ -15,6 +15,7 @@ export type MutateFn<T> = (fn: (draft: T) => T, immediate?: boolean) => void;
 // T is any editable object — a whole Entity (Recipe/Batch) or a sub-object of
 // one (e.g. a Brewable, edited by BrewableEdit and merged back on save).
 export default function useJsonEdit<T extends object>(data: T, onChange: (data: T) => void): [T, UpdateFn, UpdateScalarFn, ToggleFn, AddFn, RemoveFn, MoveFn, MutateFn<T>] {
+    const {beginPendingWrite} = useSignals();
     const [state, setState] = useState<T>(data);
 
     // the editors below read the draft through this ref rather than closing over

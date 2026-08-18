@@ -61,10 +61,10 @@ export function trackWrite<T>(write: () => Promise<T>): Promise<T> {
     return write().finally(release);
 }
 
-declare global {
-    interface Window {
-        __signals?: {pendingWrites: Signal<number>};
-    }
+
+export interface Signals {
+    pendingWrites: Signal<number>;
+    beginPendingWrite(): () => void;
 }
 
-window.__signals = {pendingWrites};
+export const signals: Signals = {pendingWrites, beginPendingWrite};

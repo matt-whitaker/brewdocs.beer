@@ -1,7 +1,6 @@
 import {ReactNode, useCallback, useMemo, useRef} from "react";
 import {SrmTag, Textarea} from "@brewdocs.beer/design";
 import {putEntry} from "@/actions/tracker";
-import {now} from "@/clock";
 import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
 import DataGridInput from "@/component/data-grid/input";
@@ -18,6 +17,7 @@ import {phaseLabel} from "@/model/brewable";
 import {byBrewingOrder} from "@/model/scheduleProgress";
 import {isRunning} from "@/model/timer";
 import {key, Ref, TrackerEntry} from "@/model/tracker";
+import {useClock} from "@/providers/clock";
 import BatchScheduleBrewTimer from "@/screen/batch-schedule/brew-timer";
 import BatchScheduleEquipment from "@/screen/batch-schedule/equipment";
 import ScheduleItemRow from "@/screen/batch-schedule/item-row";
@@ -54,6 +54,7 @@ function pauseRunningTimer(batch: Batch, date: string): Partial<Batch> {
 
 export type BatchScheduleProps = { batchId: string; onChange: (batch: Batch) => void; };
 export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps) {
+    const {now} = useClock();
     const session = useSession();
     const batch = useBatch(batchId);
 
