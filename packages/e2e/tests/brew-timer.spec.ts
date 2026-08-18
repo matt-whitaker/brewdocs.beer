@@ -1,19 +1,6 @@
 import {expect, Page, test} from "@playwright/test";
+import {seedBatch} from "./seedBatch";
 import {settleSave} from "./settleSave";
-
-// A fresh context has no batches, so each test brews its own (mirrors
-// batch-edit.spec.ts). Tests stay independent at the cost of a few seconds each.
-async function brewBatchFromKbRecipe(page: Page, batchName: string) {
-    await page.goto("/kb/recipe/anchor-steam-beer-clone");
-    await page.getByRole("button", {name: "Brew"}).click();
-
-    const dialog = page.getByRole("dialog");
-    await expect(dialog).toBeVisible();
-    await dialog.getByLabel(/Batch name/).fill(batchName);
-    await dialog.getByRole("button", {name: "Confirm"}).click();
-
-    await expect(page).toHaveURL(/\/batch\//);
-}
 
 async function openSchedulePhase(page: Page, phase: string) {
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
@@ -34,7 +21,7 @@ async function markerOffsetSeconds(page: Page, namePattern: RegExp): Promise<num
 }
 
 test("keeps the timer running across a reload", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Timer Running Batch");
+    await seedBatch(page, {name: "E2E Timer Running Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
     await expect(page.getByRole("timer", {name: "Elapsed time"})).toHaveText("00:00:00");
@@ -56,7 +43,7 @@ test("keeps the timer running across a reload", async ({page}) => {
 });
 
 test("freezes the counter on pause, and a reload keeps it frozen", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Timer Paused Batch");
+    await seedBatch(page, {name: "E2E Timer Paused Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
     await page.getByRole("button", {name: "Start timer"}).click();
@@ -81,7 +68,7 @@ test("freezes the counter on pause, and a reload keeps it frozen", async ({page}
 // untouched here, and the grid row still renders under the Gravity kind's own
 // default label ("Reading"), unchanged from BREW-TIMER-02.
 test("logs a quick milestone that lands on the timeline and in the phase's reading grid", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Timer Milestone Batch");
+    await seedBatch(page, {name: "E2E Timer Milestone Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
     // an individual reading marker only ever plots on Phase's own timeline (BREW-TIMER-09)
@@ -121,7 +108,7 @@ test("logs a quick milestone that lands on the timeline and in the phase's readi
 // existing reading row's value cell, and the "add reading" row's value field alike — shows a
 // greyed-out example placeholder.
 test("empty Gravity, Volume and Temperature reading value inputs show an example placeholder", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Reading Placeholder Batch");
+    await seedBatch(page, {name: "E2E Reading Placeholder Batch"});
     await openSchedulePhase(page, "1. Mash");
 
     await expect(page.getByLabel("Gravity value to add")).toHaveAttribute("placeholder", "12");
@@ -142,7 +129,7 @@ test("empty Gravity, Volume and Temperature reading value inputs show an example
 // the batch schedule's reading fields (BATCH-SCHEDULE-16), matching whichever of Gravity,
 // Volume or Temperature is the selected reading kind.
 test("the quick-log Reading tab's Value field placeholder follows the selected reading kind", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Reading Tab Placeholder Batch");
+    await seedBatch(page, {name: "E2E Reading Tab Placeholder Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
     await page.getByRole("button", {name: "Quick actions"}).click();
@@ -162,7 +149,7 @@ test("the quick-log Reading tab's Value field placeholder follows the selected r
 // BREW-TIMER-12: a typed label names the recorded reading instead of the kind's
 // default, and that name is a real write, not just a moment's UI state.
 test("logs a quick reading with a typed label that names the resulting reading", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Quick Reading Label Batch");
+    await seedBatch(page, {name: "E2E Quick Reading Label Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
     await page.getByRole("button", {name: "Quick actions"}).click();
@@ -190,7 +177,7 @@ test("logs a quick reading with a typed label that names the resulting reading",
 // undefined, app trims again before its `||` default) and either alone looks
 // sufficient, so this is the case that would survive losing one of them.
 test("logs a quick reading with a whitespace-only label under the kind's default label", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Quick Reading Blank Label Batch");
+    await seedBatch(page, {name: "E2E Quick Reading Blank Label Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
     await page.getByRole("button", {name: "Quick actions"}).click();
@@ -210,7 +197,7 @@ test("logs a quick reading with a whitespace-only label under the kind's default
 // all three, "disabled" now means "nothing left on this phase" — which is what this asserts,
 // and what the earlier version of this test was explicitly waiting to be able to assert.
 test("quick action modal opens on Reading with every applicable tab enabled", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Quick Action Tabs Batch");
+    await seedBatch(page, {name: "E2E Quick Action Tabs Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
     await page.getByRole("button", {name: "Quick actions"}).click();
@@ -232,7 +219,7 @@ test("quick action modal opens on Reading with every applicable tab enabled", as
 // before the browser ran the submit, so the dialog never closed. Asserting only that the
 // check-off landed passes straight through that; the dialog count is what catches it.
 test("a quick-action tab goes unavailable, with its reason, once the phase is exhausted", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Quick Action Exhaust Batch");
+    await seedBatch(page, {name: "E2E Quick Action Exhaust Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
     const dialog = page.getByRole("dialog");
@@ -262,10 +249,11 @@ test("a quick-action tab goes unavailable, with its reason, once the phase is ex
 // ⚠️ The expected order is read from the SCREEN, never hardcoded, so this fails if the panel and
 // the picker ever disagree again (#656).
 test("the ingredients quick action works down the phase one confirm at a time", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Quick Action Advance Batch");
+    await seedBatch(page, {name: "E2E Quick Action Advance Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
     const GRAINS = ["Crystal Malt 40L", "German Pils", "Special Robust"];
+    await expect(page.getByRole("checkbox", {name: GRAINS[0]})).toBeVisible();
     const displayed = (await page.getByRole("checkbox").evaluateAll(boxes => boxes.map(box => {
         const el = box as HTMLInputElement;
         const label = el.closest("label") ?? document.querySelector(`label[for="${el.id}"]`);
@@ -295,7 +283,7 @@ test("the ingredients quick action works down the phase one confirm at a time", 
 // BATCH-SCHEDULE-10: the brewer can name an item OUT of order — the thing a resolver could never
 // do, and the reason grain and additives stopped being auto-advanced at all.
 test("the ingredients quick action checks off the item the brewer names, out of order", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Quick Action Named Batch");
+    await seedBatch(page, {name: "E2E Quick Action Named Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
     await page.getByRole("button", {name: "Quick actions"}).click();
@@ -326,7 +314,7 @@ test("the ingredients quick action checks off the item the brewer names, out of 
 // addition to 1 min makes the stored order (1, 20, 0) and the brewing order (20, 1, 0) disagree,
 // so only a screen that really sorts can pass.
 test("a phase lists its boil additions in the order they go in, without reordering Planning", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Brew Order Batch");
+    await seedBatch(page, {name: "E2E Brew Order Batch"});
 
     await page.getByRole("tab", {name: "Planning", exact: true}).click();
     await page.getByRole("tab", {name: "Ingredients", exact: true}).click();
@@ -359,7 +347,7 @@ test("a phase lists its boil additions in the order they go in, without reorderi
 // BREW-TIMER-13: selecting an item pre-fills the value field with that item's own planned
 // value from the recipe, instead of leaving it blank.
 test("the ingredients quick action pre-fills the value field with the selected item's planned value", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Quick Action Prefill Batch");
+    await seedBatch(page, {name: "E2E Quick Action Prefill Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
     await page.getByRole("button", {name: "Quick actions"}).click();
@@ -375,7 +363,7 @@ test("the ingredients quick action pre-fills the value field with the selected i
 // BREW-TIMER-13: "picking a different item replaces it with that item's own planned value
 // rather than carrying over the previous one."
 test("switching the selected ingredient replaces the pre-fill with the new item's own planned value", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Quick Action Prefill Switch Batch");
+    await seedBatch(page, {name: "E2E Quick Action Prefill Switch Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
     await page.getByRole("button", {name: "Quick actions"}).click();
@@ -398,7 +386,7 @@ test("switching the selected ingredient replaces the pre-fill with the new item'
 // (German Pils, 9.0lb) rather than blank — this proves the typed value wins over that
 // pre-fill at confirm, not that the field started empty and got filled.
 test("a value typed into the ingredients quick action is recorded against the item it checked off", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Quick Action Value Batch");
+    await seedBatch(page, {name: "E2E Quick Action Value Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
     await page.getByRole("button", {name: "Quick actions"}).click();
@@ -428,7 +416,7 @@ test("a value typed into the ingredients quick action is recorded against the it
 // deliberately non-first item — an "earliest incomplete" resolver could never satisfy this,
 // which is the point: it is what distinguishes the behaviour from the one it replaced.
 test("the equipment quick action checks off the item the brewer names", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Quick Action Equipment Batch");
+    await seedBatch(page, {name: "E2E Quick Action Equipment Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
     await page.getByRole("button", {name: "Quick actions"}).click();
@@ -454,7 +442,7 @@ test("the equipment quick action checks off the item the brewer names", async ({
 // left." The mash phase has grains and no hops; the boil phase has hops. While mash grains
 // remain, Hop must not be on offer and the boil's hops must stay untouched.
 test("a quick action never reaches into a later phase", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Quick Action Phase Scope Batch");
+    await seedBatch(page, {name: "E2E Quick Action Phase Scope Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
     await page.getByRole("button", {name: "Quick actions"}).click();
@@ -483,7 +471,7 @@ test("a quick action never reaches into a later phase", async ({page}) => {
 // two milestones is what the "own popover text" claim needs — with markers at
 // very different offsets, hovering one can't accidentally hit-test the other.
 test("hovering each marker after logging two milestones shows that marker's own popover text", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Marker Popover Batch");
+    await seedBatch(page, {name: "E2E Marker Popover Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
     // an individual reading marker only ever plots on Phase's own timeline (BREW-TIMER-09)
@@ -542,7 +530,7 @@ test("hovering each marker after logging two milestones shows that marker's own 
 // advance — offsetSeconds must already satisfy elapsed on its own.
 test("places a freshly logged milestone marker without waiting for a tick to catch up", async ({page}) => {
     await page.clock.install();
-    await brewBatchFromKbRecipe(page, "E2E Marker Clock Batch");
+    await seedBatch(page, {name: "E2E Marker Clock Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
     // an individual reading marker only ever plots on Phase's own timeline (BREW-TIMER-09) —
@@ -592,7 +580,7 @@ test("places a freshly logged milestone marker without waiting for a tick to cat
 // writes races this app's query invalidation/refetch and reverts the optimistic
 // UI update within milliseconds, unrelated to the bug under test.)
 test("keeps a phase's complete stamp on Global's timeline once resumed, even completed during a long pause", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Timer Pause Marker Batch");
+    await seedBatch(page, {name: "E2E Timer Pause Marker Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
     const mashStamps = page.getByRole("button", {name: /^1\. Mash at \d{2}:\d{2}:\d{2}$/});
@@ -633,7 +621,7 @@ test("keeps a phase's complete stamp on Global's timeline once resumed, even com
 // play/pause, and switching before the session has even started (no phase boundary yet)
 // must not throw — an empty/never-started timer is a real, reachable state.
 test("switching Global/Phase scope never disturbs the running or paused clock", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Timer Scope Toggle Batch");
+    await seedBatch(page, {name: "E2E Timer Scope Toggle Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
     const scopeGroup = page.getByRole("group", {name: "Timer scope"});
@@ -674,7 +662,7 @@ test("switching Global/Phase scope never disturbs the running or paused clock", 
 // does not. Switching back to Global must read the true value right away, never a
 // smaller number carried over from what Phase was just showing.
 test("Phase's elapsed excludes a pause, and Global reads the true elapsed the moment you switch back", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Timer Scope Pause Batch");
+    await seedBatch(page, {name: "E2E Timer Scope Pause Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
     const scopeGroup = page.getByRole("group", {name: "Timer scope"});
@@ -705,7 +693,7 @@ test("Phase's elapsed excludes a pause, and Global reads the true elapsed the mo
 // phase that's begun — a milestone logged on the finished phase never appears there,
 // compacted or otherwise.
 test("completing a phase while Phase is displayed re-anchors its markers to the new phase", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Timer Scope Complete Batch");
+    await seedBatch(page, {name: "E2E Timer Scope Complete Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
     const scopeGroup = page.getByRole("group", {name: "Timer scope"});
@@ -765,7 +753,7 @@ test("completing a phase while Phase is displayed re-anchors its markers to the 
 // offset, on Phase's own timeline — and never plots in Global at all, which shows only
 // the phase-level start/complete stamps from BREW-TIMER-08.
 test("a reading logged while Phase is active lands at its phase-relative offset", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Timer Scope Offset Batch");
+    await seedBatch(page, {name: "E2E Timer Scope Offset Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
     const scopeGroup = page.getByRole("group", {name: "Timer scope"});
@@ -809,7 +797,7 @@ test("a reading logged while Phase is active lands at its phase-relative offset"
 // BREW-TIMER-08: Global shows one start stamp and one complete stamp per phase that has
 // begun, and nothing at all for one that hasn't.
 test("Global shows a phase's start stamp once it begins, a complete stamp once it's completed, and nothing before that", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Global Stamps Batch");
+    await seedBatch(page, {name: "E2E Global Stamps Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
     const scopeGroup = page.getByRole("group", {name: "Timer scope"});
@@ -844,7 +832,7 @@ test("Global shows a phase's start stamp once it begins, a complete stamp once i
 // reading) but, same as a reading, never plots on Global's — which shows only the
 // phase-level stamps.
 test("a hop addition logged while Phase is active never plots on Global's timeline", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Global No Hop Marker Batch");
+    await seedBatch(page, {name: "E2E Global No Hop Marker Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
     await page.getByRole("button", {name: "Start timer"}).click();
@@ -882,7 +870,7 @@ test("a hop addition logged while Phase is active never plots on Global's timeli
 
 // BATCH-SCHEDULE-14: confirming a phase complete, while the timer is running, stops it.
 test("confirming a phase complete pauses a running timer", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Complete Pauses Timer Batch");
+    await seedBatch(page, {name: "E2E Complete Pauses Timer Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
     await page.getByRole("button", {name: "Start timer"}).click();
@@ -906,7 +894,7 @@ test("confirming a phase complete pauses a running timer", async ({page}) => {
 // BATCH-SCHEDULE-14: "If the timer was already paused, or the session had not been started at
 // all, completing the phase changes nothing about the timer: it stays exactly as it was."
 test("confirming a phase complete leaves an already-paused or not-yet-started timer untouched", async ({page}) => {
-    await brewBatchFromKbRecipe(page, "E2E Complete Timer Untouched Batch");
+    await seedBatch(page, {name: "E2E Complete Timer Untouched Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
     // never started
