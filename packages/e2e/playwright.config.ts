@@ -15,6 +15,7 @@ const channel = process.env.E2E_CHANNEL || (process.env.CI ? undefined : "chrome
 
 export default defineConfig({
     testDir: "./tests",
+    fullyParallel: true,
     retries: process.env.CI ? 2 : 0,
     workers: process.env.CI ? 6 : undefined,
     use: {
