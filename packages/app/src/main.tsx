@@ -14,6 +14,7 @@ import queryClient from "./queryClient";
 import {routeTree} from "./routeTree.gen";
 
 import "@fontsource-variable/urbanist";
+import "./clock";
 import "./styles.css";
 
 const router = createRouter({

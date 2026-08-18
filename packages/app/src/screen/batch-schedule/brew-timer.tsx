@@ -1,6 +1,7 @@
 import {useCallback, useMemo, useState} from "react";
 import {BrewTimer, BrewTimerMarker, BrewTimerScope, Hop, QuickActionTab, QuickActionTabState, ScreenP} from "@brewdocs.beer/design";
 import {putEntry} from "@/actions/tracker";
+import {now} from "@/clock";
 import Modal from "@/component/modal";
 import ModalScreen from "@/component/modal/screen";
 import useModal from "@/component/modal/useModal";
@@ -51,7 +52,7 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
         mutate(draft => {
             const events = draft.timer ?? [];
             const type: TimerEventType = isRunning(events) ? "pause" : events.length ? "resume" : "start";
-            return { ...draft, timer: [...events, { type, date: new Date().toISOString() }] };
+            return { ...draft, timer: [...events, { type, date: now().toISOString() }] };
         }, true);
     }, [mutate]);
 
@@ -68,7 +69,7 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
             const nextPhases = draft.brewable.schedule.phases.map((candidate, i) =>
                 i === index ? { ...candidate, milestones: [...candidate.milestones, milestone] } : candidate);
 
-            const recorded = new Date().toISOString();
+            const recorded = now().toISOString();
             const typed = value.trim();
             const unit = spec.unitOptions?.[0].value;
             const entry: TrackerEntry = { date: recorded };
@@ -98,7 +99,7 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
             const typed = value?.trim();
             const planned: ResourceActuals = assignment.resource;
             const unit = planned[field]?.unit;
-            const entry: TrackerEntry = {completed: true, date: new Date().toISOString()};
+            const entry: TrackerEntry = {completed: true, date: now().toISOString()};
 
             if (typed && unit) entry.resource = {[field]: scalarFromNumberWithUnit(typed, unit)};
 
@@ -110,7 +111,7 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
         if (!id) return;
         mutate(draft => ({
             ...draft,
-            tracker: putEntry(draft.tracker, {on: "equipment", id}, {completed: true, date: new Date().toISOString()})
+            tracker: putEntry(draft.tracker, {on: "equipment", id}, {completed: true, date: now().toISOString()})
         }), true);
     }, [mutate]);
 
