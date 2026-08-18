@@ -1,5 +1,4 @@
 import {useCallback, useMemo, useState} from "react";
-import {CardGrid} from "@brewdocs.beer/design";
 import Screen from "@/component/screen";
 import SearchBar from "@/component/search-bar";
 import useIndexBy from "@/hooks/useIndexBy";
@@ -41,9 +40,9 @@ export default function BatchList({ filter }: BatchListProps) {
     return (
         <Screen>
             <SearchBar value={query} onChange={setQuery} label="Search batches" />
-            <CardGrid>
+            <ul className="w-full menu px-0">
                 {batchList}
-            </CardGrid>
+            </ul>
         </Screen>
     );
 }

@@ -73,10 +73,6 @@ than leaving them on the list.
 own equipment and on the combined list, carries the name they gave it, and can be edited and
 deleted like any equipment they added themselves.
 
-**EQUIPMENT-LIST-16** — At a wide enough screen — a laptop or desktop — the list arranges its
-equipment into a grid of several cards per row, rather than one per line. Narrowed to a
-phone-sized screen, it returns to a single column, one card per row.
-
 ## Known gaps
 
 _None._

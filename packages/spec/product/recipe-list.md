@@ -87,10 +87,6 @@ rather than leaving them on the list.
 own recipes and on the combined list, carries the name they gave it, and can be edited, brewed
 and deleted like any recipe they wrote.
 
-**RECIPE-LIST-19** — At a wide enough screen — a laptop or desktop — the list arranges its
-recipes into a grid of several cards per row, rather than one per line. Narrowed to a
-phone-sized screen, it returns to a single column, one card per row.
-
 ## Known gaps
 
 - The *Starred* tab is offered but permanently disabled, and there is nowhere on the screen to
