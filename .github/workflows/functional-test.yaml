@@ -35,8 +35,9 @@ env:
 jobs:
   functional-test:
     runs-on: ubuntu-latest
-    # the suite executes in ~4 minutes; a hang otherwise burns the 6-hour ceiling (#1175's class)
-    timeout-minutes: 20
+    # the suite's execution has grown past 5 minutes and a degraded browser download adds more;
+    # a hang otherwise burns the 6-hour ceiling (#1175's class)
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
