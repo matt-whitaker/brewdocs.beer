@@ -22,6 +22,25 @@ GH_TOKEN = os.environ.get("GH_TOKEN", "")
 SERVER = os.environ.get("GITHUB_SERVER_URL", "https://github.com")
 
 
+def mark_complete(number: str | int) -> None:
+    """Swap the in-flight marker for the completion marker: `@claude` off, `@claude/complete` on.
+
+    ⚠️ THE `@claude` LABEL MEANS "IN FLIGHT", AND ON AN OPEN ISSUE THAT MEANING IS LOAD-BEARING —
+    `dispatch-next.py` skips any open task carrying it, so a stale one blocks the cascade forever
+    (#1108). The hooks keep it accurate by spending it here, at the moment work completes;
+    `@claude/complete` is the durable record that the machinery finished.
+
+    ⚠️ FIRES NO WORKFLOW RUN. Hook label edits use `GITHUB_TOKEN`, and events created with the
+    workflow's own token start no runs — the third loop guard, doing its job.
+
+    Best-effort: a failure warns and must never fail a close. The DELETE 404s harmlessly on an
+    issue that never carried `@claude` (a keyword-closed sibling, say) — that is not a warning.
+    """
+    gh("api", "--method", "DELETE", f"repos/{REPO}/issues/{number}/labels/@claude")
+    if gh("api", f"repos/{REPO}/issues/{number}/labels", "-f", "labels[]=@claude/complete") is None:
+        warn(f"could not add @claude/complete to #{number}")
+
+
 def scrub(text: str) -> str:
     """Remove the token from anything about to be printed or posted.
 

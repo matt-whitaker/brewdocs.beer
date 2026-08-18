@@ -150,6 +150,7 @@ if ref_exists and produced in ("", "0"):
             team.warn(f"#{ISSUE} had nothing to do but could not be closed")
             emit(False)
             raise SystemExit(0)
+        team.mark_complete(ISSUE)
         print(f"#{ISSUE} had nothing to do — closed; the story continues.")
         emit(True)
         raise SystemExit(0)
@@ -246,5 +247,6 @@ if team.gh("issue", "close", ISSUE, "--repo", team.REPO, "--reason", "completed"
     team.warn(f"landed on `{named}` but could not close #{ISSUE}")
     emit(False)
 else:
+    team.mark_complete(ISSUE)
     print(f"closed #{ISSUE}")
     emit(True)
