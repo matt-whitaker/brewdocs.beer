@@ -55,5 +55,5 @@ jobs:
       project_number: "4"
       allowed_bots: brewdocs-claude
       node: true
-      browser: true
+      browser: false
     secrets: inherit
