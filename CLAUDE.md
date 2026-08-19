@@ -126,11 +126,19 @@ Guidance for human contributors **and** for the `@claude` GitHub integration.
 
 ### The Claude GitHub roles
 
+⚠️ **THE ENGINE LIVES IN [`matt-whitaker/claude-team`](https://github.com/matt-whitaker/claude-team) NOW.**
+This repo holds only the consumer contract: the frozen stub (`.github/workflows/claude.yml`,
+calling `team.yml@mainline` — **this repo is the canary and tracks the edge**; other consumers pin
+tags) and the overlays in `.claude-team/prompts/`. Prompts, hooks, schemas and the job graph are
+fetched at run time from that repo, whose own test suite is the gate this machinery never had
+here. The sections below describe behaviour that still holds but MECHANISMS that now live — and
+are documented — upstream; where they disagree, upstream wins.
+
 Eight roles, one workflow (`.github/workflows/claude-roles.yaml`), so a comment makes one run
 with the unselected roles skipping inside it rather than seven skipped runs cluttering the
 history.
 
-**Each role's prompt is a file** — `.github/agent-prompts/<role>.md`. Editing a role means
+**Each role's prompt is a file** — `.claude-team/prompts/<role>.md`. Editing a role means
 editing its markdown, not hunting a block scalar; the workflow went 1102 lines to 607.
 
 - A local composite action, `./.github/actions/load-prompt`, reads the file into a step
@@ -192,7 +200,7 @@ inspection (rule 1) — still the way to override a bad guess.
   ⚠️ **It is also reached without being named**, as a step inside `delegate` whenever the router
   had to guess: it reads the issue, returns a role, and the script's default becomes the fallback
   rather than the decision. Its second prompt is `route.md`; the mechanics and the three job shapes
-  that do *not* work are in `packages/claude-team/CLAUDE.md`.
+  that do *not* work are in the claude-team repo's CLAUDE.md.
 - `@claude/architect` — epic or story. Shapes the issue, cuts a story's branch, and creates
   its tasks — each stamped with the role that should pick it up.
 - `@claude/researcher` — a **spike**: an issue titled `Spike:` or labelled `spike`, whose answer
@@ -301,7 +309,7 @@ is never the one that fires.
 
 **The mechanics are in the package.** Hooks and the traps each was written around, the
 handoff contract, labels-as-record, routing and its loop guard all live in
-[`packages/claude-team/CLAUDE.md`](packages/claude-team/CLAUDE.md). ⚠️ Do not restate them
+[the claude-team repo's CLAUDE.md](https://github.com/matt-whitaker/claude-team/blob/mainline/CLAUDE.md). ⚠️ Do not restate them
 here — two copies drift, and they did: this file documented a sub-issue expansion that #503
 had already removed, and the package README described the pre-#503 branching model for a
 whole session without anyone noticing.
@@ -318,7 +326,7 @@ What is BrewDocs-specific:
   described the repo, since the authors job's Implementor holds exactly that.)
 - The board is **project #4**: `gh project item-add 4 --owner "@me" --url <url>`.
 - The handoff schema is
-  [`packages/claude-team/schemas/handoff.json`](packages/claude-team/schemas/handoff.json);
+  [claude-team's `schemas/handoff.json`](https://github.com/matt-whitaker/claude-team/blob/mainline/schemas/handoff.json);
   a workflow step compacts and inlines it, and **fails the run** if the file ever gains a
   single quote.
 - ⚠️ **`@claude/security` on issues Security files is this repo's one exception to "create
@@ -327,14 +335,14 @@ What is BrewDocs-specific:
 
 
 **Epic → story → task.** ⚠️ **The model itself lives in
-[`packages/claude-team/CLAUDE.md`](packages/claude-team/CLAUDE.md)** — the hierarchy, how a
+[the claude-team repo's CLAUDE.md](https://github.com/matt-whitaker/claude-team/blob/mainline/CLAUDE.md)** — the hierarchy, how a
 story moves, routing, the handoff contract and the hooks. It is portable and this file must
 not restate it; two copies drift, and they already had. What follows is only how *this repo*
 applies it.
 
 - **Default branch** `mainline`. A story's PR targets it and a merge ships to prod, so the
   story PR is the last gate before deploy.
-- **Overlays** live in `.github/agent-prompts/` — `_shared.md` plus an optional
+- **Overlays** live in `.claude-team/prompts/` — `_shared.md` plus an optional
   `<role>.md`, appended to the package's prompt of the same name.
 - **Board.** Issues and PRs go on project #4 (`gh project item-add 4 --owner "@me"`);
   `labels-and-status.py` and `close-merged-work.py` move them, and are the only steps holding

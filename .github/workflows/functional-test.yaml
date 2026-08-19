@@ -14,11 +14,9 @@ on:
       # the day it is added. The cost is that a new non-code package under packages/ runs the
       # gate for nothing until it is excluded here — harmless, and visible.
       #
-      # ⚠️ Neither packages/claude-team nor packages/spec is an npm workspace — one holds
-      # prompts and Python hooks, the other product-specification markdown, and the nx gate
-      # never sees either.
+      # ⚠️ packages/spec is not an npm workspace — product-specification markdown the nx gate
+      # never sees. (The agent team lives in its own repo now: matt-whitaker/claude-team.)
       - 'packages/**'
-      - '!packages/claude-team/**'
       - '!packages/spec/**'
       - 'package.json'
       - 'package-lock.json'

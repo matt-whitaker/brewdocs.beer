@@ -7,7 +7,7 @@ BrewDocs is a homebrewing application and info handbook for planning and recordi
 | Package | Role |
 |---                                      |--- |
 | [`app`](/packages/app)                  | App|
-| [`claude-team`](/packages/claude-team)  |Claude Team|
+| [`claude-team`](https://github.com/matt-whitaker/claude-team)  |Claude Team — its own repo now|
 | [`core`](/packages/core)                | Shared types, helpers, and config |
 | [`design`](/packages/design)            | Design System + Component Library |
 | [`e2e`](/packages/e2e)                  | E2E test suite |
