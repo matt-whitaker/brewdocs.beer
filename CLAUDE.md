@@ -90,7 +90,7 @@ GitHub Actions, path-filtered on push to `mainline` (the sole deploy branch), al
 
 The **Verify** workflow (`.github/workflows/verify.yaml`) runs `npm ci`, then `nx run-many --target=test` (lint) and `nx run-many --target=build` across **every project**, on every PR **whatever its base** (no deploy) — the real pre-merge gate; the `build-test-deploy.*` workflows run only *post*-merge on push.
 
-**Functional tests.** `.github/workflows/functional-test.yaml` runs the Playwright suite (`packages/e2e`) on PRs **to `mainline` only**, independently of Verify — it installs the chromium browser and lets Playwright's `webServer` auto-start the app dev server, uploading the HTML report/traces as an artifact on failure. See `packages/e2e/CLAUDE.md`.
+**Functional tests.** `.github/workflows/functional-test.yaml` runs the Playwright suite (`packages/e2e`) on PRs **to `mainline` only**, independently of Verify — it installs the chromium browser and lets Playwright's `webServer` auto-start the app dev server, uploading the HTML report/traces as an artifact on failure. Its `push` trigger runs only the **warm-cache** job on every merge: PR-scoped caches are invisible to other PRs, so the browser and npm caches are seeded in the mainline scope every PR can restore from, with normal merge traffic keeping them alive. See `packages/e2e/CLAUDE.md`.
 
 ⚠️ **The two differ on purpose, and the axis is base branch.** `pull_request.branches` matches the PR's **base**, so scoping it to `mainline` would exclude any PR that is not aimed there. Verify carries no filter because it is the cheap half; functional test keeps the `mainline` scope because it is the expensive half (browser install, a real dev server) and the story PR is the right granularity for it. ⚠️ **Since tasks no longer open PRs, neither workflow runs on a task at all** — both first fire on the story's PR, with every task's diff accumulated. That is a known cost of removing task PRs (#1057), not an oversight: a `push:` trigger on Verify would restore per-task feedback and was declined.
 
@@ -372,14 +372,12 @@ Security 40, the rest 80. Implementor, Designer, Tester **and Writer** run `npm 
 Architect, Researcher and root role build nothing — the Researcher deliberately so, since it holds
 no shell to run anything with.
 
-⚠️ **All four authors also get the browser** (`npx playwright install`, a **separate** step —
-`npm ci` installs the playwright package, never a browser binary, and under `CI` the e2e config
-selects the bundled chromium rather than the system Chrome; see `packages/e2e/CLAUDE.md`). The spec
-grants every author the ability to run the app and view it, and without the binary an acceptance
-criterion asking for a browser check is silently unfulfillable — a role reaches a running dev
-server and dies on a missing executable, which reads as "cannot verify" rather than as a failure
-(#749 for the Writer, #1037 for the Implementor). Cost, accepted: every author run pays a chromium
-download, and most never open a browser — nothing can tell in advance which will.
+⚠️ **All four authors also get the browser** — historically via `npx playwright install` (#749
+for the Writer, #1037 for the Implementor: without a binary, an acceptance criterion asking for a
+browser check is silently unfulfillable — the run reads "cannot verify" rather than failing).
+Since #1231 the e2e config drives the **runner's preinstalled Chrome** in every environment, so
+the install step is vestigial for this repo — the stub's `browser: true` (and the download every
+author run pays) can likely flip off; tracked as a follow-up.
 
 **Allowlists union, they don't replace.** A role's `claude_args --allowedTools` is merged with
 the action's own base set, not substituted for it — `mergedAllowedTools = [...new Set([...
