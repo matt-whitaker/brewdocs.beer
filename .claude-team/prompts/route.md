@@ -8,7 +8,7 @@ judgement. Read which package the issue names:
 | `packages/design/**` | `designer` |
 | `packages/app/**`, `packages/www/**`, `packages/core/**`, `packages/kb/**` | `implementor` |
 | `packages/e2e/**` | `tester` |
-| `packages/spec/**`, any `CLAUDE.md`, `.claude/skills/**` | `writer` |
+| `packages/spec/**`, any `CLAUDE.md` | `writer` |
 
 ⚠️ **A task naming `packages/design` *and* a consumer is still `designer`.** The Designer repairs
 the consumers its own change breaks — that is deliberate (#701), not a boundary violation, and

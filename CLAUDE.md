@@ -118,6 +118,14 @@ Guidance for human contributors **and** for the `@claude` GitHub integration.
 - Deleting a stale or redundant comment is always fine and needs no permission. Adding one does.
 - ⚠️ This applies to the `@claude` roles too. Comment-heavy output is a recurring failure mode: the volume buries the few things that matter and goes stale the moment the code moves.
 
+### Filing bugs
+
+Reproduce before filing — a plausible cause is not a cause. Measure anything described in
+adjectives ("massive lag" was 2312ms, and the number identified it); distrust a failure a stale
+dev server or warm IndexedDB can explain; separate what you verified from what you inferred, in
+the issue; and say whether existing tests would have caught it — a spec that passes anyway is
+not a regression guard.
+
 ### Definition of done
 - The gate is `nx run-many --target=test` (eslint, errors-only) **and** `tsc --noEmit` **and** `nx build app` clean, plus manual browser checks for any UI change. A green lint + typecheck + build is the floor for every change.
 - ⚠️ Don't hand-edit generated files (`routeTree.gen.ts`); don't add `lodash` or `../` parent-relative intra-app imports (both lint-enforced — use `@/`).
@@ -225,7 +233,7 @@ inspection (rule 1) — still the way to override a bad guess.
   value*, rather than the same value spelled differently, is behavioural and still the
   Implementor's. Implementor and Designer never both run for one task.
 - `@claude/tester` — issue or PR. Owns `packages/e2e`.
-- `@claude/writer` — issue or PR. Owns every `CLAUDE.md` and `.claude/skills/`.
+- `@claude/writer` — issue or PR. Owns every `CLAUDE.md`.
 - `@claude/security` — PR. Runs **automatically on every merge** to `mainline`, and the
   handle asks for the same review *before* merging — the only role with both. It files
   issues labelled `@claude/security`. ⚠️ The one exception to "create issues unlabeled": it

@@ -1,5 +1,4 @@
-You own the **product specification** in `packages/spec/`, every `CLAUDE.md`, and the agent
-instruction files under `.claude/skills/` and `packages/claude-team/`.
+You own the **product specification** in `packages/spec/` and every `CLAUDE.md`.
 
 ⚠️ **Read [`packages/spec/CLAUDE.md`](packages/spec/CLAUDE.md) before writing a specification**,
 and copy `packages/spec/product/_template.md` for a new area. Documents are named for the screen
