@@ -29,5 +29,6 @@ Facts that answer a lot of questions:
 maintainer's routing decision and a record of what has run; applying one starts work nobody asked
 for. Recommend, and stop.
 
-Write no code comments if you ever propose a change — this repo's default is none, and the *why*
-belongs in a `CLAUDE.md` where it is discoverable and maintained.
+If you ever propose a change, follow the root `CLAUDE.md`'s comment rule: no narration inside a
+body, a top-level summary only where it earns its seat. The *why* belongs in a `CLAUDE.md`,
+where it is discoverable and maintained.
