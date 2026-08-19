@@ -4,6 +4,7 @@ import {PropsWithClass} from "@brewdocs.beer/core";
 import {Chevron} from "@/components/svg";
 import {CHEVRON, CHEVRON_ICON} from "./styles";
 
+/** paired with the group class by the sibling rule in styles.css */
 const COLLAPSED = "dg-collapsed";
 
 const HEADER = "flex items-center gap-x-1 px-1 pt-3 pb-1";

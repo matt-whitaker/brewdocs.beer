@@ -4,6 +4,10 @@ import {ReactNode, Suspense} from "react";
 import {CrumbLink, DynamicCrumb, isDynamic, StaticCrumb} from "@/model/crumb";
 import {useBreadcrumbTrail} from "@/providers/breadcrumbs";
 
+// the label is wrapped in a real element so it can ellipsize: daisyui makes both
+// `li` and `li > *` display:flex, and text-overflow never applies to a flex box's
+// anonymous text — a bare string had nothing to truncate. min-w-0 lets this span
+// shrink below its text, which is what actually reveals the "…".
 const CrumbText = ({ children }: { children: ReactNode }) =>
     <span className="min-w-0 truncate">{children}</span>;
 
@@ -18,6 +22,13 @@ function CrumbAnchor({ link, children }: { link?: CrumbLink; children: ReactNode
 const staticLink = (crumb: StaticCrumb | DynamicCrumb): CrumbLink | undefined =>
     crumb.to ? { to: crumb.to, params: crumb.params } : void 0;
 
+/**
+ * Runs the crumb's data hook **once** (may suspend) and renders both its label and
+ * its link. A data-derived `link` needs the same `load()` result the label came
+ * from, so the anchor decision has to happen inside the Suspense boundary rather
+ * than outside it — that's what lets a crumb point at a route it can't know until
+ * the data arrives (e.g. a batch's recipe, kb vs user).
+ */
 function DynamicCrumbContent({ crumb }: { crumb: DynamicCrumb }) {
     const data = crumb.load();
     return (

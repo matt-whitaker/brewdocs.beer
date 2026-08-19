@@ -31,6 +31,7 @@ const TAG_ORDER: ShoppingTag[] = ["hops", "grains", "yeasts", "additives"];
 
 const TAG_OPTIONS = TAG_ORDER.map(tag => ({ value: tag, name: TAG_LABELS[tag] }));
 
+/** the sort key doubles as the grouping; "name" is ungrouped */
 function groupOf(item: ShoppingItem, sort: SortKey): string|null {
     if (sort === "type") return TAG_LABELS[item.tags[0]] ?? null;
     if (sort === "purchased") return item.purchased ? "Purchased" : "To Buy";

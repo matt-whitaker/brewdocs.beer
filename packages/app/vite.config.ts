@@ -6,6 +6,12 @@ import react from "@vitejs/plugin-react";
 import {defineConfig, Plugin} from "vite";
 import {VitePWA} from "vite-plugin-pwa";
 
+// Workspace packages ship raw, unbuilt TypeScript, so a package like design
+// that imports its own files via "@/..." gets compiled as part of app's own
+// bundle — and app's own "@" alias (below) would otherwise capture that
+// specifier and resolve it against app/src instead. Resolve "@/..." against
+// the nearest ancestor package's src/ dir (by importer path) so each
+// workspace package's alias stays self-contained.
 function workspaceAtAliasPlugin(): Plugin {
     return {
         name: "brewdocs-workspace-at-alias",

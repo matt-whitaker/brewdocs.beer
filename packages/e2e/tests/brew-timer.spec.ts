@@ -60,6 +60,9 @@ test("freezes the counter on pause, and a reload keeps it frozen", async ({page}
     await expect(page.getByRole("timer", {name: "Elapsed time"})).toHaveText(frozenValue ?? "");
 });
 
+// also the BREW-TIMER-12 blank-label case: the Reading tab's label field is left
+// untouched here, and the grid row still renders under the Gravity kind's own
+// default label ("Reading"), unchanged from BREW-TIMER-02.
 test("logs a quick milestone that lands on the timeline and in the phase's reading grid", async ({page}) => {
     await seedBatch(page, {name: "E2E Timer Milestone Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
@@ -90,6 +93,9 @@ test("logs a quick milestone that lands on the timeline and in the phase's readi
     await expect(page.getByLabel("Reading reading")).toBeVisible();
 });
 
+// BATCH-SCHEDULE-16: an empty Gravity, Volume or Temperature reading's value field — an
+// existing reading row's value cell, and the "add reading" row's value field alike — shows a
+// greyed-out example placeholder.
 test("empty Gravity, Volume and Temperature reading value inputs show an example placeholder", async ({page}) => {
     await seedBatch(page, {name: "E2E Reading Placeholder Batch"});
     await openSchedulePhase(page, "1. Mash");
@@ -107,6 +113,9 @@ test("empty Gravity, Volume and Temperature reading value inputs show an example
     await expect(page.getByLabel("Reading reading")).toHaveAttribute("placeholder", "12");
 });
 
+// BREW-TIMER-14: the Reading tab's Value field shows the same kind of example placeholder as
+// the batch schedule's reading fields (BATCH-SCHEDULE-16), matching whichever of Gravity,
+// Volume or Temperature is the selected reading kind.
 test("the quick-log Reading tab's Value field placeholder follows the selected reading kind", async ({page}) => {
     await seedBatch(page, {name: "E2E Reading Tab Placeholder Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
@@ -124,6 +133,8 @@ test("the quick-log Reading tab's Value field placeholder follows the selected r
     await expect(dialog.getByLabel("Reading value")).toHaveAttribute("placeholder", "68");
 });
 
+// BREW-TIMER-12: a typed label names the recorded reading instead of the kind's
+// default, and that name is a real write, not just a moment's UI state.
 test("logs a quick reading with a typed label that names the resulting reading", async ({page}) => {
     await seedBatch(page, {name: "E2E Quick Reading Label Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
@@ -147,6 +158,10 @@ test("logs a quick reading with a typed label that names the resulting reading",
     await expect(page.getByLabel("Mash pH check reading")).toBeVisible();
 });
 
+// BREW-TIMER-12: a label of only whitespace must fall back the same way a truly
+// blank one does — the fallback is two independent trims (design coerces to
+// undefined, app trims again before its `||` default) and either alone looks
+// sufficient, so this is the case that would survive losing one of them.
 test("logs a quick reading with a whitespace-only label under the kind's default label", async ({page}) => {
     await seedBatch(page, {name: "E2E Quick Reading Blank Label Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
@@ -162,6 +177,11 @@ test("logs a quick reading with a whitespace-only label under the kind's default
     await expect(page.getByLabel("Reading name")).toHaveValue("Reading");
 });
 
+// BREW-TIMER-01/05, BATCH-SCHEDULE-04: one entry point opens a tab panel ordered
+// Ingredients/Reading/Equipment,
+// with unavailable tabs reading as disabled rather than silently no-opping. Since #651 wired
+// all three, "disabled" now means "nothing left on this phase" — which is what this asserts,
+// and what the earlier version of this test was explicitly waiting to be able to assert.
 test("quick action modal opens on Reading with every applicable tab enabled", async ({page}) => {
     await seedBatch(page, {name: "E2E Quick Action Tabs Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
@@ -176,6 +196,13 @@ test("quick action modal opens on Reading with every applicable tab enabled", as
     await expect(dialog.getByRole("tab", {name: "Equipment"})).toBeEnabled();
 });
 
+// BATCH-SCHEDULE-04, and the other half of the same behaviour: a tab goes unavailable once
+// its phase is exhausted, carrying the reason rather than just greying out.
+//
+// ⚠️ This is also the regression guard for the modal-stays-open bug (#651). Confirming the
+// check-off that exhausts a tab used to unmount the panel — and its method="dialog" form —
+// before the browser ran the submit, so the dialog never closed. Asserting only that the
+// check-off landed passes straight through that; the dialog count is what catches it.
 test("a quick-action tab goes unavailable, with its reason, once the phase is exhausted", async ({page}) => {
     await seedBatch(page, {name: "E2E Quick Action Exhaust Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
@@ -199,6 +226,12 @@ test("a quick-action tab goes unavailable, with its reason, once the phase is ex
     await expect(dialog.getByRole("tab", {name: "Reading"})).toHaveAttribute("aria-selected", "true");
 });
 
+// BATCH-SCHEDULE-10/-11: the quick action names the item, and the list is offered in the order
+// the phase lists them with the next one preselected — so working down a phase stays one confirm
+// per addition, and a checked item is never offered again.
+//
+// ⚠️ The expected order is read from the SCREEN, never hardcoded, so this fails if the panel and
+// the picker ever disagree again (#656).
 test("the ingredients quick action works down the phase one confirm at a time", async ({page}) => {
     await seedBatch(page, {name: "E2E Quick Action Advance Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
@@ -230,6 +263,8 @@ test("the ingredients quick action works down the phase one confirm at a time", 
     }
 });
 
+// BATCH-SCHEDULE-10: the brewer can name an item OUT of order — the thing a resolver could never
+// do, and the reason grain and additives stopped being auto-advanced at all.
 test("the ingredients quick action checks off the item the brewer names, out of order", async ({page}) => {
     await seedBatch(page, {name: "E2E Quick Action Named Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
@@ -251,6 +286,15 @@ test("the ingredients quick action checks off the item the brewer names, out of 
     await expect(page.getByRole("checkbox", {name: "Crystal Malt 40L"})).not.toBeChecked();
 });
 
+// BATCH-SCHEDULE-08/-09: the phase lists boil additions longest-boil first, and Planning is
+// left exactly as the brewer arranged it.
+//
+// ⚠️ The edit is what gives this test teeth. The kb recipe already stores its three Northern
+// Brewer additions in descending boil order, so asserting the panel order straight after brewing
+// cannot tell "the screen sorted them" from "they were already sorted" — an earlier version of
+// this test was green against the #656 defect for exactly that reason. Retiming the first-stored
+// addition to 1 min makes the stored order (1, 20, 0) and the brewing order (20, 1, 0) disagree,
+// so only a screen that really sorts can pass.
 test("a phase lists its boil additions in the order they go in, without reordering Planning", async ({page}) => {
     await seedBatch(page, {name: "E2E Brew Order Batch"});
 
@@ -279,6 +323,8 @@ test("a phase lists its boil additions in the order they go in, without reorderi
     await expect.poll(() => boilTimes(page)).toEqual([20, 1, 0]);
 });
 
+// BREW-TIMER-13: selecting an item pre-fills the value field with that item's own planned
+// value from the recipe, instead of leaving it blank.
 test("the ingredients quick action pre-fills the value field with the selected item's planned value", async ({page}) => {
     await seedBatch(page, {name: "E2E Quick Action Prefill Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
@@ -291,6 +337,8 @@ test("the ingredients quick action pre-fills the value field with the selected i
     await expect(dialog.getByLabel("Ingredient weight")).toHaveValue(/9\.0/);
 });
 
+// BREW-TIMER-13: "picking a different item replaces it with that item's own planned value
+// rather than carrying over the previous one."
 test("switching the selected ingredient replaces the pre-fill with the new item's own planned value", async ({page}) => {
     await seedBatch(page, {name: "E2E Quick Action Prefill Switch Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
@@ -308,6 +356,12 @@ test("switching the selected ingredient replaces the pre-fill with the new item'
     await expect(dialog.getByLabel("Ingredient weight")).toHaveValue(/0\.5/);
 });
 
+// BATCH-SCHEDULE-01: "If the brewer also enters a value, that value is recorded against the
+// same item." Asserted against whichever item the action chose, for the reason above.
+//
+// BREW-TIMER-13: the field starts pre-filled with the preselected item's own planned value
+// (German Pils, 9.0lb) rather than blank — this proves the typed value wins over that
+// pre-fill at confirm, not that the field started empty and got filled.
 test("a value typed into the ingredients quick action is recorded against the item it checked off", async ({page}) => {
     await seedBatch(page, {name: "E2E Quick Action Value Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
@@ -334,6 +388,9 @@ test("a value typed into the ingredients quick action is recorded against the it
     }
 });
 
+// BATCH-SCHEDULE-06: equipment is NAMED by the brewer, not resolved for them. The test names a
+// deliberately non-first item — an "earliest incomplete" resolver could never satisfy this,
+// which is the point: it is what distinguishes the behaviour from the one it replaced.
 test("the equipment quick action checks off the item the brewer names", async ({page}) => {
     await seedBatch(page, {name: "E2E Quick Action Equipment Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
@@ -356,6 +413,9 @@ test("the equipment quick action checks off the item the brewer names", async ({
     expect(left).toContain("Mash Tun - 10gal");
 });
 
+// BATCH-SCHEDULE-07: "never reaches into a later phase while the current phase still has one
+// left." The mash phase has grains and no hops; the boil phase has hops. While mash grains
+// remain, Hop must not be on offer and the boil's hops must stay untouched.
 test("a quick action never reaches into a later phase", async ({page}) => {
     await seedBatch(page, {name: "E2E Quick Action Phase Scope Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
@@ -378,6 +438,12 @@ test("a quick action never reaches into a later phase", async ({page}) => {
     }
 });
 
+// Covers the marker overlay's 24px hit target + popover work (#380): each
+// marker gets its own transparent hit box independent of its drawn dot, and
+// only one popover is open at a time. Separation between the two milestones'
+// offsets is what the "own popover text" claim needs — with markers at very
+// different offsets, hovering one can't accidentally hit-test the other. The
+// mock clock gives an exact 4s gap instead of a real-time-dependent one.
 test("hovering each marker after logging two milestones shows that marker's own popover text", async ({page}) => {
     await seedBatch(page, {name: "E2E Marker Popover Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
@@ -422,6 +488,15 @@ test("hovering each marker after logging two milestones shows that marker's own 
     await expect(volumeTooltip).not.toContainText("Gravity");
 });
 
+// A marker's offsetSeconds and the timer's elapsedSeconds must round the same way
+// (both floor). window.__e2e.clock's advance() resyncs every subscriber synchronously to
+// the new mocked "now" — unlike Playwright's own page.clock, there's no simulated
+// real-tick sequence to race, so this no longer needs to reproduce a lag between
+// ticks. What it still has to prove is the rounding parity itself: advance to a
+// non-integer instant (5.6s) and log a milestone at that same mocked "now" with no
+// further clock call — if offsetSeconds and elapsedSeconds ever floored differently,
+// the marker would compute as past the counter and BrewTimerMarkerOverlay would hide
+// it (the #422 class of bug).
 test("places a freshly logged milestone marker without waiting for a tick to catch up", async ({page}) => {
     await seedBatch(page, {name: "E2E Marker Clock Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
@@ -442,6 +517,22 @@ test("places a freshly logged milestone marker without waiting for a tick to cat
     await expect(page.getByRole("button", {name: /^Reading at \d{2}:\d{2}:\d{2}$/})).toBeVisible();
 });
 
+// #422: elapsedSeconds used to sum only the *running* intervals of Batch.timer, so
+// a paused counter fell behind the wall-clock basis Global's markers use, and anything
+// timestamped during a pause could sit past elapsedSeconds indefinitely — catching up
+// required as much *additional running time after resume* as the pause itself
+// lasted. That's what the pause below is long relative to: a fixed implementation
+// clears the tight post-resume assertion window immediately (it jumps straight to
+// the true wall-clock offset), while a regressed one would need the whole pause
+// length in further running time to get there, which the window doesn't allow.
+//
+// Global's only markers are now the phase stamps (BREW-TIMER-08), not an individual
+// reading — reproduced here via a phase completed while ALREADY paused: BATCH-SCHEDULE-14
+// leaves an already-paused timer untouched, so the completion's recorded `date` is real
+// wall-clock time even though the frozen counter doesn't move to match it.
+// (window.__e2e.clock, unlike Playwright's own page.clock, never freezes real browser
+// timers, so it doesn't hit the two-consecutive-immediate-writes hazard the rest of
+// this suite avoids — safe to mock across the pause/complete/resume sequence below.)
 test("keeps a phase's complete stamp on Global's timeline once resumed, even completed during a long pause", async ({page}) => {
     await seedBatch(page, {name: "E2E Timer Pause Marker Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
@@ -473,6 +564,9 @@ test("keeps a phase's complete stamp on Global's timeline once resumed, even com
     await expect(mashStamps).toHaveCount(2, {timeout: 2500});
 });
 
+// BREW-TIMER-06: the scope toggle changes only what is displayed. It must never touch
+// play/pause, and switching before the session has even started (no phase boundary yet)
+// must not throw — an empty/never-started timer is a real, reachable state.
 test("switching Global/Phase scope never disturbs the running or paused clock", async ({page}) => {
     await seedBatch(page, {name: "E2E Timer Scope Toggle Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
@@ -510,6 +604,9 @@ test("switching Global/Phase scope never disturbs the running or paused clock", 
     await expect(page.getByRole("timer", {name: "Elapsed time"})).toHaveText(frozenValue ?? "");
 });
 
+// BREW-TIMER-07/-10: Phase's elapsed excludes the paused span; Global's (wall-clock)
+// does not. Switching back to Global must read the true value right away, never a
+// smaller number carried over from what Phase was just showing.
 test("Phase's elapsed excludes a pause, and Global reads the true elapsed the moment you switch back", async ({page}) => {
     await seedBatch(page, {name: "E2E Timer Scope Pause Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
@@ -534,6 +631,11 @@ test("Phase's elapsed excludes a pause, and Global reads the true elapsed the mo
     expect(globalValue - phaseValue).toBeGreaterThan(3);
 });
 
+// BREW-TIMER-08: completing the active phase while Phase is displayed re-anchors both
+// the counter and the markers to the newly current phase, which only ever shows the
+// phase that's active right now. Global shows only a start and a complete stamp per
+// phase that's begun — a milestone logged on the finished phase never appears there,
+// compacted or otherwise.
 test("completing a phase while Phase is displayed re-anchors its markers to the new phase", async ({page}) => {
     await seedBatch(page, {name: "E2E Timer Scope Complete Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
@@ -583,6 +685,10 @@ test("completing a phase while Phase is displayed re-anchors its markers to the 
     await expect(readingMarker).toHaveCount(1);
 });
 
+// BREW-TIMER-09 (reading only — ingredient/equipment check-offs record no timestamp
+// yet, see #699): a reading logged while Phase is active lands at its phase-relative
+// offset, on Phase's own timeline — and never plots in Global at all, which shows only
+// the phase-level start/complete stamps from BREW-TIMER-08.
 test("a reading logged while Phase is active lands at its phase-relative offset", async ({page}) => {
     await seedBatch(page, {name: "E2E Timer Scope Offset Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
@@ -621,6 +727,8 @@ test("a reading logged while Phase is active lands at its phase-relative offset"
     await expect(page.getByRole("button", {name: readingMarker})).toHaveCount(0);
 });
 
+// BREW-TIMER-08: Global shows one start stamp and one complete stamp per phase that has
+// begun, and nothing at all for one that hasn't.
 test("Global shows a phase's start stamp once it begins, a complete stamp once it's completed, and nothing before that", async ({page}) => {
     await seedBatch(page, {name: "E2E Global Stamps Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
@@ -650,6 +758,9 @@ test("Global shows a phase's start stamp once it begins, a complete stamp once i
     await expect(boilStamp).toHaveCount(1);
 });
 
+// BREW-TIMER-08/09: a hop addition places a marker on Phase's own timeline (like a
+// reading) but, same as a reading, never plots on Global's — which shows only the
+// phase-level stamps.
 test("a hop addition logged while Phase is active never plots on Global's timeline", async ({page}) => {
     await seedBatch(page, {name: "E2E Global No Hop Marker Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
@@ -684,6 +795,7 @@ test("a hop addition logged while Phase is active never plots on Global's timeli
     await expect(hopMarker).toHaveCount(0);
 });
 
+// BATCH-SCHEDULE-14: confirming a phase complete, while the timer is running, stops it.
 test("confirming a phase complete pauses a running timer", async ({page}) => {
     await seedBatch(page, {name: "E2E Complete Pauses Timer Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
@@ -705,6 +817,8 @@ test("confirming a phase complete pauses a running timer", async ({page}) => {
     await expect(page.getByRole("timer", {name: "Elapsed time"})).toHaveText(frozenValue ?? "");
 });
 
+// BATCH-SCHEDULE-14: "If the timer was already paused, or the session had not been started at
+// all, completing the phase changes nothing about the timer: it stays exactly as it was."
 test("confirming a phase complete leaves an already-paused or not-yet-started timer untouched", async ({page}) => {
     await seedBatch(page, {name: "E2E Complete Timer Untouched Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();

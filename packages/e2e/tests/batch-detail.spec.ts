@@ -1,6 +1,8 @@
 import {expect, test} from "@playwright/test";
 import {seedBatch} from "./seedBatch";
 
+// BATCH-LIST-03 (packages/spec/product/batch-list.md): a bad batch id returns the
+// brewer to /batches, with the page's normal navigation intact, instead of RootError.
 test("a bad batch id redirects to /batches with the breadcrumb trail and tab bar intact", async ({page}) => {
     await page.goto("/batch/not-a-real-id");
 
@@ -9,6 +11,9 @@ test("a bad batch id redirects to /batches with the breadcrumb trail and tab bar
     await expect(page.getByRole("tab", {name: "Ready"})).toHaveAttribute("aria-selected", "true");
 });
 
+// Per #607's handoff testing notes: the redirect uses replace semantics, so the bad
+// URL never becomes its own history entry — Back from /batches goes to whatever
+// preceded the bad link, not back onto /batch/not-a-real-id.
 test("a bad batch id does not leave the bad URL in browser history", async ({page}) => {
     await page.goto("/");
     await page.goto("/batch/not-a-real-id");
@@ -68,6 +73,12 @@ test("switches between the Planning/Shopping/Brewing/Summary tabs", async ({page
     await expect(summaryTab).toHaveAttribute("aria-selected", "false");
 });
 
+// BATCH-SCHEDULE-12/-13 (packages/spec/product/batch-schedule.md): confirming a phase
+// complete moves the schedule on to the phase that follows it; completing the last phase
+// leaves the schedule showing that phase, since there is none after it. The kb recipe's
+// three phases (Mash/Boil/Ferment) are walked in order — the BrewTimer's Complete action
+// always targets the current (first incomplete) phase, independent of which sub-tab is
+// showing, so no manual tab navigation is needed between confirmations.
 test("completing a phase advances the Brewing tab to the phase that follows it, and stays put on the last one", async ({page}) => {
     await seedBatch(page, {name: "E2E Phase Advance Batch"});
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
@@ -102,6 +113,11 @@ test("completing a phase advances the Brewing tab to the phase that follows it, 
     await expect(page.getByRole("tab", {name: "Prep"})).toHaveAttribute("aria-selected", "false");
 });
 
+// Regression guard from #672's handoff testing notes: the active tab is matched by the
+// exact position-numbered phaseLabel string ("2. Boil"), not the bare phase type, so a
+// second phase of the same type must not be skipped or matched ambiguously. Two Boil
+// phases are made adjacent (Mash/Boil/Boil/Ferment) via Planning's Phases panel so
+// completing the first Boil can only be verified correct by landing on the second one.
 test("advancing past a repeated phase type lands on the next position, not any tab of that type", async ({page}) => {
     await seedBatch(page, {name: "E2E Repeated Phase Type Batch"});
 

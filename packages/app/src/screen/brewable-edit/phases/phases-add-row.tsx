@@ -14,6 +14,8 @@ export type RecipeEditPhasesAddRowProps = {
     locked?: boolean;
 };
 
+// a phase type, not a catalog item — repeats are allowed (mash -> boil -> mash),
+// so this never disables an already-used type
 export default function RecipeEditPhasesAddRow({ add, locked = false }: RecipeEditPhasesAddRowProps) {
     const [type, setType] = useState<PhaseType|null>(null);
     const options = useMemo(() => [...PHASE_TYPES, ...OPTIONAL_PHASE_TYPES].map(value => ({ value, name: `${value[0].toUpperCase()}${value.slice(1)}` })), []);

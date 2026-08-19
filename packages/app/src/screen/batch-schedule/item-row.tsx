@@ -14,6 +14,15 @@ import {scalarFromNumberWithUnit} from "@/utils/formatting";
 
 const refOf = (id: string): Ref => ({ on: "assignment", id });
 
+/**
+ * Which of a resource's fields get an editable column, in order. This is the
+ * screen's call, not the model's — `deriveSchedule` passes the whole planned
+ * resource through and this decides what's worth showing on brew day.
+ *
+ * Both plan and actual are read from the *same* key (`item.resource[field]` and
+ * `entry.resource[field]`), so adding a field here — e.g. `"alpha"` for hops —
+ * needs no model, tracker or derivation change.
+ */
 const COLUMNS: Record<ResourceType, ResourceScalarField[]> = {
     grain: ["weight"],
     hop: ["weight", "boil"],
@@ -31,6 +40,10 @@ type ScheduleValueCellProps = {
     onPatch: (patch: TrackerEntry) => void;
 };
 
+/**
+ * One editable column: shows the plan until an as-brewed value is entered, then
+ * shows that. Writes only to the tracker — the plan is never overwritten.
+ */
 function ScheduleValueCell({ name, field, colStart, planned, actual, onPatch }: ScheduleValueCellProps) {
     const onChange = useCallback(
         (next: string) => onPatch({ resource: { [field]: { value: next, unit: planned?.unit } } }),
@@ -62,6 +75,7 @@ type BatchScheduleItemDetailProps = {
     onChange: (next: string) => void;
 };
 
+/** one row of the nested grid behind a row's expander — brew-day facts, all tracker-backed */
 function BatchScheduleItemDetail({ detail, value, onChange }: BatchScheduleItemDetailProps) {
     return (
         <DataGridRow zebra={false}>
@@ -141,4 +155,7 @@ function BatchScheduleItemRow({ item, entry, onToggle, onPatch }: BatchScheduleI
     );
 }
 
+// props are referentially stable (setIn keeps untouched tracker/brewable
+// branches by reference, editors are stable), so editing one row doesn't
+// re-render its siblings
 export default memo(BatchScheduleItemRow);

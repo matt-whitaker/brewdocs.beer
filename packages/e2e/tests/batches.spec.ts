@@ -14,6 +14,8 @@ test("shows all four status tabs with Ready active by default", async ({ page })
     await expect(page.locator(".breadcrumbs").getByText("Batches")).toBeVisible();
 });
 
+// a fresh context has no batches, so every tab's panel is an empty list —
+// there's no dedicated "no batches" message, just zero rows
 test("each tab shows its empty state on a fresh context", async ({ page }) => {
     await page.goto("/batches");
 
@@ -33,6 +35,10 @@ test("clicking a tab moves aria-selected off the previously active tab", async (
     await expect(page.getByRole("tab", { name: "Ready" })).toHaveAttribute("aria-selected", "false");
 });
 
+// The confirm dialog is a top-layer <dialog>, so its box is measured straight against the
+// viewport. Centred means equal margins on both axes; the width threshold is deliberately
+// loose — it guards the ~185px shrink-wrapped regression (#591) without pinning to a pixel
+// value that a wording change would break.
 async function expectConfirmDialogCentred(page: Page) {
     const box = await page.getByRole("dialog").locator(".modal-box").boundingBox();
     if (!box) throw new Error("the confirm dialog has no bounding box");
@@ -99,6 +105,9 @@ test("every batch row shows a delete affordance", async ({ page }) => {
     await expect(page.getByRole("listitem").filter({ hasText: "E2E Row Two" }).getByRole("button")).toHaveCount(1);
 });
 
+// The first two <li>s inside CardGrid's <ul class="grid">, in DOM order — CSS grid auto-flow
+// guarantees they're adjacent regardless of how many other cards exist or what order the
+// list renders in, unlike filtering by a specific card's name.
 async function expectCardGridResponsive(page: Page) {
     const grid = page.locator("ul.grid");
     const cardOne = grid.getByRole("listitem").nth(0);
@@ -119,6 +128,8 @@ async function expectCardGridResponsive(page: Page) {
     expect(Math.abs(mobileOne.y - mobileTwo.y), "cards stack into separate rows at phone width").toBeGreaterThan(20);
 }
 
+// BATCH-LIST-08 (packages/spec/product/batch-list.md): a desktop-width screen arranges
+// batch cards into a grid of several per row; a phone-width screen returns to one per row.
 test("batch cards arrange in a grid at desktop width and stack in one column at phone width", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await seedBatches(page, [{ name: "E2E Grid Batch One" }, { name: "E2E Grid Batch Two" }]);

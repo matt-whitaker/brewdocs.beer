@@ -8,6 +8,7 @@ import {useBreadcrumbs} from "@/providers/breadcrumbs";
 import RecipeCreateModal from "@/screen/recipe-create-modal";
 import RecipeList from "@/screen/recipe-list";
 
+// module const so the array is stable across renders (see useBreadcrumbs)
 const BREADCRUMBS: Crumb[] = [{ label: "Recipes" }];
 
 export const Route = createFileRoute("/recipes")({

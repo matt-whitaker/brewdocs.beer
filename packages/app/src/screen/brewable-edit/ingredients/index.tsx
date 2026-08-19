@@ -16,6 +16,8 @@ export type BrewableEditIngredientsProps = {
     remove: RemoveFn;
 };
 
+// A brewable panel: reads the assignments/phases off the brewable and edits
+// them through the shared edit fns (dot-paths are relative to the brewable).
 export default function BrewableEditIngredients({ brewable, update, updateScalar, add, remove }: BrewableEditIngredientsProps) {
     const kbGrains = useKbGrains();
     const kbGrainsIndex = useIndexBy(kbGrains, "name");

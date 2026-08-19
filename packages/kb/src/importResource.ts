@@ -16,6 +16,8 @@ type ResourceFile<T> = {
     data: T[];
 };
 
+// same-origin path: works today served from the app's own static assets, and
+// requires no app-code changes once /kb/* is routed to a dedicated CDN origin
 const client = createFetchClient({ baseUrl: "/kb" });
 
 function staleDistMessage(resource: string, detail: string) {

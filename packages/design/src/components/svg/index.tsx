@@ -81,6 +81,7 @@ export const UpDown = ({ className }: PropsWithClass) => (
         className={classNames([className])}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M3 7.5 7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" />
     </svg>
+
 );
 
 export const Minus = ({ className }: PropsWithClass) => (
@@ -92,6 +93,17 @@ export const Minus = ({ className }: PropsWithClass) => (
         <path fillRule="evenodd" d="M4.25 12a.75.75 0 0 1 .75-.75h14a.75.75 0 0 1 0 1.5H5a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
     </svg>
 );
+
+// export const Plus = ({ className }: PropsWithClass) => (
+//     <svg
+//         xmlns="http://www.w3.org/2000/svg"
+//         viewBox="0 0 24 24"
+//         fill="currentColor"
+//         className={classNames([className])}>
+//         <path fillRule="evenodd" d="M12 3.75a.75.75 0 0 1 .75.75v6.75h6.75a.75.75 0 0 1 0 1.5h-6.75v6.75a.75.75 0 0 1-1.5 0v-6.75H4.5a.75.75 0 0 1 0-1.5h6.75V4.5a.75.75 0 0 1 .75-.75Z" clipRule="evenodd" />
+//     </svg>
+//
+// )
 
 export const Play = ({ className }: PropsWithClass) => (
     <svg

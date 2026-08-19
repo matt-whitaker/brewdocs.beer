@@ -76,6 +76,8 @@ function BatchScheduleReadingItem({ phaseIndex, row, milestone, entry, onPatch, 
     );
 }
 
+// props are primitives plus a stable onPatch/update/remove, so editing one
+// reading doesn't re-render the rest — same reasoning as the equipment list
 const Item = memo(BatchScheduleReadingItem);
 
 export type BatchScheduleReadingProps = {

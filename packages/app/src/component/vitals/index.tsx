@@ -7,6 +7,8 @@ import DataGridHeaderRow from "@/component/data-grid/header-row";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridRow from "@/component/data-grid/row";
 
+// accepts either a real Batch's Measurements or a KbRecipe's raw targets
+// shape (Scalar vs KbScalar) — only .value/.ibu/.srm are ever read
 type VitalsLike = {og: {value: string}; fg: {value: string}; abv: {value: string}; ibu: string; srm: string};
 export type VitalsProps = Partial<PropsWithClass> & { vitals: [string, VitalsLike][]; };
 

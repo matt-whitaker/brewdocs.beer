@@ -1,5 +1,15 @@
 import {expect, Page, test} from "@playwright/test";
 
+/**
+ * `batches`' own migrations array is empty (packages/app/src/storage/batches.ts,
+ * BATCHES_VERSION = 1) — by this story's explicit scope, so nothing has a real
+ * `down` to run. A *successful* computed-down revert therefore isn't exercisable
+ * against genuine registered migrations here (mirrors migration-pass.spec.ts's
+ * own note for the forward direction). What these specs can and do prove on
+ * that side is kind-selection (computed is chosen when the stored record has
+ * drifted past the backup's toVersion) and safe containment when the reverse
+ * walk finds no path — never a genuinely successful computed restore.
+ */
 type SeedBackup = {
     entityType: string;
     id: string;
@@ -40,6 +50,9 @@ function batchRecord({id, name, version}: SeedBatch) {
     };
 }
 
+// the db/store only exist once localforage has initialized them, which
+// happens the first time the page's own query runs — mirrors
+// migrations-failed.spec.ts's primeMigrationFailuresStore
 async function primeMigrationBackupsStore(page: Page) {
     await page.goto("/migrations/backups");
     await expect(page.getByText("No updated records are available to revert.")).toBeVisible();
@@ -91,6 +104,9 @@ async function readIndexedDbValue(page: Page, dbName: string, key: string) {
     }), {dbName, key});
 }
 
+// REVERTS-01, REVERTS-05: every listed record identifies itself and states
+// plainly, before any click, whether its revert is exact, computed, or
+// unavailable — and why, when unavailable
 test("lists every seeded backup with its identity and version step, and states each one's revert kind or reason before any click", async ({page}) => {
     await primeMigrationBackupsStore(page);
     await seedBatches(page, [
@@ -158,6 +174,9 @@ test("lists every seeded backup with its identity and version step, and states e
     await expect(goneRow.getByRole("button", {name: "Revert"})).toBeDisabled();
 });
 
+// REVERTS-02, REVERTS-03: reverting a record whose retained snapshot is still
+// at the record's current version restores it exactly, deletes the backup,
+// and both hold across a reload
 test("reverting an exact-eligible backup restores the record byte-for-byte, deletes the backup, and both hold across a reload", async ({page}) => {
     await primeMigrationBackupsStore(page);
     await seedBatches(page, [{id: "e2e-revert-exact", name: "E2E Post-Update Name", version: BATCHES_VERSION}]);
@@ -191,6 +210,10 @@ test("reverting an exact-eligible backup restores the record byte-for-byte, dele
     await expect(page.getByRole("listitem").filter({hasText: "E2E Post-Update Name"})).toHaveCount(0);
 });
 
+// REVERTS-04: a backup whose stored record has moved past its toVersion
+// selects the computed path; with no reverse migration registered today the
+// walk fails, and the revert is rejected without touching either record —
+// across a reload
 test("reverting a computed-eligible backup with no reverse migration path leaves the record and backup untouched, across a reload", async ({page}) => {
     await primeMigrationBackupsStore(page);
     await seedBatches(page, [{id: "e2e-revert-computed", name: "E2E Drifted Batch", version: BATCHES_VERSION}]);

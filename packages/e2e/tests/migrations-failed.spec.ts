@@ -1,5 +1,20 @@
 import {expect, Page, test} from "@playwright/test";
 
+/**
+ * Nothing in the app can produce a *migration-error* failure today (`batches`'
+ * own migrations array is empty, so no migration ever runs to throw) — every
+ * test proving that reason seeds directly into the `migration-failures`
+ * IndexedDB database. `migrationFailuresStorage` is a `Forage` built with
+ * `localforage.createInstance({name: "migration-failures"})`, which makes
+ * that name a separate IndexedDB database (default store "keyvaluepairs"),
+ * keyed `migration-failures#${entityType}:${id}`.
+ *
+ * A `no-migration-path` failure, though, is exactly what a stale batch
+ * produces on its own via the page-load pass (#809/#824) — every test
+ * proving that reason instead seeds the source `batches` store and lets the
+ * pass record the failure itself (mirrors migration-pass.spec.ts's
+ * `seedBatches`).
+ */
 type SeedFailure = {
     entityType: string;
     id?: string;
@@ -18,6 +33,8 @@ type SeedBatch = {
 
 const BATCHES_VERSION = 1;
 
+// The db/store only exist once localforage has initialized them, which
+// happens the first time the page's own query runs.
 async function primeMigrationFailuresStore(page: Page) {
     await page.goto("/migrations/failed");
     await expect(page.getByText("No records are waiting to be updated.")).toBeVisible();
@@ -40,6 +57,9 @@ async function seedMigrationFailures(page: Page, failures: SeedFailure[]) {
     }), failures);
 }
 
+// mirrors migration-pass.spec.ts's batchRecord/seedBatches — a stale batch
+// seeded straight into the source store, so the page-load pass is what
+// produces its migration-failures entry (with a real `reason`), not the test
 function batchRecord({id, name, version}: SeedBatch) {
     return {
         id,
@@ -110,6 +130,9 @@ async function countIndexedDbKeysWithPrefix(page: Page, dbName: string, prefix: 
     }), {dbName, prefix});
 }
 
+// an id-less batch as it would exist if a record predates whatever gave every
+// other record an id — the app itself never writes one without an id, but
+// nothing here depends on it having come from the app
 function idlessBatchRecord({name, version}: {name: string, version: number}) {
     return {
         name,
@@ -265,6 +288,11 @@ test("retry is unavailable for a record with no id or an entity type that isn't 
     await expect(row.getByRole("button", {name: "Retry"})).toBeDisabled();
 });
 
+// MIGRATION-FAILURES-01: an id-less record has nothing to key its stored
+// failure on but its own storage slot — before #884's fix, each page-load
+// pass minted a fresh uuid instead of overwriting that slot, so the same
+// broken record piled up one indistinguishable "batches" row per reload
+// instead of staying at one
 test("an id-less stale batch's migration-failures entry doesn't duplicate across two migration passes", async ({page}) => {
     await primeMigrationFailuresStore(page);
     await seedIdlessBatch(page, "batches#e2e-idless-nodupe", {name: "E2E Idless No Dupe", version: BATCHES_VERSION + 1});
@@ -280,6 +308,10 @@ test("an id-less stale batch's migration-failures entry doesn't duplicate across
     await expect(page.getByRole("heading", {name: "batches", exact: true})).toHaveCount(1);
 });
 
+// regression guard for the implementor's own testingNotes: every other test
+// in this file seeds the migration-failures key by hand, so none of them
+// would notice a future regression in Forage's extractId/buildKey that
+// shifted the key format for a record that DOES carry its own id
 test("an id-carrying stale batch's migration-failures entry lands at the expected key when written by the real migration pass", async ({page}) => {
     await primeMigrationFailuresStore(page);
     await seedBatches(page, [{id: "e2e-keyformat-01", name: "E2E Key Format Batch", version: BATCHES_VERSION + 1}]);
@@ -291,6 +323,9 @@ test("an id-carrying stale batch's migration-failures entry lands at the expecte
     expect(failure).toMatchObject({entityType: "batches", id: "e2e-keyformat-01", reason: "no-migration-path"});
 });
 
+// UPDATES-01, MIGRATION-FAILURES-01: a record excluded from its own list for
+// lacking a bridging migration is listed here too, paired with a thrown-
+// migration record in the same multi-record list
 test("a batch with no update path is excluded from /batches and listed here alongside a thrown-migration record", async ({page}) => {
     await primeMigrationFailuresStore(page);
     await seedBatches(page, [{id: "e2e-no-path-01", name: "E2E No Path Batch", version: BATCHES_VERSION + 1}]);
@@ -320,6 +355,8 @@ test("a batch with no update path is excluded from /batches and listed here alon
     await expect(thrownRow.getByText("An update was attempted and failed.")).toBeVisible();
 });
 
+// UPDATES-02: retry is unavailable for a no-migration-path record, and the
+// reason is visible as page text, not merely the disabled button's title
 test("retry is disabled for a no-migration-path record and its reason is stated as visible text", async ({page}) => {
     await primeMigrationFailuresStore(page);
     await seedBatches(page, [{id: "e2e-no-path-02", name: "E2E No Path Retry", version: BATCHES_VERSION + 1}]);
@@ -330,6 +367,12 @@ test("retry is disabled for a no-migration-path record and its reason is stated 
     await expect(row.getByText("Retry isn't available until an update path exists. Discarding it is the only action.")).toBeVisible();
 });
 
+// MIGRATION-FAILURES-03: discarding a record removes it for good, across a
+// reload. This is currently FAILING against the real app — see the finding
+// filed on #813. Discard only deletes the migration-failures entry; the
+// underlying stale batch is untouched, so the next reload's page-load pass
+// (#809) re-scans it and re-records the same failure. Left red on purpose
+// rather than weakened, per this suite's own rule.
 test("discarding a no-migration-path record removes it for good, across a reload", async ({page}) => {
     await primeMigrationFailuresStore(page);
     await seedBatches(page, [{id: "e2e-no-path-discard", name: "E2E No Path Discard", version: BATCHES_VERSION + 1}]);

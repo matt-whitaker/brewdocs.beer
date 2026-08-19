@@ -1,6 +1,9 @@
 import { expect, Locator, Page, test } from "@playwright/test";
 import {settleSave} from "./settleSave";
 
+// RECIPE-LIST-04 (packages/spec/product/recipe-list.md): a bad recipe id returns the
+// brewer to /recipes, with the page's normal navigation intact, instead of RootError.
+// Holds for both the view route and the edit route.
 test("a bad recipe id redirects to /recipes with the breadcrumb trail and tab bar intact", async ({ page }) => {
     await page.goto("/recipe/not-a-real-id");
 
@@ -47,6 +50,15 @@ test("Create action opens the recipe-create modal, which closes on Close", async
     await expect(dialog).not.toBeVisible();
 });
 
+/**
+ * The two create paths are told apart by `__type` in `actions/createRecipe.ts`: a
+ * `kbRecipeTemplate` seeds a default recipe with the template's brewable, anything
+ * else goes through `kbRecipeToRecipe`. Routing a *template* down the KbRecipe path
+ * produces a recipe with no `batchSize`/`targets`, and the Details panel — the edit
+ * screen's default tab — reads `data.batchSize.value` and throws. So simply landing
+ * on a rendered edit screen is the assertion that the branch was chosen correctly;
+ * the equipment check then proves the template's brewable actually came through.
+ */
 async function createRecipeFromTemplate(page: Page, name: string, template: string) {
     await page.goto("/recipes");
     await page.getByRole("tab", { name: "My Recipes" }).click();
@@ -100,6 +112,10 @@ test("kb recipes show no delete affordance", async ({ page }) => {
     await expect(row.getByRole("button")).toHaveCount(0);
 });
 
+// The confirm dialog is a top-layer <dialog>, so its box is measured straight against the
+// viewport. Centred means equal margins on both axes; the width threshold is deliberately
+// loose — it guards the ~185px shrink-wrapped regression (#591) without pinning to a pixel
+// value that a wording change would break.
 async function expectConfirmDialogCentred(page: Page) {
     const box = await page.getByRole("dialog").locator(".modal-box").boundingBox();
     if (!box) throw new Error("the confirm dialog has no bounding box");
@@ -170,6 +186,9 @@ test("a user recipe's detail page is reached from the list and renders its store
     await expect(page.getByRole("button", { name: "Edit" })).toBeVisible();
 });
 
+// recipe names are also echoed into the (normally hidden) delete-confirm
+// dialog's heading, so a bare getByText/getByRole("heading") is ambiguous —
+// scope to the list row, as the delete tests above already do
 function recipeRow(page: Page, name: string): Locator {
     return page.getByRole("listitem").filter({ hasText: name });
 }
@@ -210,6 +229,9 @@ test("search filters the My Recipes tab to matching recipes and clearing restore
     await expect(recipeRow(page, "E2E Search Mine Beta")).toBeVisible();
 });
 
+// The first two <li>s inside CardGrid's <ul class="grid">, in DOM order — CSS grid auto-flow
+// guarantees they're adjacent regardless of how many other cards exist or what order the
+// list renders in, unlike filtering by a specific card's name.
 async function expectCardGridResponsive(page: Page) {
     const grid = page.locator("ul.grid");
     const cardOne = grid.getByRole("listitem").nth(0);
@@ -230,6 +252,10 @@ async function expectCardGridResponsive(page: Page) {
     expect(Math.abs(mobileOne.y - mobileTwo.y), "cards stack into separate rows at phone width").toBeGreaterThan(20);
 }
 
+// RECIPE-LIST-19 (packages/spec/product/recipe-list.md): a desktop-width screen arranges
+// recipe cards into a grid of several per row; a phone-width screen returns to one per row.
+// A fresh context already has one kb recipe (Anchor Steam Beer Clone), so only one new
+// recipe needs creating to get a second card on the default All tab.
 test("recipe cards arrange in a grid at desktop width and stack in one column at phone width", async ({ page }) => {
     await createRecipeFromTemplate(page, "E2E Grid Recipe", "Empty");
 

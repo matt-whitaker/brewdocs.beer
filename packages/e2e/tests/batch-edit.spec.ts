@@ -2,6 +2,17 @@ import {expect, Page, test} from "@playwright/test";
 import {seedBatch} from "./seedBatch";
 import {settleSave} from "./settleSave";
 
+/**
+ * Persistence coverage for the brew-day editing flows.
+ *
+ * The rest of the suite is navigation-only — it proves screens *render*. These
+ * tests prove they *save*, which is the gap that let two silent write-loss bugs
+ * through: in both, the UI showed the change, the write threw inside a
+ * fire-and-forget save, and lint/tsc/build stayed green. Every test here is
+ * shaped **edit → reload → assert**, because only the reload catches that.
+ */
+
+/** open a batch tab, then one of the Schedule screen's per-phase sub-tabs */
 async function openSchedulePhase(page: Page, phase: string) {
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
     await page.getByRole("tab", {name: phase, exact: true}).click();
@@ -34,6 +45,10 @@ test("records as-brewed values without overwriting the plan", async ({page}) => 
     await expect(page.getByText("plan 60min")).toBeVisible();
 });
 
+// BATCH-SCHEDULE-15 (packages/spec/product/batch-schedule.md): the Brewing
+// schedule offers an additive's weight as a plan/actual field the same way it
+// already does for a grain's or hop's weight — mirroring the grain/hop actuals
+// test above, but for an additive added fresh in Planning first.
 test("records an actual weight against a planned additive without overwriting the plan", async ({page}) => {
     await seedBatch(page, {name: "E2E Additive Actual Batch"});
 
@@ -198,6 +213,14 @@ test("a second phase of the same type gets its own tab and its own ingredients",
     await expect(page.getByLabel("Cascade weight")).toHaveCount(0);
 });
 
+/**
+ * The add-row is scoped to its phase, not its subsection — a phase with more
+ * than one subsection (2. Boil ships both Hops and Additives) has only one add
+ * row, rendered after the last one. Scoping the assertion to the Hops group
+ * (phase-section.tsx wraps each resourceType in its own DOM group) is what
+ * actually proves the new hop joined Hops rather than merely existing
+ * somewhere on the page.
+ */
 test("adds a hop to a phase that also has additives, and it persists under Hops", async ({page}) => {
     await seedBatch(page, {name: "E2E Hops Subsection Batch"});
 
@@ -305,6 +328,8 @@ test("keeps a batch note and SRM value after a reload", async ({page}) => {
     await expect(page.getByRole("textbox", {name: "Notes"})).toHaveValue("Fermentation smelled great, slightly fruity.");
 });
 
+// SrmTag is `aria-hidden` with no text, so locate it structurally like
+// batch-summary.spec.ts's srmRow — the Notes tab's only .data-grid has the SRM row
 test("shows an SRM colour swatch on the Notes tab only for a parseable value", async ({page}) => {
     await seedBatch(page, {name: "E2E Notes SRM Swatch Batch"});
     await openSchedulePhase(page, "Notes");
@@ -326,6 +351,14 @@ test("shows an SRM colour swatch on the Notes tab only for a parseable value", a
     await expect(swatch).toHaveCount(0);
 });
 
+/**
+ * The brew timer is a *global* view, so a phase completion has to reach it. Two
+ * separate things have to hold for that, and each failed independently while this
+ * was being built: the completion must record **when** it happened
+ * (`TrackerEntry.date`), and the timer's marker derivation must look at phase
+ * entries at all, not only at milestones. Asserting on the rendered marker covers
+ * both — a missing date and an unread entry are indistinguishable from the UI.
+ */
 test("completing a phase puts a marker on the brew timer's live timeline", async ({page}) => {
     await seedBatch(page, {name: "E2E Timer Marker Batch"});
     await openSchedulePhase(page, "1. Mash");
@@ -343,6 +376,13 @@ test("completing a phase puts a marker on the brew timer's live timeline", async
     await expect(mashMarkers).toHaveCount(2);
 });
 
+/**
+ * DaisyUI's `.tabs` is `flex-wrap: wrap`, so before `flex-nowrap` the compact bar
+ * silently grew a second row at five phases (72px at a 390px viewport) instead of
+ * overflowing. Height is the assertion because that is the actual cost — and a
+ * scrolling bar is only an improvement if a scrolled-away tab still comes back,
+ * hence the second half.
+ */
 test("the phase tab bar stays one row on a phone and keeps every tab reachable", async ({page}) => {
     await page.setViewportSize({width: 390, height: 844});
     await seedBatch(page, {name: "E2E Tab Scroll Batch"});
@@ -372,6 +412,13 @@ test("the phase tab bar stays one row on a phone and keeps every tab reachable",
     expect(await bar.evaluate(el => el.scrollLeft)).toBe(0);
 });
 
+/**
+ * Creating a reading writes two things — the Milestone on the brewable and its value
+ * in the tracker — and `useJsonEdit` assigns `stateRef.current` during render, not in
+ * the setter. Two successive calls therefore read the same stale draft and the second
+ * overwrites the first, so this has to be one `mutate`. Asserting after a reload is
+ * what catches that: on screen the lost write looks identical to a saved one.
+ */
 test("creates a reading with its name and value in one action", async ({page}) => {
     await seedBatch(page, {name: "E2E Reading Create Batch"});
     await openSchedulePhase(page, "1. Mash");
@@ -414,6 +461,13 @@ test("quick reading records against the current phase, and offers water paramete
     await expect(page.getByLabel("Water Sample Calcium")).toHaveValue(/60/);
 });
 
+/**
+ * The recipe's three Boil hops all share the name "Northern Brewer" — their
+ * `aria-label`s are identical, so this discriminates them by weight instead
+ * (1.0oz/0.75oz/1.0oz). Asserting the exact surviving pair, not just a count
+ * of two, is what would catch an off-by-one `remove(dot, index)` bug: removing
+ * a neighbour instead still leaves two rows, just with the wrong weights.
+ */
 test("removes the middle of three ingredients and keeps the other two", async ({page}) => {
     await seedBatch(page, {name: "E2E Remove Ingredient Batch"});
     await page.getByRole("tab", {name: "Planning", exact: true}).click();
@@ -463,6 +517,9 @@ test("adds and removes equipment on a phase, persisting each change", async ({pa
     await expect(page.getByRole("button", {name: "Remove CO2 from 1. Mash"})).toHaveCount(0);
 });
 
+// EQUIPMENT-01 (packages/spec/product/equipment.md): a note is saved exactly as
+// typed, with no interpretation — non-numeric text is what distinguishes this
+// from the retired `count` field, which ran input through `Number()`.
 test("types a freeform note on an equipment row, persisting it across a reload", async ({page}) => {
     await seedBatch(page, {name: "E2E Equipment Notes Batch"});
     await page.getByRole("tab", {name: "Planning", exact: true}).click();
@@ -484,6 +541,11 @@ test("types a freeform note on an equipment row, persisting it across a reload",
     await expect(reloadedCo2Notes).toHaveValue("2 spare O-rings");
 });
 
+// EQUIPMENT-02 (packages/spec/product/equipment.md): picking a catalog item
+// seeds its own default note. "Keg (Coke) - 5.5gal" is the one catalog entry
+// carrying a seeded value (data/equipment.ts). Also covers the implementor's
+// testing note that clearing a note to empty persists as cleared, not as a
+// stray stored value.
 test("seeds an equipment row's note from the catalog default, and persists a clear", async ({page}) => {
     await seedBatch(page, {name: "E2E Equipment Catalog Notes Batch"});
     await page.getByRole("tab", {name: "Planning", exact: true}).click();
@@ -514,6 +576,14 @@ test("seeds an equipment row's note from the catalog default, and persists a cle
     await expect(clearedKegNotes).toHaveValue("");
 });
 
+/**
+ * A fresh batch's three phases (Mash/Boil/Ferment) are each the only instance
+ * of a required type, so `canRemovePhase` should block every one of them.
+ * ⚠️ It does so by omitting the remove button entirely, not by disabling it —
+ * `disabled`/`title={lockedReason}` on this button is a *different* rule (a
+ * batch that has already progressed), so there is no disabled control to read
+ * a reason from here.
+ */
 test("keeps the last phase of a required type from being removed", async ({page}) => {
     await seedBatch(page, {name: "E2E Locked Phase Batch"});
     await page.getByRole("tab", {name: "Planning", exact: true}).click();
@@ -594,6 +664,17 @@ test("reorders a phase, renumbering its label, and survives a reload", async ({p
     await expect(page.getByText("3. Ferment", {exact: true})).toBeVisible();
 });
 
+/**
+ * Planning's Equipment collapse state is meant to key off `phase.id`, not the
+ * phase's position — see the app CLAUDE.md's Model-boundary notes on
+ * BatchSchedule's id-keyed collapse. This is a **finding, not a spec to
+ * accommodate** (see Out of scope): `equipment-phase-section.tsx`'s session
+ * key is `` `recipe-edit.equipment.phase.${phase}` ``, where `phase` is the
+ * numeric index passed from `equipment/index.tsx` — position-keyed, not
+ * id-keyed. After the swap below, the section that was collapsed as "2. Boil"
+ * renders **expanded** as "1. Boil", and the untouched Mash section — now at
+ * the collapsed section's old index — renders collapsed instead.
+ */
 test("keeps Planning's collapsed equipment section on its own phase after a reorder", async ({page}) => {
     test.fail();
     await seedBatch(page, {name: "E2E Reorder Collapse Batch"});
@@ -616,6 +697,16 @@ test("keeps Planning's collapsed equipment section on its own phase after a reor
     await expect(page.getByRole("button", {name: "2. Mash", exact: true})).toHaveAttribute("aria-expanded", "true");
 });
 
+/**
+ * The Brewing screen's active sub-tab is meant to key off `phase.id` too, but
+ * `usePanelSwitcher` persists the panel's **title** string
+ * (`schedule.tsx`: `PanelSwitcherContent title={phaseLabel(...)}`, matched
+ * back via `props.title === active` in `panel-switcher/index.tsx`) — a
+ * position-numbered label, not an id. This is a **finding, not a spec to
+ * accommodate**: after the reorder below, the query still holds the old label
+ * "2. Boil", no tab's title matches it any more, and the tab bar silently
+ * shows no tab selected at all instead of following the phase.
+ */
 test("keeps the Brewing screen's active tab on the same phase after a reorder", async ({page}) => {
     test.fail();
     await seedBatch(page, {name: "E2E Reorder Active Tab Batch"});
@@ -632,6 +723,16 @@ test("keeps the Brewing screen's active tab on the same phase after a reorder", 
     await expect(page.getByRole("tab", {name: "1. Boil", exact: true})).toHaveAttribute("aria-selected", "true");
 });
 
+/**
+ * A reading row's fields must not collide.
+ *
+ * ⚠️ This asserts *placement*, which is deliberately different from everything
+ * above it. Every other test here fills a field and reads the value back, and
+ * they all passed while these rows were visibly broken — the name and value
+ * inputs overlapped by 65px and wrapped onto two lines, because `DataGridInput`
+ * pinned itself to a value-side column and the name field was using it too.
+ * A value assertion cannot see that; only geometry can.
+ */
 async function boxOf(page: Page, label: string) {
     const box = await page.getByLabel(label).boundingBox();
     if (!box) throw new Error(`no bounding box for "${label}"`);
@@ -663,6 +764,17 @@ test("reading rows lay out without overlapping fields", async ({page}) => {
     expect(Math.abs(name.y - value.y), "item row: fields should share a line").toBeLessThan(name.height);
 });
 
+/**
+ * Water Chemistry is the one reading kind with **no** value field — one row is
+ * one water sample, and its seven parameters live behind the expander. That
+ * makes it the case the test above cannot cover: with nothing to collide with,
+ * a name field pinned to a value column looks fine until you notice it starts
+ * halfway across the row.
+ *
+ * Asserts against the Gravity name field rather than a fixed x, so the two
+ * grids are held to the same left edge without pinning the test to a layout
+ * constant.
+ */
 test("the Water Chemistry name field starts at the same left edge as the other reading grids", async ({page}) => {
     await seedBatch(page, {name: "Water layout"});
     await openSchedulePhase(page, "1. Mash");

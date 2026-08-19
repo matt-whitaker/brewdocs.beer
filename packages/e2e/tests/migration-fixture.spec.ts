@@ -1,5 +1,13 @@
 import {expect, Page, test} from "@playwright/test";
 
+/**
+ * `batches`' own migrations array is empty, so the dev-only fixture stores
+ * (`packages/app/src/storage/migration/fixture.ts`) are what exercises the
+ * migration framework end to end. All three join `pass.ts`'s dev-only
+ * `migratedStores` on every page load, so any navigation primes their
+ * IndexedDB databases the same way `migrations-failed.spec.ts`'s
+ * `primeMigrationFailuresStore` primes "migration-failures".
+ */
 type Fixture = {
     id: string;
     label?: string;
@@ -79,6 +87,9 @@ test("a v1 migration-fixture record reaches the v3 schema after one reload, and 
     expect(await readIndexedDbValue(page, FIXTURE_DB, `${FIXTURE_DB}#e2e-fixture-happy-01`)).toEqual(migrated);
 });
 
+// implementor's testingNotes: recordMigrationBackup overwrites rather than
+// accumulates, keyed on `${entityType}:${storedId}` — a wrong key shape
+// would grow storage unbounded with no lint/typecheck/build signal
 test("a migrated record's pre-migration backup is written once, and a second migration overwrites rather than accumulates", async ({page}) => {
     await primeFixtureStores(page);
     await seedFixtureRecord(page, FIXTURE_DB, {id: "e2e-fixture-backup-01", label: "First Label", notes: "a, b"});

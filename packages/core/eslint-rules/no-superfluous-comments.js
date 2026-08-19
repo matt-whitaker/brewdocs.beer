@@ -1,20 +1,24 @@
 /**
- * Enforces the root CLAUDE.md "Code style" policy: comments are banned in TS/TSX.
- * (This file is .js, and the one comment in it was explicitly requested.)
+ * Enforces the root CLAUDE.md "Code style" policy: principle comments live at the
+ * top level; line narration is banned.
  *
- * Every comment errors except two shapes:
- * - JSDoc blocks (starting with a double asterisk) immediately preceding an exported
- *   declaration, a locally-declared symbol that a named export references, or a member
- *   of an exported interface / type-literal / class / enum body - the public-API
- *   carve-out. The check walks top-level statements only, so JSDoc nested deeper
- *   (inside a function body, or on a symbol that is never exported) errors like any
- *   other comment.
- * - Lint-functional directives: eslint-disable/enable/env, inline eslint config,
- *   global(s), exported, the @ts-* pragmas, and triple-slash references. Machinery,
- *   not commentary. Shebangs are skipped outright.
+ * A comment survives if any of these hold:
+ * - It sits at module top level - a file header, or a block attached to any
+ *   top-level statement (not inside a body, object literal, or JSX). That is the
+ *   seat for a summary of something complex. Whether a file NEEDS one is
+ *   judgment, not lint.
+ * - It is a JSDoc block on a member of an exported interface / type-literal /
+ *   class / enum body - the public-API carve-out (prop docs feed docgen).
+ * - It is a lint-functional directive: eslint-disable/enable/env, inline eslint
+ *   config, global(s), exported, the @ts-* pragmas, triple-slash references.
+ *   Shebangs are skipped outright.
  *
- * Wired as the `brewdocs` plugin in eslint.config.base.js at "error", inherited by
- * every workspace with no per-package opt-out.
+ * Everything else - a comment inside a function body, a per-line aside, an
+ * explainer on an expression - errors: say it in the code, or move the why to a
+ * CLAUDE.md.
+ *
+ * Wired as the `brewdocs` plugin in eslint.config.base.js at "error", inherited
+ * by every workspace with no per-package opt-out.
  */
 const DIRECTIVE = /^(eslint-disable|eslint-enable|eslint-env|eslint\s|global\s|globals\s|exported\s|@ts-expect-error|@ts-ignore|@ts-nocheck|@ts-check|\/\s*<(reference|amd))/;
 
@@ -48,17 +52,21 @@ export default {
     meta: {
         type: "suggestion",
         docs: {
-            description: "every comment errors except JSDoc on exported API surfaces and lint-functional directives"
+            description: "principle comments at top level survive; line narration inside bodies errors"
         },
         schema: [],
         messages: {
-            superfluous: "Say it in the code (a precise name, a smaller function, an explicit type); if a reader still needs the why, it belongs in a CLAUDE.md. See root CLAUDE.md, Code style."
+            superfluous: "Line narration is banned - say it in the code, hoist a principle comment to the top level, or move the why to a CLAUDE.md. See root CLAUDE.md, Code style."
         }
     },
     create(context) {
         const sourceCode = context.sourceCode;
         return {
             Program(program) {
+                const statementRanges = program.body.map((statement) => statement.range);
+                const insideAStatement = (comment) =>
+                    statementRanges.some(([start, end]) => comment.range[0] > start && comment.range[1] < end);
+
                 const exportedNames = new Set();
                 for (const statement of program.body) {
                     if (statement.type === "ExportNamedDeclaration" && !statement.source) {
@@ -68,31 +76,26 @@ export default {
                     }
                 }
 
-                const allowed = new Set();
-                const allowJsdocBefore = (node) => {
-                    for (const comment of sourceCode.getCommentsBefore(node)) {
-                        if (isJsdoc(comment)) allowed.add(comment);
-                    }
-                };
-
+                const allowedMemberDocs = new Set();
                 for (const statement of program.body) {
                     let exportedDeclaration = null;
                     if (statement.type === "ExportNamedDeclaration" || statement.type === "ExportDefaultDeclaration") {
-                        allowJsdocBefore(statement);
                         exportedDeclaration = statement.declaration;
                     } else if (declaredNames(statement).some((name) => exportedNames.has(name))) {
-                        allowJsdocBefore(statement);
                         exportedDeclaration = statement.type === "VariableDeclaration" ? null : statement;
                     }
                     for (const member of membersOf(exportedDeclaration)) {
-                        allowJsdocBefore(member);
+                        for (const comment of sourceCode.getCommentsBefore(member)) {
+                            if (isJsdoc(comment)) allowedMemberDocs.add(comment);
+                        }
                     }
                 }
 
                 for (const comment of sourceCode.getAllComments()) {
                     if (comment.type === "Shebang") continue;
                     if (isDirective(comment)) continue;
-                    if (allowed.has(comment)) continue;
+                    if (!insideAStatement(comment)) continue;
+                    if (allowedMemberDocs.has(comment)) continue;
                     context.report({ loc: comment.loc, messageId: "superfluous" });
                 }
             }

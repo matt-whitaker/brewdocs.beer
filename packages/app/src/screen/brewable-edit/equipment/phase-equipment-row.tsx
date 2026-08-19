@@ -58,4 +58,6 @@ function RecipeEditPhaseEquipmentRow({ phase, row, phaseLabel, item, remove, upd
     );
 }
 
+// props are referentially stable (setIn keeps untouched branches, editors are
+// stable), so editing one row no longer re-renders its siblings
 export default memo(RecipeEditPhaseEquipmentRow);

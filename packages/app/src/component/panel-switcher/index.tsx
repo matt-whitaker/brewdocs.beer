@@ -14,6 +14,13 @@ export type PanelSwitcherProps = PropsWithChildren & Partial<PropsWithClass> & {
 
 export type PanelSwitcherHandle = { activate: SwitchFn };
 
+/**
+ * A React-controlled tablist/tabpanel that mounts only the active panel. Two
+ * layouts, keyed off `compact`: screen-level tabs go full-bleed on mobile
+ * (w-screen + a leading gutter on the first tab), which a nested sub-nav can't do
+ * without escaping its panel; compact stays in flow and leaves the tab padding to
+ * daisyui's size modifier (tabs-sm) instead of overriding it with px-*.
+ */
 const PanelSwitcher = forwardRef<PanelSwitcherHandle, PanelSwitcherProps>(function PanelSwitcher(
     { name, defaultTab, children, className, compact = false },
     ref

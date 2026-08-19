@@ -12,6 +12,8 @@ export type RemoveFn = (dot: string, index: number) => void;
 export type MoveFn = (dot: string, from: number, to: number) => void;
 export type MutateFn<T> = (fn: (draft: T) => T, immediate?: boolean) => void;
 
+// T is any editable object — a whole Entity (Recipe/Batch) or a sub-object of
+// one (e.g. a Brewable, edited by BrewableEdit and merged back on save).
 export default function useJsonEdit<T extends object>(data: T, onChange: (data: T) => void): [T, UpdateFn, UpdateScalarFn, ToggleFn, AddFn, RemoveFn, MoveFn, MutateFn<T>] {
     const {beginPendingWrite} = useSignals();
     const [state, setState] = useState<T>(data);

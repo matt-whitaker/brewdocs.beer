@@ -1,5 +1,8 @@
 import { expect, test } from "@playwright/test";
 
+// Real ids straight from packages/kb/data/{grains,hops,yeasts}/*.json filenames
+// (the kb build stamps `id = basename(file)` - see packages/kb/CLAUDE.md).
+
 test("grain detail page renders the item", async ({ page }) => {
     await page.goto("/kb/grain/carapils");
     await expect(page.locator(".breadcrumbs").getByText("Carapils")).toBeVisible();

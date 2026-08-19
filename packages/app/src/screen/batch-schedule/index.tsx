@@ -39,6 +39,7 @@ const KIND_LABELS: Record<ScheduleKind, string> = {
     additives: "Additives"
 };
 
+/** within a phase, rows read in the order you'd actually work through them */
 const KIND_ORDER: ScheduleKind[] = ["grains", "hops", "additives", "yeasts"];
 
 function srmTag(srm?: string): ReactNode {

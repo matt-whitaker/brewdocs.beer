@@ -115,6 +115,13 @@ export const assignmentResourceName = (assignment: Assignment): string => {
     }
 };
 
+/**
+ * The concrete resource model an Assignment narrows to for a given `resourceType`
+ * — `ResourceFor<"hop">` is `Hop`, etc. Needed because TypeScript won't resolve
+ * `Extract<Assignment, {resourceType: T}>["resource"]` to a single type while `T`
+ * is an unbound generic, so the helpers below widen back to the union without an
+ * explicit return annotation (this bit `weighed`, which needs `weight`).
+ */
 type ResourceFor<T extends ResourceType> = Extract<Assignment, { resourceType: T }>["resource"];
 
 /** narrows an Assignment's `resource` by `resourceType`, matching the discriminated union */

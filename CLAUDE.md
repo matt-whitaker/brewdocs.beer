@@ -113,10 +113,10 @@ Guidance for human contributors **and** for the `@claude` GitHub integration.
 - Protect `mainline` to require the **Verify** check green before merge.
 
 ### Code style
-- ⚠️ **Don't write code comments.** Add one only when the maintainer explicitly asks for it in that task. This covers explanatory blocks, `⚠️` notes, JSDoc, and "why it's like this" asides — the default is **none**.
-  - **Lint-enforced** since #949: `brewdocs/no-superfluous-comments` in the shared base config errors on every comment in TS/TSX across all six workspaces. Exemptions: JSDoc immediately preceding an exported symbol (or a member of one) — the public-API carve-out — and lint-functional directives (`eslint-disable*`, `@ts-expect-error`, triple-slash references), which are machinery, not commentary.
+- ⚠️ **Principle comments only — no line narration.** A top-level comment that summarizes something complex (a file header, a block above a top-level declaration) is welcome where it earns its seat. Per-function and per-line narration is banned: inside a body the default is **none**.
+  - **Lint-enforced** since #949: `brewdocs/no-superfluous-comments` in the shared base config errors on any comment *inside* a top-level statement (function bodies, object literals, JSX) across all six workspaces. Survivors: module-top-level comments — the principle seat — plus JSDoc on members of exported API surfaces and lint-functional directives (`eslint-disable*`, `@ts-*` pragmas, triple-slash references), which are machinery, not commentary.
 - Say it in the code instead: a precise name, a smaller function, an explicit type. If a reader would still need the *why*, it belongs in a `CLAUDE.md` — that's where this repo keeps its gotchas, and unlike an inline comment it's discoverable from outside the file and actually gets maintained.
-- Deleting a stale or redundant comment is always fine and needs no permission. Adding one does.
+- Deleting a stale or redundant comment is always fine and needs no permission. A principle comment needs only to earn its seat; narration needs the maintainer's explicit ask.
 - ⚠️ This applies to the `@claude` roles too. Comment-heavy output is a recurring failure mode: the volume buries the few things that matter and goes stale the moment the code moves.
 
 ### Filing bugs

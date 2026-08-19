@@ -13,6 +13,9 @@ export type BatchPlanningProps = {
     onChange: (patch: Partial<Batch>) => void
 };
 
+// A name header, then BrewableEdit for the Ingredients/Equipment/Phases tabs,
+// mirroring recipe-edit. Brew-day facts (brewDate) live on BatchSchedule's Prep
+// tab, not here.
 export default function BatchPlanning({ batchId, onChange }: BatchPlanningProps) {
     const batch = useBatch(batchId);
     const recipe = useRecipeResource(batch.recipeSource ?? "kb", batch.recipeId);

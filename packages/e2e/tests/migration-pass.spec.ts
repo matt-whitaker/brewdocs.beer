@@ -1,5 +1,13 @@
 import {expect, Page, test} from "@playwright/test";
 
+/**
+ * `batches`' own migrations array is empty (packages/app/src/storage/batches.ts,
+ * BATCHES_VERSION = 1) — by this story's explicit scope, so a seeded record at
+ * any other version has no bridging migration and can only fail, never
+ * succeed. These specs prove the exclusion half and the already-current
+ * no-op half; a genuine "old record successfully migrates" scenario isn't
+ * exercisable here (see the story's #820 report).
+ */
 type SeedBatch = {
     id: string;
     name: string;
@@ -31,6 +39,9 @@ function batchRecord({id, name, version}: SeedBatch) {
     };
 }
 
+// the "batches" store only exists once localforage has initialized it, which
+// happens the first time the page's own query runs — mirrors
+// migrations-failed.spec.ts's primeMigrationFailuresStore
 async function primeBatchesStore(page: Page) {
     await page.goto("/batches");
     await expect(page.getByRole("tab", {name: "Ready"})).toHaveAttribute("aria-selected", "true");
@@ -97,6 +108,10 @@ test("a batch already at the current version is unaffected by the pass, across r
     }
 });
 
+// the failures-store write is keyed off the record's own id
+// (`${entityType}:${id}` in Forage.migrateStoredRecord), so if the pass
+// re-attempted and re-wrote on every load rather than persisting once, this
+// would still show one row per load instead of staying at one
 test("a stale batch's set-aside failure record doesn't duplicate across reloads", async ({page}) => {
     await primeBatchesStore(page);
     await seedBatches(page, [{id: "e2e-stale-nodupe", name: "E2E Stale No Dupe", version: BATCHES_VERSION + 1}]);
@@ -108,6 +123,8 @@ test("a stale batch's set-aside failure record doesn't duplicate across reloads"
     await expect(page.getByRole("listitem").filter({hasText: "e2e-stale-nodupe"})).toHaveCount(1);
 });
 
+// DATA-MIGRATION-02: an ordinary load with nothing stale looks like any
+// other load — no flicker, nothing added or removed after first appearing
 test("an ordinary load with nothing stale shows a stable batch list", async ({page}) => {
     await primeBatchesStore(page);
     await seedBatches(page, [

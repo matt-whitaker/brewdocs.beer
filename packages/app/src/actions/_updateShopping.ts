@@ -4,12 +4,14 @@ import {resourcesOf} from "@/model/brewable";
 import {groupBy, isEqual} from "@/utils/func";
 import {parseNumberString} from "@/utils/math";
 
+/** the fields this action owns; everything else on an item belongs to the user */
 type Derived = Pick<ShoppingItem, "name"|"tags"|"scalar">;
 
 type Weighed = { name: string; weight: Scalar };
 
 const itemKey = ({ tags, name }: Derived|ShoppingItem) => `${tags[0]}:${name}`;
 
+/** one row per name, weights summed, keeping the unit the ingredient was entered in */
 function weighed(tag: ShoppingTag, items: Weighed[]): Derived[] {
     const groups = groupBy(items, "name");
     return Object.keys(groups).map(name => {
@@ -19,6 +21,7 @@ function weighed(tag: ShoppingTag, items: Weighed[]): Derived[] {
     });
 }
 
+/** ingredients that aren't weighed — deduped so a repeated name is a single row */
 function named(tag: ShoppingTag, items: { name: string }[]): Derived[] {
     return [...new Set(items.map(({ name }) => name))].map(name => ({ name, tags: [tag] }));
 }

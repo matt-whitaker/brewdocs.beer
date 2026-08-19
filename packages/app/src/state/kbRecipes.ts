@@ -7,6 +7,13 @@ import {FilterFn} from "@/utils/func";
 
 const kbRecipesQueryKey = () => ["kb", "recipes"];
 
+/**
+ * The local kb cache is unversioned, so a cache written before `brewable` was
+ * added to the recipe shape (KB model v2) is stale — the app can no longer
+ * narrow it, and the "Edit" clone crashes on `kbRecipe.brewable`. Treat a
+ * cached recipe missing `brewable` as stale so we re-hydrate from HTTP instead
+ * of serving (and copying) a shape we can't read.
+ */
 const isStaleCache = (recipes: KbRecipe[]): boolean => recipes.some((recipe) => !recipe.brewable);
 
 export const fetchKbRecipes = async (): Promise<KbRecipe[]> => {

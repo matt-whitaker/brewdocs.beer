@@ -48,4 +48,6 @@ function RecipeEditPhasesRow({ row, label, removable, count, locked = false, rem
     );
 }
 
+// props are referentially stable (setIn keeps untouched branches, editors are
+// stable), so editing one row no longer re-renders its siblings
 export default memo(RecipeEditPhasesRow);

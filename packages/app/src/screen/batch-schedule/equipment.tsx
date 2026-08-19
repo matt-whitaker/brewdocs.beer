@@ -32,6 +32,8 @@ function BatchScheduleEquipmentItem({ item, completed, onToggle }: BatchSchedule
     );
 }
 
+// props are primitives plus a stable toggle, so ticking one item doesn't
+// re-render the rest of the list
 const Item = memo(BatchScheduleEquipmentItem);
 
 export type BatchScheduleEquipmentProps = {

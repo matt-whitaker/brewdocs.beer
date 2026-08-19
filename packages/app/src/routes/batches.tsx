@@ -9,6 +9,7 @@ import {Crumb} from "@/model/crumb";
 import {useBreadcrumbs} from "@/providers/breadcrumbs";
 import BrewList from "@/screen/batch-list";
 
+// module const so the array is stable across renders (see useBreadcrumbs)
 const BREADCRUMBS: Crumb[] = [{ label: "Batches" }];
 
 const BREWING_PHASE_TYPES: PhaseType[] = ["mash", "boil"];

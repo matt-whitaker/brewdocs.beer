@@ -1,6 +1,14 @@
 import {UNITS} from "@brewdocs.beer/core";
 import Batch from "@/model/batch";
 
+/**
+ * The out-of-the-box batch fields. A **factory**, not a shared const: a module-level
+ * object would be spread into every batch by reference (`{...defaultBatch}` is
+ * shallow), so any in-place mutation of a nested field — the `Object.assign`
+ * style `_updateShopping` already uses — would leak across every batch created in
+ * that session. Brew-day phases are not seeded here at all; they live on the
+ * brewable, which is the plan's source of truth.
+ */
 const defaultBatch = () => ({
     tracker: {},
     batchSize: {

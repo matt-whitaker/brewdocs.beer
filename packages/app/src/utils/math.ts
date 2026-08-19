@@ -1,4 +1,4 @@
-export const CURRENCY_REGEX = /^[$€£¥₹₽₩₫₪₱₭฿₦₲₵₮₡₸]/;
+export const CURRENCY_REGEX = /^[$€£¥₹₽₩₫₪₱₭฿₦₲₵₮₡₸]/; // todo web safe to do this?
 export const UNIT_REGEX = /[^\d.,]+/;
 export const COMMAS_REGEX = /,/g;
 
