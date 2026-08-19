@@ -6,18 +6,25 @@
 // width; height follows the viewBox). Colors are nord polar-night tones.
 interface Props {
     class?: string;
+    src?: string;
+    label?: string;
 }
-const { class: className } = Astro.props;
+const {
+    class: className,
+    src = "/images/screenshot.png",
+    label = "BrewDocs running on an iPhone"
+} = Astro.props;
+const screenClipId = `brewdocs-phone-screen-${src.replace(/[^a-zA-Z0-9]+/g, "-")}`;
 ---
 <svg
     class={className}
     viewBox="0 0 330 625"
     role="img"
-    aria-label="BrewDocs running on an iPhone"
+    aria-label={label}
     xmlns="http://www.w3.org/2000/svg">
-    <title>BrewDocs on an iPhone</title>
+    <title>{label}</title>
     <defs>
-        <clipPath id="brewdocs-phone-screen">
+        <clipPath id={screenClipId}>
             <rect x="15" y="12" width="300" height="601" rx="36" />
         </clipPath>
     </defs>
@@ -36,13 +43,13 @@ const { class: className } = Astro.props;
 
     <!-- the screenshot, filling the screen, clipped to the rounded corners -->
     <image
-        href="/images/screenshot.png"
+        href={src}
         x="15"
         y="12"
         width="300"
         height="601"
         preserveAspectRatio="xMidYMid slice"
-        clip-path="url(#brewdocs-phone-screen)" />
+        clip-path={`url(#${screenClipId})`} />
 
     <!-- notch, drawn over the screenshot: square top, rounded bottom -->
     <path d="M113 12 H217 V25 A13 13 0 0 1 204 38 H126 A13 13 0 0 1 113 25 Z" fill="#0b0e14" />
