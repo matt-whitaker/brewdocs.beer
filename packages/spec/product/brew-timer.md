@@ -91,6 +91,14 @@ the batch schedule's reading fields (BATCH-SCHEDULE-16) when empty, matching whi
 Gravity, Volume or Temperature is the selected reading kind. Selecting Pressure, Water, Keg date
 or Bottle date shows no such placeholder.
 
+**BREW-TIMER-15** — A single control drives the whole brew session: labelled **Start timer**
+before the session has begun or whenever it is paused, and **Pause timer** whenever it is
+running. The same control begins the session on first press; there is no separate control for
+resuming a paused one.
+
+> *Why:* pausing and resuming are the same brewer intent — let this keep counting, or not — so
+> one control answering both keeps a mid-brew hand from having to find a second button.
+
 ## Known gaps
 
 - Which specific item a reading, an ingredient addition, or an equipment check-off actually
