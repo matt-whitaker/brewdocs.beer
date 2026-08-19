@@ -1,5 +1,5 @@
 name: Functional test
-run-name: "Functional test"
+run-name: "Functional test${{ github.event_name != 'pull_request' && ' · cache warm' || '' }}"
 
 on:
   pull_request:
@@ -22,6 +22,15 @@ on:
       - 'package-lock.json'
       - 'nx.json'
       - '.github/workflows/functional-test.yaml'
+  # ⚠️ The push trigger exists ONLY for the warm-cache job below — the suite itself still
+  # runs on PRs alone (#1057 declined push-triggered testing). Every mainline push warms, no
+  # path filter and no cron, deliberately: merges are the repo's heartbeat, so the cache is
+  # re-touched (staving off the 7-day unused eviction) and re-seeded after any eviction as a
+  # side effect of normal activity — a schedule would cover quiet weeks instead, but GitHub
+  # disables crons after 60 idle days, which is unreliable in exactly the periods it targets.
+  push:
+    branches:
+      - mainline
 
 concurrency:
   group: functional-test-${{ github.ref }}
@@ -31,7 +40,25 @@ env:
   NODE_VERSION: 22
 
 jobs:
+  # ⚠️ Caches saved by pull_request runs land in per-PR scopes (refs/pull/N/merge) that no
+  # OTHER PR may restore from (#1231, run #324) — a run may restore only from its own ref, its
+  # base branch, or the default branch. This job writes the npm cache key in the mainline
+  # scope so every PR hits it. (The 268MB playwright cache this problem was found on is gone
+  # entirely — the suite drives the runner's preinstalled Chrome now.)
+  warm-cache:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+
   functional-test:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     # the suite's execution has grown past 5 minutes and a degraded browser download adds more;
     # a hang otherwise burns the 6-hour ceiling (#1175's class)
@@ -43,21 +70,11 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
       - run: npm ci
-      - id: pw-version
-        run: echo "version=$(jq -r '.packages["node_modules/@playwright/test"].version' package-lock.json)" >> "$GITHUB_OUTPUT"
-      - id: pw-cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.pw-version.outputs.version }}
-      # ⚠️ SKIPPED ENTIRELY ON A CACHE HIT, apt included — deliberately. ubuntu-latest ships
-      # chromium's OS dependencies, and apt is the half that hangs (#1175 measured three runs
-      # burning toward the 6-hour ceiling on it). If a browser-launch failure ever appears after
-      # a runner-image update, the fallback is `npx playwright install-deps chromium` on hit.
-      # The key carries the playwright version, so an upgrade re-seeds the cache (#1179).
-      - if: steps.pw-cache.outputs.cache-hit != 'true'
-        timeout-minutes: 10
-        run: npx playwright install --with-deps chromium
+      # ⚠️ No browser install, deliberately: the e2e config drives the Chrome that
+      # ubuntu-latest preinstalls (channel "chrome" in every environment). The bundled-chromium
+      # download this replaced cost 268MB per PR and a cache whose per-PR scoping never shared
+      # (#1231); the trade is that the browser version floats with the runner image — a suite
+      # breaking right after an image update should suspect Chrome drift first.
       - run: npm run test:e2e -w packages/e2e
       - uses: actions/upload-artifact@v4
         if: failure()
