@@ -24,6 +24,11 @@
     "packages/e2e"
   ],
   "devDependencies": {
-    "nx": "23.1.0"
+    "nx": "23.1.1"
+  },
+  "overrides": {
+    "nx": {
+      "brace-expansion": "^5.0.9"
+    }
   }
 }
