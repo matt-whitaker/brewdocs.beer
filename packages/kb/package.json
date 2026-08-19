@@ -5,7 +5,8 @@
   "main": "./src/index.ts",
   "scripts": {
     "build": "echo 'No build'",
-    "test": "echo 'No tests'"
+    "test": "npm run lint",
+    "lint": "eslint ."
   },
   "author": "",
   "license": "ISC",
