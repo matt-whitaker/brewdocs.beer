@@ -1,6 +1,6 @@
 # @brewdocs.beer/kb
 
-Knowledge base code — the `Kb*` model types and a dumb HTTP transport adapter. The data itself lives in [brewdocs.beer-kb](https://github.com/matt-whitaker/brewdocs.beer-kb).
+Knowledge base code — the `Kb*` model types and a dumb HTTP transport adapter. The data itself lives elsewhere.
 
 ## Entry points
 
