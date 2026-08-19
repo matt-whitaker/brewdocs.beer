@@ -14,18 +14,13 @@ export type RecipeEditPhasesAddRowProps = {
     locked?: boolean;
 };
 
-// a phase type, not a catalog item — repeats are allowed (mash -> boil -> mash),
-// so this never disables an already-used type
 export default function RecipeEditPhasesAddRow({ add, locked = false }: RecipeEditPhasesAddRowProps) {
     const [type, setType] = useState<PhaseType|null>(null);
     const options = useMemo(() => [...PHASE_TYPES, ...OPTIONAL_PHASE_TYPES].map(value => ({ value, name: `${value[0].toUpperCase()}${value.slice(1)}` })), []);
 
     const addPhase = useCallback(() => {
         if (!type) return;
-        // ⚠️ Typed as a full BrewablePhase on purpose: `AddFn` takes `unknown`, so a
-        // missing `id`/`milestones` would sail past tsc and only surface at runtime
-        // as a silent save failure (liveTrackerKeys reading `milestones` of undefined).
-        // The id is minted here because assignments reference a phase *instance*.
+
         const phase: BrewablePhase = { id: newId(), type, equipment: [], milestones: [] };
         add("schedule.phases", phase);
         setType(null);

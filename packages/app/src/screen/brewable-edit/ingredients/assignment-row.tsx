@@ -16,14 +16,6 @@ export type RecipeEditAssignmentRowProps = {
     updateScalar: UpdateScalarFn;
 };
 
-/**
- * One row per assignment: name + remove, a headline scalar when the
- * resource has one (grain/hop/additive `weight`), and an expansion narrowed by
- * `resourceType` for everything else (switching on it to reach
- * `assignment.resource`'s type-specific fields with no cast). `row` indexes
- * `assignments` directly (dot-paths are relative to the brewable), so every
- * dot-path below is `assignments[${row}].resource.<field>`.
- */
 function RecipeEditAssignmentRow({ row, assignment, remove, update, updateScalar }: RecipeEditAssignmentRowProps) {
     const base = `assignments[${row}].resource`;
 
@@ -167,6 +159,4 @@ function RecipeEditAssignmentRow({ row, assignment, remove, update, updateScalar
     );
 }
 
-// props are referentially stable (setIn keeps untouched branches, editors are
-// stable), so editing one row no longer re-renders its siblings
 export default memo(RecipeEditAssignmentRow);

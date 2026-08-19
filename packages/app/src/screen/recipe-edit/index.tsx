@@ -7,9 +7,6 @@ import BrewableEdit from "@/screen/brewable-edit";
 import RecipeEditDetails from "@/screen/recipe-edit/details";
 import {usePatchRecipe, useRecipe} from "@/state/recipes";
 
-// A name/brewer header, then BrewableEdit for the Ingredients/Equipment/Phases
-// tabs. The recipe-specific "Details" panel is injected as panelsBefore, so this
-// screen owns only the recipe chrome — BrewableEdit owns the brewable editing.
 export type RecipeEditProps = { recipeId: string };
 export default function RecipeEdit({ recipeId }: RecipeEditProps) {
     const recipe = useRecipe(recipeId);

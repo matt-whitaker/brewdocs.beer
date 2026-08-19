@@ -30,8 +30,6 @@ function RecipePage() {
     ], [recipeId]);
     useBreadcrumbs(breadcrumbs);
 
-    // a user recipe is already editable — Edit goes straight to its editor (unlike
-    // the catalog route, where Edit clones the recipe first)
     const onEdit = useCallback(() =>
         navigate({to: "/recipe/$recipeId/edit", params: {recipeId}}),
     [navigate, recipeId]);

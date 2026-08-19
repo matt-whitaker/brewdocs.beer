@@ -19,8 +19,6 @@ export default function DbCleanup() {
             migrationBackupsStorage.purge();
             navigate({to: "/", replace: true});
         }
-        // navigate is stable, and the ?purge= guard makes any re-run a no-op
-        // (navigating away drops the param), so listing it can't loop
     }, [navigate]);
 
     return null;

@@ -63,9 +63,7 @@ export default function Action({
             </button>
             {hasModal && (
                 <Modal ref={modalRef}>
-                    {/* content data-reads sit behind a local boundary so a suspend
-                        never blanks the always-visible button; the modal is closed
-                        at first paint, so a null fallback is invisible */}
+                    {}
                     <Suspense fallback={null}>
                         {modalContent}
                     </Suspense>

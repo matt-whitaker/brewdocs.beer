@@ -10,8 +10,6 @@ export const Route = createFileRoute("/kb/yeast/$yeastId")({
     component: KbYeastPage
 });
 
-// Read-only catalog (KbYeast) view. No PanelSwitcher here, so this route
-// needs its own Suspense boundary for a cold deep-link before boot prefetch resolves.
 function KbYeastPage() {
     const {yeastId} = Route.useParams();
 

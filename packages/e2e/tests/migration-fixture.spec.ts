@@ -1,13 +1,5 @@
 import {expect, Page, test} from "@playwright/test";
 
-/**
- * `batches`' own migrations array is empty, so the dev-only fixture stores
- * (`packages/app/src/storage/migration/fixture.ts`) are what exercises the
- * migration framework end to end. All three join `pass.ts`'s dev-only
- * `migratedStores` on every page load, so any navigation primes their
- * IndexedDB databases the same way `migrations-failed.spec.ts`'s
- * `primeMigrationFailuresStore` primes "migration-failures".
- */
 type Fixture = {
     id: string;
     label?: string;
@@ -87,9 +79,6 @@ test("a v1 migration-fixture record reaches the v3 schema after one reload, and 
     expect(await readIndexedDbValue(page, FIXTURE_DB, `${FIXTURE_DB}#e2e-fixture-happy-01`)).toEqual(migrated);
 });
 
-// implementor's testingNotes: recordMigrationBackup overwrites rather than
-// accumulates, keyed on `${entityType}:${storedId}` — a wrong key shape
-// would grow storage unbounded with no lint/typecheck/build signal
 test("a migrated record's pre-migration backup is written once, and a second migration overwrites rather than accumulates", async ({page}) => {
     await primeFixtureStores(page);
     await seedFixtureRecord(page, FIXTURE_DB, {id: "e2e-fixture-backup-01", label: "First Label", notes: "a, b"});
@@ -100,7 +89,6 @@ test("a migrated record's pre-migration backup is written once, and a second mig
     expect(firstBackup).toMatchObject({entityType: FIXTURE_DB, fromVersion: 1, toVersion: 3, data: {id: "e2e-fixture-backup-01", label: "First Label", notes: "a, b"}});
     expect(await countIndexedDbKeysWithPrefix(page, MIGRATION_BACKUPS_DB, `${MIGRATION_BACKUPS_DB}#${FIXTURE_DB}:`)).toBe(1);
 
-    // force a second migration on the same id by re-seeding it back at v1
     await seedFixtureRecord(page, FIXTURE_DB, {id: "e2e-fixture-backup-01", label: "Second Label", notes: "c, d"});
     await page.reload();
     await expect(page.getByRole("heading", {name: "Updates"})).toBeVisible();
@@ -118,7 +106,6 @@ test("a migration-fixture-throws record is set aside, not lost, and is visible o
     await page.reload();
     await expect(page.getByRole("heading", {name: "Updates"})).toBeVisible();
 
-    // per-record containment: the source store keeps the original, unmigrated record
     expect(await readIndexedDbValue(page, FIXTURE_THROWS_DB, `${FIXTURE_THROWS_DB}#e2e-fixture-throws-01`)).toEqual(seeded);
 
     const failure = await readIndexedDbValue(page, MIGRATION_FAILURES_DB, `${MIGRATION_FAILURES_DB}#${FIXTURE_THROWS_DB}:e2e-fixture-throws-01`);
@@ -149,7 +136,6 @@ test("a migration-fixture-orphan v1 record fails cleanly and is visible on /migr
     await page.reload();
     await expect(page.getByRole("heading", {name: "Updates"})).toBeVisible();
 
-    // the control case: a v2 record in the same store has a bridging migration and succeeds
     const migratedControl = await readIndexedDbValue(page, FIXTURE_ORPHAN_DB, `${FIXTURE_ORPHAN_DB}#e2e-fixture-orphan-control`);
     expect(migratedControl).toEqual({id: "e2e-fixture-orphan-control", name: "Orphan V2 Control", notes: ["y", "z"], version: 3});
 

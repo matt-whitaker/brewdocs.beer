@@ -1,16 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
 
-// Locally we drive the INSTALLED Google Chrome; in CI, Playwright's own chromium.
-//
-// Playwright 1.62 ships no chromium build for macOS 13, so `playwright install` refuses
-// ("does not support chromium on mac13") and the browser cache stays empty — every local run
-// then dies on a missing executable, which reads as "cannot verify" rather than as a failure
-// and quietly hands verification to CI. `channel` skips the download and uses the browser the
-// machine already has.
-//
-// ⚠️ CI must stay on the bundled build: functional-test.yaml installs chromium and the runner
-// has no Chrome. This used to be a commented-out line to flip by hand, and both directions of
-// forgetting cost something — an unverified local run, or a committed channel that breaks CI.
 const channel = process.env.E2E_CHANNEL || (process.env.CI ? undefined : "chrome");
 
 export default defineConfig({

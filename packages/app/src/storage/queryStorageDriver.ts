@@ -1,17 +1,4 @@
-/**
- * A localforage driver whose backing store is the URL's query string.
- *
- * Mirrors the structure of `localforage-sessionstoragewrapper`: a synchronous
- * `Storage`-shaped shim (here over `URLSearchParams` + `history.replaceState`)
- * wrapped in the standard driver contract, using localforage's own serializer
- * so any value type round-trips. Keys are namespaced with the same
- * `name/[storeName/]` prefix scheme, so multiple stores coexist in one URL.
- *
- * Values live in the address bar, so this is for small, ideally shareable
- * state — the serialized payload of every key sits in the query string, which
- * has practical length limits (a few KB). Writes use `replaceState` so they
- * don't spam browser history.
- */
+
 
 interface QueryParamStore {
     getItem(key: string): string | null;
@@ -27,7 +14,6 @@ interface QueryDbInfo extends LocalForageOptions {
     serializer: LocalForageSerializer;
 }
 
-/** The runtime `this` inside driver methods — the localforage instance plus its internals. */
 interface QueryDriverContext {
     ready(): Promise<void>;
     getSerializer(): Promise<LocalForageSerializer>;
@@ -48,12 +34,10 @@ function writeParams(params: URLSearchParams): void {
     window.history.replaceState(window.history.state, "", url);
 }
 
-/** Deduped param names — the URL can technically repeat a key; a real Storage can't. */
 function paramKeys(params: URLSearchParams): string[] {
     return [...new Set(params.keys())];
 }
 
-/** Synchronous Storage-like view over the query string; every call reads/writes the live URL. */
 const queryParamStore: QueryParamStore = {
     getItem(key) {
         return readParams().get(key);
@@ -179,7 +163,7 @@ function removeItem(this: QueryDriverContext, key: string, callback?: (err: unkn
 function clear(this: QueryDriverContext, callback?: (err: unknown) => void): Promise<void> {
     const promise = this.ready().then(() => {
         const { db, keyPrefix } = this._dbInfo;
-        // top-down so removals don't shift the indices still to be visited
+
         for (let i = db.length - 1; i >= 0; i--) {
             const key = db.key(i) || "";
             if (key.indexOf(keyPrefix) === 0) {
@@ -257,12 +241,6 @@ function dropInstance(this: QueryDriverContext, ...args: unknown[]): Promise<voi
     return promise;
 }
 
-/**
- * Cast at the boundary: these methods depend on localforage's runtime `this`
- * binding (`.ready()`, `.getSerializer()`, `._dbInfo`) that isn't part of the
- * public `LocalForageDriver` type — same reality the plain-JS reference driver
- * lives with.
- */
 const queryStorageDriver = {
     _driver: DRIVER_NAME,
     _support: isQueryStorageValid(),

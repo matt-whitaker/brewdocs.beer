@@ -14,14 +14,13 @@ type BatchScheduleEquipmentItemProps = {
 };
 
 function BatchScheduleEquipmentItem({ item, completed, onToggle }: BatchScheduleEquipmentItemProps) {
-    // batch brewable equipment is guaranteed an id by ensureBrewableIds in the batch write path (createBatch/updateBatch) before it ever reaches this screen
     const id = item.id!;
     const domId = `equipment-${id}`;
     const toggleItem = useCallback(() => onToggle(id), [onToggle, id]);
 
     return (
         <DataGridRow zebra>
-            {/* no value column here, so the label spans the full grid */}
+            {}
             <DataGridLabel className="flex items-center col-span-6" htmlFor={domId}>
                 <DataGridCheckbox
                     id={domId}
@@ -33,8 +32,6 @@ function BatchScheduleEquipmentItem({ item, completed, onToggle }: BatchSchedule
     );
 }
 
-// props are primitives plus a stable toggle, so ticking one item doesn't
-// re-render the rest of the list
 const Item = memo(BatchScheduleEquipmentItem);
 
 export type BatchScheduleEquipmentProps = {

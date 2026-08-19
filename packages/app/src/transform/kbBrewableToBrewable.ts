@@ -36,8 +36,7 @@ export function kbBrewableToBrewable(kbBrewable: KbBrewable): Brewable {
         schedule: {phases},
         assignments: kbBrewable.assignments.map(({phaseType, ...assignment}) => ({
             ...assignment,
-            // a kb phaseType with no matching phase would orphan the row, so fall
-            // back to the first phase rather than emit a dangling reference
+
             phaseId: firstPhaseIdOfType.get(phaseType as PhaseType) ?? phases[0].id
         })) as Assignment[]
     };

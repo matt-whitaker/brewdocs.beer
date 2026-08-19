@@ -3,9 +3,6 @@ import DataGrid from "@/component/data-grid";
 import DataGridHeaderRow from "@/component/data-grid/header-row";
 import DataGridRow from "@/component/data-grid/row";
 
-// accepts either real batch-instance ingredients or raw kb-recipe-embedded
-// ones (Hop[]/Grain[]/Yeast[] vs a KbRecipe's own hops/grains/yeasts shape) —
-// this component only ever displays the name, so it doesn't need the full type
 export type OrganicsProps = {
     hops: {name: string}[];
     grains: {name: string}[];
@@ -15,7 +12,7 @@ export type OrganicsProps = {
 };
 
 const namesList = (items: {name: string}[]) => items.map(({ name }) => name).join(", ");
-// hops and additives repeat across boil additions, so collapse them to distinct names
+
 const distinctNamesList = (items: {name: string}[]) => [...new Set(items.map(({ name }) => name)).values()].join(", ");
 
 export default function Organics({ hops, grains, yeasts, additives, className }: OrganicsProps) {
@@ -33,12 +30,10 @@ export default function Organics({ hops, grains, yeasts, additives, className }:
         <DataGrid className={className}>
             {rows.map(([name, list]) => (
                 <Fragment key={name}>
-                    {/* labels — collapsible headers in one grid would fold each
-                        other's rows, since the collapse rule takes every following
-                        sibling */}
+                    {}
                     <DataGridHeaderRow>{name}</DataGridHeaderRow>
                     <DataGridRow zebra>
-                        {/* no label in the row, so the list gets the full width to wrap into */}
+                        {}
                         <div className="col-span-6 self-center text-sm">{list}</div>
                     </DataGridRow>
                 </Fragment>

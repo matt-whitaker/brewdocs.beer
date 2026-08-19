@@ -18,9 +18,6 @@ export type BrewableEditPhasesProps = {
     locked?: boolean;
 };
 
-// A brewable panel: lists the schedule's phases as entries — nothing more than
-// add a phase, remove one, and reorder them. Equipment lives on its own panel.
-// Dot-paths are relative to the brewable.
 export default function BrewableEditPhases({ brewable, add, remove, move, locked = false }: BrewableEditPhasesProps) {
     const session = useSession();
     const phases = brewable.schedule.phases;

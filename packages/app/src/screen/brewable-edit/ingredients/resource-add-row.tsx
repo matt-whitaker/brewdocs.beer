@@ -30,7 +30,6 @@ export type RecipeEditResourceAddRowProps = {
     kbYeastsIndex: Map<string, KbYeast>;
 };
 
-/** each case builds a single discriminated-union member so `resource` stays typed with no cast */
 function buildCatalogAssignment(
     phaseId: string,
     resourceType: ResourceType,

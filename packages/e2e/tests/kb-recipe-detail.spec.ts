@@ -1,6 +1,5 @@
 import { expect, test } from "@playwright/test";
 
-// Stable seeded kb recipe id (see packages/kb/data/recipes/anchor-steam-beer-clone.json).
 const RECIPE_PATH = "/kb/recipe/anchor-steam-beer-clone";
 
 test("Overview is the default active tab and shows recipe content", async ({ page }) => {

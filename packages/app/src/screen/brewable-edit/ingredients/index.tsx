@@ -16,8 +16,6 @@ export type BrewableEditIngredientsProps = {
     remove: RemoveFn;
 };
 
-// A brewable panel: reads the assignments/phases off the brewable and edits
-// them through the shared edit fns (dot-paths are relative to the brewable).
 export default function BrewableEditIngredients({ brewable, update, updateScalar, add, remove }: BrewableEditIngredientsProps) {
     const kbGrains = useKbGrains();
     const kbGrainsIndex = useIndexBy(kbGrains, "name");
@@ -33,8 +31,6 @@ export default function BrewableEditIngredients({ brewable, update, updateScalar
         additive: [],
     }), [kbGrains, kbHops, kbYeasts]);
 
-    // group by phase *instance*, in schedule order — two "boil" phases are two
-    // sections, each holding only the assignments that point at it
     const assignmentsByPhase = useMemo(() => {
         const withIndex: AssignmentWithIndex[] = brewable.assignments.map((assignment, index) => ({ assignment, index }));
         return new Map(brewable.schedule.phases.map(phase => [

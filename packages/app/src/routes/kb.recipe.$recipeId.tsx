@@ -17,9 +17,6 @@ export const Route = createFileRoute("/kb/recipe/$recipeId")({
     component: KbRecipePage
 });
 
-// Catalog (KbRecipe) view. The route fixes the source to "kb", so nothing here
-// has to disambiguate. Brew a batch from it, or Edit (which clones it into an
-// editable user recipe).
 function KbRecipePage() {
     const {recipeId} = Route.useParams();
     const filterBatches = useCallback((batch: Batch) => batch.recipeId === recipeId, [recipeId]);

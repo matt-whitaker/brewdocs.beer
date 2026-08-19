@@ -7,8 +7,6 @@ export type CreatBatchFormProps = {
     change: (inputs: CreateBatchState) => void;
 };
 export default function CreateBatchForm({ defaultName, inputs, change }: CreatBatchFormProps) {
-    // plain DOM input, so a stable handler identity buys nothing — and `inputs`
-    // changes every keystroke anyway, so useCallback never memoized here
     const onChange = eventValue((name: string) => change({ ...inputs, name }));
     return (
         <span>

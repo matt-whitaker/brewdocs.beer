@@ -24,9 +24,6 @@ function RecipeEditPage() {
     ], [recipeId]);
     useBreadcrumbs(breadcrumbs);
 
-    // Single-tab outer switcher (not compact) so the edit page carries a real page
-    // tab bar like the batch page; the batch-planning-style header + compact sub-tabs
-    // live inside RecipeEdit.
     return (
         <PanelSwitcher name="recipe.edit.page" defaultTab="Planning">
             <PanelSwitcherContent title="Planning">

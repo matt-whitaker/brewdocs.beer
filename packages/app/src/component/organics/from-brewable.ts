@@ -1,4 +1,4 @@
-/** the minimal assignment shape this helper needs — satisfied by both the app `Assignment` and the loose `KbAssignment` (kb recipes ship an unnarrowed brewable) */
+
 type NamedResourceAssignment = { resourceType: string; resource: { name: string } };
 
 /**

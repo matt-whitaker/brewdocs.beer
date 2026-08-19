@@ -33,7 +33,6 @@ export const useRecipe = (id: string): Recipe => {
 };
 
 export const saveRecipe = async (id: string, recipe: Recipe) => {
-    // the brewable is the source of truth; no legacy arrays to project anymore
     await recipesStorage.save(id, recipe);
     await queryClient.invalidateQueries({queryKey: recipeQueryKey(id)});
     await queryClient.invalidateQueries({queryKey: recipesQueryKey()});

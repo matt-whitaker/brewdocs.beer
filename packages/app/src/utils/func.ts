@@ -16,10 +16,6 @@ export function debounce<A extends unknown[]>(fn: (...args: A) => void, wait: nu
     return debounced;
 }
 
-/**
- * Split a dot/bracket path ("a.b[0].c") into keys (["a","b","0","c"]) —
- * the shared parser behind get/set/setIn.
- */
 function toSegments(path: string): string[] {
     return path.replace(/\[(\w+)\]/g, ".$1").split(".").filter(Boolean);
 }
@@ -51,10 +47,6 @@ export function set<T extends object>(obj: T, path: string, value: unknown): T {
     return obj;
 }
 
-/**
- * One-level copy preserving array-vs-object type — the per-node clone setIn
- * uses to rebuild only the path it touches.
- */
 function shallowClone<T>(node: T): T {
     return (Array.isArray(node) ? [...node] : {...node}) as T;
 }
@@ -105,7 +97,7 @@ export function isEmpty(value: unknown): boolean {
     if (typeof value === "string" || Array.isArray(value)) return value.length === 0;
     if (value instanceof Map || value instanceof Set) return value.size === 0;
     if (typeof value === "object") return Object.keys(value).length === 0;
-    return true; // primitives (numbers, booleans) are "empty" per lodash semantics
+    return true;
 }
 
 /**

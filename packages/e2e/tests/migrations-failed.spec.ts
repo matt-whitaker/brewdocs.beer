@@ -1,20 +1,5 @@
 import {expect, Page, test} from "@playwright/test";
 
-/**
- * Nothing in the app can produce a *migration-error* failure today (`batches`'
- * own migrations array is empty, so no migration ever runs to throw) — every
- * test proving that reason seeds directly into the `migration-failures`
- * IndexedDB database. `migrationFailuresStorage` is a `Forage` built with
- * `localforage.createInstance({name: "migration-failures"})`, which makes
- * that name a separate IndexedDB database (default store "keyvaluepairs"),
- * keyed `migration-failures#${entityType}:${id}`.
- *
- * A `no-migration-path` failure, though, is exactly what a stale batch
- * produces on its own via the page-load pass (#809/#824) — every test
- * proving that reason instead seeds the source `batches` store and lets the
- * pass record the failure itself (mirrors migration-pass.spec.ts's
- * `seedBatches`).
- */
 type SeedFailure = {
     entityType: string;
     id?: string;
@@ -33,8 +18,6 @@ type SeedBatch = {
 
 const BATCHES_VERSION = 1;
 
-// The db/store only exist once localforage has initialized them, which
-// happens the first time the page's own query runs.
 async function primeMigrationFailuresStore(page: Page) {
     await page.goto("/migrations/failed");
     await expect(page.getByText("No records are waiting to be updated.")).toBeVisible();
@@ -57,9 +40,6 @@ async function seedMigrationFailures(page: Page, failures: SeedFailure[]) {
     }), failures);
 }
 
-// mirrors migration-pass.spec.ts's batchRecord/seedBatches — a stale batch
-// seeded straight into the source store, so the page-load pass is what
-// produces its migration-failures entry (with a real `reason`), not the test
 function batchRecord({id, name, version}: SeedBatch) {
     return {
         id,
@@ -130,9 +110,6 @@ async function countIndexedDbKeysWithPrefix(page: Page, dbName: string, prefix: 
     }), {dbName, prefix});
 }
 
-// an id-less batch as it would exist if a record predates whatever gave every
-// other record an id — the app itself never writes one without an id, but
-// nothing here depends on it having come from the app
 function idlessBatchRecord({name, version}: {name: string, version: number}) {
     return {
         name,
@@ -224,8 +201,6 @@ test("discarding a record removes it for good", async ({page}) => {
     await row.getByRole("button", {name: "Discard"}).click();
     await expect(row).toHaveCount(0);
 
-    // discard is fire-and-forget — only a reload proves the write actually
-    // landed rather than just updating the on-screen list
     await page.reload();
     await expect(page.getByText("e2e-discard-01")).toHaveCount(0);
     await expect(page.getByText("No records are waiting to be updated.")).toBeVisible();
@@ -233,9 +208,7 @@ test("discarding a record removes it for good", async ({page}) => {
 
 test("retrying a record that now migrates successfully removes it and saves the recovered data", async ({page}) => {
     await primeMigrationFailuresStore(page);
-    // batches' own migration chain is empty, so a record whose stored version
-    // already equals the target migrates trivially — runMigrations returns ok
-    // as soon as fromVersion === targetVersion
+
     await seedMigrationFailures(page, [{
         entityType: "batches",
         id: "e2e-retry-success",
@@ -292,11 +265,6 @@ test("retry is unavailable for a record with no id or an entity type that isn't 
     await expect(row.getByRole("button", {name: "Retry"})).toBeDisabled();
 });
 
-// MIGRATION-FAILURES-01: an id-less record has nothing to key its stored
-// failure on but its own storage slot — before #884's fix, each page-load
-// pass minted a fresh uuid instead of overwriting that slot, so the same
-// broken record piled up one indistinguishable "batches" row per reload
-// instead of staying at one
 test("an id-less stale batch's migration-failures entry doesn't duplicate across two migration passes", async ({page}) => {
     await primeMigrationFailuresStore(page);
     await seedIdlessBatch(page, "batches#e2e-idless-nodupe", {name: "E2E Idless No Dupe", version: BATCHES_VERSION + 1});
@@ -304,22 +272,14 @@ test("an id-less stale batch's migration-failures entry doesn't duplicate across
     await page.reload();
     await page.reload();
 
-    // MigrationGate wraps the whole router, so a route rendering at all
-    // proves the page-load pass (and its store writes) already settled
     await page.goto("/migrations/failed");
     await expect(page.getByRole("heading", {name: "Updates"})).toBeVisible();
 
     expect(await countIndexedDbKeysWithPrefix(page, "migration-failures", "migration-failures#batches:")).toBe(1);
-    // an id-less record's title is the bare entity type ("batches", no id to
-    // disambiguate) — an exact heading match, not a substring filter, since
-    // the sidebar nav also links to "Batches"
+
     await expect(page.getByRole("heading", {name: "batches", exact: true})).toHaveCount(1);
 });
 
-// regression guard for the implementor's own testingNotes: every other test
-// in this file seeds the migration-failures key by hand, so none of them
-// would notice a future regression in Forage's extractId/buildKey that
-// shifted the key format for a record that DOES carry its own id
 test("an id-carrying stale batch's migration-failures entry lands at the expected key when written by the real migration pass", async ({page}) => {
     await primeMigrationFailuresStore(page);
     await seedBatches(page, [{id: "e2e-keyformat-01", name: "E2E Key Format Batch", version: BATCHES_VERSION + 1}]);
@@ -331,9 +291,6 @@ test("an id-carrying stale batch's migration-failures entry lands at the expecte
     expect(failure).toMatchObject({entityType: "batches", id: "e2e-keyformat-01", reason: "no-migration-path"});
 });
 
-// UPDATES-01, MIGRATION-FAILURES-01: a record excluded from its own list for
-// lacking a bridging migration is listed here too, paired with a thrown-
-// migration record in the same multi-record list
 test("a batch with no update path is excluded from /batches and listed here alongside a thrown-migration record", async ({page}) => {
     await primeMigrationFailuresStore(page);
     await seedBatches(page, [{id: "e2e-no-path-01", name: "E2E No Path Batch", version: BATCHES_VERSION + 1}]);
@@ -363,8 +320,6 @@ test("a batch with no update path is excluded from /batches and listed here alon
     await expect(thrownRow.getByText("An update was attempted and failed.")).toBeVisible();
 });
 
-// UPDATES-02: retry is unavailable for a no-migration-path record, and the
-// reason is visible as page text, not merely the disabled button's title
 test("retry is disabled for a no-migration-path record and its reason is stated as visible text", async ({page}) => {
     await primeMigrationFailuresStore(page);
     await seedBatches(page, [{id: "e2e-no-path-02", name: "E2E No Path Retry", version: BATCHES_VERSION + 1}]);
@@ -375,12 +330,6 @@ test("retry is disabled for a no-migration-path record and its reason is stated 
     await expect(row.getByText("Retry isn't available until an update path exists. Discarding it is the only action.")).toBeVisible();
 });
 
-// MIGRATION-FAILURES-03: discarding a record removes it for good, across a
-// reload. This is currently FAILING against the real app — see the finding
-// filed on #813. Discard only deletes the migration-failures entry; the
-// underlying stale batch is untouched, so the next reload's page-load pass
-// (#809) re-scans it and re-records the same failure. Left red on purpose
-// rather than weakened, per this suite's own rule.
 test("discarding a no-migration-path record removes it for good, across a reload", async ({page}) => {
     await primeMigrationFailuresStore(page);
     await seedBatches(page, [{id: "e2e-no-path-discard", name: "E2E No Path Discard", version: BATCHES_VERSION + 1}]);
@@ -392,9 +341,7 @@ test("discarding a no-migration-path record removes it for good, across a reload
     await expect(row).toHaveCount(0);
 
     await page.reload();
-    // the page-load pass runs inside MigrationGate's own suspense boundary,
-    // ahead of this route's content — waiting for the heading is what makes
-    // the absence check meaningful instead of racing the pass
+
     await expect(page.getByRole("heading", {name: "Updates"})).toBeVisible();
     await expect(page.getByText("e2e-no-path-discard")).toHaveCount(0);
 });
@@ -438,7 +385,6 @@ test("a record whose data can't be rendered is contained, and the rest of the li
     await expect(page.getByText("batches:e2e-circular")).toBeVisible();
     await expect(page.getByText("batches · e2e-sibling")).toBeVisible();
 
-    // the contained record's own Discard still works, even from the fallback
     const fallbackRow = page.getByRole("listitem").filter({hasText: "batches:e2e-circular"});
     await fallbackRow.getByRole("button", {name: "Discard"}).click();
     await expect(page.getByText("batches:e2e-circular")).toHaveCount(0);
