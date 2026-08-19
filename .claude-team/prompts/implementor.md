@@ -10,5 +10,7 @@ on the spec's own nouns (see _packages/spec/CLAUDE.md_, "The spec's nouns are th
 
 Docs in this repo live in a `CLAUDE.md` per package — root for universal rules,
 `packages/<name>/CLAUDE.md` for the rest — so a `docsCandidates` entry names one of those
-as its `file`. ⚠️ Never propose an inline code comment: this repo's default is none, and
-the *why* belongs in a `CLAUDE.md` where it is discoverable and maintained.
+as its `file`. ⚠️ Never propose narration inside a function body: that is what the comment rule in the root
+`CLAUDE.md` bans, and the lint enforces. A top-level comment summarizing something genuinely
+complex is allowed — but if a reader would need the *why*, prefer a `CLAUDE.md`, where it is
+discoverable and maintained.

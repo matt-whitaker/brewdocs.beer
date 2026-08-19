@@ -48,5 +48,6 @@ a new primitive gets its own bullet, never an append to an existing one. Put it 
 `docsCandidates` and say which bullet.
 
 A `docsCandidates` entry names `packages/design/CLAUDE.md` or `packages/design/DESIGN.md`.
-⚠️ Never propose an inline code comment: this repo's default is none, and the *why* belongs
-in a `CLAUDE.md` where it is discoverable and maintained.
+⚠️ Never propose narration inside a function body — the root `CLAUDE.md`'s comment rule bans
+it and the lint enforces it. A top-level summary of something genuinely complex is allowed;
+the *why* still belongs in a `CLAUDE.md`, where it is discoverable and maintained.
