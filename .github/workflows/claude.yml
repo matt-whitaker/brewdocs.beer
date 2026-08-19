@@ -1,0 +1,55 @@
+# The whole consumer-side integration: this file, frozen, plus a .claude-team/ directory.
+# Triggers, run-name and concurrency live HERE — a called workflow's own run-name is ignored
+# and its workflow-level concurrency is unsupported.
+name: Claude
+
+run-name: >-
+  Claude ·
+  ${{ github.event_name == 'pull_request'
+  && (github.event.pull_request.merged && 'Post-merge' || 'PR closed')
+  || contains(github.event.comment.body || github.event.review.body, '@claude/architect') && 'Architect'
+  || contains(github.event.comment.body || github.event.review.body, '@claude/implementor') && 'Implementor'
+  || contains(github.event.comment.body || github.event.review.body, '@claude/tester') && 'Tester'
+  || contains(github.event.comment.body || github.event.review.body, '@claude/writer') && 'Writer'
+  || contains(github.event.comment.body || github.event.review.body, '@claude/designer') && 'Designer'
+  || contains(github.event.comment.body || github.event.review.body, '@claude/security') && 'Security'
+  || 'Delegate' }}
+  · #${{ github.event.issue.number || github.event.pull_request.number }}
+  ${{ github.event.issue.title || github.event.pull_request.title }}
+
+on:
+  issues:
+    types: [labeled]
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  pull_request_review:
+    types: [submitted]
+  pull_request:
+    types: [closed]
+
+concurrency:
+  group: claude-${{ github.event.issue.number || github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  team:
+    # ⚠️ THE CEILING, NOT THE GRANT. A called workflow's jobs cannot request permissions the caller
+    # did not allow — omit this block and every run dies at startup with "the nested job X is
+    # requesting … but is only allowed …". Each nested job still narrows to its own block; this is
+    # the union of what any of them asks for.
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      actions: read
+      id-token: write
+    uses: matt-whitaker/claude-team/.github/workflows/team.yml@mainline   # ⚠️ the canary: this repo tracks the edge; other consumers pin tags
+    with:
+      project_owner: matt-whitaker
+      project_number: "4"
+      allowed_bots: brewdocs-claude
+      node: true
+      browser: true
+    secrets: inherit

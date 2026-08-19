@@ -101,7 +101,7 @@ Once the maintainer agrees:
    `gh project item-add 4 --owner "@me" --url <url>`.
 
 ⚠️ **Do not cut any branch here.** The Architect cuts a story's branch when that story is
-triggered — see `packages/claude-team/prompts/architect.md`.
+triggered — see the Architect prompt in https://github.com/matt-whitaker/claude-team.
 
 ### Handoff for cheap follow-ups
 
