@@ -2,6 +2,7 @@
 import Layout from "@/layouts/Layout.astro";
 import Stack from "@/components/stack.astro";
 import {APP_URL, DESIGN_URL, GITHUB_URL} from "@/data/env";
+import {PANEL_ACCENT} from "@brewdocs.beer/design";
 ---
 <Layout title="About BrewDocs">
     <main
@@ -18,7 +19,7 @@ import {APP_URL, DESIGN_URL, GITHUB_URL} from "@/data/env";
             </p>
 
             <div class="flex flex-col gap-3">
-                <div class="rounded-box glass p-5 [box-shadow:inset_0_0_0_1px_oklch(100%_0_0/22%)]">
+                <div class={PANEL_ACCENT}>
                     <div class="text-xs font-mono uppercase tracking-widest text-primary">In development, today</div>
                     <p class="mt-2 text-base">
                         It works as a handbook, keeping your brew information, recipes, and their
@@ -26,7 +27,7 @@ import {APP_URL, DESIGN_URL, GITHUB_URL} from "@/data/env";
                         informational and note-taking side of brew day.
                     </p>
                 </div>
-                <div class="rounded-box glass p-5 [box-shadow:inset_0_0_0_1px_oklch(100%_0_0/22%)]">
+                <div class={PANEL_ACCENT}>
                     <div class="text-xs font-mono uppercase tracking-widest text-primary">Planned ahead</div>
                     <p class="mt-2 text-base">
                         Knowledge and guidance, with crafted instruction wizards that walk you

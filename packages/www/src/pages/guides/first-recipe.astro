@@ -2,6 +2,7 @@
 import Layout from "@/layouts/Layout.astro";
 import PhoneMockup from "@/components/phone-mockup.astro";
 import {APP_URL} from "@/data/env";
+import {PANEL, PANEL_ACCENT} from "@brewdocs.beer/design";
 
 type Figure = {
     src: string;
@@ -153,7 +154,7 @@ const steps: Step[] = [
                 to a batch planned and ready to brew.
             </p>
 
-            <div class="rounded-box glass p-5 [box-shadow:inset_0_0_0_1px_oklch(100%_0_0/22%)]">
+            <div class={PANEL}>
                 <div class="text-xs font-mono uppercase tracking-widest text-primary">Before you start</div>
                 <p class="mt-2 text-base">
                     If you have not opened BrewDocs before, the <a href="/guides/getting-started" class="link link-primary">Getting Started</a> guide covers the four places you
@@ -163,7 +164,7 @@ const steps: Step[] = [
             </div>
 
             {steps.map(({number, title, lead, body, figures}) => (
-                <section class="rounded-box glass p-5 [box-shadow:inset_0_0_0_1px_oklch(100%_0_0/22%)]">
+                <section class={PANEL_ACCENT}>
                     <div class="text-xs font-mono uppercase tracking-widest text-primary">Step {number}</div>
                     <h2 class="mt-2 text-xl font-semibold tracking-tight">{title}</h2>
                     <p class="mt-1 text-base opacity-80">{lead}</p>
