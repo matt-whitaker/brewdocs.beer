@@ -1,3 +1,21 @@
+/**
+ * Enforces the root CLAUDE.md "Code style" policy: comments are banned in TS/TSX.
+ * (This file is .js, and the one comment in it was explicitly requested.)
+ *
+ * Every comment errors except two shapes:
+ * - JSDoc blocks (starting with a double asterisk) immediately preceding an exported
+ *   declaration, a locally-declared symbol that a named export references, or a member
+ *   of an exported interface / type-literal / class / enum body - the public-API
+ *   carve-out. The check walks top-level statements only, so JSDoc nested deeper
+ *   (inside a function body, or on a symbol that is never exported) errors like any
+ *   other comment.
+ * - Lint-functional directives: eslint-disable/enable/env, inline eslint config,
+ *   global(s), exported, the @ts-* pragmas, and triple-slash references. Machinery,
+ *   not commentary. Shebangs are skipped outright.
+ *
+ * Wired as the `brewdocs` plugin in eslint.config.base.js at "error", inherited by
+ * every workspace with no per-package opt-out.
+ */
 const DIRECTIVE = /^(eslint-disable|eslint-enable|eslint-env|eslint\s|global\s|globals\s|exported\s|@ts-expect-error|@ts-ignore|@ts-nocheck|@ts-check|\/\s*<(reference|amd))/;
 
 const isJsdoc = (comment) => comment.type === "Block" && comment.value.startsWith("*");
