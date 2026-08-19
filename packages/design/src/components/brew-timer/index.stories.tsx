@@ -33,9 +33,6 @@ const EQUIPMENT_OPTIONS = [
     {name: "Digital Hydrometer", value: "eq-3"}
 ];
 
-// what is left to add on one phase, in brew order — boil-timed additions first by longest
-// boil, then everything with no time of its own. The suffix is what tells three additions of
-// one hop apart, and it is the consumer's to build: this component never parses a name.
 const SCHEDULE_OPTIONS = [
     {name: "Northern Brewer · 60min", value: "hop-1"},
     {name: "Northern Brewer · 20min", value: "hop-2"},
@@ -44,8 +41,6 @@ const SCHEDULE_OPTIONS = [
     {name: "Wyeast 2112", value: "yeast-1"}
 ];
 
-// keyed by the option's value, so a kind with nothing worth recording simply has no entry —
-// selecting the yeast here shows no value field
 const SCHEDULE_VALUE_LABELS = {
     "hop-1": "Weight",
     "hop-2": "Weight",

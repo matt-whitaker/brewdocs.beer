@@ -4,7 +4,6 @@ import {InputDate} from "@/components/input-date";
 import {InputText} from "@/components/input-text";
 import {COL_SPANS, COL_STARTS, GridColumn} from "./styles";
 
-
 export type DataGridInputProps = PropsWithClass
     & PropsWithOnChange<string>
     & PropsWithOnBlur<string>
@@ -14,7 +13,7 @@ export type DataGridInputProps = PropsWithClass
         readonly?: boolean;
         value: string;
         type?: "text"|"date";
-        /** accessible name for the control — these grid inputs have no visible <label> */
+
         label?: string;
         placeholder?: string;
         unit?: Unit | Currency

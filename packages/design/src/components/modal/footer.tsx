@@ -5,8 +5,6 @@ export type ModalFooterProps = PropsWithClass & {
     confirm?: () => void;
 };
 export function ModalFooter({ cancel, confirm }: ModalFooterProps) {
-    // both buttons submit a method="dialog" form, so either dismisses the modal
-    // natively; the handlers are optional side-effects (e.g. confirm's create action)
     return (
         <div className="modal-action">
             <form method="dialog" className="grid grid-cols-2 gap-x-2">

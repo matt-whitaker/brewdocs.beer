@@ -7,7 +7,7 @@ export type InputSelectProps = PropsWithClass
     & PropsWithOnChange<string>
     & {
         allowNull?: boolean;
-        /** accessible name, when no visible <label> is associated — rendered as aria-label */
+
         label?: string;
         value: string|null;
         data: InputSelectOption[]

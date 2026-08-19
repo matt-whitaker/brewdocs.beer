@@ -10,7 +10,6 @@ export type SrmAvatarProps = Partial<PropsWithClass> & {
 export function SrmAvatar({ srm, className }: SrmAvatarProps){
     const [bg,, outline] = useMemo(() => findSrmClasses(srm), [srm]);
 
-    // 64 wide 112 tall
     return (
         <div className={classNames(
             "flex items-center justify-center sm:w-[135px] sm:h-[155px] w-[80px] h-[100px] shadow-sm shadow-black",

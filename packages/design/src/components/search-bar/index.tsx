@@ -7,7 +7,7 @@ export type SearchBarProps = PropsWithClass
     & {
         value: string;
         placeholder?: string;
-        /** accessible name, when no visible <label> is associated — rendered as aria-label */
+
         label?: string;
     };
 

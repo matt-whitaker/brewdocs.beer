@@ -14,17 +14,15 @@ import token from "./tokens.generated";
  * Frost blue, matching the blue that dominates the app/www chrome.
  */
 export default create({
-    base: "light", // nord is a light theme (color-scheme: light)
+    base: "light",
 
     brandTitle: "BrewDocs",
     brandUrl: "https://brewdocs.beer",
     brandTarget: "_self",
 
-    // accent — nord's Frost blue, matching the blue that dominates app/www chrome
     colorPrimary: token["color-primary"],
     colorSecondary: token["color-secondary"],
 
-    // app chrome — nord palette (oklch, used verbatim)
     appBg: token["color-base-200"],
     appContentBg: token["color-base-100"],
     appPreviewBg: token["color-base-100"],
