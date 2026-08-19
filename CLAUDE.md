@@ -101,7 +101,6 @@ Guidance for human contributors **and** for the `@claude` GitHub integration.
 ### Branches
 - `mainline` is the default branch, the target for **all** PRs, and the **only** deploy branch — a push/merge ships to prod. No separate staging branch; the open PR is the staging buffer. (`develop` is retired.)
 - Branch off `mainline`, and **name branches issue-first**: `<issue#>-<kebab-summary>` (e.g. `42-derived-schedule`). Fall back to bare kebab-case for un-ticketed work.
-- ⚠️ **Start every task from a fresh `mainline`** — `git checkout mainline && git pull --ff-only` *before* cutting the branch, and check `git branch --show-current` first whenever the session has been running a while. A long session ends on the **previous task's** branch, so a task started in place silently stacks on work that is unmerged, or already squash-merged (where the new branch re-applies what `mainline` already has and the diff misleads its reviewer). Noticed before the commit, recovery is `git stash -u` → re-cut from `mainline` → `git stash pop`; after it, a rebase. ⚠️ This is a **local session** rule — an agent run does a fresh `actions/checkout` and has its branch cut by a hook, so there is nothing here for a role to do. Neither audience should ever "freshen" a branch by merging `mainline` into it: that turns a one-file diff into someone else's (#838).
 
 ### Commits, PRs & merging
 - **Commits.** Plain imperative subject ("Add schedule phases") — no Conventional Commits prefix.
