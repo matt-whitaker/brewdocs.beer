@@ -11,9 +11,6 @@ export interface KbRecipe extends Entity {
     boilTime: Scalar;
     efficiency: Scalar;
 
-    // A recipe's ingredients/equipment live on `brewable` (assignments +
-    // per-phase equipment); the old flat top-level arrays were removed in #196.
-
     targets: {
         og: Scalar;
         fg: Scalar;

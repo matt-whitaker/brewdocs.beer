@@ -67,12 +67,6 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
     const updateNotes = useCallback((value: string) => update("notes.notes", value), [update]);
     const updateSrm = useCallback((value: string) => update("notes.srm", value), [update]);
 
-    // tracker writes can't go through useJsonEdit's dot-path (a key like
-    // "equipment:<uuid>" isn't addressable that way — see CLAUDE.md's Model
-    // boundary), so they use `mutate`: it hands `putEntry` the freshest draft and
-    // stays referentially stable, so ticking one box doesn't re-render the whole
-    // list. Shared by the equipment checklist and the ingredient rows' checkoff;
-    // immediate (like the old checkbox toggle), not debounced.
     const toggleTrackerCompleted = useCallback((ref: Ref) => {
         mutate(d => ({
             ...d,
@@ -85,8 +79,6 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
 
     const toggleEquipment = useCallback((id: string) => toggleTrackerCompleted({ on: "equipment", id }), [toggleTrackerCompleted]);
 
-    // gravity/milestone edits are typed, so they debounce (no `immediate`),
-    // matching the rest of useJsonEdit's field editing
     const patchTracker = useCallback((ref: Ref, patch: TrackerEntry) => {
         mutate(d => ({ ...d, tracker: putEntry(d.tracker, ref, patch) }));
     }, [mutate]);
@@ -107,8 +99,6 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
     }, [mutate, data.brewable.schedule.phases]);
 
     const panels = useMemo(() => {
-        // one panel per phase *instance* — a second Boil is its own tab with its own
-        // ingredients, equipment and readings, never merged into the first
         return data.brewable.schedule.phases.map((phase, index) => {
             const inPhase = schedule
                 .filter(item => item.phaseId === phase.id)
@@ -116,8 +106,6 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                     (KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind))
                     || byBrewingOrder(a, b));
 
-            // sorted, so a group is a run of adjacent items sharing a kind; each run
-            // becomes its own DataGrid, which is what bounds the collapse rule to it
             const groups: { label: string; items: typeof inPhase }[] = [];
             inPhase.forEach(item => {
                 const label = KIND_LABELS[item.kind];
@@ -154,19 +142,18 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                 </PanelSwitcherContent>
                 {panels.map(({ phase, index, groups, equipment, milestones }) => {
                     const hasContent = !!(groups.length || equipment.length || milestones.length);
-                    // position-prefixed ("2. Boil"), so repeated phase types stay distinct as tab titles
+
                     const label = phaseLabel(data.brewable.schedule.phases, index);
 
                     return (
                         <PanelSwitcherContent
                             key={phase.id}
                             title={label}
-                            // a phase with nothing in it renders as a disabled tab; say why,
-                            // or it inherits the switcher's "Not implemented" tooltip
+
                             titleAlt={hasContent ? "" : "Nothing scheduled in this step"}>
                             {hasContent ? (
                                 <div className="pt-2">
-                                    {/* what to gather before the phase starts, ahead of the work itself */}
+                                    {}
                                     <BatchScheduleEquipment
                                         items={equipment}
                                         tracker={data.tracker}
@@ -182,7 +169,7 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                                                 <ScheduleItemRow
                                                     key={item.id}
                                                     item={item}
-                                                    // the ingredient's live value, never a copy on the item
+
                                                     entry={data.tracker[key({ on: "assignment", id: item.id })]}
                                                     onToggle={toggleTrackerCompleted}
                                                     onPatch={patchTracker}
@@ -190,7 +177,7 @@ export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps)
                                             ))}
                                         </DataGrid>
                                     ))}
-                                    {/* readings come after the work — the wort's measured as the phase ends */}
+                                    {}
                                     {readingKindsForPhase(phase.type).map(({ kind, primary, headerLabel, addLabel, defaultLabel, unitOptions, valuePlaceholder }) => (
                                         primary === "waterParameter" ? (
                                             <BatchScheduleWaterReading

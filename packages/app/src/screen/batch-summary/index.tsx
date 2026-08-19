@@ -34,7 +34,7 @@ export default function BatchSummary({ batchId }: BatchSummaryProps) {
                     <ScreenP className="pt-4">{`${recipe.description}`}</ScreenP>
                 </div>
                 <div className="divider">Measurements</div>
-                {/* Need to refactor this type */}
+                {}
                 <Vitals className="-mt-2" vitals={[["Target", recipe.targets], ["Actuals", brewed]]} />
                 <div className="divider">Organics</div>
                 <Organics className="-mt-2" {...organicNames(batch.brewable.assignments)} />

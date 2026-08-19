@@ -33,8 +33,6 @@ export default function BrewableEditIngredients({ brewable, update, updateScalar
         additive: [],
     }), [kbGrains, kbHops, kbYeasts]);
 
-    // group by phase *instance*, in schedule order — two "boil" phases are two
-    // sections, each holding only the assignments that point at it
     const assignmentsByPhase = useMemo(() => {
         const withIndex: AssignmentWithIndex[] = brewable.assignments.map((assignment, index) => ({ assignment, index }));
         return new Map(brewable.schedule.phases.map(phase => [

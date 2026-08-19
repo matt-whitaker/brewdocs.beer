@@ -79,12 +79,11 @@ test("the batch delete confirmation renders centred, not shrink-wrapped in a cor
 test("deletes a batch after confirmation, and it stays gone after reload", async ({ page }) => {
     await seedBatch(page, { name: "E2E Delete Batch", goto: "/batches" });
 
-    // a freshly-seeded batch is Statuses.PREP, which lands on the default Ready tab
     const row = page.getByRole("listitem").filter({ hasText: "E2E Delete Batch" });
     await expect(row).toBeVisible();
 
     await row.getByRole("button").click();
-    // opening the confirm modal must not have triggered the row's own Link
+
     await expect(page).not.toHaveURL(/\/batch\//);
 
     const dialog = page.getByRole("dialog");

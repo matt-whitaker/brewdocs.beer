@@ -31,7 +31,6 @@ test("a batch's detail page opens on the Planning tab with its recipe's sub-tabs
     await expect(page.getByRole("heading", {name: "E2E Steam Batch"})).toBeVisible();
     await expect(page.getByText("By Anonymous")).toBeVisible();
 
-    // Planning's own sub-tabs (BrewableEdit)
     await expect(page.getByRole("tab", {name: "Ingredients"})).toBeVisible();
     await expect(page.getByRole("tab", {name: "Equipment"})).toBeVisible();
     await expect(page.getByRole("tab", {name: "Phases"})).toBeVisible();
@@ -58,7 +57,7 @@ test("switches between the Planning/Shopping/Brewing/Summary tabs", async ({page
     await scheduleTab.click();
     await expect(scheduleTab).toHaveAttribute("aria-selected", "true");
     await expect(shoppingTab).toHaveAttribute("aria-selected", "false");
-    // Brewing's phase sub-tabs (numbered by position, e.g. "1. Mash")
+
     await expect(page.getByRole("tab", {name: "1. Mash"})).toBeVisible();
     await expect(page.getByRole("tab", {name: "2. Boil"})).toBeVisible();
     await expect(page.getByRole("tab", {name: "3. Ferment"})).toBeVisible();
@@ -96,7 +95,6 @@ test("completing a phase advances the Brewing tab to the phase that follows it, 
     await expect(dialog).toBeVisible();
     await dialog.getByRole("button", {name: "Confirm"}).click();
 
-    // BATCH-SCHEDULE-12: advances off the completed phase and onto the next one
     await expect(boilTab).toHaveAttribute("aria-selected", "true");
     await expect(mashTab).toHaveAttribute("aria-selected", "false");
 
@@ -111,8 +109,6 @@ test("completing a phase advances the Brewing tab to the phase that follows it, 
     await expect(dialog).toBeVisible();
     await dialog.getByRole("button", {name: "Confirm"}).click();
 
-    // BATCH-SCHEDULE-13: no phase follows the last one, so it stays selected —
-    // not falling back to Prep and not left with no tab selected at all
     await expect(fermentTab).toHaveAttribute("aria-selected", "true");
     await expect(page.getByRole("tab", {name: "Prep"})).toHaveAttribute("aria-selected", "false");
 });
@@ -150,8 +146,6 @@ test("advancing past a repeated phase type lands on the next position, not any t
     await expect(dialog).toBeVisible();
     await dialog.getByRole("button", {name: "Confirm"}).click();
 
-    // lands on the very next position — not the last "Boil"-labelled tab, and not
-    // skipping past the second Boil straight to Ferment
     await expect(secondBoilTab).toHaveAttribute("aria-selected", "true");
     await expect(fermentTab).toHaveAttribute("aria-selected", "false");
 });

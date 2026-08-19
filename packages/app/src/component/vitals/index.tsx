@@ -40,7 +40,7 @@ export default function Vitals({ vitals, className }: VitalsProps) {
                     <DataGridHeaderRow>{name}</DataGridHeaderRow>
                     {MEASUREMENTS.map(([measurement, read, decorate]) => (
                         <DataGridRow zebra key={measurement}>
-                            {/* read-only summary, so the value is plain text rather than an input */}
+                            {}
                             <DataGridLabel cols={2}>{measurement}</DataGridLabel>
                             <div className="col-span-4 flex items-center justify-end gap-x-1 self-center pr-1 text-sm leading-6 lg:leading-8">
                                 {decorate?.(vital)}

@@ -67,19 +67,12 @@ test("keeps cost and purchased after a Planning edit rebuilds the shopping list"
     await seedBatch(page, {name: "E2E Shopping Rebuild Batch"});
     await openShopping(page);
 
-    // settleSave between these two: an immediate (checkbox) and a debounced
-    // (cost) save race each other with no gap — see the reported finding on
-    // the test above. Isolating it here keeps this test about the rebuild
-    // reuse-by-reference path, not that separate bug.
     await purchasedCheckbox(page, "Crystal Malt 40L").check();
     await settleSave(page);
     await page.getByLabel("Crystal Malt 40L cost").fill("8.00");
     await page.getByLabel("Crystal Malt 40L cost").blur();
     await settleSave(page);
 
-    // this is the reuse-by-reference path: the derived scalar changes (a new
-    // weight), so _updateShopping can't just hand back the previous object by
-    // reference — it has to merge the refreshed fields onto it and keep cost/purchased
     await openIngredients(page);
     const weight = page.getByLabel("Crystal Malt 40L weight");
     await weight.fill("2.0");
@@ -97,9 +90,6 @@ test("removing an ingredient in Planning drops its shopping row without disturbi
     await seedBatch(page, {name: "E2E Shopping Removal Batch"});
     await openShopping(page);
 
-    // settleSave between each checkbox/cost pair — see the reported finding
-    // on the reload-persistence test above; this test is about removal, not
-    // that race.
     await purchasedCheckbox(page, "Crystal Malt 40L").check();
     await settleSave(page);
     await page.getByLabel("Crystal Malt 40L cost").fill("8.00");
@@ -136,9 +126,6 @@ test("a freeform additive that collides with an existing row's name keeps that r
     await seedBatch(page, {name: "E2E Shopping Collision Batch"});
     await openShopping(page);
 
-    // settleSave between these two — see the reported finding on the
-    // reload-persistence test above; this test is about the name-key
-    // collision, not that race.
     await page.getByLabel("Irish Moss", {exact: true}).check();
     await settleSave(page);
     await page.getByLabel("Irish Moss cost").fill("5.00");

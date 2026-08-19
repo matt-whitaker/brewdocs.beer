@@ -36,11 +36,7 @@ const config: StorybookConfig = {
         name: "@storybook/react-vite",
         options: {}
     },
-    // Storybook's own Vite instance doesn't auto-discover a project vite.config.ts
-    // (design has none), so the Tailwind v4 plugin has to be wired in here explicitly
-    // — otherwise design.css's @import/@plugin/@theme directives ship uncompiled.
-    // Same reasoning for the "@/" alias below (mirrors packages/app/vite.config.ts's
-    // resolve.alias) — tsconfig's "paths" only affects the type-checker, not the bundler.
+
     async viteFinal(viteConfig) {
         const {mergeConfig} = await import("vite");
 

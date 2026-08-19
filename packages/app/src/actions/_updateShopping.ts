@@ -62,12 +62,10 @@ export default function _updateShopping(batch: Partial<Batch>): Partial<Batch> {
                     };
                 }
 
-                // derived data untouched → hand back the same object
                 if (isEqual(prior.tags, item.tags) && isEqual(prior.scalar, item.scalar)) {
                     return prior;
                 }
 
-                // derived data moved (e.g. a weight was edited) → refresh it, keep cost/purchased
                 return { ...prior, ...item, source: "derived" };
             }),
             ...userAdded

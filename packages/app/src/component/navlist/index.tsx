@@ -13,8 +13,7 @@ export default function Navlist({ nav }: NavListProps) {
                     return (
                         <li key={name}>{
                             link in router.routesByPath
-                                // nav links are runtime strings; TanStack types `to` as a
-                                // union of known routes, which a plain string can't satisfy
+
                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                 ? <Link to={link as any}>{name}</Link>
                                 : <a href={link}>{name}</a>

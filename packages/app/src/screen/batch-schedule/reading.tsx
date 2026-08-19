@@ -28,13 +28,11 @@ type BatchScheduleReadingItemProps = {
     remove: RemoveFn;
     defaultUnit?: Unit;
     valuePlaceholder?: string;
-    /** date-only kinds (kegDate/bottleDate) skip the reading input and use only `TrackerEntry.date` */
+
     dateOnly?: boolean;
 };
 
 function BatchScheduleReadingItem({ phaseIndex, row, milestone, entry, onPatch, update, remove, defaultUnit, valuePlaceholder, dateOnly = false }: BatchScheduleReadingItemProps) {
-    // reading unit defaults to the entry's own existing unit, like updateScalar's
-    // prev.unit fallback — only a brand-new reading falls back to defaultUnit
     const unit = (entry?.reading?.unit ?? defaultUnit) as Unit;
 
     const dateValue = entry?.date?.slice(0, 10) ?? "";
@@ -43,8 +41,6 @@ function BatchScheduleReadingItem({ phaseIndex, row, milestone, entry, onPatch, 
     const onChangeLabel = useCallback((next: string) => update(`brewable.schedule.phases[${phaseIndex}].milestones[${row}].label`, next), [update, phaseIndex, row]);
     const onRemove = useCallback(() => remove(`brewable.schedule.phases[${phaseIndex}].milestones`, row), [remove, phaseIndex, row]);
 
-    // the reading is a raw scalar while typing, formatted to its unit on blur —
-    // mirrors the ingredient rows' updateScalar, but written to the tracker not a path
     const onChangeReading = useCallback((next: string) => onPatch(refOf(milestone.id), { reading: { value: next, unit } }), [onPatch, milestone.id, unit]);
     const onBlurReading = useCallback((next: string) => onPatch(refOf(milestone.id), { reading: scalarFromNumberWithUnit(next, unit) }), [onPatch, milestone.id, unit]);
     const onChangeDate = useCallback((next: string) => onPatch(refOf(milestone.id), { date: next }), [onPatch, milestone.id]);

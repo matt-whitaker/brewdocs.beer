@@ -27,9 +27,8 @@ export function useBreadcrumbs(crumbs: Crumb[]): void {
     const id = useId();
     const { register, unregister } = useBreadcrumbContext();
 
-    // keep the group's content current; updating an existing id keeps its slot
     useEffect(() => { register(id, crumbs); }, [id, register, crumbs]);
-    // remove only on unmount, so a content update never moves the slot to the end
+
     useEffect(() => () => unregister(id), [id, unregister]);
 }
 
@@ -43,12 +42,9 @@ export function useBreadcrumbTrail(): Crumb[] {
 }
 
 export function BreadcrumbProvider({ children }: { children: ReactNode }) {
-    // a Map preserves insertion order, which is what the reverse in
-    // useBreadcrumbTrail relies on
     const [groups, setGroups] = useState<Map<string, Crumb[]>>(() => new Map());
 
     const register = useCallback((id: string, crumbs: Crumb[]) => {
-        // set on an existing id updates its value but keeps its slot
         setGroups((prev) => new Map(prev).set(id, crumbs));
     }, []);
 

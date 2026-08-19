@@ -224,8 +224,6 @@ test("discarding a record removes it for good", async ({page}) => {
     await row.getByRole("button", {name: "Discard"}).click();
     await expect(row).toHaveCount(0);
 
-    // discard is fire-and-forget — only a reload proves the write actually
-    // landed rather than just updating the on-screen list
     await page.reload();
     await expect(page.getByText("e2e-discard-01")).toHaveCount(0);
     await expect(page.getByText("No records are waiting to be updated.")).toBeVisible();
@@ -233,9 +231,7 @@ test("discarding a record removes it for good", async ({page}) => {
 
 test("retrying a record that now migrates successfully removes it and saves the recovered data", async ({page}) => {
     await primeMigrationFailuresStore(page);
-    // batches' own migration chain is empty, so a record whose stored version
-    // already equals the target migrates trivially — runMigrations returns ok
-    // as soon as fromVersion === targetVersion
+
     await seedMigrationFailures(page, [{
         entityType: "batches",
         id: "e2e-retry-success",
@@ -304,15 +300,11 @@ test("an id-less stale batch's migration-failures entry doesn't duplicate across
     await page.reload();
     await page.reload();
 
-    // MigrationGate wraps the whole router, so a route rendering at all
-    // proves the page-load pass (and its store writes) already settled
     await page.goto("/migrations/failed");
     await expect(page.getByRole("heading", {name: "Updates"})).toBeVisible();
 
     expect(await countIndexedDbKeysWithPrefix(page, "migration-failures", "migration-failures#batches:")).toBe(1);
-    // an id-less record's title is the bare entity type ("batches", no id to
-    // disambiguate) — an exact heading match, not a substring filter, since
-    // the sidebar nav also links to "Batches"
+
     await expect(page.getByRole("heading", {name: "batches", exact: true})).toHaveCount(1);
 });
 
@@ -392,9 +384,7 @@ test("discarding a no-migration-path record removes it for good, across a reload
     await expect(row).toHaveCount(0);
 
     await page.reload();
-    // the page-load pass runs inside MigrationGate's own suspense boundary,
-    // ahead of this route's content — waiting for the heading is what makes
-    // the absence check meaningful instead of racing the pass
+
     await expect(page.getByRole("heading", {name: "Updates"})).toBeVisible();
     await expect(page.getByText("e2e-no-path-discard")).toHaveCount(0);
 });
@@ -438,7 +428,6 @@ test("a record whose data can't be rendered is contained, and the rest of the li
     await expect(page.getByText("batches:e2e-circular")).toBeVisible();
     await expect(page.getByText("batches · e2e-sibling")).toBeVisible();
 
-    // the contained record's own Discard still works, even from the fallback
     const fallbackRow = page.getByRole("listitem").filter({hasText: "batches:e2e-circular"});
     await fallbackRow.getByRole("button", {name: "Discard"}).click();
     await expect(page.getByText("batches:e2e-circular")).toHaveCount(0);

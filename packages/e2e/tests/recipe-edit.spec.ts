@@ -56,8 +56,6 @@ test("Details fields persist across a reload", async ({page}) => {
     await page.getByLabel("Type").fill("IPA");
     await page.getByLabel("Description").fill("A test recipe for the editor.");
 
-    // batch size reformats on blur — a bare typed number keeps the field's
-    // previous unit rather than the typed string surviving verbatim
     const batchSize = page.getByLabel("Batch Size");
     await batchSize.fill("10");
     await batchSize.blur();
@@ -99,22 +97,17 @@ test("reopening an existing recipe via the list shows its stored values", async 
 test("a Details edit and an Ingredients edit in the same session both survive — Details first", async ({page}) => {
     await createRecipeFromTemplate(page, "E2E Clobber Details First", "Empty");
 
-    // Details is the default tab — start its debounce, then switch away before
-    // it has any chance to settle
     await page.getByLabel("Brewer").fill("E2E Clobber Brewer 1");
 
     await page.getByRole("tab", {name: "Ingredients", exact: true}).click();
     await page.getByLabel("Hops for 2. Boil").selectOption("Cascade");
     await page.getByRole("button", {name: "Add hop to 2. Boil"}).click();
-    // the new row's own weight edit debounces too, so start it right away
+
     await page.getByLabel("Cascade weight").fill("1.5");
 
     await settleSave(page);
     await page.reload();
 
-    // the last-active tab (Ingredients) is what the query-param-backed
-    // PanelSwitcher restores on reload — only the active panel is mounted,
-    // so Details has to be reselected before its fields exist to assert on
     await page.getByRole("tab", {name: "Ingredients", exact: true}).click();
     await expect(page.getByLabel("Cascade weight")).toHaveValue(/1\.5/);
     await page.getByRole("tab", {name: "Details", exact: true}).click();
@@ -212,13 +205,10 @@ test("adding an additive to a Boil phase gets a configurable weight alongside it
     await expect(weight).toBeVisible();
     await expect(weight).toHaveValue("1.0oz");
 
-    // the boil time lives under the row's expander, alongside the new headline weight
     await page.getByRole("button", {name: "Show assignment details"}).click();
     const boil = page.getByLabel("Irish Moss boil");
     await expect(boil).toHaveValue("15min");
 
-    // two separate patches into the same assignment — the second must not clobber
-    // the first
     await weight.fill("0.5");
     await weight.blur();
     await boil.fill("10");
@@ -252,8 +242,7 @@ test("adding an additive to a Conditioning phase gets a configurable weight and 
     const weight = page.getByLabel("Priming Sugar weight");
     await expect(weight).toBeVisible();
     await expect(weight).toHaveValue("1.0oz");
-    // no expandable content at all for this row — the boil branch is undefined,
-    // not an empty input, so there's no toggle to show it behind
+
     await expect(page.getByRole("button", {name: "Show assignment details"})).toHaveCount(0);
 
     await weight.fill("4.5");
@@ -269,17 +258,12 @@ test("adding an additive to a Conditioning phase gets a configurable weight and 
 });
 
 test("Estimated IBU live-recomputes when a hop's weight changes on the Ingredients panel", async ({page}) => {
-    // anchor-steam-beer-clone (packages/kb/data/recipes/anchor-steam-beer-clone.json)
-    // carries three Northern Brewer additions — a known, non-zero hop bill.
     await editRecipeFromKbTemplate(page, "/kb/recipe/anchor-steam-beer-clone");
 
     const row = estimatedIbuRow(page);
     await expect(row).not.toContainText("0");
     const initialText = await row.textContent();
 
-    // Details' and Ingredients' drafts are sibling useJsonEdit instances over
-    // the same stored recipe — this only reflects the edit via a debounced
-    // save + resync, not shared in-memory state, so it exercises that round trip.
     await page.getByRole("tab", {name: "Ingredients", exact: true}).click();
     const weight = page.getByLabel("Northern Brewer weight").first();
     await weight.fill("5.0");

@@ -23,15 +23,12 @@ test("records as-brewed values without overwriting the plan", async ({page}) => 
     await seedBatch(page, {name: "E2E Actuals Batch"});
     await openSchedulePhase(page, "2. Boil");
 
-    // the recipe ships three Northern Brewer additions; act on the first
     const weight = page.getByLabel("Northern Brewer weight").first();
     const boil = page.getByLabel("Northern Brewer boil").first();
 
     await expect(weight).toHaveValue("1.0oz");
     await expect(boil).toHaveValue("60min");
 
-    // two separate patches into the same tracker entry — the second must not
-    // clobber the first (putEntry merges `resource` a level deeper for this)
     await weight.fill("1.25");
     await weight.blur();
     await boil.fill("45");
@@ -41,14 +38,9 @@ test("records as-brewed values without overwriting the plan", async ({page}) => 
     await page.reload();
     await openSchedulePhase(page, "2. Boil");
 
-    // both survived the round-trip, and both are on the same row
     await expect(page.getByLabel("Northern Brewer weight").first()).toHaveValue(/1\.25/);
     await expect(page.getByLabel("Northern Brewer boil").first()).toHaveValue(/45/);
 
-    // The drift note is rendered from the *plan* (`ScheduleItem.resource`), so its
-    // presence is the assertion that the brewable was never written over — if the
-    // brew-day edit had mutated the plan, plan and actual would agree and no note
-    // would show at all.
     await expect(page.getByText("plan 1.0oz")).toBeVisible();
     await expect(page.getByText("plan 60min")).toBeVisible();
 });
@@ -79,8 +71,6 @@ test("records an actual weight against a planned additive without overwriting th
     await page.reload();
     await openSchedulePhase(page, "2. Boil");
 
-    // the actual survived, and the drift note proves it recorded against the
-    // tracker rather than overwriting the plan (see item-row.tsx's "plan X" note)
     await expect(page.getByLabel("Irish Moss weight")).toHaveValue(/0\.75/);
     await expect(page.getByText("plan 1.0oz")).toBeVisible();
 });
@@ -108,12 +98,11 @@ test("keeps equipment and ingredient checkoffs after a reload", async ({page}) =
 
 test("adds a gravity reading on a phase and persists its value", async ({page}) => {
     await seedBatch(page, {name: "E2E Gravity Batch"});
-    // ferment starts with no readings at all — nothing is seeded
+
     await openSchedulePhase(page, "3. Ferment");
 
     await page.getByRole("button", {name: "Add reading"}).click();
 
-    // a new milestone defaults to the label "Reading", which names its inputs
     const reading = page.getByLabel("Reading reading");
     await expect(reading).toBeVisible();
     await reading.fill("1.012");
@@ -132,8 +121,6 @@ test("adds a volume reading on a phase and persists its value", async ({page}) =
 
     await page.getByRole("button", {name: "Add volume reading"}).click();
 
-    // "Volume reading" is exact: unqualified it substring-matches the "Add
-    // volume reading" button's own accessible name too
     const reading = page.getByLabel("Volume reading", {exact: true});
     await expect(reading).toBeVisible();
     await reading.fill("5.5");
@@ -152,8 +139,6 @@ test("adds a temperature reading on a phase and persists its value", async ({pag
 
     await page.getByRole("button", {name: "Add temperature reading"}).click();
 
-    // "Temperature reading" is exact for the same reason as volume: unqualified
-    // it substring-matches the "Add temperature reading" button's own name too
     const reading = page.getByLabel("Temperature reading", {exact: true});
     await expect(reading).toBeVisible();
     await reading.fill("152");
@@ -192,7 +177,6 @@ test("gravity, volume and temperature readings coexist on the same phase without
     await page.reload();
     await openSchedulePhase(page, "3. Ferment");
 
-    // each grid kept its own row and value — no write clobbered another
     await expect(page.getByLabel("Reading reading")).toHaveValue(/1\.05/);
     await expect(page.getByLabel("Volume reading", {exact: true})).toHaveValue(/6/);
     await expect(page.getByLabel("Temperature reading", {exact: true})).toHaveValue(/68/);
@@ -201,20 +185,17 @@ test("gravity, volume and temperature readings coexist on the same phase without
 test("a second phase of the same type gets its own tab and its own ingredients", async ({page}) => {
     await seedBatch(page, {name: "E2E Phase Split Batch"});
 
-    // add a second Boil in Planning -> Phases
     await page.getByRole("tab", {name: "Planning", exact: true}).click();
     await page.getByRole("tab", {name: "Phases", exact: true}).click();
     await page.getByLabel("Phase type to add").selectOption("boil");
     await page.getByRole("button", {name: "Add phase"}).click();
 
-    // it becomes its own Brewing tab — never merged into the existing Boil
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
     const secondBoil = page.getByRole("tab", {name: "4. Boil", exact: true});
     await expect(secondBoil).toBeVisible();
-    // ...and starts empty, so the switcher renders it as a disabled tab
+
     await expect(secondBoil).toBeDisabled();
 
-    // give it an ingredient of its own (the add-row needs a selection first)
     await page.getByRole("tab", {name: "Planning", exact: true}).click();
     await page.getByRole("tab", {name: "Ingredients", exact: true}).click();
     await page.getByLabel("Hops for 4. Boil").selectOption("Cascade");
@@ -224,8 +205,6 @@ test("a second phase of the same type gets its own tab and its own ingredients",
     await page.reload();
     await openSchedulePhase(page, "4. Boil");
 
-    // the new phase holds only what was added to it, and the original Boil keeps
-    // its three Northern Brewers — the whole point of phase *instances*
     await expect(page.getByLabel("Cascade weight")).toBeVisible();
     await expect(page.getByLabel("Northern Brewer weight")).toHaveCount(0);
 
@@ -270,8 +249,6 @@ test("adds a water sample on the Mash phase and persists bundled parameters", as
     await page.getByRole("button", {name: "Add water sample"}).click();
     await page.getByRole("button", {name: "Show Water Sample parameters"}).click();
 
-    // recording Sulfate must not clobber Calcium recorded a moment earlier —
-    // the one-level-deep merge putEntry gives TrackerEntry.water
     const calcium = page.getByLabel("Water Sample Calcium");
     await calcium.fill("50");
     await calcium.blur();
@@ -313,8 +290,6 @@ test("completes the Mash phase, advances the current phase, and keeps its water 
     await calcium.blur();
     await settleSave(page);
 
-    // the Complete button is immediate (mutate(fn, true)), unlike the debounced
-    // water field above — settle both before reloading
     await page.getByRole("button", {name: "Complete 1. Mash"}).click();
     await page.getByRole("dialog").getByRole("button", {name: "Confirm"}).click();
     await settleSave(page);
@@ -322,30 +297,24 @@ test("completes the Mash phase, advances the current phase, and keeps its water 
     await page.reload();
     await openSchedulePhase(page, "1. Mash");
 
-    // a completed phase drops its own Complete button but keeps its content —
-    // there's no un-complete control, so this is the only way to see it survived
     await expect(page.getByRole("button", {name: "Complete 1. Mash"})).toHaveCount(0);
     await page.getByRole("button", {name: "Show Water Sample parameters"}).click();
     await expect(page.getByLabel("Water Sample Calcium")).toHaveValue(/60ppm/);
 
-    // progress moved on to the next phase
     await openSchedulePhase(page, "2. Boil");
     await expect(page.getByRole("button", {name: "Complete 2. Boil"})).toBeVisible();
 });
 
 test("keeps a batch note and SRM value after a reload", async ({page}) => {
     await seedBatch(page, {name: "E2E Notes Batch"});
-    // Notes is the Brewing tab strip's last entry, alongside the phase tabs
+
     await openSchedulePhase(page, "Notes");
 
-    // the tab and the textarea share the accessible name "Notes"; role disambiguates
     const notes = page.getByRole("textbox", {name: "Notes"});
     const srm = page.getByRole("textbox", {name: "SRM"});
     await expect(notes).toHaveValue("");
     await expect(srm).toHaveValue("0");
 
-    // SRM first: on a batch that has never had notes, this is the write that
-    // creates batch.notes from nothing rather than adding a key to it
     await srm.fill("9");
     await srm.blur();
     await notes.fill("Fermentation smelled great, slightly fruity.");
@@ -375,7 +344,6 @@ test("shows an SRM colour swatch on the Notes tab only for a parseable value", a
     await srm.fill("abc");
     await expect(swatch).toHaveCount(0);
 
-    // 0 is a valid finite SRM, unlike an empty/whitespace field
     await srm.fill("0");
     await expect(swatch).toBeVisible();
 
@@ -395,21 +363,16 @@ test("completing a phase puts a marker on the brew timer's live timeline", async
     await seedBatch(page, {name: "E2E Timer Marker Batch"});
     await openSchedulePhase(page, "1. Mash");
 
-    // markers are placed as an offset from the session start, so the timer has to
-    // be running before the completion for one to exist at all
     await page.getByRole("button", {name: "Start timer"}).click();
     await settleSave(page);
 
     const mashMarkers = page.getByRole("button", {name: /^1\. Mash at /});
-    // Global compacts to phase stamps (BREW-TIMER-08): Mash has begun, so its own
-    // start stamp already shows before anything is completed
+
     await expect(mashMarkers).toHaveCount(1);
     await page.getByRole("button", {name: "Complete 1. Mash"}).click();
     await page.getByRole("dialog").getByRole("button", {name: "Confirm"}).click();
     await settleSave(page);
 
-    // completing adds Mash's own complete stamp alongside its start stamp — Boil also
-    // begins as the new current phase, but that's its own stamp, not Mash's
     await expect(mashMarkers).toHaveCount(2);
 });
 
@@ -434,22 +397,16 @@ test("the phase tab bar stays one row on a phone and keeps every tab reachable",
 
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
 
-    // :visible excludes the brew timer's quick-action tablist, which is always
-    // present (portalled to document.body by Modal) but closed here
     const bar = page.locator('[role="tablist"]:visible').last();
     await expect(bar).toHaveCount(1);
     expect(await bar.evaluate(el => el.getBoundingClientRect().height)).toBeLessThan(56);
     expect(await bar.evaluate(el => el.scrollWidth > el.clientWidth)).toBe(true);
 
-    // the last tab starts outside the scroll window; selecting it must bring it back
     const notes = page.getByRole("tab", {name: "Notes", exact: true});
     await notes.click();
     await expect(notes).toHaveAttribute("aria-selected", "true");
     await expect(notes).toBeInViewport();
 
-    // scrolled fully left it must stay there — `.tabs-box`'s 4px padding puts the
-    // first tab's snap edge inside the snapport, and without matching scroll-padding
-    // snapping drags it back to 4 every time
     await bar.evaluate(el => { el.scrollLeft = 0; });
     await page.waitForTimeout(600);
     expect(await bar.evaluate(el => el.scrollLeft)).toBe(0);
@@ -487,11 +444,9 @@ test("quick reading records against the current phase, and offers water paramete
     await page.getByRole("button", {name: "Quick actions"}).click();
     const modal = page.getByRole("dialog");
 
-    // no phase picker — the current phase is stated instead
     await expect(modal.getByText("Recording on 1. Mash")).toBeVisible();
     await expect(modal.getByLabel("Reading phase")).toHaveCount(0);
 
-    // water is the one kind whose value belongs to a chosen parameter
     await modal.getByLabel("Reading kind").selectOption("water");
     await expect(modal.getByLabel("Reading measurement")).toBeVisible();
     await modal.getByLabel("Reading measurement").selectOption({label: "Calcium"});
@@ -541,9 +496,6 @@ test("adds and removes equipment on a phase, persisting each change", async ({pa
     await page.getByRole("tab", {name: "Planning", exact: true}).click();
     await page.getByRole("tab", {name: "Equipment", exact: true}).click();
 
-    // the add-row's catalog dropdown has no accessible name (unlike the
-    // Ingredients add-row) — it's always the last combobox in its phase's
-    // section, after every existing item's own rename dropdown
     const mashSection = page.getByRole("button", {name: "1. Mash", exact: true}).locator("xpath=..");
     await mashSection.getByRole("combobox").last().selectOption("CO2");
     await mashSection.getByRole("button", {name: "Add equipment to 1. Mash"}).click();
@@ -641,7 +593,6 @@ test("keeps the last phase of a required type from being removed", async ({page}
     await expect(page.getByRole("button", {name: "Remove 2. Boil"})).toHaveCount(0);
     await expect(page.getByRole("button", {name: "Remove 3. Ferment"})).toHaveCount(0);
 
-    // a second Boil makes the type have two — both become removable
     await page.getByLabel("Phase type to add").selectOption("boil");
     await page.getByRole("button", {name: "Add phase"}).click();
     await settleSave(page);
@@ -649,7 +600,6 @@ test("keeps the last phase of a required type from being removed", async ({page}
     await expect(page.getByRole("button", {name: "Remove 2. Boil"})).toBeVisible();
     await expect(page.getByRole("button", {name: "Remove 4. Boil"})).toBeVisible();
 
-    // dropping back to one Boil restores the rule
     await page.getByRole("button", {name: "Remove 4. Boil"}).click();
     await settleSave(page);
     await expect(page.getByRole("button", {name: "Remove 2. Boil"})).toHaveCount(0);
@@ -670,9 +620,6 @@ test("removing a phase drops its own reading but leaves a sibling phase's readin
     await page.getByRole("button", {name: "Add phase"}).click();
     await settleSave(page);
 
-    // an empty phase's Brewing tab renders disabled — give it an equipment
-    // item so it's clickable, the same way the "second phase" test above
-    // gives its new phase an ingredient
     await page.getByRole("tab", {name: "Equipment", exact: true}).click();
     const newBoilSection = page.getByRole("button", {name: "4. Boil", exact: true}).locator("xpath=..");
     await newBoilSection.getByRole("combobox").last().selectOption("CO2");
@@ -729,9 +676,6 @@ test("reorders a phase, renumbering its label, and survives a reload", async ({p
  * the collapsed section's old index — renders collapsed instead.
  */
 test("keeps Planning's collapsed equipment section on its own phase after a reorder", async ({page}) => {
-    // known app bug (see the block comment above) — keep this failing rather than
-    // weaken the assertion, so a fix flips it back to green instead of silently
-    // regressing again
     test.fail();
     await seedBatch(page, {name: "E2E Reorder Collapse Batch"});
 
@@ -748,8 +692,7 @@ test("keeps Planning's collapsed equipment section on its own phase after a reor
 
     await page.getByRole("tab", {name: "Planning", exact: true}).click();
     await page.getByRole("tab", {name: "Equipment", exact: true}).click();
-    // the section collapsed as "2. Boil" is the same phase, now "1. Boil" — it
-    // should still be the one collapsed, and Mash (never touched) should not
+
     await expect(page.getByRole("button", {name: "1. Boil", exact: true})).toHaveAttribute("aria-expanded", "false");
     await expect(page.getByRole("button", {name: "2. Mash", exact: true})).toHaveAttribute("aria-expanded", "true");
 });
@@ -765,9 +708,6 @@ test("keeps Planning's collapsed equipment section on its own phase after a reor
  * shows no tab selected at all instead of following the phase.
  */
 test("keeps the Brewing screen's active tab on the same phase after a reorder", async ({page}) => {
-    // known app bug (see the block comment above) — keep this failing rather than
-    // weaken the assertion, so a fix flips it back to green instead of silently
-    // regressing again
     test.fail();
     await seedBatch(page, {name: "E2E Reorder Active Tab Batch"});
 
@@ -779,8 +719,6 @@ test("keeps the Brewing screen's active tab on the same phase after a reorder", 
     await page.getByRole("button", {name: "Move 2. Boil up", exact: true}).click();
     await settleSave(page);
 
-    // the Brewing tab active on this phase before the reorder should still
-    // show it, not silently fall back to whichever phase is now first
     await page.getByRole("tab", {name: "Brewing", exact: true}).click();
     await expect(page.getByRole("tab", {name: "1. Boil", exact: true})).toHaveAttribute("aria-selected", "true");
 });
@@ -810,13 +748,11 @@ test("reading rows lay out without overlapping fields", async ({page}) => {
     await seedBatch(page, {name: "Reading layout"});
     await openSchedulePhase(page, "1. Mash");
 
-    // the add row, before anything exists
     const addName = await boxOf(page, "Gravity name to add");
     const addValue = await boxOf(page, "Gravity value to add");
     expect(overlaps(addName, addValue), "add row: name and value overlap").toBe(false);
     expect(addName.x, "add row: name should start at the left of the grid").toBeLessThan(addValue.x);
 
-    // and an item row
     await page.getByRole("button", {name: "Add reading"}).click();
     await settleSave(page);
 
@@ -825,7 +761,6 @@ test("reading rows lay out without overlapping fields", async ({page}) => {
     expect(overlaps(name, value), "item row: name and value overlap").toBe(false);
     expect(name.x, "item row: name should sit left of the value").toBeLessThan(value.x);
 
-    // one line, not two — the overlap used to force a wrap
     expect(Math.abs(name.y - value.y), "item row: fields should share a line").toBeLessThan(name.height);
 });
 
@@ -848,7 +783,6 @@ test("the Water Chemistry name field starts at the same left edge as the other r
     const water = await boxOf(page, "Water Chemistry name to add");
     expect(water.x, "water add row should share the left edge of the other grids").toBeCloseTo(gravity.x, 0);
 
-    // and once a sample exists, its row too
     await page.getByRole("button", {name: "Add water sample"}).click();
     await settleSave(page);
 

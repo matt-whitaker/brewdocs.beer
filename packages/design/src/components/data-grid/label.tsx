@@ -12,9 +12,9 @@ const TINY = "[.data-grid_.data-grid_&]:text-2xs ml-6 border-l border-solid bord
 export type DataGridLabelProps = PropsWithChildren & PropsWithClass & {
     htmlFor?: string;
     tiny?: boolean;
-    /** columns to span within the row */
+
     cols?: GridColumn;
-    /** the grid column to start at. Omit to let the row place it in flow. */
+
     colStart?: GridColumn;
 };
 export function DataGridLabel({ children, className, htmlFor, tiny = false, cols = 4, colStart }: DataGridLabelProps) {

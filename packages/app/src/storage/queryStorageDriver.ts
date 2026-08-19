@@ -179,7 +179,7 @@ function removeItem(this: QueryDriverContext, key: string, callback?: (err: unkn
 function clear(this: QueryDriverContext, callback?: (err: unknown) => void): Promise<void> {
     const promise = this.ready().then(() => {
         const { db, keyPrefix } = this._dbInfo;
-        // top-down so removals don't shift the indices still to be visited
+
         for (let i = db.length - 1; i >= 0; i--) {
             const key = db.key(i) || "";
             if (key.indexOf(keyPrefix) === 0) {

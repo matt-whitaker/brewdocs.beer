@@ -28,7 +28,7 @@ function workspaceAtAliasPlugin(): Plugin {
 export default defineConfig({
     plugins: [
         workspaceAtAliasPlugin(),
-        // must come before react()
+
         tanstackRouter({target: "react", autoCodeSplitting: true}),
         react(),
         tailwindcss(),

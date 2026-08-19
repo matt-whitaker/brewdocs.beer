@@ -21,10 +21,6 @@ export default function RecipeEditDetails({ recipeId }: RecipeEditDetailsProps) 
     const session = useSession();
     const patchRecipe = usePatchRecipe(recipeId);
 
-    // Details owns every field except the brewable, which the sibling BrewableEdit
-    // owns — so patch our fields only and never write brewable back, or a late
-    // debounced save (fired after a tab switch to the brewable editor) would
-    // overwrite a brewable edit.
     const onChange = useCallback((r: Recipe) => {
         const {brewable: _brewable, ...rest} = r;
         patchRecipe(rest);

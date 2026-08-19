@@ -81,7 +81,7 @@ test("a title match on a kb hop links to that hop's own page", async ({page}) =>
     await page.goto("/");
 
     const search = page.getByRole("textbox", {name: "What are you looking for?"});
-    await search.fill("imco"); // mid-word, wrong case relative to "Simcoe"
+    await search.fill("imco");
 
     const results = page.locator(".hero-content");
     const row = results.getByRole("listitem").filter({hasText: "Simcoe"});

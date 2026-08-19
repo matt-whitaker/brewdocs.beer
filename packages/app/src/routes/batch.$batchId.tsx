@@ -22,9 +22,7 @@ export const Route = createFileRoute("/batch/$batchId")({
 
 function BatchPage() {
     const {batchId} = Route.useParams();
-    // a screen saves whatever slice it owns — a full-batch draft (Schedule/Shopping)
-    // or a single field (Planning's brewable/brewDate); updateBatch merges it onto
-    // the freshest stored batch and re-derives.
+
     const onChange = useCallback((patch: Partial<Batch>) => { updateBatch(batchId, patch); }, [batchId]);
 
     const breadcrumbs = useMemo<Crumb[]>(() => [

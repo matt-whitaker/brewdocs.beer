@@ -23,7 +23,6 @@ export const fetchKbRecipes = async (): Promise<KbRecipe[]> => {
     }
 
     if (!isOnline()) {
-        // best effort offline — no fresher source than what we already have
         if (cached) {
             return cached;
         }

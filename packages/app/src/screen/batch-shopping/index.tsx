@@ -44,7 +44,7 @@ function compare(a: ShoppingItem, b: ShoppingItem, sort: SortKey): number {
         if (order !== 0) return order;
     }
     if (sort === "purchased" && a.purchased !== b.purchased) {
-        return a.purchased ? 1 : -1; // still to buy first
+        return a.purchased ? 1 : -1;
     }
     return a.name.localeCompare(b.name);
 }
@@ -62,16 +62,11 @@ export default function BatchShopping({ batchId, onChange }: BatchShoppingProps)
     const sort = (session?.["shopping.sort"] as SortKey) ?? "type";
     const onChangeSort = useCallback((value: string) => saveSession("shopping.sort", value), []);
 
-    // sort a copy that remembers each item's index, so edit paths keep pointing
-    // at the real position in batch.shopping regardless of display order
     const ordered = useMemo(() => data.shopping
         .map((item, index) => ({ item, index }))
         .sort((a, b) => compare(a.item, b.item, sort)), [data.shopping, sort]);
 
     const shoppingGroups = useMemo(() => {
-        // ordered is already sorted, so a group is a run of adjacent items sharing
-        // a label; each run becomes its own DataGrid, which is what bounds the
-        // collapse rule to that group's rows
         const groups: { label: string|null; entries: typeof ordered }[] = [];
         ordered.forEach(entry => {
             const label = groupOf(entry.item, sort);

@@ -76,13 +76,9 @@ async function createRecipeFromTemplate(page: Page, name: string, template: stri
 test("creating from a template applies its equipment and keeps the recipe defaults", async ({ page }) => {
     await createRecipeFromTemplate(page, "E2E Kettle Sour", "kettle-sour");
 
-    // Details rendered (didn't throw), so the template took the defaultRecipe path
     await expect(page.getByRole("heading", { name: "E2E Kettle Sour" })).toBeVisible();
     await expect(page.getByText("Batch Size")).toBeVisible();
 
-    // ...and carries the template's own kit, which an empty brewable has none of.
-    // The first combobox is the mash section's first equipment row (rows render
-    // ahead of the section's add-row).
     await page.getByRole("tab", { name: "Equipment", exact: true }).click();
     await expect(page.getByRole("combobox").first()).toHaveValue("Mash Tun - 10gal");
 });
@@ -104,7 +100,6 @@ test("creating an empty recipe brings no template equipment", async ({ page }) =
 
     await expect(page.getByRole("heading", { name: "E2E Empty Recipe" })).toBeVisible();
 
-    // one add-row combobox per phase and no equipment rows at all
     await page.getByRole("tab", { name: "Equipment", exact: true }).click();
     await expect(page.getByRole("combobox")).toHaveCount(3);
 });
@@ -156,7 +151,7 @@ test("deleting a user recipe removes it from the list and it stays gone after re
     await expect(row).toBeVisible();
 
     await row.getByRole("button").click();
-    // opening the confirm modal must not have triggered the row's own Link
+
     await expect(page).not.toHaveURL(/\/recipe\//);
 
     const dialog = page.getByRole("dialog");

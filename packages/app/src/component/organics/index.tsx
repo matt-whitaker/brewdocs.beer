@@ -33,12 +33,10 @@ export default function Organics({ hops, grains, yeasts, additives, className }:
         <DataGrid className={className}>
             {rows.map(([name, list]) => (
                 <Fragment key={name}>
-                    {/* labels — collapsible headers in one grid would fold each
-                        other's rows, since the collapse rule takes every following
-                        sibling */}
+                    {}
                     <DataGridHeaderRow>{name}</DataGridHeaderRow>
                     <DataGridRow zebra>
-                        {/* no label in the row, so the list gets the full width to wrap into */}
+                        {}
                         <div className="col-span-6 self-center text-sm">{list}</div>
                     </DataGridRow>
                 </Fragment>

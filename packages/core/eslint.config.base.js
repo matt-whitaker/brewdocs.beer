@@ -4,6 +4,7 @@ import reactHooks from "eslint-plugin-react-hooks";
 import stylistic from "@stylistic/eslint-plugin";
 import importX from "eslint-plugin-import-x";
 import tseslint from "typescript-eslint";
+import noSuperfluousComments from "./eslint-rules/no-superfluous-comments.js";
 
 /**
  * Shared flat-config base for the workspace's TypeScript/React packages (app, www).
@@ -28,12 +29,15 @@ export default tseslint.config(
             globals: globals.browser
         },
         plugins: {
+            brewdocs: { rules: { "no-superfluous-comments": noSuperfluousComments } },
             "react-hooks": reactHooks,
             "@stylistic": stylistic,
             "import-x": importX
         },
         rules: {
             ...reactHooks.configs.recommended.rules,
+
+            "brewdocs/no-superfluous-comments": "error",
 
             // style conventions — codify what the code already does (double quotes,
             // semicolons, 4-space indent) so these are near-zero auto-fixes.

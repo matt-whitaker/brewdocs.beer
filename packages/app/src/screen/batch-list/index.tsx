@@ -16,8 +16,6 @@ export default function BatchList({ filter }: BatchListProps) {
     const kbRecipesIndex = useIndexBy(useKbRecipes())!;
     const [query, setQuery] = useState("");
 
-    // a batch's recipe lives in either store — resolve by its recipeSource
-    // (absent on legacy batches, which were all catalog recipes → kb)
     const recipeFor = useCallback((batch: Batch) =>
         (batch.recipeSource === "user" ? recipesIndex : kbRecipesIndex).get(batch.recipeId),
     [recipesIndex, kbRecipesIndex]);

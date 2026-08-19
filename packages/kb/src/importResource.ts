@@ -14,7 +14,7 @@ interface ResourceTypeMap {
 type ResourceFile<T> = {
     version: string;
     data: T[];
-}
+};
 
 // same-origin path: works today served from the app's own static assets, and
 // requires no app-code changes once /kb/* is routed to a dedicated CDN origin
@@ -23,7 +23,7 @@ const client = createFetchClient({ baseUrl: "/kb" });
 function staleDistMessage(resource: string, detail: string) {
     return `Failed to load static resource: ${resource} — ${detail}. `
         + `/kb/${resource}.json is most likely missing from packages/kb/dist (the dev server answers a missing path with index.html and a 200). `
-        + `Rebuild it with: npm run build -w packages/kb`;
+        + "Rebuild it with: npm run build -w packages/kb";
 }
 
 async function importResource<K extends keyof ResourceTypeMap>(resource: K): Promise<ResourceTypeMap[K][]> {

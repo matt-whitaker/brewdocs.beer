@@ -13,7 +13,6 @@ test("shows an SRM colour swatch beside the number in both Target and Actuals", 
     await seedBatch(page, {name: "E2E Vitals Batch"});
     await page.getByRole("tab", {name: "Summary", exact: true}).click();
 
-    // anchor-steam-beer-clone targets srm "9"; a fresh batch's actuals default to "0"
     const target = srmRow(page, "Target");
     await expect(target).toContainText("9");
     await expect(target.locator("span.rounded-full")).toBeVisible();
@@ -32,15 +31,11 @@ test("shows the recipe's target vitals, a fresh batch's zeroed actuals, and the 
     await seedBatch(page, {name: "E2E Summary Vitals Batch"});
     await page.getByRole("tab", {name: "Summary", exact: true}).click();
 
-    // anchor-steam-beer-clone's own targets (packages/kb/data/recipes/anchor-steam-beer-clone.json)
     await expect(vitalsRow(page, "Target", "ABV")).toContainText("4.7%");
     await expect(vitalsRow(page, "Target", "IBU")).toContainText("35");
     await expect(vitalsRow(page, "Target", "O.G.")).toContainText("1.05°P");
     await expect(vitalsRow(page, "Target", "F.G.")).toContainText("1.014°P");
 
-    // defaultBatch's actuals, unset on a freshly-brewed batch. IBU is deliberately
-    // absent here — it is the one actual that is derived rather than zeroed, and it
-    // has its own test below.
     await expect(vitalsRow(page, "Actuals", "ABV")).toContainText("0.0%");
     await expect(vitalsRow(page, "Actuals", "O.G.")).toContainText("0.00°P");
     await expect(vitalsRow(page, "Actuals", "F.G.")).toContainText("0.00°P");
@@ -102,11 +97,8 @@ function expectedAbv(ogPlato: number, fgPlato: number): string {
 test("computes Actuals O.G./F.G./ABV from two dated gravity readings, ordered by date rather than entry order", async ({page}) => {
     await seedBatch(page, {name: "E2E Actuals ABV Batch"});
 
-    // entered first but dated later — this is the F.G.
     await addGravityReading(page, "3. Ferment", "2.5", "2026-02-20");
-    // entered second but dated earlier — this is the O.G.; if the derivation
-    // ever picked by entry/array order instead of date, this would come out
-    // backwards despite being the more natural mash-then-ferment order
+
     await addGravityReading(page, "1. Mash", "12.5", "2026-02-10");
 
     await page.getByRole("tab", {name: "Summary", exact: true}).click();
@@ -138,9 +130,8 @@ async function addUndatedGravityReading(page: Page, phase: string, platoValue: s
 test("an undated gravity reading sorts after a dated one, becoming F.G. regardless of entry order", async ({page}) => {
     await seedBatch(page, {name: "E2E Actuals Undated Reading Batch"});
 
-    // entered first but never dated — must still sort last (F.G.), not first
     await addUndatedGravityReading(page, "3. Ferment", "8.5");
-    // entered second but dated — must still sort first (O.G.)
+
     await addGravityReading(page, "1. Mash", "12.5", "2026-02-10");
 
     await page.getByRole("tab", {name: "Summary", exact: true}).click();
@@ -158,10 +149,6 @@ async function addEmptyGravityReading(page: Page, phase: string, label: string) 
 test("a gravity reading left without a value, even after being typed then cleared, is excluded from Actuals", async ({page}) => {
     await seedBatch(page, {name: "E2E Actuals Empty Reading Batch"});
 
-    // no value on add -> no tracker entry at all yet; typing a value then
-    // clearing it writes a tracker entry with a present but empty
-    // reading.value, per reading.tsx's onChangeReading -- this must still be
-    // excluded, not render blank
     await addEmptyGravityReading(page, "1. Mash", "Empty Check");
     await page.getByLabel("Empty Check reading").fill("12");
     await page.getByLabel("Empty Check reading").fill("");

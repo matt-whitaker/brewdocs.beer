@@ -10,7 +10,7 @@ export type InputTextProps = PropsWithClass
         readonly?: boolean;
         placeholder?: string;
         name?: string
-        /** accessible name, when no visible <label> is associated — rendered as aria-label */
+
         label?: string;
         primary?: boolean;
         align?: "left"|"center"|"right";

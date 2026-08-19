@@ -149,7 +149,6 @@ test("lists every seeded backup with its identity and version step, and states e
     ]);
     await page.reload();
 
-    // the stored batch is still at the backup's toVersion — exact
     const exactRow = page.getByRole("listitem").filter({hasText: "e2e-exact-01"});
     await expect(exactRow).toBeVisible();
     await expect(exactRow.getByText("batches · e2e-exact-01")).toBeVisible();
@@ -157,21 +156,18 @@ test("lists every seeded backup with its identity and version step, and states e
     await expect(exactRow.getByText("Exact revert — restores this record byte-for-byte as it was before the update.")).toBeVisible();
     await expect(exactRow.getByRole("button", {name: "Revert"})).toBeEnabled();
 
-    // the stored batch has drifted past the backup's toVersion — computed
     const computedRow = page.getByRole("listitem").filter({hasText: "e2e-computed-01"});
     await expect(computedRow).toBeVisible();
     await expect(computedRow.getByText("Updated from version 4 to version 3 on 2024-05-02.")).toBeVisible();
     await expect(computedRow.getByText("Computed revert — reverses the update's logic, which can lose data the update added.")).toBeVisible();
     await expect(computedRow.getByRole("button", {name: "Revert"})).toBeEnabled();
 
-    // entity type isn't wired for revert at all
     const notWiredRow = page.getByRole("listitem").filter({hasText: "e2e-notwired-01"});
     await expect(notWiredRow).toBeVisible();
     await expect(notWiredRow.getByText("recipes · e2e-notwired-01")).toBeVisible();
     await expect(notWiredRow.getByText("Revert isn't available for this kind of record.")).toBeVisible();
     await expect(notWiredRow.getByRole("button", {name: "Revert"})).toBeDisabled();
 
-    // the entity type is wired, but no matching batch is stored any more
     const goneRow = page.getByRole("listitem").filter({hasText: "e2e-gone-01"});
     await expect(goneRow).toBeVisible();
     await expect(goneRow.getByText("Revert isn't available — this record is no longer stored.")).toBeVisible();
@@ -200,7 +196,6 @@ test("reverting an exact-eligible backup restores the record byte-for-byte, dele
     await row.getByRole("button", {name: "Revert"}).click();
     await expect(row).toHaveCount(0);
 
-    // reload proves the writes actually landed, not just the query cache
     await page.reload();
     await expect(page.getByRole("listitem").filter({hasText: "e2e-revert-exact"})).toHaveCount(0);
 

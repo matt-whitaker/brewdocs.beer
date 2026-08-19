@@ -45,11 +45,10 @@ export interface Schedule {
 }
 
 interface AssignmentBase {
-    /** stable per-instance id — batch brewables only, minted by ensureBrewableIds; absent on recipe/kb brewables. Distinct from `slug` (catalog identity, shared across instances) */
     id?: string;
-    /** the `BrewablePhase.id` this resource goes into — a specific phase instance, so repeats of one type stay distinct */
+
     phaseId: string;
-    /** identifies the resource within its catalog/collection */
+
     slug: string;
 }
 
@@ -106,13 +105,13 @@ export const phaseLabel = (phases: BrewablePhase[], index: number): string => {
 export const assignmentResourceName = (assignment: Assignment): string => {
     switch (assignment.resourceType) {
         case "grain":
-            return assignment.resource.name; // narrowed to Grain
+            return assignment.resource.name;
         case "hop":
-            return assignment.resource.name; // narrowed to Hop
+            return assignment.resource.name;
         case "yeast":
-            return assignment.resource.name; // narrowed to Yeast
+            return assignment.resource.name;
         case "additive":
-            return assignment.resource.name; // narrowed to Additive
+            return assignment.resource.name;
     }
 };
 

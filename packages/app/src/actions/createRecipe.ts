@@ -18,8 +18,6 @@ export default async function createRecipe(source?: KbRecipe | KbRecipeTemplate,
         recipe = {...kbRecipeToRecipe(source), id};
     }
 
-    // let a caller (re)name the clone — e.g. "Edit" clones a catalog recipe into
-    // a local one under a user-chosen name
     if (name) {
         recipe.name = name;
     }

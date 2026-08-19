@@ -11,16 +11,10 @@ const HEADER = "flex items-center gap-x-1 px-1 pt-3 pb-1";
 const HEADING = "flex-1 min-w-0 text-left text-2xs uppercase tracking-wide font-semibold text-base-content/60";
 
 export type DataGridHeaderRowProps = PropsWithChildren & PropsWithClass & {
-    /** starting state only — the header owns it from then on */
     defaultCollapsed?: boolean;
-    /** fires with the new state so the caller can persist it */
+
     onToggle?: (collapsed: boolean) => void;
-    /**
-     * Opt in to a collapse toggle; a header is a plain label otherwise. The
-     * collapse rule hides *all* following siblings, so several collapsible
-     * headers in one grid would fold each other's content — give each its own
-     * grid, or leave them as labels.
-     */
+
     collapsible?: boolean;
 };
 
@@ -57,13 +51,11 @@ export function DataGridHeaderRow({ children, className, defaultCollapsed = fals
             type="button"
             aria-expanded={!collapsed}
             onClick={onClick}
-            // w-full because the header isn't always in a stretching flex parent
+
             className={classNames(HEADER, "group w-full cursor-pointer", [className], { [COLLAPSED]: collapsed })}
         >
             <span className={classNames(HEADING, "group-hover:text-base-content")}>{children}</span>
-            {/* purely an indicator — pointer-events-none keeps it from swallowing
-                the click and, since :hover/:active can't match it, leaves it with
-                no interaction state of its own */}
+            {}
             <span className={classNames(CHEVRON, "pointer-events-none")}>
                 <Chevron className={classNames(CHEVRON_ICON, {"rotate-180": !collapsed})} />
             </span>

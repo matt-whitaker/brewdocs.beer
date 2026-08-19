@@ -40,10 +40,10 @@ export interface KbAssignment {
      * `KbRecipe.{grains,hops,…}` arrays this used to index into.
      */
     resource:
-        | { name: string; weight: Scalar }                                              // grain
-        | { name: string; weight: Scalar; alpha: Scalar; boil: Scalar; phase?: string } // hop
-        | { name: string; avg_attn: Scalar; temp: Scalar; starter: boolean }            // yeast
-        | { name: string; boil?: Scalar; weight?: Scalar };                             // additive
+        | { name: string; weight: Scalar }
+        | { name: string; weight: Scalar; alpha: Scalar; boil: Scalar; phase?: string }
+        | { name: string; avg_attn: Scalar; temp: Scalar; starter: boolean }
+        | { name: string; boil?: Scalar; weight?: Scalar };
 }
 
 /** primitives-only supertype of app `Brewable` — see model/brewable.ts there */
