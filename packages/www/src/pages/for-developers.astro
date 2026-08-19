@@ -1,0 +1,54 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Stack from "@/components/stack.astro";
+import {DESIGN_URL, GITHUB_URL} from "@/data/env";
+
+const destinations: { name: string; blurb: string; href: string; cta: string }[] = [
+    {
+        name: "Design system",
+        blurb: "The UI primitives BrewDocs is built from — typography, inputs and layout, published as a live Storybook you can poke at.",
+        href: DESIGN_URL,
+        cta: "Open the Storybook"
+    },
+    {
+        name: "Claude Team",
+        blurb: "The automated AI agent team that writes BrewDocs: how the roles are split, how work moves from epic to story to task, and why it is shaped that way.",
+        href: "/claude",
+        cta: "Read about the team"
+    },
+    {
+        name: "GitHub",
+        blurb: "The monorepo itself — the app, the marketing site, the design system and the knowledge base, all public.",
+        href: GITHUB_URL,
+        cta: "Browse the source"
+    }
+];
+---
+<Layout title="For developers">
+    <main
+        class="min-h-screen w-screen flex flex-col items-center px-6 pt-24 pb-16 lg:pt-28"
+        style="background-image: linear-gradient(to bottom, color-mix(in oklab, var(--color-base-200) 85%, transparent) 65%, var(--color-base-300) 100%);">
+        <Stack class="text-base-content/50" />
+
+        <h1 class="mt-5 text-3xl lg:text-4xl font-semibold tracking-tight">For developers</h1>
+
+        <div class="mt-8 lg:max-w-screen-md text-left flex flex-col gap-4">
+            <p class="px-5">
+                BrewDocs is built in the open. If the build side is your thing, this is where
+                everything lives.
+            </p>
+
+            <div class="flex flex-col gap-3">
+                {destinations.map(({ name, blurb, href, cta }) => (
+                    <div class="rounded-box glass p-5 [box-shadow:inset_0_0_0_1px_oklch(100%_0_0/22%)]">
+                        <div class="text-xs font-mono uppercase tracking-widest text-primary">{name}</div>
+                        <p class="mt-2 text-base">{blurb}</p>
+                        <div class="mt-4">
+                            <a href={href} class="btn btn-primary btn-sm">{cta}</a>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    </main>
+</Layout>
