@@ -12,7 +12,7 @@ This root file holds the **universal** rules. Each package's deep-dive lives in 
 - **Layout.** npm-workspaces monorepo; packages named `@brewdocs.beer/<name>`.
 - **Default branch.** `mainline` — also the target for all PRs and the **sole** deploy branch.
 - **Node.** ≥22. ⚠️ Non-interactive shells on this machine resolve `node` to an ancient v10 — if a command fails with syntax errors inside `node_modules`, prefix it: `PATH="$HOME/.nvm/versions/node/v22.23.1/bin:$PATH"`.
-- **Verify (the gate).** `nx run-many --target=test` (eslint — app + www + design + e2e) + `tsc --noEmit` + `nx run-many --target=build`. ⚠️ nx, not `npm … -ws`: that flag is accepted by CI's npm and **rejected** by the one shipping with Node 22, so the gate was not reproducible locally on a supported Node. No unit-test framework, no runtime tests in that gate — Playwright functional tests (`packages/e2e`) run separately in `.github/workflows/functional-test.yaml`, not in Verify. See _Linting_ (`packages/app/CLAUDE.md`) and _Definition of done_.
+- **Verify (the gate).** `nx run-many --target=test` (eslint — every workspace) + `tsc --noEmit` + `nx run-many --target=build`. ⚠️ nx, not `npm … -ws`: that flag is accepted by CI's npm and **rejected** by the one shipping with Node 22, so the gate was not reproducible locally on a supported Node. No unit-test framework, no runtime tests in that gate — Playwright functional tests (`packages/e2e`) run separately in `.github/workflows/functional-test.yaml`, not in Verify. See _Linting_ (`packages/app/CLAUDE.md`) and _Definition of done_.
 
 | Package | Role |
 |---|---|
@@ -114,6 +114,7 @@ Guidance for human contributors **and** for the `@claude` GitHub integration.
 
 ### Code style
 - ⚠️ **Don't write code comments.** Add one only when the maintainer explicitly asks for it in that task. This covers explanatory blocks, `⚠️` notes, JSDoc, and "why it's like this" asides — the default is **none**.
+  - **Lint-enforced** since #949: `brewdocs/no-superfluous-comments` in the shared base config errors on every comment in TS/TSX across all six workspaces. Exemptions: JSDoc immediately preceding an exported symbol (or a member of one) — the public-API carve-out — and lint-functional directives (`eslint-disable*`, `@ts-expect-error`, triple-slash references), which are machinery, not commentary.
 - Say it in the code instead: a precise name, a smaller function, an explicit type. If a reader would still need the *why*, it belongs in a `CLAUDE.md` — that's where this repo keeps its gotchas, and unlike an inline comment it's discoverable from outside the file and actually gets maintained.
 - Deleting a stale or redundant comment is always fine and needs no permission. Adding one does.
 - ⚠️ This applies to the `@claude` roles too. Comment-heavy output is a recurring failure mode: the volume buries the few things that matter and goes stale the moment the code moves.
