@@ -1,0 +1,177 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import PhoneMockup from "@/components/phone-mockup.astro";
+import {APP_URL} from "@/data/env";
+
+type Figure = {
+    src: string;
+    alt: string;
+    caption: string;
+};
+
+type Step = {
+    number: string;
+    title: string;
+    lead: string;
+    body: string[];
+    figures: Figure[];
+};
+
+const steps: Step[] = [
+    {
+        number: "01",
+        title: "Find your way around",
+        lead: "Every screen carries the same navigation, and the home page is a search box.",
+        body: [
+            "Opening the menu gives you the whole app: About and Disclaimer at the top, then Batches, Recipes and Equipment — the three collections everything else hangs off.",
+            "The home page itself is one search box, asking \"What are you looking for?\". It answers as you type, with no button to press, and the results come back as a grid of tiles you can pick straight through to — a batch, a recipe, a piece of equipment, or a hop, grain or yeast out of the knowledge base. It does not mind where in a name it matches, or what case you type, so searching \"citr\" finds Citra.",
+            "It also searches by what a beer is made of. Ask for \"citr\" and a recipe built around Citra comes back too, even though Citra is nowhere in its name — the ones matched by their own name are listed first. Leave the box empty and you get up to eight of your most recently brewed batches instead, under Recent Batches, so there is somewhere to pick up from."
+        ],
+        figures: [
+            {
+                src: "/images/guides/home-search.png",
+                alt: "The BrewDocs home page on a phone, showing the search field and two recent batch tiles",
+                caption: "The home page with the box empty: the search field, and the batches brewed most recently waiting underneath it."
+            }
+        ]
+    },
+    {
+        number: "02",
+        title: "Start from a recipe",
+        lead: "Recipes is where a brew day begins — the catalogue's recipes and your own, in one list.",
+        body: [
+            "The list splits into All, Starred and My Recipes. All holds the catalogue and your own together; My Recipes holds only yours. (Starred is on the screen but does not do anything yet.) Every recipe is listed the same way whichever it is — its name, who it is credited to, its ABV, IBUs, original and final gravity, and its description.",
+            "Search narrows the list as you type, matching anywhere in a recipe's name, and what you have typed stays put when you move between All and My Recipes — so \"is that one mine?\" does not mean typing it again.",
+            "To write your own, start a new recipe from My Recipes. You are asked for a name and a starting template before anything is created; the template decides the kit the recipe starts with, so a kettle sour arrives with the kettle sour equipment and the empty template arrives with none. Confirming takes you straight into the editor.",
+            "When you are ready to brew, use the recipe's own Brew action. It asks what to call the batch, then creates it and opens it for you."
+        ],
+        figures: [
+            {
+                src: "/images/guides/recipes.png",
+                alt: "The Recipes screen on a phone, with the All, Starred and My Recipes tabs above a search field and one recipe",
+                caption: "Recipes on All, with the catalogue's Anchor Steam Beer Clone and the greyed-out Starred tab beside it."
+            }
+        ]
+    },
+    {
+        number: "03",
+        title: "Follow the batch",
+        lead: "A batch is the record of one brew day, and Batches is where you pick it back up.",
+        body: [
+            "The list is split into four tabs by where the batch has got to — Ready, Brewing, Fermenting and Complete — opening on Ready. Each row names the recipe it was brewed from, the batch's own name, its author and its status, and clicking anywhere on the row opens it.",
+            "Inside, a batch has four tabs of its own: Planning, Shopping, Brewing and Summary. Planning is the recipe as this batch will actually be brewed — its grains, hops, yeast and additives under Ingredients, the kit each phase needs under Equipment, and the phases themselves under Phases. Brewing is the brew day proper.",
+            "There is no way to start a batch from this screen, which is deliberate: a batch always comes from a recipe, so it always knows what it was brewed from. Deleting one asks first, and names the batch it is asking about — there is no undo."
+        ],
+        figures: [
+            {
+                src: "/images/guides/batches.png",
+                alt: "The Batches screen on a phone, with Ready, Brewing, Fermenting and Complete tabs above two batch rows",
+                caption: "Two batches on the Ready tab, each showing the recipe behind it and where it has got to."
+            },
+            {
+                src: "/images/guides/batch-planning.png",
+                alt: "A batch open on its Planning tab on a phone, listing the mash grains and the boil hops with their weights",
+                caption: "The same batch opened on Planning — the plan for this brew day, grouped by phase and then by grains, hops and additives."
+            }
+        ]
+    },
+    {
+        number: "04",
+        title: "Keep your kit on the list",
+        lead: "Equipment is the catalogue's kit and your own, in the same shape as recipes.",
+        body: [
+            "The list narrows two ways — All and My Equipment — and every item shows its name and its notes, with a quantity alongside them once one has been set. Search behaves exactly as it does on recipes: it narrows as you type, matches anywhere in a name, and carries between the two tabs.",
+            "Adding your own starts from My Equipment and asks only for a name; there is no template to choose, because equipment has none. Opening an item shows the same name, notes and count whether it is the catalogue's or yours. What differs is what you can do with it: your own offer Edit and Delete — and Edit is where a quantity gets set — while the catalogue's offer neither."
+        ],
+        figures: [
+            {
+                src: "/images/guides/equipment.png",
+                alt: "The Equipment screen on a phone, listing catalogue kit such as a boil kettle and a digital hydrometer with their notes",
+                caption: "Equipment on All, showing the catalogue's kit with the notes that say what each piece is for."
+            }
+        ]
+    },
+    {
+        number: "05",
+        title: "Look something up",
+        lead: "The knowledge base is the reference half — what an ingredient is, and what it is like to use.",
+        body: [
+            "Grains, hops and yeasts each have a page of their own, reached from the search box on the home page. That search is the way in today: there is no page yet for browsing a category from end to end.",
+            "All three read the same way — a trail along the top reading Knowledge, then Grains, Hops or Yeasts, then the ingredient's own name, with its facts underneath and a short description below those. Which facts depends on what it is: a grain gives its Lovibond colour rating and where it comes from, a hop its origin, alpha acid percentage and what it is typically used for, and a yeast its origin and the temperature range it ferments in.",
+            "These pages are for reading. None of them offers an edit, a delete, or a way to drop the ingredient into a recipe from where you are standing."
+        ],
+        figures: [
+            {
+                src: "/images/guides/kb-hop.png",
+                alt: "The Cascade hop page on a phone, with a Knowledge, Hops, Cascade trail above its origin, alpha acid and usage",
+                caption: "Cascade in the knowledge base: the trail naming where you are, then origin, alpha acid, typical usage and how it tastes."
+            }
+        ]
+    }
+];
+---
+<Layout title="Getting Started with BrewDocs">
+    <main
+        class="min-h-screen w-screen flex flex-col items-center px-6 pt-24 pb-16 lg:pt-28"
+        style="background-image: linear-gradient(to bottom, color-mix(in oklab, var(--color-base-200) 85%, transparent) 65%, var(--color-base-300) 100%);">
+
+        <div class="text-xs font-mono uppercase tracking-widest text-primary">Guide</div>
+
+        <h1 class="mt-3 text-3xl lg:text-4xl font-semibold tracking-tight">Getting Started</h1>
+
+        <div class="mt-8 lg:max-w-screen-md text-left flex flex-col gap-4">
+            <p class="px-5">
+                BrewDocs is a homebrew handbook and brew-day app. It keeps your recipes and
+                batches in order and your reference material within reach — the informational
+                and note-taking side of brew day, rather than a replacement for the
+                thermometer. This walkthrough covers the four places you will spend your time:
+                Batches, Recipes, Equipment and the knowledge base.
+            </p>
+
+            <div class="rounded-box glass p-5 [box-shadow:inset_0_0_0_1px_oklch(100%_0_0/22%)]">
+                <div class="text-xs font-mono uppercase tracking-widest text-primary">Before you start</div>
+                <p class="mt-2 text-base">
+                    The demo is an early prototype, deployed to be tried rather than relied on.
+                    Everything you enter lives in the browser you entered it in — nothing is
+                    sent anywhere, and nothing follows you to another device. If it ends up in
+                    a state you would rather not untangle, the Disclaimer page has a Purge Data
+                    button that wipes it clean and starts you fresh.
+                </p>
+            </div>
+
+            {steps.map(({number, title, lead, body, figures}) => (
+                <section class="rounded-box glass p-5 [box-shadow:inset_0_0_0_1px_oklch(100%_0_0/22%)]">
+                    <div class="text-xs font-mono uppercase tracking-widest text-primary">Step {number}</div>
+                    <h2 class="mt-2 text-xl font-semibold tracking-tight">{title}</h2>
+                    <p class="mt-1 text-base opacity-80">{lead}</p>
+                    <div class="mt-3 flex flex-col gap-3">
+                        {body.map((paragraph) => <p class="text-base">{paragraph}</p>)}
+                    </div>
+                    <div class="mt-5 flex flex-wrap justify-center gap-8">
+                        {figures.map(({src, alt, caption}) => (
+                            <figure class="flex flex-col items-center max-w-64">
+                                <PhoneMockup
+                                    src={src}
+                                    label={alt}
+                                    class="w-52 sm:w-64 shrink-0 drop-shadow-2xl" />
+                                <figcaption class="mt-4 text-sm opacity-70 text-center">{caption}</figcaption>
+                            </figure>
+                        ))}
+                    </div>
+                </section>
+            ))}
+
+            <div class="px-5">
+                <p>
+                    That is the whole tour. The fastest way to make it stick is to open the
+                    demo, brew something out of the catalogue, and click around the batch it
+                    gives you.
+                </p>
+                <div class="mt-5 flex flex-wrap gap-3">
+                    <a href={APP_URL} class="btn btn-primary">Try the demo</a>
+                    <a href="/guides" class="btn btn-ghost">All guides</a>
+                </div>
+            </div>
+        </div>
+    </main>
+</Layout>
