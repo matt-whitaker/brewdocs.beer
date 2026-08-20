@@ -1,6 +1,6 @@
 ---
 import Layout from "@/layouts/Layout.astro";
-import {GITHUB_URL} from "@/data/env";
+import {CLAUDE_TEAM_URL} from "@/data/env";
 import GitHubMark from "@/assets/github.svg";
 import ClaudeMark from "@/assets/claude.svg";
 import {PANEL_ACCENT} from "@brewdocs.beer/design";
@@ -15,7 +15,6 @@ const roles: { name: string; blurb: string; color: string; ink: string }[] = [
     { name: "Security", blurb: "Reviews every change that ships, and raises what it finds.", color: "#B60205", ink: "#FFFFFF" },
 ];
 
-const CLAUDE_TEAM_URL = `${GITHUB_URL}/tree/mainline/packages/claude-team`;
 ---
 <Layout title="Claude Team">
     <main
@@ -63,7 +62,7 @@ const CLAUDE_TEAM_URL = `${GITHUB_URL}/tree/mainline/packages/claude-team`;
                     <div class="text-xs font-mono uppercase tracking-widest text-primary">Reasonable check-ins</div>
                     <p class="mt-2 text-base">
                         Claude Team is more of a pattern of Claude Code on Github, as much of the instruction can be generated
-                        by AI. If you are interested in learning more, head on over to the dedicated package.
+                        by AI. If you are interested in learning more, head on over to the dedicated repo.
                     </p>
                 </div>
             </div>
