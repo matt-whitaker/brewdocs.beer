@@ -1,6 +1,5 @@
 ---
 import Layout from "@/layouts/Layout.astro";
-import Stack from "@/components/stack.astro";
 import {APP_URL, DESIGN_URL, GITHUB_URL} from "@/data/env";
 import {PANEL_ACCENT} from "@brewdocs.beer/design";
 ---
@@ -8,32 +7,32 @@ import {PANEL_ACCENT} from "@brewdocs.beer/design";
     <main
         class="min-h-screen w-screen flex flex-col items-center px-6 pt-24 pb-16 lg:pt-28"
         style="background-image: linear-gradient(to bottom, color-mix(in oklab, var(--color-base-200) 85%, transparent) 65%, var(--color-base-300) 100%);">
-        <Stack class="text-base-content/50" />
-
         <h1 class="mt-5 text-3xl lg:text-4xl font-semibold tracking-tight">About BrewDocs</h1>
 
         <div class="mt-8 lg:max-w-screen-md text-left flex flex-col gap-4">
             <p class="px-5">
-                BrewDocs is a homebrew handbook and brew-day app. It keeps your recipes and
-                batches in order and your reference material within reach.
+                BrewDocs is a homebrewer's handbook and brew-day app. It sets out to digitize
+                brew-day note-taking with a variety of tools built for the way brewing actually
+                goes, and puts a search over an aggregated collection of brewing facts behind
+                them, so a last-minute change is a quick lookup rather than a guess.
             </p>
 
-            <div class="flex flex-col gap-3">
-                <div class={PANEL_ACCENT}>
-                    <div class="text-xs font-mono uppercase tracking-widest text-primary">In development, today</div>
-                    <p class="mt-2 text-base">
-                        It works as a handbook, keeping your brew information, recipes, and their
-                        batches organized, with a knowledge base for looking things up. Mostly the
-                        informational and note-taking side of brew day.
-                    </p>
-                </div>
-                <div class={PANEL_ACCENT}>
-                    <div class="text-xs font-mono uppercase tracking-widest text-primary">Planned ahead</div>
-                    <p class="mt-2 text-base">
-                        Knowledge and guidance, with crafted instruction wizards that walk you
-                        through a new style, from mash to packaging.
-                    </p>
-                </div>
+            <div class={PANEL_ACCENT}>
+                <div class="text-xs font-mono uppercase tracking-widest text-primary">Where it is now</div>
+                <p class="mt-2 text-base">
+                    BrewDocs is pre-alpha. The basics are tracked — recipes, batches, and the
+                    notes that go with them — but the information is more demonstrative than
+                    complete, and the organizational side of it is still limited.
+                </p>
+            </div>
+
+            <div class="px-5">
+                <div class="text-xs font-mono uppercase tracking-widest text-primary">Where it's going</div>
+                <p class="mt-2 text-base">
+                    The goal is comprehensive brew-day note-taking across a variety of styles and
+                    processes, guided walkthroughs for taking on a style you haven't brewed
+                    before, and a high-quality knowledge base behind all of it.
+                </p>
             </div>
 
             <div class="px-5">
