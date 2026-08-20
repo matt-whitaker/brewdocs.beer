@@ -1,0 +1,142 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import PhoneMockup from "@/components/phone-mockup.astro";
+import {APP_URL} from "@/data/env";
+import {PANEL, PANEL_ACCENT} from "@brewdocs.beer/design";
+
+type Figure = {
+    src: string;
+    alt: string;
+    caption: string;
+};
+
+type Section = {
+    label: string;
+    title: string;
+    lead: string;
+    body: string[];
+    figures: Figure[];
+};
+
+const sections: Section[] = [
+    {
+        label: "What it is",
+        title: "What a backup holds",
+        lead: "One file, holding every batch and every recipe stored in the app at the moment you make it.",
+        body: [
+            "A backup is a single JSON file. It holds your batches and your recipes and nothing else: not the knowledge base, which the app fetches anyway, and nothing about the device it came from. It's a snapshot, so it holds what was there when you tapped the button rather than tracking the app afterwards.",
+            "Nothing is uploaded. There's no account and no server behind BrewDocs, so the file is handed to you and then it's yours. Where it ends up is your decision, and the app never learns which you picked. The other half of that is worth saying plainly: nobody can get a backup back for you, because no copy exists anywhere else.",
+            "You can make one before you've brewed anything. The action is always available, and on an empty app it produces a backup with nothing in it rather than refusing."
+        ],
+        figures: [
+            {
+                src: "/images/guides/backup-restore/nav-backup.png",
+                alt: "The BrewDocs menu open on a phone, listing About and Disclaimer above Batches, Recipes, Equipment and Backup",
+                caption: "Backup sits at the bottom of the menu, under the three collections it protects."
+            }
+        ]
+    },
+    {
+        label: "Backing up",
+        title: "Make a backup",
+        lead: "One button, and then a choice about where the file goes.",
+        body: [
+            "The Backup screen opens with Back up now. Tapping it builds the file there and then, out of what's stored at that moment.",
+            "What happens next depends on the device. Where the browser offers a native share sheet, which is most phones, the file goes to it and you pick the destination: a cloud drive, a file manager, or anything else the device lists as a share target. BrewDocs doesn't choose for you, deliberately, because the whole point of the file is that you decide where it lives.",
+            "Where there's no share sheet, which is most desktop browsers, the file downloads instead. It arrives as backup.json in whatever folder your browser downloads to.",
+            "Starting a share and then dismissing it cancels the backup, and nothing downloads as a consolation prize. Tap Back up now again if you changed your mind.",
+            "Every file is called backup.json, so keeping several means renaming them or letting the destination do it for you. The export date is recorded inside the file, but the name won't tell you which of two is newer."
+        ],
+        figures: [
+            {
+                src: "/images/guides/backup-restore/backup-screen.png",
+                alt: "The Backup screen on a phone, with the Back up now button above the Restore from a backup file picker",
+                caption: "Back up now above, the restore picker below it. Both halves of the job are on one screen."
+            }
+        ]
+    },
+    {
+        label: "Restoring",
+        title: "Put a backup back",
+        lead: "Restoring replaces what's on the device, and it doesn't ask twice.",
+        body: [
+            "Under the button is a file picker labelled Restore from a backup file. Choose a backup and the app reads it immediately. There's no confirmation step, so pick the file with that in mind.",
+            "A restore replaces rather than merges. The batches and recipes in the file become the batches and recipes on this device, and anything you had that the file doesn't contain is gone. That's what makes it the right tool on a new phone, and what makes it worth a moment's thought on a phone you've been brewing on.",
+            "Replacing works per kind. A file holding only recipes rewrites your recipes and leaves your batches exactly as they were, and a batches-only file does the reverse. It works that way on purpose: a backup file doubles as a way to hand a recipe to another brewer, and receiving one shouldn't wipe out their brew history.",
+            "A file that isn't a backup is refused before anything is written, and says so on the screen. Nothing on the device changes, so a wrong pick costs you nothing but the tap.",
+            "A file that reads fine but holds a record this version of the app can't yet make sense of is a smaller problem. The rest of the file restores, and the record that couldn't be brought forward is listed on the app's Updates page (/migrations/failed), where you can retry or discard it. That page has no menu entry yet, so reaching it means typing the address."
+        ],
+        figures: [
+            {
+                src: "/images/guides/backup-restore/restored.png",
+                alt: "The Backup screen on a phone after a restore, reading Restored. Your batches and recipes now match that file.",
+                caption: "The notice under the picker is the whole confirmation: the data on the device now matches the file."
+            }
+        ]
+    }
+];
+---
+<Layout title="Back Up and Restore Your Data">
+    <main
+        class="min-h-screen w-screen flex flex-col items-center px-6 pt-24 pb-16 lg:pt-28"
+        style="background-image: linear-gradient(to bottom, color-mix(in oklab, var(--color-base-200) 85%, transparent) 65%, var(--color-base-300) 100%);">
+
+        <div class="text-xs font-mono uppercase tracking-widest text-primary">Guide</div>
+
+        <h1 class="mt-3 text-3xl lg:text-4xl font-semibold tracking-tight">Back Up and Restore Your Data</h1>
+
+        <div class="mt-8 lg:max-w-screen-md text-left flex flex-col gap-4">
+            <p class="px-5">
+                Everything you enter into BrewDocs lives in the browser you entered it in. That's
+                what makes it work on a brew day with no signal, and it's also the risk: clearing
+                the browser's data, or losing the phone, takes your batches and recipes with it.
+                A backup is the way out of that. This page covers what's in the file, how to make
+                one, and what restoring it does to what's already there.
+            </p>
+
+            <div class={PANEL}>
+                <div class="text-xs font-mono uppercase tracking-widest text-primary">Before you start</div>
+                <p class="mt-2 text-base">
+                    Unlike the other guides, this one is a reference rather than a walkthrough.
+                    Read it when you need it. If you're still finding your way around the app, <a href="/guides/getting-started" class="link link-primary">Getting Started</a> covers the four places you'll spend your time. BrewDocs is an early
+                    prototype, and its storage is a browser's storage: no account, no server, and
+                    no copy of your data anywhere but the device in your hand.
+                </p>
+            </div>
+
+            {sections.map(({label, title, lead, body, figures}) => (
+                <section class={PANEL_ACCENT}>
+                    <div class="text-xs font-mono uppercase tracking-widest text-primary">{label}</div>
+                    <h2 class="mt-2 text-xl font-semibold tracking-tight">{title}</h2>
+                    <p class="mt-1 text-base opacity-80">{lead}</p>
+                    <div class="mt-3 flex flex-col gap-3">
+                        {body.map((paragraph) => <p class="text-base">{paragraph}</p>)}
+                    </div>
+                    <div class="mt-5 flex flex-wrap justify-center gap-8">
+                        {figures.map(({src, alt, caption}) => (
+                            <figure class="flex flex-col items-center max-w-64">
+                                <PhoneMockup
+                                    src={src}
+                                    label={alt}
+                                    class="w-52 sm:w-64 shrink-0 drop-shadow-2xl" />
+                                <figcaption class="mt-4 text-sm opacity-70 text-center">{caption}</figcaption>
+                            </figure>
+                        ))}
+                    </div>
+                </section>
+            ))}
+
+            <div class="px-5">
+                <p>
+                    A backup is worth making on the same schedule you'd make any other: after a
+                    brew day, and before you do anything drastic to the browser. It costs one tap,
+                    and it's the only thing standing between a cleared cache and starting over.
+                </p>
+                <div class="mt-5 flex flex-wrap gap-3">
+                    <a href={APP_URL} class="btn btn-primary">Try the demo</a>
+                    <a href="/guides" class="btn btn-ghost">All guides</a>
+                </div>
+            </div>
+        </div>
+    </main>
+</Layout>

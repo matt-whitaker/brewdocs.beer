@@ -7,6 +7,7 @@ type Guide = {
     title: string;
     description: string;
     href?: string;
+    kind?: string;
 };
 
 const guides: Guide[] = [
@@ -24,6 +25,12 @@ const guides: Guide[] = [
         title: "Brew Day with BrewDocs",
         description: "The batch's Brewing tab on the day itself: checking off what you use, recording readings, running the timer and completing each phase.",
         href: "/guides/brew-day"
+    },
+    {
+        title: "Back Up and Restore Your Data",
+        description: "What a backup file holds, how to make one, and what restoring it replaces. Read it when you need it rather than in turn.",
+        href: "/guides/backup-restore",
+        kind: "Reference"
     },
     {
         title: "Intro to Brewing",
@@ -44,15 +51,16 @@ const guides: Guide[] = [
             <p class="px-5">
                 Walkthroughs of BrewDocs, written in the order you are likely to need them:
                 finding your way around, getting a recipe and a batch together, and then the
-                brew day itself. Each one is a read-through rather than a reference, and
-                assumes nothing beyond the one before it.
+                brew day itself. Each of those is a read-through rather than a reference, and
+                assumes nothing beyond the one before it. Anything marked Reference sits
+                outside that order, to be read on the day it matters.
             </p>
 
             <div class="flex flex-col gap-3">
-                {guides.map(({title, description, href}) => (
+                {guides.map(({title, description, href, kind}) => (
                     <section class={href ? PANEL_ACCENT : PANEL}>
                         {href
-                            ? <div class="text-xs font-mono uppercase tracking-widest text-primary">Walkthrough</div>
+                            ? <div class="text-xs font-mono uppercase tracking-widest text-primary">{kind ?? "Walkthrough"}</div>
                             : <div class="text-xs font-mono uppercase tracking-widest text-base-content/50">Coming soon</div>}
                         <h2 class="mt-2 text-xl font-semibold tracking-tight">
                             {href ? <a href={href} class="link link-primary">{title}</a> : title}
