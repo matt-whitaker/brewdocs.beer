@@ -40,6 +40,8 @@ prefetchKbRecipes();
 prefetchKbRecipeTemplates();
 prefetchKbEquipment();
 
+navigator.storage?.persist?.().catch(() => {});
+
 // TODO come back to this
 // no StrictMode: mutation actions are fire-and-forget and must not double-fire
 ReactDOM.createRoot(document.getElementById("root")!).render(

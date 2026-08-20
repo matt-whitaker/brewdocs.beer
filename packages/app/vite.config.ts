@@ -5,6 +5,7 @@ import {tanstackRouter} from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import {defineConfig, Plugin} from "vite";
 import {VitePWA} from "vite-plugin-pwa";
+import {version} from "./package.json";
 
 // Workspace packages ship raw, unbuilt TypeScript, so a package like design
 // that imports its own files via "@/..." gets compiled as part of app's own
@@ -25,7 +26,13 @@ function workspaceAtAliasPlugin(): Plugin {
     };
 }
 
+// the app's own version reaches the client through the env surface every other
+// build-time value uses (src/utils/env.ts), so package.json stays the one place
+// it is written down — a backup file records which version wrote it.
 export default defineConfig({
+    define: {
+        "import.meta.env.VITE_APP_VERSION": JSON.stringify(version)
+    },
     plugins: [
         workspaceAtAliasPlugin(),
 

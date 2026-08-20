@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BackupRouteImport } from './routes/backup'
 import { Route as BatchesRouteImport } from './routes/batches'
 import { Route as DisclaimerRouteImport } from './routes/disclaimer'
 import { Route as EquipmentRouteImport } from './routes/equipment'
@@ -30,6 +31,11 @@ import { Route as RecipeRecipeIdEditRouteImport } from './routes/recipe.$recipeI
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BackupRoute = BackupRouteImport.update({
+  id: '/backup',
+  path: '/backup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BatchesRoute = BatchesRouteImport.update({
@@ -115,6 +121,7 @@ const RecipeRecipeIdEditRoute = RecipeRecipeIdEditRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/backup': typeof BackupRoute
   '/batches': typeof BatchesRoute
   '/disclaimer': typeof DisclaimerRoute
   '/equipment': typeof EquipmentRoute
@@ -134,6 +141,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/backup': typeof BackupRoute
   '/batches': typeof BatchesRoute
   '/disclaimer': typeof DisclaimerRoute
   '/equipment': typeof EquipmentRoute
@@ -154,6 +162,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/backup': typeof BackupRoute
   '/batches': typeof BatchesRoute
   '/disclaimer': typeof DisclaimerRoute
   '/equipment': typeof EquipmentRoute
@@ -175,6 +184,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/backup'
     | '/batches'
     | '/disclaimer'
     | '/equipment'
@@ -194,6 +204,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/backup'
     | '/batches'
     | '/disclaimer'
     | '/equipment'
@@ -213,6 +224,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/backup'
     | '/batches'
     | '/disclaimer'
     | '/equipment'
@@ -233,6 +245,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BackupRoute: typeof BackupRoute
   BatchesRoute: typeof BatchesRoute
   DisclaimerRoute: typeof DisclaimerRoute
   EquipmentRoute: typeof EquipmentRoute
@@ -258,6 +271,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/backup': {
+      id: '/backup'
+      path: '/backup'
+      fullPath: '/backup'
+      preLoaderRoute: typeof BackupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/batches': {
@@ -377,6 +397,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BackupRoute: BackupRoute,
   BatchesRoute: BatchesRoute,
   DisclaimerRoute: DisclaimerRoute,
   EquipmentRoute: EquipmentRoute,
