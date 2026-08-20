@@ -1,6 +1,7 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import {APP_URL} from "@/data/env";
+import {PANEL, PANEL_ACCENT} from "@brewdocs.beer/design";
 
 type Guide = {
     title: string;
@@ -49,7 +50,7 @@ const guides: Guide[] = [
 
             <div class="flex flex-col gap-3">
                 {guides.map(({title, description, href}) => (
-                    <section class="rounded-box glass p-5 [box-shadow:inset_0_0_0_1px_oklch(100%_0_0/22%)]">
+                    <section class={href ? PANEL_ACCENT : PANEL}>
                         {href
                             ? <div class="text-xs font-mono uppercase tracking-widest text-primary">Walkthrough</div>
                             : <div class="text-xs font-mono uppercase tracking-widest text-base-content/50">Coming soon</div>}
