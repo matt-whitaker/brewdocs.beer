@@ -20,7 +20,7 @@ Applies to **public page content** — the prose in `src/pages/**`, guides inclu
 
 **Rules.** Each is checkable against a draft, which is the point — an adjective like "approachable" is not.
 
-- **Contractions on.** "You can't tab to it", not "you cannot switch to it by hand".
+- **Contractions on, but pronoun ones only.** "You can't tab to it", not "you cannot switch to it by hand". ⚠️ Leave a noun subject uncontracted, and leave the verb before a colon alone: "The demo is an early prototype", never "The demo's"; "what it is:", never "what it's:". Those forms read forced, which is the opposite of what the rule is for.
 - **Behaviour before mechanism.** Say what the reader sees, then why it works that way — and only if the why earns its place.
 - **One idea per sentence, and never an aside inside an aside.** If a sentence needs two clauses to hold it together, it is two sentences.
 - **No em-dashes.** Not `—`, and not `--` or `–` standing in for one. Split at the dash into two sentences; use a colon when what follows explains what came before; use commas or parentheses for a genuine aside. This is a house rule *and* a tell — unbroken em-dash asides are among the surest signs of machine-written prose, and this reader spots them.
