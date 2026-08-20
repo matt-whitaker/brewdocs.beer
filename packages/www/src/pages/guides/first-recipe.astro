@@ -24,9 +24,9 @@ const steps: Step[] = [
         title: "Start from a recipe",
         lead: "Write your own from a blank page, or take a copy of one out of the catalogue.",
         body: [
-            "Recipes holds the catalogue's recipes and your own in one list. To write a recipe from scratch, switch to My Recipes and choose Create. You are asked for a name and a starting template before anything exists: the template decides the equipment the recipe begins with — a kettle sour arrives with the kit a kettle sour needs, and Empty starts you with none. Confirming creates the recipe and drops you straight into its editor.",
-            "The other way in is to adapt something already written. Open a catalogue recipe and choose Edit, and BrewDocs makes you a copy to work on rather than changing the catalogue — the original stays exactly as it was, and the copy is yours to brew, edit and delete like anything you wrote yourself. The name it offers is the original's, so it is worth typing something you will recognise later.",
-            "Either way you land on Details: the recipe's name, brewer, style and description at the top, then the measurements a brew is sized by — batch size, boil time, efficiency — and the targets you are aiming at, OG, FG, ABV and IBU. Estimated IBU sits below them and is not a field you fill in; BrewDocs works it out from the hops you have added and the batch size you brew into, so it moves as the recipe does."
+            "Recipes holds the catalogue's recipes and your own in one list. To write a recipe from scratch, switch to My Recipes and choose Create. You're asked for a name and a starting template before anything exists: the template decides the equipment the recipe begins with. A kettle sour arrives with the kit a kettle sour needs, and Empty starts you with none. Confirming creates the recipe and drops you straight into its editor.",
+            "The other way in is to adapt something already written. Open a catalogue recipe and choose Edit, and BrewDocs makes you a copy to work on rather than changing the catalogue. The original stays exactly as it was, and the copy is yours to brew, edit and delete like anything you wrote yourself. The name it offers is the original's, so it's worth typing something you'll recognise later.",
+            "Either way you land on Details: the recipe's name, brewer, style and description at the top, then the measurements a brew is sized by (batch size, boil time, efficiency) and the targets you're aiming at, OG, FG, ABV and IBU. Estimated IBU sits below them and is not a field you fill in; BrewDocs works it out from the hops you've added and the batch size you brew into, so it moves as the recipe does."
         ],
         figures: [
             {
@@ -37,7 +37,7 @@ const steps: Step[] = [
             {
                 src: "/images/guides/first-recipe/recipe-details.png",
                 alt: "The recipe editor's Details panel on a phone, showing name, brewer, type and description above measurements and targets",
-                caption: "Details, on a copy of a catalogue recipe — measurements, targets, and the estimated IBU BrewDocs works out for you."
+                caption: "Details, on a copy of a catalogue recipe: measurements, targets, and the estimated IBU BrewDocs works out for you."
             }
         ]
     },
@@ -46,25 +46,25 @@ const steps: Step[] = [
         title: "Lay out the ingredients",
         lead: "Ingredients are arranged under the phase they go into, not in one long list.",
         body: [
-            "The Ingredients panel groups everything by phase first — 1. Mash, 2. Boil, 3. Ferment — and then by kind within the phase. A mash offers Grains, a boil offers Hops, a ferment offers Yeasts, and every phase offers Additives, because water salts and finings are not fussy about where they land.",
-            "Grains, hops and yeasts come from a catalogue: pick a name from the phase's dropdown and confirm, and a row appears. Additives have no catalogue behind them, so you type the name instead. Confirming with the dropdown still reading \"-- Select --\", or with the additive field empty, does nothing at all — nothing is added and nothing is lost.",
-            "Every row carries a weight you can type over in place, and a control that removes it. Hops and additives have a little more behind them: expanding a row's details reveals a Boil time, and a hop also shows its Alpha %. A yeast's details show Attenuation % and the temperature it wants to ferment at instead. Rows stay in the order you added them — there is no reordering here, so add them in the order you will reach for them."
+            "The Ingredients panel groups everything by phase first (1. Mash, 2. Boil, 3. Ferment) and then by kind within the phase. A mash offers Grains, a boil offers Hops, a ferment offers Yeasts, and every phase offers Additives, because water salts and finings are not fussy about where they land.",
+            "Grains, hops and yeasts come from a catalogue: pick a name from the phase's dropdown and confirm, and a row appears. Additives have no catalogue behind them, so you type the name instead. Confirming with the dropdown still reading \"-- Select --\", or with the additive field empty, does nothing at all: nothing is added and nothing is lost.",
+            "Every row carries a weight you can type over in place, and a control that removes it. Hops and additives have a little more behind them: expanding a row's details reveals a Boil time, and a hop also shows its Alpha %. A yeast's details show Attenuation % and the temperature it wants to ferment at instead. Rows stay in the order you added them. There's no reordering here, so add them in the order you'll reach for them."
         ],
         figures: [
             {
                 src: "/images/guides/first-recipe/recipe-ingredients.png",
                 alt: "The recipe editor's Ingredients panel on a phone, showing grains under 1. Mash and hops under 2. Boil, each with a weight field",
-                caption: "Grains under the mash, hops under the boil — each with its weight, and an add row at the bottom of every group."
+                caption: "Grains under the mash, hops under the boil, each with its weight, and an add row at the bottom of every group."
             }
         ]
     },
     {
         number: "03",
-        title: "Say what it is brewed with, and in what order",
+        title: "Say what it's brewed with, and in what order",
         lead: "Equipment and Phases are the other two panels, and they answer the same question from different ends.",
         body: [
-            "Equipment works phase by phase in the same shape as ingredients, but the whole catalogue is on offer for every phase. Each row is itself a dropdown seeded with the item assigned to it, so picking a different one swaps that row in place rather than adding another. Beside it is a free-text note — somewhere to write \"strike at 168°F\" or which of two kettles you meant — and some catalogue items arrive with a default note already filled in.",
-            "Phases is the shortest panel and the one that decides the shape of the brew. It lists every phase in order with Move up and Move down beside each; the first phase cannot move up and the last cannot move down, so those controls are shown disabled rather than hidden. Moving a phase renumbers the rest immediately. An add row at the bottom appends a new phase of whatever type you pick — Mash, Boil, Ferment, Carbonation or Conditioning — and a phase can only be removed while another of the same type still exists, so a recipe can never be left without a boil."
+            "Equipment works phase by phase in the same shape as ingredients, but the whole catalogue is on offer for every phase. Each row is itself a dropdown seeded with the item assigned to it, so picking a different one swaps that row in place rather than adding another. Beside it is a free-text note (somewhere to write \"strike at 168°F\" or which of two kettles you meant), and some catalogue items arrive with a default note already filled in.",
+            "Phases is the shortest panel and the one that decides the shape of the brew. It lists every phase in order with Move up and Move down beside each; the first phase cannot move up and the last cannot move down, so those controls are shown disabled rather than hidden. Moving a phase renumbers the rest immediately. An add row at the bottom appends a new phase of whatever type you pick (Mash, Boil, Ferment, Carbonation or Conditioning), and a phase can only be removed while another of the same type still exists, so a recipe can never be left without a boil."
         ],
         figures: [
             {
@@ -75,7 +75,7 @@ const steps: Step[] = [
             {
                 src: "/images/guides/first-recipe/recipe-phases.png",
                 alt: "The recipe editor's Phases panel on a phone, listing 1. Mash, 2. Boil and 3. Ferment with move controls",
-                caption: "Three phases in order. The first phase's Move up and the last's Move down are greyed out — there is nowhere to move them."
+                caption: "Three phases in order. The first phase's Move up and the last's Move down are greyed out: there's nowhere to move them."
             }
         ]
     },
@@ -84,24 +84,24 @@ const steps: Step[] = [
         title: "Brew it into a batch",
         lead: "A recipe is the plan in general; a batch is the plan for one particular brew day.",
         body: [
-            "When the recipe is where you want it, use Brew from the recipe's own screen. It asks what to call the batch and offers a name that counts up with the batches already brewed from that recipe — Batch #1, then Batch #2 — so accepting the offer every time still leaves you with batches you can tell apart. Dismissing the prompt creates nothing.",
-            "Confirming creates the batch and takes you straight to it. The new batch arrives with the recipe's ingredients already laid out across its phases — grains in the mash, hops and additives in the boil, yeast at fermentation — carrying their quantities with them, so nothing has to be typed twice. It keeps a way back to the recipe it came from, and appears at once both in that recipe's Batches view and in your list of every batch, ready to start."
+            "When the recipe is where you want it, use Brew from the recipe's own screen. It asks what to call the batch and offers a name that counts up with the batches already brewed from that recipe (Batch #1, then Batch #2), so accepting the offer every time still leaves you with batches you can tell apart. Dismissing the prompt creates nothing.",
+            "Confirming creates the batch and takes you straight to it. The new batch arrives with the recipe's ingredients already laid out across its phases (grains in the mash, hops and additives in the boil, yeast at fermentation), carrying their quantities with them, so nothing has to be typed twice. It keeps a way back to the recipe it came from, and appears at once both in that recipe's Batches view and in your list of every batch, ready to start."
         ],
         figures: [
             {
                 src: "/images/guides/first-recipe/brew-prompt.png",
                 alt: "A recipe's overview on a phone with the brew prompt open, naming the recipe and offering Batch #1 as the batch name",
-                caption: "Brew names the recipe it is about to brew, and offers the next batch number for you to accept or type over."
+                caption: "Brew names the recipe it's about to brew, and offers the next batch number for you to accept or type over."
             }
         ]
     },
     {
         number: "05",
         title: "Adjust the plan on Planning → Ingredients",
-        lead: "Planning is the first tab on a batch, and it is where the general plan becomes this brew day's.",
+        lead: "Planning is the first tab on a batch, and it's where the general plan becomes this brew day's.",
         body: [
-            "A batch opens on Planning, and Planning has three sub-tabs of its own — Ingredients, Equipment and Phases — with Ingredients shown first. It will look familiar: it is the same phase-by-phase, kind-by-kind arrangement the recipe editor uses, working on this batch's copy of the plan rather than on the recipe.",
-            "That copy is the point. Changing a weight here, adding an additive you decided on this morning, or dropping a hop you have run out of, changes this batch and leaves the recipe alone — so the recipe stays the beer you meant to brew while the batch records the one you are actually brewing.",
+            "A batch opens on Planning, and Planning has three sub-tabs of its own: Ingredients, Equipment and Phases, with Ingredients shown first. It'll look familiar: it's the same phase-by-phase, kind-by-kind arrangement the recipe editor uses, working on this batch's copy of the plan rather than on the recipe.",
+            "That copy is the point. Changing a weight here, adding an additive you decided on this morning, or dropping a hop you've run out of, changes this batch and leaves the recipe alone. So the recipe stays the beer you meant to brew while the batch records the one you're actually brewing.",
             "Ingredients and equipment stay editable however far the brew has gone, including after every phase has been checked off. If you under-poured and want the record to say so, or want to fix a typo in a note between the boil and pitching, nothing is locked."
         ],
         figures: [
@@ -115,17 +115,17 @@ const steps: Step[] = [
     {
         number: "06",
         title: "Finish with Equipment and Phases",
-        lead: "The kit you will actually use, and the order the brew day will run in.",
+        lead: "The kit you'll actually use, and the order the brew day will run in.",
         body: [
-            "Planning's Equipment sub-tab is the same idea again: the full catalogue on every phase, one dropdown per row so a swap happens in place, and a note beside it. This is where a plan meets the kit in your garage — the recipe may say a 15gal kettle, and this batch may be going into the 10gal one.",
-            "Phases is where to check the shape of the day before you start, because it is the one part of Planning that stops being editable. As soon as any phase has been marked complete on the brew-day schedule, the whole sub-tab locks: every Move, Remove and Add phase control is disabled, and hovering one explains why — \"Locked — a phase has already been completed\". Starting the timer alone does not lock it; only completing a phase does. The schedule is built from this plan, so changing the order after work has been checked off against it would leave the record describing a brew day that did not happen.",
+            "Planning's Equipment sub-tab is the same idea again: the full catalogue on every phase, one dropdown per row so a swap happens in place, and a note beside it. This is where a plan meets the kit in your garage: the recipe may say a 15gal kettle, and this batch may be going into the 10gal one.",
+            "Phases is where to check the shape of the day before you start, because it's the one part of Planning that stops being editable. As soon as any phase has been marked complete on the brew-day schedule, the whole sub-tab locks: every Move, Remove and Add phase control is disabled, and hovering one explains that it's locked because a phase has already been completed. Starting the timer alone does not lock it; only completing a phase does. The schedule is built from this plan, so changing the order after work has been checked off against it would leave the record describing a brew day that did not happen.",
             "With those three sub-tabs settled you have a plan for the day: what goes in, what it goes in with, and in what order. The Brewing tab is where you work through it."
         ],
         figures: [
             {
                 src: "/images/guides/first-recipe/planning-equipment.png",
                 alt: "A batch open on Planning's Equipment sub-tab on a phone, listing the mash equipment with dropdowns and notes fields",
-                caption: "Equipment for this batch, phase by phase — swap a row's dropdown and the kit changes without adding a line."
+                caption: "Equipment for this batch, phase by phase. Swap a row's dropdown and the kit changes without adding a line."
             },
             {
                 src: "/images/guides/first-recipe/planning-phases.png",
@@ -148,7 +148,7 @@ const steps: Step[] = [
         <div class="mt-8 lg:max-w-screen-md text-left flex flex-col gap-4">
             <p class="px-5">
                 Every brew day in BrewDocs starts the same way: a recipe, and a batch brewed
-                from it. The recipe is the beer in general — what goes in it and how it is
+                from it. The recipe is the beer in general: what goes in it and how it's
                 made. The batch is one particular attempt at it, with its own plan you can
                 adjust without rewriting the recipe. This walkthrough goes from a blank recipe
                 to a batch planned and ready to brew.
@@ -157,9 +157,9 @@ const steps: Step[] = [
             <div class={PANEL}>
                 <div class="text-xs font-mono uppercase tracking-widest text-primary">Before you start</div>
                 <p class="mt-2 text-base">
-                    If you have not opened BrewDocs before, the <a href="/guides/getting-started" class="link link-primary">Getting Started</a> guide covers the four places you
-                    will spend your time. Everything you enter lives in the browser you entered
-                    it in — nothing is sent anywhere, and nothing follows you to another device.
+                    If you haven't opened BrewDocs before, the <a href="/guides/getting-started" class="link link-primary">Getting Started</a> guide covers the four places you'll
+                    spend your time. Everything you enter lives in the browser you entered
+                    it in: nothing is sent anywhere, and nothing follows you to another device.
                 </p>
             </div>
 
@@ -187,8 +187,8 @@ const steps: Step[] = [
 
             <div class="px-5">
                 <p>
-                    That is a batch planned. Brew day itself — the timer, the checkoffs and the
-                    readings you take as you go — lives on the batch's Brewing tab, and has a
+                    That's a batch planned. Brew day itself (the timer, the checkoffs and the
+                    readings you take as you go) lives on the batch's Brewing tab, and has a
                     guide of its own: <a href="/guides/brew-day" class="link link-primary">Brew Day with BrewDocs</a>. The fastest way to make any of this stick is to
                     open the demo and brew something out of the catalogue.
                 </p>
