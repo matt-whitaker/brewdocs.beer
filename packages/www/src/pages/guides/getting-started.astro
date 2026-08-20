@@ -24,9 +24,9 @@ const steps: Step[] = [
         title: "Find your way around",
         lead: "Every screen carries the same navigation, and the home page is a search box.",
         body: [
-            "Opening the menu gives you the whole app: About and Disclaimer at the top, then Batches, Recipes and Equipment — the three collections everything else hangs off.",
-            "The home page itself is one search box, asking \"What are you looking for?\". It answers as you type, with no button to press, and the results come back as a grid of tiles you can pick straight through to — a batch, a recipe, a piece of equipment, or a hop, grain or yeast out of the knowledge base. It doesn't mind where in a name it matches, or what case you type, so searching \"citr\" finds Citra.",
-            "It also searches by what a beer is made of. Ask for \"citr\" and a recipe built around Citra comes back too, even though Citra is nowhere in its name — the ones matched by their own name are listed first. Leave the box empty and you get up to eight of your most recently brewed batches instead, under Recent Batches, so there's somewhere to pick up from."
+            "Opening the menu gives you the whole app: About and Disclaimer at the top, then Batches, Recipes and Equipment, the three collections everything else hangs off.",
+            "The home page itself is one search box, asking \"What are you looking for?\". It answers as you type, with no button to press, and the results come back as a grid of tiles you can pick straight through to: a batch, a recipe, a piece of equipment, or a hop, grain or yeast out of the knowledge base. It doesn't mind where in a name it matches, or what case you type, so searching \"citr\" finds Citra.",
+            "It also searches by what a beer is made of. Ask for \"citr\" and a recipe built around Citra comes back too, even though Citra is nowhere in its name. The ones matched by their own name are listed first. Leave the box empty and you get up to eight of your most recently brewed batches instead, under Recent Batches, so there's somewhere to pick up from."
         ],
         figures: [
             {
@@ -39,10 +39,10 @@ const steps: Step[] = [
     {
         number: "02",
         title: "Start from a recipe",
-        lead: "Recipes is where a brew day begins — the catalogue's recipes and your own, in one list.",
+        lead: "Recipes is where a brew day begins: the catalogue's recipes and your own, in one list.",
         body: [
-            "The list splits into All, Starred and My Recipes. All holds the catalogue and your own together; My Recipes holds only yours. (Starred is on the screen but doesn't do anything yet.) Every recipe is listed the same way whichever it is — its name, who it's credited to, its ABV, IBUs, original and final gravity, and its description.",
-            "Search narrows the list as you type, matching anywhere in a recipe's name, and what you've typed stays put when you move between All and My Recipes — so \"is that one mine?\" doesn't mean typing it again.",
+            "The list splits into All, Starred and My Recipes. All holds the catalogue and your own together; My Recipes holds only yours. (Starred is on the screen but doesn't do anything yet.) Every recipe is listed the same way whichever it is: its name, who it's credited to, its ABV, IBUs, original and final gravity, and its description.",
+            "Search narrows the list as you type, matching anywhere in a recipe's name, and what you've typed stays put when you move between All and My Recipes. So \"is that one mine?\" doesn't mean typing it again.",
             "To write your own, start a new recipe from My Recipes. You're asked for a name and a starting template before anything is created; the template decides the kit the recipe starts with, so a kettle sour arrives with the kettle sour equipment and the empty template arrives with none. Confirming takes you straight into the editor.",
             "When you're ready to brew, use the recipe's own Brew action. It asks what to call the batch, then creates it and opens it for you."
         ],
@@ -59,9 +59,9 @@ const steps: Step[] = [
         title: "Follow the batch",
         lead: "A batch is the record of one brew day, and Batches is where you pick it back up.",
         body: [
-            "The list is split into four tabs by where the batch has got to — Ready, Brewing, Fermenting and Complete — opening on Ready. Each row names the recipe it was brewed from, the batch's own name, its author and its status, and clicking anywhere on the row opens it.",
-            "Inside, a batch has four tabs of its own: Planning, Shopping, Brewing and Summary. Planning is the recipe as this batch will actually be brewed — its grains, hops, yeast and additives under Ingredients, the kit each phase needs under Equipment, and the phases themselves under Phases. Brewing is the brew day proper.",
-            "There's no way to start a batch from this screen, which is deliberate: a batch always comes from a recipe, so it always knows what it was brewed from. Deleting one asks first, and names the batch it's asking about — there's no undo."
+            "The list is split into four tabs by where the batch has got to (Ready, Brewing, Fermenting and Complete), opening on Ready. Each row names the recipe it was brewed from, the batch's own name, its author and its status, and clicking anywhere on the row opens it.",
+            "Inside, a batch has four tabs of its own: Planning, Shopping, Brewing and Summary. Planning is the recipe as this batch will actually be brewed: its grains, hops, yeast and additives under Ingredients, the kit each phase needs under Equipment, and the phases themselves under Phases. Brewing is the brew day proper.",
+            "There's no way to start a batch from this screen, which is deliberate: a batch always comes from a recipe, so it always knows what it was brewed from. Deleting one asks first, and names the batch it's asking about. There's no undo."
         ],
         figures: [
             {
@@ -72,7 +72,7 @@ const steps: Step[] = [
             {
                 src: "/images/guides/batch-planning.png",
                 alt: "A batch open on its Planning tab on a phone, listing the mash grains and the boil hops with their weights",
-                caption: "The same batch opened on Planning — the plan for this brew day, grouped by phase and then by grains, hops and additives."
+                caption: "The same batch opened on Planning: the plan for this brew day, grouped by phase and then by grains, hops and additives."
             }
         ]
     },
@@ -81,8 +81,8 @@ const steps: Step[] = [
         title: "Keep your kit on the list",
         lead: "Equipment is the catalogue's kit and your own, in the same shape as recipes.",
         body: [
-            "The list narrows two ways — All and My Equipment — and every item shows its name and its notes, with a quantity alongside them once one has been set. Search behaves exactly as it does on recipes: it narrows as you type, matches anywhere in a name, and carries between the two tabs.",
-            "Adding your own starts from My Equipment and asks only for a name; there's no template to choose, because equipment has none. Opening an item shows the same name, notes and count whether it's the catalogue's or yours. What differs is what you can do with it: your own offer Edit and Delete — and Edit is where a quantity gets set — while the catalogue's offer neither."
+            "The list narrows two ways (All and My Equipment), and every item shows its name and its notes, with a quantity alongside them once one has been set. Search behaves exactly as it does on recipes: it narrows as you type, matches anywhere in a name, and carries between the two tabs.",
+            "Adding your own starts from My Equipment and asks only for a name; there's no template to choose, because equipment has none. Opening an item shows the same name, notes and count whether it's the catalogue's or yours. What differs is what you can do with it: your own offer Edit and Delete (and Edit is where a quantity gets set), while the catalogue's offer neither."
         ],
         figures: [
             {
@@ -95,10 +95,10 @@ const steps: Step[] = [
     {
         number: "05",
         title: "Look something up",
-        lead: "The knowledge base is the reference half — what an ingredient is, and what it's like to use.",
+        lead: "The knowledge base is the reference half: what an ingredient is, and what it's like to use.",
         body: [
             "Grains, hops and yeasts each have a page of their own, reached from the search box on the home page. That search is the way in today: there's no page yet for browsing a category from end to end.",
-            "All three read the same way — a trail along the top reading Knowledge, then Grains, Hops or Yeasts, then the ingredient's own name, with its facts underneath and a short description below those. Which facts depend on what it is: a grain gives its Lovibond colour rating and where it comes from, a hop its origin, alpha acid percentage and what it's typically used for, and a yeast its origin and the temperature range it ferments in.",
+            "All three read the same way: a trail along the top reading Knowledge, then Grains, Hops or Yeasts, then the ingredient's own name, with its facts underneath and a short description below those. Which facts depend on what it is: a grain gives its Lovibond colour rating and where it comes from, a hop its origin, alpha acid percentage and what it's typically used for, and a yeast its origin and the temperature range it ferments in.",
             "These pages are for reading. None of them offers an edit, a delete, or a way to drop the ingredient into a recipe from where you're standing."
         ],
         figures: [
@@ -123,7 +123,7 @@ const steps: Step[] = [
         <div class="mt-8 lg:max-w-screen-md text-left flex flex-col gap-4">
             <p class="px-5">
                 BrewDocs is a homebrew handbook and brew-day app. It keeps your recipes and
-                batches in order and your reference material within reach — the informational
+                batches in order and your reference material within reach: the informational
                 and note-taking side of brew day, rather than a replacement for the
                 thermometer. This walkthrough covers the four places you'll spend your time:
                 Batches, Recipes, Equipment and the knowledge base.
@@ -133,7 +133,7 @@ const steps: Step[] = [
                 <div class="text-xs font-mono uppercase tracking-widest text-primary">Before you start</div>
                 <p class="mt-2 text-base">
                     The demo is an early prototype, deployed to be tried rather than relied on.
-                    Everything you enter lives in the browser you entered it in — nothing is
+                    Everything you enter lives in the browser you entered it in: nothing is
                     sent anywhere, and nothing follows you to another device. If it ends up in
                     a state you'd rather not untangle, the Disclaimer page has a Purge Data
                     button that wipes it clean and starts you fresh.
