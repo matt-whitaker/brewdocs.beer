@@ -14,7 +14,7 @@ const Gradient = ({children}: {children: React.ReactNode}) => (
 );
 
 const meta: Meta = {
-    title: "Panel",
+    title: "Layout/Panel",
     parameters: {layout: "fullscreen"}
 };
 
