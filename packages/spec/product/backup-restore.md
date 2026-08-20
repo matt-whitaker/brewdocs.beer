@@ -23,13 +23,29 @@ file directly instead.
 **BACKUP-EXPORT-05** — "Back up now" is available even before a brewer has brewed or planned
 anything; it produces a backup with nothing in it rather than being unavailable.
 
+**BACKUP-RESTORE-01** — The same screen offers a control for picking a previously backed-up file
+to restore.
+
+**BACKUP-RESTORE-02** — Restoring a file replaces the brewer's batches and recipes with what the
+file contains.
+
+**BACKUP-RESTORE-03** — A file that contains only one kind (only recipes, or only batches)
+restores just that kind; whichever kind the file doesn't contain is left exactly as it was before
+restoring.
+
+> *Why:* a backup file doubles as a way to hand a single recipe to someone else, not only as a
+> whole-collection snapshot — restoring one shouldn't clear out the other.
+
+**BACKUP-RESTORE-04** — A record in the restored file that the app can't yet make sense of shows
+up on the page where update problems are listed, the same way any other unreadable stored record
+does; it doesn't stop the rest of the file from being restored.
+
 ## Known gaps
 
 _None._
 
 ## Out of scope
 
-- Restoring a backup file back into the app — a separate story, spec'd separately.
 - Where or how the backup file is stored once handed off (cloud provider, device location) — up
   to the brewer and whatever they choose in the share sheet.
 - Historical/rollback backups — a separate research spike, #715.

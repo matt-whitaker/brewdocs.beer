@@ -1,4 +1,5 @@
 import { v4 as uuidV4} from "uuid";
+import {Entity} from "@brewdocs.beer/core";
 import {trackWrite} from "@/signals";
 import localforage from "@/storage/localforage";
 import {registerMigrations} from "@/storage/migration/registry";
@@ -15,6 +16,19 @@ export interface ForageMigrationConfig<T = unknown> {
 
 export interface MigratableStore {
     migrateStoredRecords(): Promise<void>;
+}
+
+/**
+ * A store addressed by what it does to whole records rather than by what shape
+ * those records are. `Forage<T>` is invariant in `T` (its migration config puts `T`
+ * in both positions), so a caller holding several stores at once — restore, the
+ * failed-migration screen — cannot name them `Forage<Entity>`; this is what it
+ * names them instead.
+ */
+export interface EntityStore extends MigratableStore {
+    save(id: string, item: Entity): Promise<Entity>;
+    delete(id: string): Promise<void>;
+    purge(): Promise<void>;
 }
 
 export abstract class Forage<T> {
@@ -147,8 +161,6 @@ export abstract class Forage<T> {
     }
 
     async purge() {
-        (await this._forage.keys()).map(key => {
-            this._forage.removeItem(key);
-        });
+        await Promise.all((await this._forage.keys()).map(key => this._forage.removeItem(key)));
     }
 }

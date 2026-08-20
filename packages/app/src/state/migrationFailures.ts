@@ -1,20 +1,23 @@
 import {useSuspenseQuery} from "@tanstack/react-query";
-import Batch from "@/model/batch";
+import {Entity} from "@brewdocs.beer/core";
 import queryClient from "@/queryClient";
 import {batchesQueryKey} from "@/state/batches";
+import {recipesQueryKey} from "@/state/recipes";
 import batchesStorage, {BATCHES_ENTITY_TYPE} from "@/storage/batches";
-import {Forage} from "@/storage/forage";
+import {EntityStore} from "@/storage/forage";
 import migrationFailuresStorage from "@/storage/migration/failures";
 import {runMigrations} from "@/storage/migration/runner";
 import {MigrationFailure} from "@/storage/migration/types";
+import recipesStorage, {RECIPES_ENTITY_TYPE} from "@/storage/recipes";
 
 type MigratedStore = {
-    storage: Forage<Batch>;
+    storage: EntityStore;
     queryKey: () => string[];
 };
 
 const migratedStores: Record<string, MigratedStore> = {
-    [BATCHES_ENTITY_TYPE]: {storage: batchesStorage, queryKey: batchesQueryKey}
+    [BATCHES_ENTITY_TYPE]: {storage: batchesStorage, queryKey: batchesQueryKey},
+    [RECIPES_ENTITY_TYPE]: {storage: recipesStorage, queryKey: recipesQueryKey}
 };
 
 const migratedStoreOf = ({entityType, id}: MigrationFailure): MigratedStore | undefined =>
@@ -54,7 +57,7 @@ export const retryMigrationFailure = async (id: string, failure: MigrationFailur
 
     if (!store || !failure.id) return false;
 
-    const result = runMigrations<Batch>(failure.entityType, failure.data as Batch, failure.targetVersion);
+    const result = runMigrations<Entity>(failure.entityType, failure.data as Entity, failure.targetVersion);
 
     if (!result.ok) return false;
 
