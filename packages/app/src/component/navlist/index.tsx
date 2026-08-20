@@ -1,4 +1,5 @@
 import {Link, useRouter} from "@tanstack/react-router";
+import {NAV_LINK_MENU} from "@brewdocs.beer/design";
 
 export type NavListProps = {
     nav: [string, string?][];
@@ -15,8 +16,8 @@ export default function Navlist({ nav }: NavListProps) {
                             link in router.routesByPath
 
                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                ? <Link to={link as any}>{name}</Link>
-                                : <a href={link}>{name}</a>
+                                ? <Link to={link as any} className={NAV_LINK_MENU}>{name}</Link>
+                                : <a href={link} className={NAV_LINK_MENU}>{name}</a>
                         }</li>
                     );
                 }

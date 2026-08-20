@@ -1,4 +1,5 @@
 import classNames from "classnames";
+import {NAV_LINK, NAV_LINK_CTA, NAV_LINK_MENU} from "@brewdocs.beer/design";
 import {Ellipses} from "@/components/svg";
 
 export type TopbarProps = { nav: [string, string, boolean?][] };
@@ -12,10 +13,7 @@ export default function Topbar({ nav }: TopbarProps) {
                 {nav.map(([name, href, cta]) => (
                     <a
                         key={name}
-                        className={classNames("btn text-lg max-lg:hidden", {
-                            "btn-ghost": !cta,
-                            "bg-base-200 text-base-content border-base-200 hover:opacity-90": cta
-                        })}
+                        className={classNames(cta ? NAV_LINK_CTA : NAV_LINK, "max-lg:hidden")}
                         href={href}>
                         {name}
                     </a>
@@ -28,7 +26,7 @@ export default function Topbar({ nav }: TopbarProps) {
                             className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
                             {nav.map(([name, href]) => (
                                 <li key={name}>
-                                    <a href={href}>{name}</a>
+                                    <a href={href} className={NAV_LINK_MENU}>{name}</a>
                                 </li>
                             ))}
                         </ul>
