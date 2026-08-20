@@ -1,7 +1,8 @@
 import batchesStorage from "@/storage/batches";
 import {MigratableStore} from "@/storage/forage";
+import recipesStorage from "@/storage/recipes";
 
-export const migratedStores: MigratableStore[] = [batchesStorage];
+export const migratedStores: MigratableStore[] = [batchesStorage, recipesStorage];
 
 const withDevFixtureStores = async (stores: MigratableStore[]): Promise<MigratableStore[]> => {
     if (!import.meta.env.DEV && !import.meta.env.VITE_E2E) return stores;
