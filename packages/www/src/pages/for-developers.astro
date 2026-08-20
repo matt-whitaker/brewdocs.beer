@@ -1,7 +1,7 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import {DESIGN_URL, GITHUB_URL} from "@/data/env";
-import {PANEL_ACCENT} from "@brewdocs.beer/design";
+import {PANEL, PANEL_ACCENT} from "@brewdocs.beer/design";
 ---
 <Layout title="For developers">
     <main
@@ -17,7 +17,7 @@ import {PANEL_ACCENT} from "@brewdocs.beer/design";
                 together.
             </p>
 
-            <div class={PANEL_ACCENT}>
+            <div class={PANEL}>
                 <div class="text-xs font-mono uppercase tracking-widest text-primary">Design system</div>
                 <p class="mt-2 text-base">
                     Almost all of it is generated and maintained by Claude Code "agents". That
