@@ -6,7 +6,8 @@ could otherwise erase everything they've brewed and planned.
 
 ## Behaviours
 
-**BACKUP-EXPORT-01** — A **Backup** entry in the app's navigation leads to a "Back up now" action.
+**BACKUP-EXPORT-01** — A **Backup** entry in the Settings menu (see `settings.md`) leads to a
+"Back up now" action.
 
 **BACKUP-EXPORT-02** — Triggering "Back up now" hands the backup file to the device's native
 share sheet, letting it be saved to cloud storage, a file manager, or any app the device offers

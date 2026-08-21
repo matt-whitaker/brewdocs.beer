@@ -1,5 +1,5 @@
 import type {Meta, StoryObj} from "@storybook/react-vite";
-import {Cancel, Chevron, Hamburger, Hop, LockClosed, Minus, Pause, Pencil, Play, Plus, Trash, UpDown} from "./index";
+import {Cancel, Chevron, Hamburger, Hop, LockClosed, Minus, Pause, Pencil, Play, Plus, Settings, Trash, UpDown} from "./index";
 
 const meta: Meta = {
     title: "Icons/Svg",
@@ -29,7 +29,8 @@ const ICONS = [
     {name: "LockClosed", Icon: LockClosed},
     {name: "Play", Icon: Play},
     {name: "Pause", Icon: Pause},
-    {name: "Hop", Icon: Hop}
+    {name: "Hop", Icon: Hop},
+    {name: "Settings", Icon: Settings}
 ];
 
 export const AllIcons: Story = {
