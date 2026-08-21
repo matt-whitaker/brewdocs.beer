@@ -1,6 +1,7 @@
 import {Link} from "@tanstack/react-router";
 import {StatusBadge} from "@brewdocs.beer/design";
 import Navlist from "@/component/navlist";
+import SettingsMenu from "@/component/settings-menu";
 
 export type DrawerSidebarProps = { nav: [string, string?][]; close: () => void; };
 export default function DrawerSidebar({ nav, close }: DrawerSidebarProps) {
@@ -15,6 +16,9 @@ export default function DrawerSidebar({ nav, close }: DrawerSidebarProps) {
                     </Link>
                 </div>
                 <Navlist nav={nav} />
+                <div className="max-lg:hidden mt-auto flex justify-end">
+                    <SettingsMenu className="dropdown-top" />
+                </div>
             </div>
         </div>
     );
