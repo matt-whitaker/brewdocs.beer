@@ -36,8 +36,9 @@ test("Backup is the Settings menu's first entry", async ({ page }) => {
     await expect(menu.getByRole("listitem").first()).toHaveText("Backup");
 });
 
-// SETTINGS-04, BACKUP-EXPORT-01 (packages/spec/product/backup-restore.md): choosing Backup
-// from the Settings menu takes the brewer to the Backup screen, at both widths.
+// SETTINGS-04: choosing Backup from the Settings menu takes the brewer to the Backup screen, at
+// both widths. This proves navigation only — BACKUP-EXPORT-01's "Back up now" action itself is
+// located in backup-restore.spec.ts.
 for (const [label, viewport] of [
     ["phone width", MOBILE],
     ["desktop width", DESKTOP]
