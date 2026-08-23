@@ -5,6 +5,7 @@
   "scripts": {
     "predev": "node scripts/ensure-kb.mjs",
     "dev": "vite",
+    "dev:host": "npm run dev -- --host",
     "build": "tsc --noEmit && vite build",
     "lint": "eslint .",
     "test": "npm run lint",

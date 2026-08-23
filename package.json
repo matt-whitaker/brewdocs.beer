@@ -11,7 +11,8 @@
     "test:app": "nx test app",
     "build:design": "nx build design",
     "test:design": "nx test design",
-    "dev": "nx run-many --target=dev"
+    "dev": "nx run-many --target=dev",
+    "dev:host": "nx run-many --target=dev:host"
   },
   "author": "",
   "license": "ISC",
