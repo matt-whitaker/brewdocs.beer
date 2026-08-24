@@ -53,7 +53,7 @@ jobs:
     with:
       project_owner: matt-whitaker
       project_number: "4"
-      allowed_bots: brewdocs-claude
+      allowed_bots: mattwhitaker-claude
       node: true
       browser: false
     secrets: inherit
