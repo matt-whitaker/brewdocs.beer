@@ -131,6 +131,7 @@ not a regression guard.
 - The gate is `nx run-many --target=test` (eslint, errors-only) **and** `tsc --noEmit` **and** `nx build app` clean, plus manual browser checks for any UI change. A green lint + typecheck + build is the floor for every change.
 - ⚠️ Don't hand-edit generated files (`routeTree.gen.ts`); don't add `lodash` or `../` parent-relative intra-app imports (both lint-enforced — use `@/`).
 - ⚠️ Renaming files under `packages/kb/data/**` changes derived ids — a breaking change (see `packages/kb/CLAUDE.md`); call it out in the PR.
+- ⚠️ A `MODELS.md` is a second copy of what a model's fields mean, and nothing enforces it staying in sync — the mitigation is the pointer comment at the top of the model source file it documents. Adding or changing a field on a documented model updates its `MODELS.md` section in the same change.
 - Prefer surfacing follow-ups over silently expanding scope; note orphaned/dead code you leave rather than deleting adjacent things unasked.
 
 ### The Claude GitHub roles
