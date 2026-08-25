@@ -26,10 +26,16 @@ function workspaceAtAliasPlugin(): Plugin {
     };
 }
 
+// "claudemac" is the LAN alias for this machine, allowed so `npm run dev:host`
+// can be viewed from another computer.
+const allowedHosts = ["claudemac", "claudemac.local"];
+
 // the app's own version reaches the client through the env surface every other
 // build-time value uses (src/utils/env.ts), so package.json stays the one place
 // it is written down — a backup file records which version wrote it.
 export default defineConfig({
+    server: {allowedHosts},
+    preview: {allowedHosts},
     define: {
         "import.meta.env.VITE_APP_VERSION": JSON.stringify(version)
     },
