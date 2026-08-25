@@ -1,8 +1,8 @@
-# claude-harness
+# claude-session
 
-**harness-rule-revision: 12** · from `matt-whitaker/claude-harness`
+**session-rule-revision: 13** · from `matt-whitaker/claude-team`
 
-⚠️ **This file is entirely claude-harness's.** Nothing repo-specific goes in it. To upgrade,
+⚠️ **This file is entirely claude-team's — the session half.** Nothing repo-specific goes in it. To upgrade,
 **replace it** — never merge. To uninstall, delete it.
 
 ⚠️ **`.claude/rules/` HOLDS INSTALLED MODULES. A REPO'S OWN INSTRUCTIONS GO IN ITS `CLAUDE.md`.**
@@ -116,20 +116,21 @@ in the commit and the PR.
 ⚠️ **A *why* that changes what you do is a fact, and stays** — a constraint, a trap, a reason the
 obvious thing is wrong. A *why* that only argues the line deserves to be there is the kind to cut.
 
-## claude-team, if this repo has it
+## Working on the team
 
-`claude-team` is the GitHub-agent orchestration, installed separately into `.claude-team/` and
-`.github/`. You will be asked to **act on** it — investigate a failed run, diagnose a workflow
-failure, repair what the custodian could not, trigger a workflow, open a PR to move a story along.
-Do that.
+The GitHub-agent orchestration ships from the same place this file does — its workflow in
+`.github/`, its overlays in `.claude-team/`, its prompts and hooks fetched at the pin. You will be
+asked to **act on** it: investigate a failed run, diagnose a workflow failure, repair what the
+custodian could not, trigger a workflow, open a PR to move a story along. Do that.
 
-⚠️ **Read how it behaves from `claude-team` itself** — its `CLAUDE.md`, `ONBOARDING.md` and its
-prompts are the source. Nothing here summarises them: a copy drifts, and the copy is what gets
-read.
+⚠️ **Read how it behaves from the team's own files** — its `CLAUDE.md`, its `INSTALL.md`, its
+prompts, and the terse `rules/claude-team.md` beside this one. Nothing here summarises them: a copy
+drifts, and the copy is what gets read.
 
 ⚠️ **The split is by whose behaviour a fact describes.** A fact about *the session* is this file's,
 even while working on the team. A fact about *the team* is the team's, even though a session is
-what reads it.
+what reads it. Two rule files, one repo: `claude-session.md` (this — how a session conducts itself)
+and `claude-team.md` (how the team's backlog works).
 
 ### Driving a story
 
@@ -183,7 +184,7 @@ An `InstructionsLoaded` hook logs every instruction file and why it loaded. ⚠�
 `~/.claude/settings.json`.** A hook in a project's `.claude/settings.json` does **not** run in a
 folder whose workspace-trust dialog has not been accepted, and a `-p` session never counts as
 accepting it — so a project-scoped hook that silently never fires reads exactly like a rule that
-never loaded. Setup is in `claude-harness`'s `SETUP.md`.
+never loaded. Setup is in the team's `INSTALL.md`.
 
 ⚠️ **Compaction is not the explanation.** These files reload after a `/compact` — `compact` is one
 of the hook's own `load_reason` values.
@@ -192,5 +193,5 @@ of the hook's own `load_reason` values.
 
 A local session writes it to memory. A cloud session **commits it to this repo's `CLAUDE.md`** —
 not to a rule, which is for what was installed. ⚠️ **If the lesson would be true in any repo it
-belongs upstream in `claude-harness`, not here.** Keeping one local makes it invisible to every
+belongs upstream in `claude-team`, not here.** Keeping one local makes it invisible to every
 other repo that would hit the same trap.
