@@ -44,6 +44,6 @@ Write it to a markdown file and hand over the path. Offer to publish it as an ar
 copy button when the maintainer will move it by hand — raw markdown, never rendered, because
 rendered output is not what a session reads.
 
-<!-- skill-revision: 1 — from matt-whitaker/claude-code/skills/handoff.
+<!-- skill-revision: 2 — from matt-whitaker/claude-harness/skills/handoff.
      Bumps only when THIS skill changes, never because SETUP.md did.
-     Reinstall with: cp -R skills/handoff ~/.claude/skills/ -->
+     Reinstall per SETUP.md §Skills: copy into the consuming repo's .claude/skills/. -->
