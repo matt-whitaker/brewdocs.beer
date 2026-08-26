@@ -1,3 +1,4 @@
+// Field-by-field reference for these types: ../MODELS.md — update it when a field changes.
 import {Scalar} from "@brewdocs.beer/core";
 
 /** primitives-only supertype of app `BrewablePhase` — `type` stays a loose string here, narrowed to `PhaseType` in the app */
