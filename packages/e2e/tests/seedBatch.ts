@@ -41,6 +41,14 @@ interface ShoppingItem {
     source: "derived";
 }
 
+interface Targets {
+    og: Scalar;
+    fg: Scalar;
+    abv: Scalar;
+    ibu: string;
+    srm: string;
+}
+
 interface BatchRecord {
     id: string;
     version: number;
@@ -48,6 +56,10 @@ interface BatchRecord {
     brewDate: string;
     recipeId: string;
     recipeSource: "kb" | "user";
+    recipeName?: string;
+    recipeBrewer?: string;
+    recipeDescription?: string;
+    recipeTargets?: Targets;
     brewable: Brewable;
     batchSize: Scalar;
     efficiency: Scalar;
@@ -69,11 +81,27 @@ export interface SeedBatchOptions {
     brewDate?: string;
     recipeId?: string;
     recipeSource?: "kb" | "user";
+    recipeName?: string;
+    recipeBrewer?: string;
+    recipeDescription?: string;
+    recipeTargets?: Targets;
     brewable?: Brewable;
     goto?: string;
 }
 
 const ANCHOR_STEAM_RECIPE_ID = "anchor-steam-beer-clone";
+const ANCHOR_STEAM_RECIPE_NAME = "Anchor Steam Beer Clone";
+const ANCHOR_STEAM_RECIPE_BREWER = "Anonymous";
+
+// The kb recipe's hand-authored targets — a 5gal batch's three Northern Brewer
+// additions at 1.05 OG come to a Tinseth-estimated 37 IBU against this 35.
+const ANCHOR_STEAM_RECIPE_TARGETS: Targets = {
+    og: {value: "1.05°P", unit: "°P"},
+    fg: {value: "1.014°P", unit: "°P"},
+    abv: {value: "4.7%", unit: "%"},
+    ibu: "35",
+    srm: "9"
+};
 
 const ANCHOR_STEAM_KB_BREWABLE = {
     schedule: {
@@ -220,6 +248,10 @@ function buildBatchRecord(options: SeedBatchOptions): BatchRecord {
         brewDate: options.brewDate ?? "",
         recipeId: options.recipeId ?? ANCHOR_STEAM_RECIPE_ID,
         recipeSource: options.recipeSource ?? "kb",
+        recipeName: options.recipeName ?? ANCHOR_STEAM_RECIPE_NAME,
+        recipeBrewer: options.recipeBrewer ?? ANCHOR_STEAM_RECIPE_BREWER,
+        recipeDescription: options.recipeDescription,
+        recipeTargets: options.recipeTargets ?? ANCHOR_STEAM_RECIPE_TARGETS,
         brewable,
         batchSize: {value: "5gal", unit: "gal"},
         efficiency: {value: "75%", unit: "%"},
