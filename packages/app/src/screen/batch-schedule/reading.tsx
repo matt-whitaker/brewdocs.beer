@@ -83,9 +83,9 @@ function BatchScheduleReadingItem({ phaseIndex, row, milestone, entry, onPatch, 
         return (
             <DataGridRow zebra reserveExpand>
                 <DataGridRemoveButton label={removeLabel} onClick={onRemove} />
-                <DataGridInput label={`${milestone.label} name`} className="ml-6" colStart={1} cols={3} value={milestone.label} onChange={onChangeLabel} />
-                <DataGridInput label={`${milestone.label} date`} colStart={5} cols={1} type="date" value={dateValue} onChange={onChangeDate} />
-                <DataGridInput label={`${milestone.label} time`} colStart={6} cols={1} type="time" value={timeValue} onChange={onChangeTime} />
+                <DataGridInput label={`${milestone.label} name`} className="ml-6 max-lg:w-auto" colStart={1} cols={3} mobileCols={2} value={milestone.label} onChange={onChangeLabel} />
+                <DataGridInput label={`${milestone.label} date`} colStart={5} cols={1} mobileColStart={3} mobileCols={2} type="date" value={dateValue} onChange={onChangeDate} />
+                <DataGridInput label={`${milestone.label} time`} colStart={6} cols={1} mobileColStart={5} mobileCols={2} type="time" value={timeValue} onChange={onChangeTime} />
             </DataGridRow>
         );
     }
@@ -97,9 +97,9 @@ function BatchScheduleReadingItem({ phaseIndex, row, milestone, entry, onPatch, 
             expandContent={(
                 <DataGrid>
                     <DataGridRow zebra={false}>
-                        <DataGridLabel tiny cols={3}>Reading Taken</DataGridLabel>
-                        <DataGridInput label={`${milestone.label} date`} colStart={5} cols={1} type="date" value={dateValue} onChange={onChangeDate} />
-                        <DataGridInput label={`${milestone.label} time`} colStart={6} cols={1} type="time" value={timeValue} onChange={onChangeTime} />
+                        <DataGridLabel tiny cols={3} className="max-lg:col-span-2">Reading Taken</DataGridLabel>
+                        <DataGridInput label={`${milestone.label} date`} colStart={5} cols={1} mobileColStart={3} mobileCols={2} type="date" value={dateValue} onChange={onChangeDate} />
+                        <DataGridInput label={`${milestone.label} time`} colStart={6} cols={1} mobileColStart={5} mobileCols={2} type="time" value={timeValue} onChange={onChangeTime} />
                     </DataGridRow>
                 </DataGrid>
             )}
@@ -200,9 +200,10 @@ export default function BatchScheduleReading({ phase, phaseIndex, tracker, onPat
                 <DataGridAddButton label={addLabel} onClick={onAdd} />
                 <DataGridInput
                     label={`${headerLabel} name to add`}
-                    className="ml-6"
+                    className={dateOnly ? "ml-6 max-lg:w-auto" : "ml-6"}
                     colStart={1}
                     cols={3}
+                    mobileCols={dateOnly ? 2 : undefined}
                     value={draftName}
                     onChange={setDraftName}
                     placeholder={defaultLabel} />
@@ -210,6 +211,8 @@ export default function BatchScheduleReading({ phase, phaseIndex, tracker, onPat
                     label={`${headerLabel} ${dateOnly ? "date" : "value"} to add`}
                     colStart={dateOnly ? 5 : 6}
                     cols={1}
+                    mobileColStart={dateOnly ? 3 : undefined}
+                    mobileCols={dateOnly ? 2 : undefined}
                     type={dateOnly ? "date" : undefined}
                     value={draftValue}
                     placeholder={dateOnly ? undefined : valuePlaceholder}
@@ -219,6 +222,8 @@ export default function BatchScheduleReading({ phase, phaseIndex, tracker, onPat
                         label={`${headerLabel} time to add`}
                         colStart={6}
                         cols={1}
+                        mobileColStart={5}
+                        mobileCols={2}
                         type="time"
                         value={draftTime}
                         onChange={setDraftTime} />
