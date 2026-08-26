@@ -66,9 +66,9 @@ function BatchScheduleReadingItem({ phaseIndex, row, milestone, entry, onPatch, 
         return (
             <DataGridRow zebra reserveExpand>
                 <DataGridRemoveButton label={removeLabel} onClick={onRemove} />
-                <DataGridInput label={`${milestone.label} name`} className="ml-6" colStart={1} cols={2} value={milestone.label} onChange={onChangeLabel} />
-                <DataGridInput label={`${milestone.label} date`} colStart={3} cols={2} type="date" value={dateValue} onChange={onChangeDate} />
-                <DataGridInput label={`${milestone.label} time`} colStart={5} cols={2} type="time" value={timeValue} onChange={onChangeTime} />
+                <DataGridInput label={`${milestone.label} name`} className="ml-6" colStart={1} cols={3} value={milestone.label} onChange={onChangeLabel} />
+                <DataGridInput label={`${milestone.label} date`} colStart={5} cols={1} type="date" value={dateValue} onChange={onChangeDate} />
+                <DataGridInput label={`${milestone.label} time`} colStart={6} cols={1} type="time" value={timeValue} onChange={onChangeTime} />
             </DataGridRow>
         );
     }
@@ -184,14 +184,14 @@ export default function BatchScheduleReading({ phase, phaseIndex, tracker, onPat
                     label={`${headerLabel} name to add`}
                     className="ml-6"
                     colStart={1}
-                    cols={dateOnly ? 2 : 3}
+                    cols={3}
                     value={draftName}
                     onChange={setDraftName}
                     placeholder={defaultLabel} />
                 <DataGridInput
                     label={`${headerLabel} ${dateOnly ? "date" : "value"} to add`}
-                    colStart={dateOnly ? 3 : 6}
-                    cols={dateOnly ? 2 : 1}
+                    colStart={dateOnly ? 5 : 6}
+                    cols={1}
                     type={dateOnly ? "date" : undefined}
                     value={draftValue}
                     placeholder={dateOnly ? undefined : valuePlaceholder}
@@ -199,8 +199,8 @@ export default function BatchScheduleReading({ phase, phaseIndex, tracker, onPat
                 {dateOnly && (
                     <DataGridInput
                         label={`${headerLabel} time to add`}
-                        colStart={5}
-                        cols={2}
+                        colStart={6}
+                        cols={1}
                         type="time"
                         value={draftTime}
                         onChange={setDraftTime} />

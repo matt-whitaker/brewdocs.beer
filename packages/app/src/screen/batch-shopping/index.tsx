@@ -114,7 +114,7 @@ export default function BatchShopping({ batchId, onChange }: BatchShoppingProps)
                 </DataGridRow>
             </DataGrid>
             {shoppingGroups}
-            <DataGrid>
+            <DataGrid className="mt-3 pt-2 border-t-1 border-base-200">
                 <BatchShoppingAddRow tagOptions={TAG_OPTIONS} defaultTag={TAG_ORDER[0]} add={add} />
             </DataGrid>
         </Screen>
