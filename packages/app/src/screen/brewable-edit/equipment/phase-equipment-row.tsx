@@ -50,7 +50,10 @@ function RecipeEditPhaseEquipmentRow({ phase, row, phaseLabel, item, remove, upd
                 />
             </DataGridLabel>
             <DataGridInput
-                colStart={6}
+                label={`Note for ${item.name} in ${phaseLabel}`}
+                placeholder="Note"
+                colStart={5}
+                cols={2}
                 value={item.notes ?? ""}
                 onChange={onChangeNotes}
             />
