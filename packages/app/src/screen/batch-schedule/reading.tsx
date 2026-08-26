@@ -80,9 +80,9 @@ function BatchScheduleReadingItem({ phaseIndex, row, milestone, entry, onPatch, 
             expandContent={(
                 <DataGrid>
                     <DataGridRow zebra={false}>
-                        <DataGridLabel tiny cols={2}>Reading Taken</DataGridLabel>
-                        <DataGridInput label={`${milestone.label} date`} colStart={3} cols={2} type="date" value={dateValue} onChange={onChangeDate} />
-                        <DataGridInput label={`${milestone.label} time`} colStart={5} cols={2} type="time" value={timeValue} onChange={onChangeTime} />
+                        <DataGridLabel tiny cols={3}>Reading Taken</DataGridLabel>
+                        <DataGridInput label={`${milestone.label} date`} colStart={5} cols={1} type="date" value={dateValue} onChange={onChangeDate} />
+                        <DataGridInput label={`${milestone.label} time`} colStart={6} cols={1} type="time" value={timeValue} onChange={onChangeTime} />
                     </DataGridRow>
                 </DataGrid>
             )}
