@@ -8,6 +8,7 @@ The BrewDocs PWA — brew-day companion + knowledge base. Deployed to [app.brewd
 - [`src/routes/`](src/routes/) — file-based routes (TanStack Router)
 - [`src/screen/`](src/screen/) — screens · [`src/component/`](src/component/) — components
 - [`src/model/`](src/model/) · [`src/state/`](src/state/) · [`src/actions/`](src/actions/) — the data layer
+- [`MODELS.md`](MODELS.md) — field-by-field reference for the models in `src/model/`
 
 ## Commands
 

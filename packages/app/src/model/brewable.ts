@@ -1,3 +1,5 @@
+// Every type in this file is documented field by field in ../../MODELS.md — read there for what each means.
+
 import Additive from "@/model/additive";
 import Equipment from "@/model/equipment";
 import Grain from "@/model/grain";

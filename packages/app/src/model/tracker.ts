@@ -1,3 +1,5 @@
+// Every type in this file is documented field by field in ../../MODELS.md — read there for what each means.
+
 import {Scalar} from "@brewdocs.beer/core";
 import Additive from "@/model/additive";
 import Grain from "@/model/grain";
