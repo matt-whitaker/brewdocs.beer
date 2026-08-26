@@ -1,3 +1,5 @@
+// Every type in this file is documented field by field in ../../MODELS.md — read there for what each means.
+
 import {Entity, Scalar} from "@brewdocs.beer/core";
 import Brewable, {ResourceType} from "@/model/brewable";
 import Measurements from "@/model/measurements";
