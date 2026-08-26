@@ -7,7 +7,7 @@ import {RecipeSource} from "@/model/recipe";
 import {TimerEvent} from "@/model/timer";
 import {ResourceActuals, TrackerEntry} from "@/model/tracker";
 
-export type ShoppingTag = "hops"|"grains"|"yeasts"|"additives";
+export type ShoppingTag = "hops"|"grains"|"yeasts"|"additives"|"misc";
 
 export interface ShoppingItem {
     name: string;
