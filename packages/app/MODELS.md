@@ -25,7 +25,7 @@ today, and they do not all get there the same way:
 |---|---|---|
 | `Recipe` | `KbRecipe` | `extends` (structural) + [`transform/kbRecipeToRecipe.ts`](src/transform/kbRecipeToRecipe.ts) for kb-sourced instances |
 | `UserEquipment` | `KbEquipment` | `extends` (structural), no transform function |
-| `Brewable` | `KbBrewable` | **not** a TS `extends` — narrowed entirely by [`transform/kbBrewableToBrewable.ts`](src/transform/kbBrewableToBrewable.ts) (documented fully in task #1328) |
+| `Brewable` | `KbBrewable` | **not** a TS `extends` — narrowed entirely by [`transform/kbBrewableToBrewable.ts`](src/transform/kbBrewableToBrewable.ts) (see [_The `Brewable` family_](#the-brewable-family)) |
 
 ⚠️ **`Brewable` is the odd one, and the difference is real rather than stylistic.** `Recipe` and
 `UserEquipment` are declared as extending their kb types, so TypeScript itself holds the
@@ -70,7 +70,7 @@ own models. Anywhere a `KbRecipe` is accepted, a `Recipe` may be passed.
 | `__type` | `"recipe"` | yes | The discriminator, fixed to the single literal — this is a user recipe, never a catalog one. Set by `defaultRecipe` and by `kbRecipeToRecipe`. |
 | `sourceId` | `string` | no | The `id` of the `KbRecipe` this was cloned from. Kept so the original can be loaded for review or reset (`useKbRecipe(sourceId)`). **Absent** on a recipe created from scratch. |
 | `targets` | `Measurements` | yes | The recipe's intended OG/FG/ABV/IBU/SRM — what the brewer is aiming at. Structurally the same shape `KbRecipe.targets` declares inline; here it is the app's named [`Measurements`](#measurements) type. |
-| `brewable` | `Brewable` | yes | The plan: phases, their equipment, and the ingredient assignments. Narrowed from `KbBrewable`; documented in task #1328. |
+| `brewable` | `Brewable` | yes | The plan: phases, their equipment, and the ingredient assignments. Narrowed from `KbBrewable` — see [_The `Brewable` family_](#the-brewable-family). |
 
 - ⚠️ **`sourceId` records provenance, not a live link.** Editing the recipe does not touch the kb
   original, and the kb original changing does not touch this recipe. A `sourceId` naming a kb recipe
@@ -127,16 +127,16 @@ interface Batch extends Entity {
 | `packaging` | `"keg" \| "bottle"` | no | How this batch was packaged. Absent until the brewer chooses; also edited on the **Prep** tab. |
 | `recipeId` | `string` | yes | The id of the recipe this batch was made from. Ambiguous on its own — read it together with `recipeSource`. |
 | `recipeSource` | [`RecipeSource`](#recipesource) | no | Which store `recipeId` refers to. Optional in the type; `createBatch` always sets it. |
-| `brewable` | `Brewable` | yes | This batch's **own copy** of the plan — a deep clone of the recipe's brewable for a user recipe, `kbBrewableToBrewable(kbRecipe.brewable)` for a kb one. Editing it in Planning never touches the recipe it came from. Documented in task #1328. |
+| `brewable` | `Brewable` | yes | This batch's **own copy** of the plan — a deep clone of the recipe's brewable for a user recipe, `kbBrewableToBrewable(kbRecipe.brewable)` for a kb one. Editing it in Planning never touches the recipe it came from. See [_The `Brewable` family_](#the-brewable-family). |
 | `brewer` | `string` | no | Who brewed it. Carried from the recipe when there is one; absent otherwise. |
 | `batchSize` | `Scalar` | yes | Target volume — `{value: "5gal", unit: "gal"}` by default. |
 | `efficiency` | `Scalar` | yes | Assumed mash efficiency — `{value: "75%", unit: "%"}` by default. |
 | `boilTime` | `Scalar` | yes | Planned boil length — `{value: "60min", unit: "min"}` by default. |
 | `actuals` | `Measurements` | yes | The as-brewed OG/FG/ABV/IBU/SRM. ⚠️ **No screen writes it** — the Summary tab shows a live value computed from `tracker` gravity readings instead, so what is stored here is the seeded placeholder (`"0.00°P"` etc.) unless something else set it. See [`Measurements`](#measurements). |
-| `shopping` | `ShoppingItem[]` | yes | The shopping list. Documented below, task #1330. |
-| `tracker` | `Record<string, TrackerEntry>` | yes | The brew-day overlay — checkoffs, actuals, readings, keyed by a stringified ref. Documented below, task #1330. |
+| `shopping` | `ShoppingItem[]` | yes | The shopping list — see [`ShoppingItem`](#shoppingitem). |
+| `tracker` | `Record<string, TrackerEntry>` | yes | The brew-day overlay — checkoffs, actuals, readings, keyed by a stringified ref. See [_The tracker_](#the-tracker). |
 | `timer` | `TimerEvent[]` | no | The brew-day timer's session log — see below. |
-| `notes` | `BatchNotes` | no | Free-text notes plus an observed SRM. Documented below, task #1330. |
+| `notes` | `BatchNotes` | no | Free-text notes plus an observed SRM — see [`BatchNotes`](#batchnotes). |
 
 **`brewDate` and `packaging` are brew-day facts, and that is why a `Recipe` does not carry them.** A
 recipe is a plan that can be brewed any number of times; the day it was brewed and how it was
@@ -156,7 +156,13 @@ interface TimerEvent {
 ```
 
 An **append-only session log** for the global brew timer — one array per batch, not a map keyed by
-ids and not scoped to a phase (which is what makes it shaped unlike `tracker`).
+ids and not scoped to a phase (which is what makes it shaped unlike [`tracker`](#the-tracker)). Both
+types live in [`src/model/timer.ts`](src/model/timer.ts).
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `type` | `TimerEventType` | yes | Which press this was — `"start"` the first one of the session, `"pause"`/`"resume"` a stop and restart of the clock, `"stop"` the end of it. |
+| `date` | `string` | yes | When it was pressed, as a full absolute ISO timestamp. |
 
 - ⚠️ **`date` is a real absolute ISO timestamp**, never a running duration or an offset. That is
   what lets a session sit paused for days and resume with no special case for the gap.
@@ -259,8 +265,8 @@ is plan data it rides on the brewable, so a recipe can prescribe its own reading
 | `kind` | `MilestoneKind` | yes | What sort of reading it is. Decides which grid on the phase renders it, and what shape its tracker entry takes. |
 
 ⚠️ **The value and date are not here.** They live in `batch.tracker`, keyed by `{on: "milestone", id}`
-— documented below, task #1330. A `Recipe`'s milestones therefore carry no values at all, which is
-the point: the recipe prescribes the reading, the batch records it.
+— see [_The tracker_](#the-tracker). A `Recipe`'s milestones therefore carry no values at all, which
+is the point: the recipe prescribes the reading, the batch records it.
 
 ### `BrewablePhase`
 
@@ -559,3 +565,203 @@ computed live from the batch's `"gravity"` milestone readings (`hooks/useActuals
 date is OG, latest is FG) and its IBU from `useEstimatedIbu`, leaving the stored `actuals` at
 `defaultBatch`'s placeholders. Read a batch's as-brewed vitals through the live hook, not off the
 field. `Recipe.targets`, by contrast, is edited directly on the recipe Details panel and is real.
+
+## The tracker
+
+Everything a brewer records **while brewing** — checkoffs, as-brewed amounts, gravity and water
+readings, the yeast's pitch date. It is one field, [`Batch.tracker`](#batch):
+
+```ts
+tracker: Record<string, TrackerEntry>;
+```
+
+The types below live in [`src/model/tracker.ts`](src/model/tracker.ts).
+
+⚠️ **The tracker is an *overlay*, not a second plan.** The [`Brewable`](#the-brewable-family) states
+what was intended and the tracker states what happened, keyed to the plan's own ids and using the
+plan's own field names. Nothing on the brew-day screen edits the plan — a recorded value never
+overwrites the intent it drifted from. Only a [`Batch`](#batch) has one; a [`Recipe`](#recipe) has
+nothing to record.
+
+A key is a `Ref` run through the module's `key()` helper. Its exact format is behaviour, not shape —
+see [`packages/app/CLAUDE.md`, _Live computation_](CLAUDE.md#live-computation-srchooks-pure-functions-in-srcmodel)
+— and the sanctioned writers (`putEntry`/`pruneTracker`) are in
+[_Actions_](CLAUDE.md#actions-srcactions--anything-whose-result-is-persisted).
+
+### `Ref`
+
+```ts
+type Ref =
+    | { on: "assignment"; id: string }
+    | { on: "equipment"; id: string }
+    | { on: "milestone"; id: string }
+    | { on: "phase"; id: string };
+```
+
+What an entry is attached to. Four variants, one shape: a kind plus the **stable per-instance uuid**
+of the thing being recorded against.
+
+| Variant | `id` is | Records |
+|---|---|---|
+| `assignment` | [`AssignmentBase.id`](#assignment-and-assignmentbase) | One ingredient placement — its checkoff, its as-brewed values, a yeast's pitch date. |
+| `equipment` | [`Equipment.id`](#equipment) | One piece of a phase's kit — checked off or not. |
+| `milestone` | [`Milestone.id`](#milestone) | One planned reading — its value and when it was taken. |
+| `phase` | [`BrewablePhase.id`](#brewablephase) | The phase itself — that it was completed, and when. |
+
+⚠️ **No variant carries its parent, and that is deliberate.** Each uuid is unique on its own, so a
+`phaseId` beside it would add nothing but a second thing to keep true: encoding a *relationship*
+inside an *identity* orphans the entry the moment the item moves between phases. The milestone ref
+did carry a `phaseId` once, back when a milestone had no id and was addressed by phase plus a fixed
+kind; giving milestones uuids retired it.
+
+⚠️ **An entry is only reachable while its `id` exists.** [`Equipment.id`](#equipment) and
+[`AssignmentBase.id`](#assignment-and-assignmentbase) are optional on the type and minted only in the
+batch write path, so an item that has never been saved has nothing to key against. A ref dropped from
+the brewable has its entry pruned on the next save, and re-adding the item mints a fresh id with no
+prior entry — deleting an ingredient in Planning discards what was recorded about it.
+
+### `TrackerEntry`
+
+```ts
+type TrackerEntry = {
+    completed?: boolean;
+    date?: string;
+    resource?: ResourceActuals;
+    reading?: Scalar;
+    water?: WaterReadings;
+};
+```
+
+One record of what happened. **Every field is optional** — an entry holds only what has actually been
+recorded, and an absent entry and an empty one mean the same thing.
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `completed` | `boolean` | no | Ticked off. Written for `assignment` (the ingredient went in), `equipment` (the kit is ready) and `phase` (the phase is finished). |
+| `date` | `string` | no | When this happened or was measured. **Universal** — any ref kind may carry one. |
+| `resource` | [`ResourceActuals`](#resourceactuals-and-resourcescalarfield) | no | `assignment` only — the as-brewed values, in the plan's own field names. |
+| `reading` | `Scalar` | no | `milestone` only — the single value read. A milestone has no resource to mirror, which is why it gets its own field. |
+| `water` | [`WaterReadings`](#waterparameter-and-waterreadings) | no | `milestone` only, and only the `"water"` kind — a whole sample rather than one value. |
+
+Which fields a given entry uses follows from its ref, and for a milestone from its
+[`MilestoneKind`](#phasetype-resourcetype-milestonekind):
+
+| Ref | Fields it uses |
+|---|---|
+| `assignment` | `completed`, `resource`, and `date` for a yeast's pitch date |
+| `equipment` | `completed` |
+| `phase` | `completed` + `date` |
+| `milestone`, value kinds (`gravity`, `volume`, `temperature`, `pressure`) | `reading` + `date` |
+| `milestone`, date kinds (`kegDate`, `bottleDate`) | `date` alone — never a `reading` |
+| `milestone`, `water` | `water` + `date` |
+
+- ⚠️ **`date` is two different strings depending on who wrote it, and the type cannot tell you which.**
+  A phase completion and a quick-logged milestone write a full absolute ISO timestamp, because the
+  brew timer places them on its line as an offset from the session start. Every other writer is an
+  `<input type="date">` and writes a date-only `YYYY-MM-DD`. A reader that needs a time-of-day must
+  cope with both. The consequences — an edited timestamp losing its time and dropping off the
+  timeline — are in
+  [`packages/app/CLAUDE.md`, _BatchSchedule screen_](CLAUDE.md#batchschedule-screen-configurable-phases).
+- ⚠️ **A `reading` can be present but empty.** Clearing the field, or switching the unit before typing
+  anything, stores `{value: "", unit}`. A consumer must test that the value parses, not merely that
+  the field is set — a presence-only check renders `NaN`.
+- `resource` and `water` are the two **bundled** fields, and both are merged a level deeper than the
+  rest of the entry when written, so recording one mineral or one column cannot wipe a sibling
+  recorded a moment earlier. That merge is `putEntry`'s, documented in
+  [_BatchSchedule screen_](CLAUDE.md#batchschedule-screen-configurable-phases).
+
+### `ResourceActuals` and `ResourceScalarField`
+
+```ts
+type ResourceActuals = Partial<Omit<Grain & Hop & Yeast & Additive, "name">>;
+
+type ResourceScalarField = Exclude<keyof ResourceActuals, "starter">;
+```
+
+`ResourceActuals` is the as-brewed counterpart of an [`Assignment`](#assignment-and-assignmentbase)'s
+`resource`, and it is **derived from the four resource models rather than listed**: the intersection
+of [`Grain`](#grain), [`Hop`](#hop), [`Yeast`](#yeast) and [`Additive`](#additive), made wholly
+optional, with `name` removed. So a hop records `weight`/`boil`/`alpha`, a grain `weight`, a yeast
+`temp` — under the **same field names the plan uses**, which is what lets a schedule column read plan
+and actual from one key.
+
+⚠️ **Deriving it is the point, not a shorthand.** Adding a field to `Hop` makes it recordable here for
+free, and a row can record any number of differing values rather than the fixed pair an
+`actual`/`actualDetail` shape allowed. `name` is excluded because it *identifies* the resource — it is
+not something a brewer observes. What it cannot express is a per-resource restriction: nothing in the
+type stops a grain entry carrying a yeast's `temp`, so the narrowing is the schedule screen's
+`COLUMNS` table, not the type's.
+
+`ResourceScalarField` is that key set minus `starter` — every field holding a `Scalar`. `starter` is
+the one `boolean` on any resource model (see [`Yeast`](#yeast)), and excluding it is what lets a
+schedule column or a quick check-off assume the field it is editing takes a scalar.
+
+### `WaterParameter` and `WaterReadings`
+
+```ts
+type WaterParameter = "ph" | "calcium" | "magnesium" | "sodium" | "sulfate" | "chloride" | "bicarbonate";
+
+type WaterReadings = Partial<Record<WaterParameter, Scalar>>;
+```
+
+A water sample: seven measurements, each an optional [`Scalar`](../core/MODELS.md#scalar) — pH plus the
+six mineral concentrations a brewer adjusts mash chemistry with.
+
+⚠️ **One `"water"` milestone is one whole sample, not seven milestones.** That is why the `"water"`
+kind writes `TrackerEntry.water` instead of the `reading` every other kind uses: the seven values are
+taken together and belong in one row. Each parameter has a **fixed unit** (there is no unit dropdown),
+so a partial sample is normal — `WaterReadings` is `Partial`, and an unmeasured parameter is simply
+absent.
+
+## `ShoppingItem`
+
+The batch's shopping list — [`Batch.shopping`](#batch), defined in
+[`src/model/batch.ts`](src/model/batch.ts).
+
+```ts
+type ShoppingTag = "hops" | "grains" | "yeasts" | "additives";
+
+interface ShoppingItem {
+    name: string;
+    tags: ShoppingTag[];
+    scalar?: Scalar;
+    cost: Scalar;
+    purchased: boolean;
+    source: "derived" | "user";
+}
+```
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `name` | `string` | yes | What to buy. For a derived item, the ingredient's own name; for a user item, whatever the brewer typed. |
+| `tags` | `ShoppingTag[]` | yes | Which group the row falls under. An array on the type, but the rebuild writes exactly one, and `tags[0]` is half the item's identity key. |
+| `scalar` | `Scalar` | no | How much to buy — the summed weight of every assignment of that ingredient, keeping the unit it was entered in. **Absent for yeasts and additives**, which are counted rather than weighed. |
+| `cost` | `Scalar` | yes | What it cost, a currency scalar (`{value: "$0.00", currency}`). Brewer-owned; seeded at zero. |
+| `purchased` | `boolean` | yes | Ticked off in the shop. Brewer-owned; seeded `false`. |
+| `source` | `"derived" \| "user"` | yes | Where the row came from — the ingredients, or the brewer's own hand. |
+
+⚠️ **This is the app's one *persisted* derivation, which is why `source` exists at all.** `"derived"`
+rows are rebuilt from the brewable's ingredients on every save that changes them; `"user"` rows are
+added by hand and are never rebuilt or removed. A rebuild matches the new list against the old by a
+stable `` `${tags[0]}:${name}` `` key and carries the brewer-owned `cost`/`purchased` across, so
+editing a recipe's grain bill does not clear the prices beside it — an ingredient **renamed**,
+though, is a different key and starts fresh. The rebuild, its trigger diffing and its
+reuse-by-reference are in
+[`packages/app/CLAUDE.md`, _Actions_](CLAUDE.md#actions-srcactions--anything-whose-result-is-persisted).
+
+## `BatchNotes`
+
+```ts
+interface BatchNotes {
+    notes: string;
+    srm?: string;
+}
+```
+
+Free-text notes on a batch — [`Batch.notes`](#batch), optional, so a batch nobody has written about
+carries the field not at all.
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `notes` | `string` | yes | Whatever the brewer wants to say about this brew. Nothing imposes a structure on it. |
+| `srm` | `string` | no | The colour the brewer **observed**, as a bare number string — the same unitless convention [`Measurements.srm`](#measurements) uses. Distinct from the recipe's target and from `actuals.srm`: this is what the beer looked like. |
