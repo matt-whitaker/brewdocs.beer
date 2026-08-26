@@ -114,6 +114,9 @@ export const Grains: Story = {
  * ⚠️ Mixing placed and flowing children is what to look at here. A flowing
  * child fills the first cell its placed siblings left free, which is rarely the
  * cell you pictured: give every child in a row a `colStart`, or none of them.
+ *
+ * The last row takes a different shape below `lg` — narrow the viewport (or use
+ * Storybook's mobile viewport) to see `mobileColStart`/`mobileCols` swap in.
  */
 export const Columns: Story = {
     render: () => (
@@ -137,6 +140,30 @@ export const Columns: Story = {
                 <DataGridInput label="c4" colStart={4} value="4" onChange={() => {}} />
                 <DataGridInput label="c5" colStart={5} value="5" onChange={() => {}} />
                 <DataGridInput label="c6" colStart={6} value="6" onChange={() => {}} />
+            </DataGridRow>
+
+            <DataGridRow zebra>
+                <DataGridLabel cols={2}>logged</DataGridLabel>
+                <DataGridInput
+                    label="date"
+                    type="date"
+                    colStart={5}
+                    cols={1}
+                    mobileColStart={3}
+                    mobileCols={2}
+                    value="2026-03-14"
+                    onChange={() => {}}
+                />
+                <DataGridInput
+                    label="time"
+                    type="time"
+                    colStart={6}
+                    cols={1}
+                    mobileColStart={5}
+                    mobileCols={2}
+                    value="14:30"
+                    onChange={() => {}}
+                />
             </DataGridRow>
         </DataGrid>
     )
