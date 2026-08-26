@@ -85,7 +85,7 @@ useKbX() → IndexedDB hit? return it
 
 ## Model boundary: Kb* vs app models
 **Purpose.** Two model families with a deliberate transform boundary — catalog shapes vs. batch-instance shapes.
-**Where.** `src/model/` (app models: `Batch`, `Grain`, `Hop`, `Yeast`, `Scalar`…), `src/transform/` (the mappers), scalar formatting in `utils/formatting.ts`.
+**Where.** `src/model/` (app models: `Batch`, `Grain`, `Hop`, `Yeast`, `Scalar`…), `src/transform/` (the mappers), scalar formatting in `utils/formatting.ts`. See [MODELS.md](MODELS.md) for the field-by-field reference.
 **How it works.** **Kb models** (`KbGrain`/`KbHop`/`KbYeast`/`KbRecipe`) are richer catalog/reference shapes; they flow through kb hooks, caches, dropdowns, and knowledge screens **untransformed**. The transform to app models happens **only at the moment of use** — picking a catalog item in a BatchPlanning dropdown (`kbHopToHop` etc., fills instance defaults like `weight: "0.0oz"`), or instantiating a **KB** recipe into a batch (`createBatch(kbRecipe, …)` → `kbRecipe*To*` mappers, preserving the recipe's real values).
 **Invariants.**
 - ⚠️ **Every recipe-family model carries a `__type` discriminator** — `"kbRecipe"`, `"kbRecipeTemplate"` (both stamped into the data by kb's builder) and `"recipe"` (the app's own, set by `defaultRecipe` and `kbRecipeToRecipe`). Disambiguate on it; **don't sniff for a field**. `createRecipe` used `"batchSize" in source` to tell a `KbRecipe` from a `KbRecipeTemplate`, which silently inverts the moment a template gains a `batchSize` — a field is incidental, a tag is declared.
