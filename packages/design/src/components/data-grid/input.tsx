@@ -2,6 +2,7 @@ import classNames from "classnames";
 import {Currency, PropsWithClass, PropsWithOnBlur, PropsWithOnChange, Unit} from "@brewdocs.beer/core";
 import {InputDate} from "@/components/input-date";
 import {InputText} from "@/components/input-text";
+import {InputTime} from "@/components/input-time";
 import {COL_SPANS, COL_STARTS, GridColumn} from "./styles";
 
 export type DataGridInputProps = PropsWithClass
@@ -12,7 +13,7 @@ export type DataGridInputProps = PropsWithClass
         colStart?: GridColumn;
         readonly?: boolean;
         value: string;
-        type?: "text"|"date";
+        type?: "text"|"date"|"time";
 
         label?: string;
         placeholder?: string;
@@ -29,6 +30,20 @@ export function DataGridInput({ colStart = 4, cols = 1, readonly = false, value,
     if (type === "date") {
         return (
             <InputDate
+                label={label}
+                readonly={readonly}
+                primary={!readonly}
+                value={value}
+                align="right"
+                className={classes}
+                onChange={onChange}
+            />
+        );
+    }
+
+    if (type === "time") {
+        return (
+            <InputTime
                 label={label}
                 readonly={readonly}
                 primary={!readonly}

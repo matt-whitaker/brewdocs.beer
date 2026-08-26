@@ -161,6 +161,17 @@ hand. It can still become the batch's current phase — reached by completing th
 and, once current, it can still be completed itself even though there is nothing on it to check
 off.
 
+**BATCH-SCHEDULE-31** — A time field sits beside the keg date reading's date field
+(BATCH-SCHEDULE-28), the bottle date reading's date field (BATCH-SCHEDULE-29), and every other
+reading's "Reading Taken" date (BATCH-SCHEDULE-25): a brewer can set a time there, and it
+persists across a reload the same as the date itself.
+
+**BATCH-SCHEDULE-32** — Leaving a reading's time unset does not make the milestone incomplete:
+the date alone is still a complete, valid entry, exactly as it was before a time could be set.
+
+> *Why:* a brewer often knows only the day something happened, not the hour — requiring a time
+> would turn an optional detail into a blocker for recording the date at all.
+
 ## Known gaps
 
 - The Prep tab's **Brewed on** date field has no accessible name, unlike **Packaging** right next
