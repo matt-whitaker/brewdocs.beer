@@ -1,3 +1,4 @@
+// Field-by-field reference for these types: ../MODELS.md — update it when a field changes.
 import {Entity, Scalar} from "@brewdocs.beer/core";
 import {KbBrewable} from "./brewable";
 
