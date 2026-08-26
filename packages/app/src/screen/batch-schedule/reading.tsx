@@ -12,6 +12,7 @@ import {MutateFn, RemoveFn, UpdateFn} from "@/hooks/useJsonEdit";
 import Batch from "@/model/batch";
 import {BrewablePhase, Milestone, MilestoneKind} from "@/model/brewable";
 import {key, Ref, TrackerEntry} from "@/model/tracker";
+import {useClock} from "@/providers/clock";
 import {ReadingPrimary} from "@/screen/batch-schedule/reading-kinds";
 import {scalarFromNumberWithUnit} from "@/utils/formatting";
 import {newId} from "@/utils/id";
@@ -28,10 +29,25 @@ const refOf = (milestoneId: string): Ref => ({ on: "milestone", id: milestoneId 
  * A time with no date is dropped rather than written as a bare `T09:30`: that
  * parses as nothing, so it would show blank in both fields and drop the
  * milestone off the brew timer.
+ *
+ * A date with no time is never stored bare, for the mirror-image reason: a bare
+ * `YYYY-MM-DD` parses as **UTC** midnight while any `T`-bearing value parses as
+ * **local** time, so west of UTC a date-only reading landed on the previous
+ * evening — before the phase boundary the brew timer filters markers against,
+ * which now drops it rather than clamping it to the start of the line. The
+ * missing half is filled from the clock rather than with `00:00`, because a
+ * phase boundary is the session start or the previous phase's completion, so a
+ * midnight default is still earlier than the phase the reading belongs to. It
+ * carries **seconds** for the same reason at a smaller scale: truncated to the
+ * minute, a reading logged in the same minute the phase started is stamped up
+ * to 59s before the boundary and drops off again. The time input still reads
+ * `HH:mm` off the front of it, so the extra precision never shows.
  */
+const pad2 = (value: number) => String(value).padStart(2, "0");
+const localTimeOf = (at: Date) => `${pad2(at.getHours())}:${pad2(at.getMinutes())}:${pad2(at.getSeconds())}`;
 const datePartOf = (value: string | undefined) => value?.slice(0, 10) ?? "";
 const timePartOf = (value: string | undefined) => value?.slice(11, 16) ?? "";
-const combineDateTime = (date: string, time: string) => date && time ? `${date}T${time}` : date;
+const combineDateTime = (date: string, time: string, fallbackTime: string) => date ? `${date}T${time || fallbackTime}` : date;
 
 type BatchScheduleReadingItemProps = {
     phaseIndex: number;
@@ -48,6 +64,7 @@ type BatchScheduleReadingItemProps = {
 };
 
 function BatchScheduleReadingItem({ phaseIndex, row, milestone, entry, onPatch, update, remove, defaultUnit, valuePlaceholder, dateOnly = false }: BatchScheduleReadingItemProps) {
+    const { now } = useClock();
     const unit = (entry?.reading?.unit ?? defaultUnit) as Unit;
 
     const dateValue = datePartOf(entry?.date);
@@ -59,8 +76,8 @@ function BatchScheduleReadingItem({ phaseIndex, row, milestone, entry, onPatch, 
 
     const onChangeReading = useCallback((next: string) => onPatch(refOf(milestone.id), { reading: { value: next, unit } }), [onPatch, milestone.id, unit]);
     const onBlurReading = useCallback((next: string) => onPatch(refOf(milestone.id), { reading: scalarFromNumberWithUnit(next, unit) }), [onPatch, milestone.id, unit]);
-    const onChangeDate = useCallback((next: string) => onPatch(refOf(milestone.id), { date: combineDateTime(next, timeValue) }), [onPatch, milestone.id, timeValue]);
-    const onChangeTime = useCallback((next: string) => onPatch(refOf(milestone.id), { date: combineDateTime(dateValue, next) }), [onPatch, milestone.id, dateValue]);
+    const onChangeDate = useCallback((next: string) => onPatch(refOf(milestone.id), { date: combineDateTime(next, timeValue, localTimeOf(now())) }), [onPatch, milestone.id, timeValue, now]);
+    const onChangeTime = useCallback((next: string) => onPatch(refOf(milestone.id), { date: combineDateTime(dateValue, next, localTimeOf(now())) }), [onPatch, milestone.id, dateValue, now]);
 
     if (dateOnly) {
         return (
@@ -124,6 +141,7 @@ export type BatchScheduleReadingProps = {
  * first reading from here.
  */
 export default function BatchScheduleReading({ phase, phaseIndex, tracker, onPatch, update, mutate, remove, kind, primary, unitOptions, valuePlaceholder, headerLabel, addLabel, defaultLabel }: BatchScheduleReadingProps) {
+    const { now } = useClock();
     const defaultUnit = unitOptions?.[0].value;
     const dateOnly = primary === "date";
 
@@ -138,7 +156,7 @@ export default function BatchScheduleReading({ phase, phaseIndex, tracker, onPat
         const entry: TrackerEntry | null = !value
             ? null
             : dateOnly
-                ? { date: combineDateTime(value, draftTime.trim()) }
+                ? { date: combineDateTime(value, draftTime.trim(), localTimeOf(now())) }
                 : { reading: scalarFromNumberWithUnit(value, defaultUnit as Unit) };
 
         mutate(draft => {
@@ -155,7 +173,7 @@ export default function BatchScheduleReading({ phase, phaseIndex, tracker, onPat
         setDraftName("");
         setDraftValue("");
         setDraftTime("");
-    }, [mutate, phaseIndex, kind, defaultLabel, draftName, draftValue, draftTime, dateOnly, defaultUnit]);
+    }, [mutate, phaseIndex, kind, defaultLabel, draftName, draftValue, draftTime, dateOnly, defaultUnit, now]);
 
     const rows = phase.milestones
         .map((milestone, row) => ({ milestone, row }))
