@@ -32,6 +32,16 @@ export const COL_SPANS = ["col-span-1", "col-span-2", "col-span-3", "col-span-4"
 export const COL_STARTS = ["col-start-1", "col-start-2", "col-start-3", "col-start-4", "col-start-5", "col-start-6"];
 
 /**
+ * The `lg:` halves of the two lists above, for a child placed differently on
+ * mobile: the mobile value renders unprefixed and the desktop value from here,
+ * matching the family's mobile-first convention (`ROW_ICON_BUTTON`'s
+ * `top-1 lg:top-2`, the label's `leading-6 lg:leading-8`). Written out in full
+ * for the same literal-class reason — a `lg:col-span-${n}` compiles to nothing.
+ */
+export const LG_COL_SPANS = ["lg:col-span-1", "lg:col-span-2", "lg:col-span-3", "lg:col-span-4", "lg:col-span-5", "lg:col-span-6"];
+export const LG_COL_STARTS = ["lg:col-start-1", "lg:col-start-2", "lg:col-start-3", "lg:col-start-4", "lg:col-start-5", "lg:col-start-6"];
+
+/**
  * Shared by DataGridHeaderRow's collapse toggle and DataGridRow's expand toggle
  * so both chevrons sit in one vertical track — size them here, not at the call
  * sites, or the two drift apart. btn-square takes width *and* height from
