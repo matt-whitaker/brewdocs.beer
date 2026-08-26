@@ -18,6 +18,21 @@ import {newId} from "@/utils/id";
 
 const refOf = (milestoneId: string): Ref => ({ on: "milestone", id: milestoneId });
 
+/**
+ * A milestone's `TrackerEntry.date` is one string carrying an optional time, so
+ * the two native inputs that edit it split and recombine it here. `<input
+ * type="date">` reads `YYYY-MM-DD` and `<input type="time">` reads `HH:mm`,
+ * which are exactly the leading slices of an ISO timestamp — a quick-logged
+ * full-ISO entry therefore round-trips through both fields.
+ *
+ * A time with no date is dropped rather than written as a bare `T09:30`: that
+ * parses as nothing, so it would show blank in both fields and drop the
+ * milestone off the brew timer.
+ */
+const datePartOf = (value: string | undefined) => value?.slice(0, 10) ?? "";
+const timePartOf = (value: string | undefined) => value?.slice(11, 16) ?? "";
+const combineDateTime = (date: string, time: string) => date && time ? `${date}T${time}` : date;
+
 type BatchScheduleReadingItemProps = {
     phaseIndex: number;
     row: number;
@@ -35,7 +50,8 @@ type BatchScheduleReadingItemProps = {
 function BatchScheduleReadingItem({ phaseIndex, row, milestone, entry, onPatch, update, remove, defaultUnit, valuePlaceholder, dateOnly = false }: BatchScheduleReadingItemProps) {
     const unit = (entry?.reading?.unit ?? defaultUnit) as Unit;
 
-    const dateValue = entry?.date?.slice(0, 10) ?? "";
+    const dateValue = datePartOf(entry?.date);
+    const timeValue = timePartOf(entry?.date);
     const removeLabel = `Remove ${milestone.label || "reading"}`;
 
     const onChangeLabel = useCallback((next: string) => update(`brewable.schedule.phases[${phaseIndex}].milestones[${row}].label`, next), [update, phaseIndex, row]);
@@ -43,14 +59,16 @@ function BatchScheduleReadingItem({ phaseIndex, row, milestone, entry, onPatch, 
 
     const onChangeReading = useCallback((next: string) => onPatch(refOf(milestone.id), { reading: { value: next, unit } }), [onPatch, milestone.id, unit]);
     const onBlurReading = useCallback((next: string) => onPatch(refOf(milestone.id), { reading: scalarFromNumberWithUnit(next, unit) }), [onPatch, milestone.id, unit]);
-    const onChangeDate = useCallback((next: string) => onPatch(refOf(milestone.id), { date: next }), [onPatch, milestone.id]);
+    const onChangeDate = useCallback((next: string) => onPatch(refOf(milestone.id), { date: combineDateTime(next, timeValue) }), [onPatch, milestone.id, timeValue]);
+    const onChangeTime = useCallback((next: string) => onPatch(refOf(milestone.id), { date: combineDateTime(dateValue, next) }), [onPatch, milestone.id, dateValue]);
 
     if (dateOnly) {
         return (
             <DataGridRow zebra reserveExpand>
                 <DataGridRemoveButton label={removeLabel} onClick={onRemove} />
-                <DataGridInput label={`${milestone.label} name`} className="ml-6" colStart={1} cols={3} value={milestone.label} onChange={onChangeLabel} />
-                <DataGridInput label={`${milestone.label} date`} colStart={4} cols={3} type="date" value={dateValue} onChange={onChangeDate} />
+                <DataGridInput label={`${milestone.label} name`} className="ml-6" colStart={1} cols={2} value={milestone.label} onChange={onChangeLabel} />
+                <DataGridInput label={`${milestone.label} date`} colStart={3} cols={2} type="date" value={dateValue} onChange={onChangeDate} />
+                <DataGridInput label={`${milestone.label} time`} colStart={5} cols={2} type="time" value={timeValue} onChange={onChangeTime} />
             </DataGridRow>
         );
     }
@@ -62,8 +80,9 @@ function BatchScheduleReadingItem({ phaseIndex, row, milestone, entry, onPatch, 
             expandContent={(
                 <DataGrid>
                     <DataGridRow zebra={false}>
-                        <DataGridLabel tiny cols={3}>Reading Taken</DataGridLabel>
-                        <DataGridInput label={`${milestone.label} date`} cols={3} type="date" value={dateValue} onChange={onChangeDate} />
+                        <DataGridLabel tiny cols={2}>Reading Taken</DataGridLabel>
+                        <DataGridInput label={`${milestone.label} date`} colStart={3} cols={2} type="date" value={dateValue} onChange={onChangeDate} />
+                        <DataGridInput label={`${milestone.label} time`} colStart={5} cols={2} type="time" value={timeValue} onChange={onChangeTime} />
                     </DataGridRow>
                 </DataGrid>
             )}
@@ -110,6 +129,7 @@ export default function BatchScheduleReading({ phase, phaseIndex, tracker, onPat
 
     const [draftName, setDraftName] = useState("");
     const [draftValue, setDraftValue] = useState("");
+    const [draftTime, setDraftTime] = useState("");
 
     const onAdd = useCallback(() => {
         const id = newId();
@@ -118,7 +138,7 @@ export default function BatchScheduleReading({ phase, phaseIndex, tracker, onPat
         const entry: TrackerEntry | null = !value
             ? null
             : dateOnly
-                ? { date: value }
+                ? { date: combineDateTime(value, draftTime.trim()) }
                 : { reading: scalarFromNumberWithUnit(value, defaultUnit as Unit) };
 
         mutate(draft => {
@@ -134,7 +154,8 @@ export default function BatchScheduleReading({ phase, phaseIndex, tracker, onPat
 
         setDraftName("");
         setDraftValue("");
-    }, [mutate, phaseIndex, kind, defaultLabel, draftName, draftValue, dateOnly, defaultUnit]);
+        setDraftTime("");
+    }, [mutate, phaseIndex, kind, defaultLabel, draftName, draftValue, draftTime, dateOnly, defaultUnit]);
 
     const rows = phase.milestones
         .map((milestone, row) => ({ milestone, row }))
@@ -163,18 +184,27 @@ export default function BatchScheduleReading({ phase, phaseIndex, tracker, onPat
                     label={`${headerLabel} name to add`}
                     className="ml-6"
                     colStart={1}
-                    cols={3}
+                    cols={dateOnly ? 2 : 3}
                     value={draftName}
                     onChange={setDraftName}
                     placeholder={defaultLabel} />
                 <DataGridInput
                     label={`${headerLabel} ${dateOnly ? "date" : "value"} to add`}
-                    colStart={dateOnly ? 4 : 6}
-                    cols={dateOnly ? 3 : 1}
+                    colStart={dateOnly ? 3 : 6}
+                    cols={dateOnly ? 2 : 1}
                     type={dateOnly ? "date" : undefined}
                     value={draftValue}
                     placeholder={dateOnly ? undefined : valuePlaceholder}
                     onChange={setDraftValue} />
+                {dateOnly && (
+                    <DataGridInput
+                        label={`${headerLabel} time to add`}
+                        colStart={5}
+                        cols={2}
+                        type="time"
+                        value={draftTime}
+                        onChange={setDraftTime} />
+                )}
             </DataGridRow>
         </DataGrid>
     );
