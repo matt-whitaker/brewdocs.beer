@@ -24,12 +24,16 @@ const TAG_LABELS: Record<ShoppingTag, string> = {
     hops: "Hops",
     grains: "Grains",
     yeasts: "Yeasts",
-    additives: "Additives"
+    additives: "Additives",
+    misc: "Misc"
 };
 
-const TAG_ORDER: ShoppingTag[] = ["hops", "grains", "yeasts", "additives"];
+const TAG_ORDER: ShoppingTag[] = ["hops", "grains", "yeasts", "additives", "misc"];
 
-const TAG_OPTIONS = TAG_ORDER.map(tag => ({ value: tag, name: TAG_LABELS[tag] }));
+/** a hand-added item joins an existing row's group by name; "misc" is the catch-all when nothing matches */
+const MATCHABLE_TAGS: ShoppingTag[] = ["hops", "grains", "yeasts", "additives"];
+
+const matchKey = (name: string) => name.trim().toLowerCase();
 
 /** the sort key doubles as the grouping; "name" is ungrouped */
 function groupOf(item: ShoppingItem, sort: SortKey): string|null {
@@ -61,6 +65,17 @@ export default function BatchShopping({ batchId, onChange }: BatchShoppingProps)
 
     const sort = (session?.["shopping.sort"] as SortKey) ?? "type";
     const onChangeSort = useCallback((value: string) => saveSession("shopping.sort", value), []);
+
+    const tagsByName = useMemo(() => {
+        const map = new Map<string, ShoppingTag>();
+        data.shopping.forEach(({ name, tags }) => {
+            if (MATCHABLE_TAGS.includes(tags[0])) map.set(matchKey(name), tags[0]);
+        });
+        return map;
+    }, [data.shopping]);
+
+    const resolveTag = useCallback((name: string): ShoppingTag =>
+        tagsByName.get(matchKey(name)) ?? "misc", [tagsByName]);
 
     const ordered = useMemo(() => data.shopping
         .map((item, index) => ({ item, index }))
@@ -115,7 +130,7 @@ export default function BatchShopping({ batchId, onChange }: BatchShoppingProps)
             </DataGrid>
             {shoppingGroups}
             <DataGrid className="mt-3 pt-2 border-t-1 border-base-200">
-                <BatchShoppingAddRow tagOptions={TAG_OPTIONS} defaultTag={TAG_ORDER[0]} add={add} />
+                <BatchShoppingAddRow resolveTag={resolveTag} add={add} />
             </DataGrid>
         </Screen>
     );
