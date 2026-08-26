@@ -268,7 +268,7 @@ export default function BatchScheduleBrewTimer({ batch, mutate, completePhase }:
 
             const runningAt: MarkerOffset = recorded => {
                 const recordedAt = recorded ? new Date(recorded).getTime() : NaN;
-                if (Number.isNaN(recordedAt)) return null;
+                if (Number.isNaN(recordedAt) || recordedAt < phaseBoundary.getTime()) return null;
 
                 const eventsThrough = batch.timer?.filter(({ date }) => new Date(date).getTime() <= recordedAt);
                 return runningSecondsSince(eventsThrough, phaseBoundary, new Date(recordedAt));
