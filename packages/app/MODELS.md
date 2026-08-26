@@ -735,7 +735,7 @@ The batch's shopping list — [`Batch.shopping`](#batch), defined in
 [`src/model/batch.ts`](src/model/batch.ts).
 
 ```ts
-type ShoppingTag = "hops" | "grains" | "yeasts" | "additives";
+type ShoppingTag = "hops" | "grains" | "yeasts" | "additives" | "misc";
 
 interface ShoppingItem {
     name: string;
@@ -750,7 +750,7 @@ interface ShoppingItem {
 | Field | Type | Required | Meaning |
 |---|---|---|---|
 | `name` | `string` | yes | What to buy. For a derived item, the ingredient's own name; for a user item, whatever the brewer typed. |
-| `tags` | `ShoppingTag[]` | yes | Which group the row falls under. An array on the type, but the rebuild writes exactly one, and `tags[0]` is half the item's identity key. |
+| `tags` | `ShoppingTag[]` | yes | Which group the row falls under. An array on the type, but the rebuild writes exactly one, and `tags[0]` is half the item's identity key. `"misc"` is the hand-added catch-all: a brewer never picks a group, so an item added by hand takes `"misc"` unless its name matches a row already on the list, in which case it joins that row's group. |
 | `scalar` | `Scalar` | no | How much to buy — the summed weight of every assignment of that ingredient, keeping the unit it was entered in. **Absent for yeasts and additives**, which are counted rather than weighed. |
 | `cost` | `Scalar` | yes | What it cost, a currency scalar (`{value: "$0.00", currency}`). Brewer-owned; seeded at zero. |
 | `purchased` | `boolean` | yes | Ticked off in the shop. Brewer-owned; seeded `false`. |

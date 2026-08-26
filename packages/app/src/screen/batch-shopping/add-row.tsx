@@ -1,22 +1,19 @@
 import {useCallback, useState} from "react";
 import {CURRENCIES} from "@brewdocs.beer/core";
-import {InputSelectOption, InputText} from "@brewdocs.beer/design";
+import {InputText} from "@brewdocs.beer/design";
 import DataGridAddButton from "@/component/data-grid/add-button";
 import DataGridLabel from "@/component/data-grid/label";
 import DataGridRow from "@/component/data-grid/row";
-import DataGridSelect from "@/component/data-grid/select";
 import {AddFn} from "@/hooks/useJsonEdit";
 import {ShoppingItem, ShoppingTag} from "@/model/batch";
 
 export type BatchShoppingAddRowProps = {
-    tagOptions: InputSelectOption[];
-    defaultTag: ShoppingTag;
+    resolveTag: (name: string) => ShoppingTag;
     add: AddFn;
 };
 
-export default function BatchShoppingAddRow({ tagOptions, defaultTag, add }: BatchShoppingAddRowProps) {
+export default function BatchShoppingAddRow({ resolveTag, add }: BatchShoppingAddRowProps) {
     const [name, setName] = useState("");
-    const [tag, setTag] = useState<ShoppingTag>(defaultTag);
 
     const addItem = useCallback(() => {
         const trimmed = name.trim();
@@ -24,7 +21,7 @@ export default function BatchShoppingAddRow({ tagOptions, defaultTag, add }: Bat
 
         const item: ShoppingItem = {
             name: trimmed,
-            tags: [tag],
+            tags: [resolveTag(trimmed)],
             source: "user",
             cost: { value: "$0.00", currency: CURRENCIES.DOLLAR },
             purchased: false
@@ -32,9 +29,7 @@ export default function BatchShoppingAddRow({ tagOptions, defaultTag, add }: Bat
 
         add("shopping", item);
         setName("");
-    }, [add, name, tag]);
-
-    const onChangeTag = useCallback((value: string) => setTag(value as ShoppingTag), []);
+    }, [add, name, resolveTag]);
 
     return (
         <DataGridRow zebra>
@@ -49,13 +44,6 @@ export default function BatchShoppingAddRow({ tagOptions, defaultTag, add }: Bat
                     placeholder="Item name"
                 />
             </DataGridLabel>
-            <DataGridSelect
-                cols={2}
-                label="New shopping item type"
-                data={tagOptions}
-                value={tag}
-                onChange={onChangeTag}
-            />
         </DataGridRow>
     );
 }
