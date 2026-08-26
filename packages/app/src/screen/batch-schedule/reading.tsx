@@ -50,7 +50,7 @@ function BatchScheduleReadingItem({ phaseIndex, row, milestone, entry, onPatch, 
             <DataGridRow zebra reserveExpand>
                 <DataGridRemoveButton label={removeLabel} onClick={onRemove} />
                 <DataGridInput label={`${milestone.label} name`} className="ml-6" colStart={1} cols={3} value={milestone.label} onChange={onChangeLabel} />
-                <DataGridInput label={`${milestone.label} date`} colStart={4} cols={3} type="date" value={dateValue} onChange={onChangeDate} />
+                <DataGridInput label={`${milestone.label} date`} colStart={5} cols={1} type="date" value={dateValue} onChange={onChangeDate} />
             </DataGridRow>
         );
     }
@@ -169,8 +169,8 @@ export default function BatchScheduleReading({ phase, phaseIndex, tracker, onPat
                     placeholder={defaultLabel} />
                 <DataGridInput
                     label={`${headerLabel} ${dateOnly ? "date" : "value"} to add`}
-                    colStart={dateOnly ? 4 : 6}
-                    cols={dateOnly ? 3 : 1}
+                    colStart={dateOnly ? 5 : 6}
+                    cols={1}
                     type={dateOnly ? "date" : undefined}
                     value={draftValue}
                     placeholder={dateOnly ? undefined : valuePlaceholder}
