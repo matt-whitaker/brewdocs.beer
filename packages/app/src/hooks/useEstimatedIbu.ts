@@ -24,7 +24,7 @@ const TINSETH_GRAVITY_BASE = 0.000125;
 const TINSETH_BOIL_RATE = 0.04;
 const TINSETH_BOIL_SCALE = 4.15;
 
-function amountOf(scalar: Scalar): number {
+function amountOf(scalar?: Scalar): number {
     return parseNumberString(scalar?.value ?? "")[0];
 }
 
@@ -36,7 +36,7 @@ function convert(scalar: Scalar, factors: Partial<Record<Unit, number>>): number
     return factor ? amount * factor : NaN;
 }
 
-function tinsethIbu(assignments: Assignment[], batchSize: Scalar, og: Scalar): number | null {
+function tinsethIbu(assignments: Assignment[], batchSize: Scalar, og?: Scalar): number | null {
     const hops = resourcesOf(assignments ?? [], "hop");
 
     if (!hops.length) {
@@ -70,6 +70,6 @@ function tinsethIbu(assignments: Assignment[], batchSize: Scalar, og: Scalar): n
     return Number.isFinite(total) ? Math.round(total) : null;
 }
 
-export default function useEstimatedIbu(assignments: Assignment[], batchSize: Scalar, og: Scalar): number | null {
+export default function useEstimatedIbu(assignments: Assignment[], batchSize: Scalar, og?: Scalar): number | null {
     return useMemo(() => tinsethIbu(assignments, batchSize, og), [assignments, batchSize, og]);
 }

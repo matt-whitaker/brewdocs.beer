@@ -6,7 +6,6 @@ import {currentPhaseIndex} from "@/model/batchProgress";
 import Brewable from "@/model/brewable";
 import BrewableEdit from "@/screen/brewable-edit";
 import {useBatch} from "@/state/batches";
-import {useRecipeResource} from "@/state/disambiguation";
 
 export type BatchPlanningProps = {
     batchId: string;
@@ -18,7 +17,6 @@ export type BatchPlanningProps = {
 // tab, not here.
 export default function BatchPlanning({ batchId, onChange }: BatchPlanningProps) {
     const batch = useBatch(batchId);
-    const recipe = useRecipeResource(batch.recipeSource ?? "kb", batch.recipeId);
 
     const onChangeBrewable = useCallback((brewable: Brewable) => onChange({ brewable }), [onChange]);
     const locked = useMemo(() => currentPhaseIndex(batch.brewable.schedule.phases, batch.tracker) > 0, [batch.brewable.schedule.phases, batch.tracker]);
@@ -27,7 +25,7 @@ export default function BatchPlanning({ batchId, onChange }: BatchPlanningProps)
         <Screen>
             <div className="pb-4 relative">
                 <ScreenH3>{batch.name || ""}</ScreenH3>
-                <ScreenP>By {`${recipe.brewer}`}</ScreenP>
+                {batch.recipeBrewer ? (<ScreenP>By {batch.recipeBrewer}</ScreenP>) : <></>}
             </div>
             <BrewableEdit
                 brewable={batch.brewable}
