@@ -69,7 +69,7 @@ own models. Anywhere a `KbRecipe` is accepted, a `Recipe` may be passed.
 |---|---|---|---|
 | `__type` | `"recipe"` | yes | The discriminator, fixed to the single literal — this is a user recipe, never a catalog one. Set by `defaultRecipe` and by `kbRecipeToRecipe`. |
 | `sourceId` | `string` | no | The `id` of the `KbRecipe` this was cloned from. Kept so the original can be loaded for review or reset (`useKbRecipe(sourceId)`). **Absent** on a recipe created from scratch. |
-| `targets` | `Measurements` | yes | The recipe's intended OG/FG/ABV/IBU/SRM — what the brewer is aiming at. Structurally the same shape `KbRecipe.targets` declares inline; here it is the app's named `Measurements` type, documented in task #1329. |
+| `targets` | `Measurements` | yes | The recipe's intended OG/FG/ABV/IBU/SRM — what the brewer is aiming at. Structurally the same shape `KbRecipe.targets` declares inline; here it is the app's named [`Measurements`](#measurements) type. |
 | `brewable` | `Brewable` | yes | The plan: phases, their equipment, and the ingredient assignments. Narrowed from `KbBrewable`; documented in task #1328. |
 
 - ⚠️ **`sourceId` records provenance, not a live link.** Editing the recipe does not touch the kb
@@ -132,7 +132,7 @@ interface Batch extends Entity {
 | `batchSize` | `Scalar` | yes | Target volume — `{value: "5gal", unit: "gal"}` by default. |
 | `efficiency` | `Scalar` | yes | Assumed mash efficiency — `{value: "75%", unit: "%"}` by default. |
 | `boilTime` | `Scalar` | yes | Planned boil length — `{value: "60min", unit: "min"}` by default. |
-| `actuals` | `Measurements` | yes | The as-brewed OG/FG/ABV/IBU/SRM. ⚠️ **No screen writes it** — the Summary tab shows a live value computed from `tracker` gravity readings instead, so what is stored here is the seeded placeholder (`"0.00°P"` etc.) unless something else set it. Documented in task #1329. |
+| `actuals` | `Measurements` | yes | The as-brewed OG/FG/ABV/IBU/SRM. ⚠️ **No screen writes it** — the Summary tab shows a live value computed from `tracker` gravity readings instead, so what is stored here is the seeded placeholder (`"0.00°P"` etc.) unless something else set it. See [`Measurements`](#measurements). |
 | `shopping` | `ShoppingItem[]` | yes | The shopping list. Documented below, task #1330. |
 | `tracker` | `Record<string, TrackerEntry>` | yes | The brew-day overlay — checkoffs, actuals, readings, keyed by a stringified ref. Documented below, task #1330. |
 | `timer` | `TimerEvent[]` | no | The brew-day timer's session log — see below. |
@@ -280,7 +280,7 @@ phases with their own ingredients, equipment and readings.
 |---|---|---|---|
 | `id` | `string` | **yes** | Stable per-instance id, minted at every creation site — `defaultBrewable`, `kbBrewableToBrewable`, and the Phases add-row. |
 | `type` | `PhaseType` | yes | Which brew-day stage this phase is. Not an identity: several phases may share a `type`. |
-| `equipment` | `Equipment[]` | yes | The kit this phase calls for. `Equipment` is documented in task #1329. |
+| `equipment` | `Equipment[]` | yes | The kit this phase calls for — [`Equipment`](#equipment). |
 | `milestones` | `Milestone[]` | yes | The readings planned for this phase. Their values live in the batch's tracker. |
 
 ⚠️ **`id` is required here, unlike `Equipment.id?` and `AssignmentBase.id?`.** Those two are optional
@@ -329,7 +329,7 @@ shared half of that intersection.
 | `phaseId` | `string` | yes | The `BrewablePhase.id` this resource belongs to. ⚠️ **Never a phase *type*** — that is a kb-side-only field, resolved to an id by `kbBrewableToBrewable`. |
 | `slug` | `string` | yes | Catalog identity — which grain/hop/yeast this *is*, shared across every instance of it. Distinct from `id`, which is this one placement. |
 | `resourceType` | `ResourceType` | yes | The discriminant. |
-| `resource` | `Grain` \| `Hop` \| `Yeast` \| `Additive` | yes | The resource itself, narrowed by `resourceType`. All four are documented in task #1329. |
+| `resource` | `Grain` \| `Hop` \| `Yeast` \| `Additive` | yes | The resource itself, narrowed by `resourceType`. All four are documented under [_The resource models_](#the-resource-models). |
 
 - ⚠️ **`id` and `slug` answer different questions.** Two additions of the same hop at different boil
   times share a `slug` and have distinct `id`s; the tracker keys off `id`, so each is checked off
@@ -369,3 +369,193 @@ Three models carry a brewable, and they do not all get one the same way — see
 
 A batch's brewable is its **own copy** — a deep clone for a user recipe, the transform's output for a
 kb one — so editing the plan in Planning never touches the recipe it came from.
+
+## The resource models
+
+The four shapes an [`Assignment.resource`](#assignment-and-assignmentbase) narrows to, one per
+`ResourceType` — [`Grain`](#grain), [`Hop`](#hop), [`Yeast`](#yeast), [`Additive`](#additive), each in
+its own file under [`src/model/`](src/model/). They are the smallest models in the app: a name plus
+the values a brewer sets for **this placement**.
+
+⚠️ **None of them is an `Entity`, and none of them narrows from a `Kb*` type.** They carry no `id`
+and no `version` because they are not persisted records — a resource exists only inside the
+`Assignment` that holds it, and the assignment's own `id`/`slug` are what address and identify it.
+Nor do they `extend` their catalog counterparts the way [`Recipe`](#recipe) and
+[`UserEquipment`](#userequipment) do: a `KbHop` is reference material (`origin`, `usage`, `notes`,
+`alpha` as a bare number) and a `Hop` is a quantity in a phase, so the two overlap on `name` and
+almost nothing else. Picking one from a catalog dropdown runs a **factory**, not a narrowing —
+`kbGrainToRecipeGrain`/`kbHopToRecipeHop`/`kbYeastToRecipeYeast` in
+[`screen/brewable-edit/ingredients/catalog-defaults.ts`](src/screen/brewable-edit/ingredients/catalog-defaults.ts),
+which take the catalog's `name` (and, for a hop, its `alpha`) and seed every other field with a
+placeholder default.
+
+⚠️ **The brew-day *actuals* reuse these field names rather than a parallel shape.**
+`TrackerEntry.resource` is `ResourceActuals` — `Partial<Omit<Grain & Hop & Yeast & Additive, "name">>`
+— so a recorded weight lands under `weight`, a recorded boil under `boil`, keyed identically to the
+plan. Adding a field to any of the four therefore widens what a schedule row can record, without a
+tracker change. The write paths are in
+[`packages/app/CLAUDE.md`, _BatchSchedule screen_](CLAUDE.md#batchschedule-screen-configurable-phases).
+
+Every `Scalar` below is [core's](../core/MODELS.md#scalar): `value` is the full display string with
+the unit embedded (`"9.0lb"`, `"60min"`, `"5.5%"`), and `unit` is a parsing hint.
+
+### `Grain`
+
+```ts
+interface Grain {
+    name: string;
+    weight: Scalar;
+}
+```
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `name` | `string` | yes | What this grain is called — the catalog name when picked from the dropdown, free text otherwise. Display only; catalog identity is the assignment's `slug`. |
+| `weight` | `Scalar` | yes | How much of it goes in. Seeded `{value: "0.0lb", unit: "lb"}` on a catalog pick. |
+
+A grain has **no secondary value** — no boil time, no temperature — which is why its schedule row is
+a checkbox and an amount and nothing else: grain goes into the mash all at once.
+
+### `Hop`
+
+```ts
+interface Hop {
+    name: string;
+    weight: Scalar;
+    alpha: Scalar;
+    boil: Scalar;
+}
+```
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `name` | `string` | yes | What this hop is called. As `Grain.name` — display only. |
+| `weight` | `Scalar` | yes | How much goes in at this addition. Seeded `{value: "0.0oz", unit: "oz"}`. |
+| `alpha` | `Scalar` | yes | Alpha-acid percentage, as a scalar — `{value: "5.5%", unit: "%"}`. Carried from the catalog hop's own value at pick time; editable afterwards, because a specific lot's alpha differs from the catalog's. |
+| `boil` | `Scalar` | yes | How long it boils — `{value: "60min", unit: "min"}` by default. It is a **countdown**, not a clock time: 60min goes in before 15min. |
+
+- ⚠️ **`alpha` is a `Scalar` here and a bare `number` on the catalog's `KbHop`.** The catalog states a
+  varietal fact and the app states a value a brewer can type and re-unit, so the conversion happens
+  at pick time (`` `${kbHop.alpha}%` ``) and nothing converts back. A reader that needs a number
+  parses `value`. The catalog side is documented in [`packages/kb`](../kb/CLAUDE.md).
+- **`boil` is what makes two additions of one hop distinguishable.** They share a `slug` and differ
+  only here, so the brew-day quick action labels its options `` `${name} · ${boil.value}` `` and
+  brewing order sorts longest-boil first — see
+  [`packages/app/CLAUDE.md`, _BatchSchedule screen_](CLAUDE.md#batchschedule-screen-configurable-phases).
+
+### `Yeast`
+
+```ts
+interface Yeast {
+    name: string;
+    avg_attn: Scalar;
+    temp: Scalar;
+    starter: boolean;
+}
+```
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `name` | `string` | yes | What this yeast is called. As above — display only. |
+| `avg_attn` | `Scalar` | yes | Average apparent attenuation — `{value: "70%", unit: "%"}` by default. |
+| `temp` | `Scalar` | yes | The fermentation temperature to hold, a **single** value — `{value: "0°F", unit: "°F"}` by default, i.e. unset until the brewer types one. |
+| `starter` | `boolean` | yes | Whether a starter is being made. The only non-`Scalar`, non-`string` field on any resource model, and the reason `ResourceScalarField` excludes it. |
+
+⚠️ **The catalog carries neither of the two numbers.** `KbYeast` has `temp: [string, string]` — a
+recommended **range** — and no attenuation at all, so `kbYeastToRecipeYeast` takes the name and seeds
+`avg_attn`/`temp`/`starter` with placeholders; the catalog's range is dropped rather than collapsed to
+one end of it. A yeast picked from the dropdown therefore shows `0°F` until the brewer sets it, and
+the range is only ever visible on the knowledge screens.
+
+### `Additive`
+
+```ts
+interface Additive {
+    name: string;
+    boil?: Scalar,
+    weight?: Scalar,
+}
+```
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `name` | `string` | yes | What the additive is. **Typed, never picked** — there is no additive catalog, so the Ingredients add-row is a freeform text field for this type alone. |
+| `boil` | `Scalar` | no | How long it boils, when that is the relevant fact (a kettle fining, a nutrient). |
+| `weight` | `Scalar` | no | How much goes in. |
+
+⚠️ **Both value fields are optional, and that is load-bearing rather than lax.** An additive is either
+a timed addition or a dosed one, and older stored additives carry `boil` alone, so a required
+`weight` would invalidate them. The row branches on which one the resource actually carries;
+`defaultAdditive(name, phaseType)` seeds `weight` always and adds `boil` on every phase except
+Conditioning. That branching is UI behaviour — see
+[`packages/app/CLAUDE.md`, _Model boundary_](CLAUDE.md#model-boundary-kb-vs-app-models); the shape
+fact is only that neither field is guaranteed and a reader must handle both being absent.
+
+## `Equipment`
+
+A single piece of kit **on a phase** — `brewable.schedule.phases[].equipment[]`.
+
+```ts
+interface Equipment {
+    id?: string;
+    name: string;
+    notes?: string;
+}
+```
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `id` | `string` | no | Stable per-instance id, **conditional** — see below. |
+| `name` | `string` | yes | What the item is called (`"Boil Kettle - 15gal"`). Also the accessible name of its checkbox on the brew-day screen. |
+| `notes` | `string` | no | Free text about this item. Nothing imposes a meaning on it, and the seed catalog does not use it consistently — one row carries `"4"`, a count. |
+
+⚠️ **`id` is present on batch-phase equipment and absent on catalog templates.** It is minted by
+[`actions/ensureBrewableIds.ts`](src/actions/ensureBrewableIds.ts) in the batch **write path** only, so
+any equipment item inside a stored batch has one, while the templates in
+[`data/equipment.ts`](src/data/equipment.ts) — and a recipe's equipment, which never runs that path —
+stay id-less. The id is what a `{on: "equipment", id}` tracker ref addresses, which is why an item
+without one cannot be checked off. Same optional-then-backfilled treatment as
+[`AssignmentBase.id`](#assignment-and-assignmentbase), and the opposite of
+[`BrewablePhase.id`](#brewablephase), which is required everywhere.
+
+⚠️ **This is not [`UserEquipment`](#userequipment), despite the overlapping fields.** `UserEquipment`
+is a persisted `Entity` in the brewer's own equipment list — a thing they own. An `Equipment` is a
+line on a plan: what this phase calls for. Nothing links the two, and copying an item from the list
+into a phase copies the values, not a reference.
+
+## `Measurements`
+
+The five vitals of a beer — carried twice, as [`Recipe.targets`](#recipe) (what the brewer is aiming
+at) and [`Batch.actuals`](#batch) (what a brew came out at).
+
+```ts
+interface Measurements {
+    og: Scalar;
+    fg: Scalar;
+    abv: Scalar;
+    ibu: string;
+    srm: string;
+}
+```
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `og` | `Scalar` | yes | Original gravity — `{value: "0.00°P", unit: "°P"}` in the seeded defaults. |
+| `fg` | `Scalar` | yes | Final gravity, same convention. |
+| `abv` | `Scalar` | yes | Alcohol by volume — `{value: "0.0%", unit: "%"}`. |
+| `ibu` | `string` | yes | Bitterness, as a **bare string** — `"0"` in the defaults. Rendered verbatim. |
+| `srm` | `string` | yes | Colour, as a **bare string** — `"0"` in the defaults. Parsed with `Number(srm)` where a swatch is drawn, and rendered verbatim otherwise. |
+
+⚠️ **Two representations for one family of measurements, with nothing in the type saying why.**
+`og`/`fg`/`abv` are `Scalar`s carrying their own unit; `ibu`/`srm` are bare strings carrying a number
+and no unit, so every consumer that needs one reads `.value` for three fields and the field itself for
+the other two ([`component/vitals/`](src/component/vitals/index.tsx) declares a structural
+`VitalsLike` to cope). Both are genuinely unitless scales, which is a defensible reason and is not
+stated anywhere in the code. **Recorded here as fact, not as a defect to fix** — changing it is a
+stored-shape change and would need a migration.
+
+⚠️ **`Batch.actuals` is stored but never written by any screen.** The Summary tab shows a value
+computed live from the batch's `"gravity"` milestone readings (`hooks/useActuals.ts` — earliest by
+date is OG, latest is FG) and its IBU from `useEstimatedIbu`, leaving the stored `actuals` at
+`defaultBatch`'s placeholders. Read a batch's as-brewed vitals through the live hook, not off the
+field. `Recipe.targets`, by contrast, is edited directly on the recipe Details panel and is real.
