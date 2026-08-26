@@ -20,22 +20,26 @@ export default function BatchList({ filter }: BatchListProps) {
         (batch.recipeSource === "user" ? recipesIndex : kbRecipesIndex).get(batch.recipeId),
     [recipesIndex, kbRecipesIndex]);
 
+    const recipeNameFor = useCallback((batch: Batch) =>
+        batch.recipeName || recipeFor(batch)?.name || "",
+    [recipeFor]);
+
     const shownBatches = useMemo(() => {
         const q = query.trim().toLowerCase();
         if (!q) return batches;
         return batches.filter((batch) =>
             batch.name.toLowerCase().includes(q)
-            || recipeFor(batch)?.name.toLowerCase().includes(q));
-    }, [batches, recipeFor, query]);
+            || recipeNameFor(batch).toLowerCase().includes(q));
+    }, [batches, recipeNameFor, query]);
 
     const batchList = useMemo(() => shownBatches.map((batch) => (
         <BatchListItem
             key={batch.id}
             batch={batch}
-            recipeName={recipeFor(batch)?.name || ""}
-            brewer={batch.brewer || recipeFor(batch)?.brewer || ""}
+            recipeName={recipeNameFor(batch)}
+            brewer={batch.brewer || batch.recipeBrewer || recipeFor(batch)?.brewer || ""}
         />
-    )), [shownBatches, recipeFor]);
+    )), [shownBatches, recipeFor, recipeNameFor]);
     return (
         <Screen>
             <SearchBar value={query} onChange={setQuery} label="Search batches" />

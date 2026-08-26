@@ -104,6 +104,10 @@ interface Batch extends Entity {
     packaging?: "keg" | "bottle";
     recipeId: string;
     recipeSource?: RecipeSource;
+    recipeName?: string;
+    recipeBrewer?: string;
+    recipeDescription?: string;
+    recipeTargets?: Measurements;
     brewable: Brewable;
     brewer?: string;
     batchSize: Scalar;
@@ -127,8 +131,12 @@ interface Batch extends Entity {
 | `packaging` | `"keg" \| "bottle"` | no | How this batch was packaged. Absent until the brewer chooses; also edited on the **Prep** tab. |
 | `recipeId` | `string` | yes | The id of the recipe this batch was made from. Ambiguous on its own — read it together with `recipeSource`. |
 | `recipeSource` | [`RecipeSource`](#recipesource) | no | Which store `recipeId` refers to. Optional in the type; `createBatch` always sets it. |
+| `recipeName` | `string` | no | The source recipe's own name, snapshotted at creation. Distinct from `name`, which is this batch's name and is renamable. Shown as the Summary tab's heading and as the batch page's recipe breadcrumb. |
+| `recipeBrewer` | `string` | no | The source recipe's author — who wrote the recipe, **not** who brewed this batch (that is `brewer`). Shown as "By …" on Summary and Planning. |
+| `recipeDescription` | `string` | no | The source recipe's description, shown on Summary. |
+| `recipeTargets` | `Measurements` | no | The source recipe's target OG/FG/ABV/IBU/SRM, shown as Summary's **Target** vitals column and used as the gravity input to the estimated-IBU calc until a real OG reading exists. See [`Measurements`](#measurements). |
 | `brewable` | `Brewable` | yes | This batch's **own copy** of the plan — a deep clone of the recipe's brewable for a user recipe, `kbBrewableToBrewable(kbRecipe.brewable)` for a kb one. Editing it in Planning never touches the recipe it came from. See [_The `Brewable` family_](#the-brewable-family). |
-| `brewer` | `string` | no | Who brewed it. Carried from the recipe when there is one; absent otherwise. |
+| `brewer` | `string` | no | Who brewed **this batch**. Nothing sets it at creation — `createBatch` never copies it from the recipe, and the create form has no field for it — so it is absent unless something else wrote it. The recipe's own author is `recipeBrewer`. |
 | `batchSize` | `Scalar` | yes | Target volume — `{value: "5gal", unit: "gal"}` by default. |
 | `efficiency` | `Scalar` | yes | Assumed mash efficiency — `{value: "75%", unit: "%"}` by default. |
 | `boilTime` | `Scalar` | yes | Planned boil length — `{value: "60min", unit: "min"}` by default. |
@@ -143,6 +151,14 @@ recipe is a plan that can be brewed any number of times; the day it was brewed a
 packaged are true of one brew only. The same split explains why `batchSize`/`efficiency`/`boilTime`
 appear on *both*: the recipe states the intent, the batch holds this brew's own value, and editing
 one does not move the other.
+
+**The `recipe*` fields are a snapshot, and a batch never reads its recipe live.** A recipe can be
+deleted while a batch made from it is still around, so every recipe value a batch screen displays is
+copied onto the batch at creation — the same reason `brewable`/`batchSize`/`efficiency`/`boilTime`
+are already copied. They are optional because a batch created before they existed has none: there is
+no migration that could fill them in (a `Migration.up` is a pure function of the one record and
+cannot read the recipe store), so the screens omit what they have not got rather than showing a
+blank heading or an empty Target column.
 
 ### `Batch.timer`
 

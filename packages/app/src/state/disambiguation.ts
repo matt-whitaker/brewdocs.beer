@@ -30,8 +30,13 @@ export const useRecipeResource = (source: RecipeSource, id: string): Recipe | Kb
     return data;
 };
 
+/**
+ * The batch's own stored copy of its recipe's name, never a live lookup — a
+ * batch outlives the recipe it was made from, and fetching one here took the
+ * whole batch page down once the recipe was deleted.
+ */
 export function useBatchRecipe(batchId: string) {
     const batch = useBatch(batchId);
     const source = batch.recipeSource ?? "kb";
-    return {name: useRecipeResource(source, batch.recipeId).name, source, recipeId: batch.recipeId};
+    return {name: batch.recipeName || batch.name, source, recipeId: batch.recipeId};
 }

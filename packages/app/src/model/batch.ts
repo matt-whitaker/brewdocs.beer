@@ -51,6 +51,10 @@ export default interface Batch extends Entity {
     packaging?: "keg" | "bottle";
     recipeId: string;
     recipeSource?: RecipeSource;
+    recipeName?: string;
+    recipeBrewer?: string;
+    recipeDescription?: string;
+    recipeTargets?: Measurements;
     brewable: Brewable;
     brewer?: string;
     batchSize: Scalar;

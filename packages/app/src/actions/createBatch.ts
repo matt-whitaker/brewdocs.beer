@@ -21,6 +21,10 @@ export default async function createBatch(recipe: Recipe | KbRecipe, source: Rec
         id,
         recipeId: recipe.id,
         recipeSource: source,
+        recipeName: recipe.name,
+        recipeBrewer: recipe.brewer,
+        recipeDescription: recipe.description,
+        recipeTargets: cloneDeep(recipe.targets),
         brewable,
         ...inputs
     };
