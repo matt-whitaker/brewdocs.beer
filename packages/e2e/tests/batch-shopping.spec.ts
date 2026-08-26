@@ -144,3 +144,48 @@ test("a freeform additive that collides with an existing row's name keeps that r
     await expect(page.getByLabel("Irish Moss", {exact: true})).toBeChecked();
     await expect(page.getByLabel("Irish Moss cost")).toHaveValue(/5\.00/);
 });
+
+/**
+ * BATCH-SHOPPING-10/11 — the add-row offers no category picker; a hand-added
+ * item whose name doesn't match anything already on the list gets its own
+ * "Misc" group, which only exists once it holds a row.
+ */
+test("a hand-added item with no matching name lands in its own Misc group", async ({page}) => {
+    await seedBatch(page, {name: "E2E Shopping Misc Default Batch"});
+    await openShopping(page);
+
+    await expect(page.getByLabel("New shopping item type")).toHaveCount(0);
+    await expect(page.getByRole("button", {name: "Misc", exact: true})).toHaveCount(0);
+
+    await page.getByLabel("New shopping item").fill("Duct Tape");
+    await page.getByRole("button", {name: "Add shopping item"}).click();
+    await settleSave(page);
+
+    await page.reload();
+    await openShopping(page);
+
+    await expect(page.getByRole("button", {name: "Misc", exact: true})).toBeVisible();
+    await expect(purchasedCheckbox(page, "Duct Tape")).toBeVisible();
+});
+
+/**
+ * BATCH-SHOPPING-12 — a hand-added item whose name matches (case-insensitive,
+ * trimmed) an item already on the list under Hops/Grains/Yeasts/Additives
+ * joins that item's group instead of Misc.
+ */
+test("a hand-added item whose name matches an existing row joins that row's group, not Misc", async ({page}) => {
+    await seedBatch(page, {name: "E2E Shopping Match Route Batch"});
+    await openShopping(page);
+
+    await page.getByLabel("New shopping item").fill("  crystal malt 40l  ");
+    await page.getByRole("button", {name: "Add shopping item"}).click();
+    await settleSave(page);
+
+    await page.reload();
+    await openShopping(page);
+
+    await expect(page.getByRole("button", {name: "Misc", exact: true})).toHaveCount(0);
+    await expect(page.getByRole("button", {name: "Grains", exact: true})).toBeVisible();
+    await expect(purchasedCheckbox(page, "crystal malt 40l")).toBeVisible();
+    await expect(purchasedCheckbox(page, "Crystal Malt 40L")).toBeVisible();
+});
