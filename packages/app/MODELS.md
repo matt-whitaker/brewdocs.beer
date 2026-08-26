@@ -193,3 +193,179 @@ transform function — nothing needs narrowing, so the `extends` is the whole re
 ⚠️ **This is not the equipment a batch checks off.** A phase's equipment lives on the brewable
 (`brewable.schedule.phases[].equipment`) and is checked off through `batch.tracker` — see
 [`packages/app/CLAUDE.md`, _BatchSchedule screen_](CLAUDE.md#batchschedule-screen-configurable-phases).
+
+## The `Brewable` family
+
+The plan — phases, the equipment and readings each phase calls for, and the ingredients assigned to
+them. Everything in this section lives in [`src/model/brewable.ts`](src/model/brewable.ts), and the
+sections below follow that file's own declaration order: the closed unions first, then the pieces
+they type, then `Brewable` itself.
+
+⚠️ **A brewable is the plan's single source of truth** — there is no second ingredient array, no
+second phase list, and no batch-level copy of the schedule beside it. The *why*, and the write paths
+that maintain it, are in
+[`packages/app/CLAUDE.md`, _Model boundary_](CLAUDE.md#model-boundary-kb-vs-app-models); this section
+states only the shape.
+
+The file also holds pure functions over these types (`defaultBrewable`, `canRemovePhase`,
+`phaseLabel`, `assignmentResourceName`, `resourcesOf`, `indexedResourcesOf`). They are behaviour, not
+shape, and are documented in
+[`packages/app/CLAUDE.md`, _Live computation_](CLAUDE.md#live-computation-srchooks-pure-functions-in-srcmodel).
+
+### `PhaseType`, `ResourceType`, `MilestoneKind`
+
+```ts
+type PhaseType = "mash" | "boil" | "ferment" | "carbonation" | "conditioning";
+type ResourceType = "grain" | "hop" | "yeast" | "additive";
+type MilestoneKind = "gravity" | "volume" | "temperature" | "pressure" | "kegDate" | "bottleDate" | "water";
+```
+
+| Type | Meaning |
+|---|---|
+| `PhaseType` | The brew-day stage a phase belongs to. `"mash"`/`"boil"`/`"ferment"` are the three every brewable has at least one of; `"carbonation"`/`"conditioning"` are optional. |
+| `ResourceType` | Which element model an `Assignment`'s `resource` narrows to — the discriminant of that union. |
+| `MilestoneKind` | The kind of reading a phase's milestone captures. `"kegDate"`/`"bottleDate"` capture a date rather than a value; `"water"` captures a whole seven-parameter sample rather than a single reading. |
+
+Three module constants restate those sets as runtime arrays, and the phase pair is **not** a single
+list split for convenience:
+
+```ts
+const RESOURCE_TYPES: ResourceType[] = ["grain", "hop", "yeast", "additive"];
+const PHASE_TYPES: PhaseType[] = ["mash", "boil", "ferment"];
+const OPTIONAL_PHASE_TYPES: PhaseType[] = ["carbonation", "conditioning"];
+```
+
+⚠️ **`PHASE_TYPES` is the *required* three, not every `PhaseType`.** It is what `defaultBrewable`
+seeds one phase of each from, and what `canRemovePhase` checks against to refuse dropping the last
+phase of a required type. Reading it as "all phase types" inverts both.
+
+### `Milestone`
+
+```ts
+interface Milestone {
+    id: string;
+    label: string;
+    kind: MilestoneKind;
+}
+```
+
+A reading the brewer **plans** to take during a phase — plan config, not the measurement. Because it
+is plan data it rides on the brewable, so a recipe can prescribe its own readings.
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `id` | `string` | yes | Stable per-milestone id, minted where the milestone is created. It is what the tracker entry keys off. |
+| `label` | `string` | yes | What the brewer calls this reading. Seeded per kind at creation (`"Reading"`, `"Volume"`, `"Temperature"`…) so several kinds on one phase get distinct accessible names; freely renamed afterwards. |
+| `kind` | `MilestoneKind` | yes | What sort of reading it is. Decides which grid on the phase renders it, and what shape its tracker entry takes. |
+
+⚠️ **The value and date are not here.** They live in `batch.tracker`, keyed by `{on: "milestone", id}`
+— documented below, task #1330. A `Recipe`'s milestones therefore carry no values at all, which is
+the point: the recipe prescribes the reading, the batch records it.
+
+### `BrewablePhase`
+
+```ts
+interface BrewablePhase {
+    id: string;
+    type: PhaseType;
+    equipment: Equipment[];
+    milestones: Milestone[];
+}
+```
+
+One phase in the schedule — the plan's **unit of identity**. Two `"boil"` phases are two distinct
+phases with their own ingredients, equipment and readings.
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `id` | `string` | **yes** | Stable per-instance id, minted at every creation site — `defaultBrewable`, `kbBrewableToBrewable`, and the Phases add-row. |
+| `type` | `PhaseType` | yes | Which brew-day stage this phase is. Not an identity: several phases may share a `type`. |
+| `equipment` | `Equipment[]` | yes | The kit this phase calls for. `Equipment` is documented in task #1329. |
+| `milestones` | `Milestone[]` | yes | The readings planned for this phase. Their values live in the batch's tracker. |
+
+⚠️ **`id` is required here, unlike `Equipment.id?` and `AssignmentBase.id?`.** Those two are optional
+on the type and backfilled by `ensureBrewableIds` in the batch write path, so a *recipe*'s equipment
+and assignments have none. A phase's id is not optional at any point, because assignments and tracker
+refs address a phase **instance** rather than its type — an id-less phase would leave them with
+nothing to point at. Which creation sites mint what, and why the split falls where it does, is in
+[`packages/app/CLAUDE.md`, _Model boundary_](CLAUDE.md#model-boundary-kb-vs-app-models).
+
+### `Schedule`
+
+```ts
+interface Schedule {
+    phases: BrewablePhase[];
+}
+```
+
+A single-field wrapper around the ordered phase list. **Order is meaningful** — it is the brewing
+order the brewer arranged, and `phaseLabel`'s numbering (`"1. Mash"`, `"2. Boil"`) follows position,
+so it renumbers on reorder.
+
+### `Assignment` and `AssignmentBase`
+
+```ts
+interface AssignmentBase {
+    id?: string;
+    phaseId: string;
+    slug: string;
+}
+
+type Assignment = AssignmentBase & (
+    | { resourceType: "grain"; resource: Grain }
+    | { resourceType: "hop"; resource: Hop }
+    | { resourceType: "yeast"; resource: Yeast }
+    | { resourceType: "additive"; resource: Additive }
+);
+```
+
+One resource placed into one phase. A **discriminated union**: switching on `resourceType` narrows
+`resource` to the matching element model. `AssignmentBase` is not exported — it exists only as the
+shared half of that intersection.
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `id` | `string` | no | Stable per-instance id. Optional on the type, but minted unconditionally by `ensureBrewableIds` in the batch write path, so **any stored batch has one** — a recipe or kb brewable does not. See [`packages/app/CLAUDE.md`, _Model boundary_](CLAUDE.md#model-boundary-kb-vs-app-models). |
+| `phaseId` | `string` | yes | The `BrewablePhase.id` this resource belongs to. ⚠️ **Never a phase *type*** — that is a kb-side-only field, resolved to an id by `kbBrewableToBrewable`. |
+| `slug` | `string` | yes | Catalog identity — which grain/hop/yeast this *is*, shared across every instance of it. Distinct from `id`, which is this one placement. |
+| `resourceType` | `ResourceType` | yes | The discriminant. |
+| `resource` | `Grain` \| `Hop` \| `Yeast` \| `Additive` | yes | The resource itself, narrowed by `resourceType`. All four are documented in task #1329. |
+
+- ⚠️ **`id` and `slug` answer different questions.** Two additions of the same hop at different boil
+  times share a `slug` and have distinct `id`s; the tracker keys off `id`, so each is checked off
+  independently.
+- Addressing a phase by id rather than by type is what lets two `"boil"` phases hold different
+  ingredients. The kb format authors `phaseType` instead — hand-written data should not contain
+  uuids — and `transform/kbBrewableToBrewable.ts` resolves it to the id of the **first** phase of
+  that type on import. The `Kb*` side of that is documented in `packages/kb`.
+
+### `Brewable`
+
+```ts
+interface Brewable {
+    schedule: Schedule;
+    assignments: Assignment[];
+}
+```
+
+Two fields, and between them the whole plan.
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `schedule` | `Schedule` | yes | The ordered phases, with their equipment and planned readings. |
+| `assignments` | `Assignment[]` | yes | Every ingredient placement, **flat** — not nested under its phase. Each names its phase through `phaseId`. |
+
+⚠️ **Assignments are a flat list, not a per-phase one.** Grouping by phase is done at render time
+(BrewableEdit's Ingredients panel, BatchSchedule's tabs); the model keeps one array so an ingredient
+can move between phases by rewriting a single field.
+
+Three models carry a brewable, and they do not all get one the same way — see
+[_Narrowing from the kb catalog_](#narrowing-from-the-kb-catalog) above:
+
+- [`Recipe.brewable`](#recipe) and [`Batch.brewable`](#batch) are typed `Brewable` directly.
+- `KbRecipe.brewable` is a `KbBrewable`, narrowed by
+  [`transform/kbBrewableToBrewable.ts`](src/transform/kbBrewableToBrewable.ts) at the moment a kb
+  recipe is instantiated.
+
+A batch's brewable is its **own copy** — a deep clone for a user recipe, the transform's output for a
+kb one — so editing the plan in Planning never touches the recipe it came from.
