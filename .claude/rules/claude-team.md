@@ -1,6 +1,6 @@
 # claude-team
 
-**team-ref: v4** · from `matt-whitaker/claude-team`
+**team-ref: v4.2** · from `matt-whitaker/claude-team`
 
 ⚠️ **This file is entirely claude-team's.** Nothing repo-specific goes in it. To upgrade, **replace
 it** — never merge. To uninstall, delete it.
@@ -40,8 +40,10 @@ beginning "Epic". Having sub-issues does not make one: a story has those too, th
 ## Starting a run
 
 - **A label on an issue is the front door.** Applying it starts a run, and a script picks the role
-  from the issue's state. ⚠️ **Applying it is the maintainer's gesture** — a session does not label
-  an issue to make something happen.
+  from the issue's state. ⚠️ **Applying it is the maintainer's gesture, and the exception is
+  named**: a session handed a whole story drives that story, which means labelling its waves. That
+  is the whole of it — outside a story it was handed, a session does not label an issue to make
+  something happen.
 - The same handle in a **comment** does the same. `@claude/<role>` names the role outright and
   skips the inspection.
 - ⚠️ **A run executes the hooks and prompts at the PIN, never from this clone.** Editing your
