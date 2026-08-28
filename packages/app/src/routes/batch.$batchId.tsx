@@ -23,7 +23,7 @@ export const Route = createFileRoute("/batch/$batchId")({
 function BatchPage() {
     const {batchId} = Route.useParams();
 
-    const onChange = useCallback((patch: Partial<Batch>) => { updateBatch(batchId, patch); }, [batchId]);
+    const onChange = useCallback((patch: Partial<Batch>) => updateBatch(batchId, patch), [batchId]);
 
     const breadcrumbs = useMemo<Crumb[]>(() => [
         { label: "Batches", to: "/batches" },

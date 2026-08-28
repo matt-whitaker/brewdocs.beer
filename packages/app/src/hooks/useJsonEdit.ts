@@ -32,7 +32,7 @@ export default function useJsonEdit<T extends object>(data: T, onChange: (data: 
         pending.current = false;
         const release = releaseWrite.current;
         releaseWrite.current = null;
-        return Promise.resolve(onChange(next)).finally(() => release?.());
+        return Promise.resolve(onChange(next)).finally(() => release?.()).catch(() => {});
     }, [onChange]);
 
     const debouncedSettle = useMemo(() => debounce(settle, 350), [settle]);

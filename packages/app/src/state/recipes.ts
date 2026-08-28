@@ -46,10 +46,10 @@ export const deleteRecipe = async (id: string) => {
 
 export const recipeMutationScope = (id: string) => ({id: `recipe:${id}`});
 
-export type PatchRecipeFn = (patch: Partial<Recipe>) => void;
+export type PatchRecipeFn = (patch: Partial<Recipe>) => Promise<void>;
 
 export const usePatchRecipe = (id: string): PatchRecipeFn => {
-    const {mutate} = useMutation({
+    const {mutateAsync} = useMutation({
         scope: recipeMutationScope(id),
         mutationFn: async (patch: Partial<Recipe>) => {
             const current = await recipesStorage.get(id);
@@ -62,5 +62,5 @@ export const usePatchRecipe = (id: string): PatchRecipeFn => {
         }
     });
 
-    return useCallback((patch: Partial<Recipe>) => mutate(patch), [mutate]);
+    return useCallback((patch: Partial<Recipe>) => mutateAsync(patch), [mutateAsync]);
 };
