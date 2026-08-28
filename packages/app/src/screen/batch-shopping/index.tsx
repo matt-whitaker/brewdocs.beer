@@ -5,7 +5,7 @@ import DataGridLabel from "@/component/data-grid/label";
 import DataGridRow from "@/component/data-grid/row";
 import DataGridSelect from "@/component/data-grid/select";
 import Screen from "@/component/screen";
-import useJsonEdit from "@/hooks/useJsonEdit";
+import useJsonEdit, {SaveFn} from "@/hooks/useJsonEdit";
 import Batch, {ShoppingItem, ShoppingTag} from "@/model/batch";
 import BatchShoppingAddRow from "@/screen/batch-shopping/add-row";
 import ShoppingItemRow from "@/screen/batch-shopping/item-row";
@@ -55,7 +55,7 @@ function compare(a: ShoppingItem, b: ShoppingItem, sort: SortKey): number {
 
 export type BatchShoppingProps = {
     batchId: string;
-    onChange: (batch: Batch) => void
+    onChange: SaveFn<Batch>
 };
 export default function BatchShopping({ batchId, onChange }: BatchShoppingProps) {
     const session = useSession();

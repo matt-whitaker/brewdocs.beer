@@ -1,6 +1,7 @@
 import {useCallback, useMemo} from "react";
 import {ScreenH3, ScreenP} from "@brewdocs.beer/design";
 import Screen from "@/component/screen";
+import {SaveFn} from "@/hooks/useJsonEdit";
 import Batch from "@/model/batch";
 import {currentPhaseIndex} from "@/model/batchProgress";
 import Brewable from "@/model/brewable";
@@ -9,7 +10,7 @@ import {useBatch} from "@/state/batches";
 
 export type BatchPlanningProps = {
     batchId: string;
-    onChange: (patch: Partial<Batch>) => void
+    onChange: SaveFn<Partial<Batch>>
 };
 
 // A name header, then BrewableEdit for the Ingredients/Equipment/Phases tabs,

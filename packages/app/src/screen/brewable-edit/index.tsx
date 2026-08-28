@@ -1,7 +1,7 @@
 import {ReactNode} from "react";
 import PanelSwitcher from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
-import useJsonEdit from "@/hooks/useJsonEdit";
+import useJsonEdit, {SaveFn} from "@/hooks/useJsonEdit";
 import Brewable from "@/model/brewable";
 import BrewableEditEquipment from "@/screen/brewable-edit/equipment";
 import BrewableEditIngredients from "@/screen/brewable-edit/ingredients";
@@ -11,7 +11,7 @@ export type BrewableEditProps = {
     /** the brewable being edited — the caller owns loading it and persisting edits */
     brewable: Brewable;
     /** called with the edited brewable to persist; the caller merges it back onto its resource */
-    onChangeBrewable: (brewable: Brewable) => void;
+    onChangeBrewable: SaveFn<Brewable>;
     /** PanelSwitcher name, for the active-tab query param */
     name?: string;
     defaultTab?: string;

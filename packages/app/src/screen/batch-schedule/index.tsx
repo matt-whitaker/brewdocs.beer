@@ -10,7 +10,7 @@ import DataGridSelect from "@/component/data-grid/select";
 import PanelSwitcher, {PanelSwitcherHandle} from "@/component/panel-switcher";
 import PanelSwitcherContent from "@/component/panel-switcher/content";
 import Screen from "@/component/screen";
-import useJsonEdit from "@/hooks/useJsonEdit";
+import useJsonEdit, {SaveFn} from "@/hooks/useJsonEdit";
 import useSchedule from "@/hooks/useSchedule";
 import Batch, {ScheduleKind} from "@/model/batch";
 import {phaseLabel} from "@/model/brewable";
@@ -52,7 +52,7 @@ function pauseRunningTimer(batch: Batch, date: string): Partial<Batch> {
     return isRunning(batch.timer) ? { timer: [...batch.timer ?? [], { type: "pause", date }] } : {};
 }
 
-export type BatchScheduleProps = { batchId: string; onChange: (batch: Batch) => void; };
+export type BatchScheduleProps = { batchId: string; onChange: SaveFn<Batch>; };
 export default function BatchSchedule({ batchId, onChange }: BatchScheduleProps) {
     const {now} = useClock();
     const session = useSession();
