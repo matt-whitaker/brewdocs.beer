@@ -61,7 +61,7 @@ export default function BatchShopping({ batchId, onChange }: BatchShoppingProps)
     const session = useSession();
     const batch = useBatch(batchId);
 
-    const [data, update, updateScalar, toggle, add, remove] = useJsonEdit<Batch>(batch, onChange);
+    const [data, update, updateScalar, toggle, add] = useJsonEdit<Batch>(batch, onChange);
 
     const sort = (session?.["shopping.sort"] as SortKey) ?? "type";
     const onChangeSort = useCallback((value: string) => saveSession("shopping.sort", value), []);
@@ -108,12 +108,11 @@ export default function BatchShopping({ batchId, onChange }: BatchShoppingProps)
                         toggle={toggle}
                         update={update}
                         updateScalar={updateScalar}
-                        remove={remove}
                     />
                 ))}
             </DataGrid>
         ));
-    }, [ordered, sort, toggle, update, updateScalar, remove, session]);
+    }, [ordered, sort, toggle, update, updateScalar, session]);
 
     return (
         <Screen>
