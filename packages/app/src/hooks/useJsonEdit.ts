@@ -4,6 +4,15 @@ import {useSignals} from "@/providers/signals";
 import {scalarFromNumberWithCurrency, scalarFromNumberWithUnit} from "@/utils/formatting";
 import {debounce, get, isEqual, setIn} from "@/utils/func";
 
+/**
+ * The save a caller hands the hook. It MUST return the write's promise: the
+ * hook holds a pending-write token from `commit` until that promise settles,
+ * and a callback returning `void` releases the token a microtask later — while
+ * the write is still queued. `Promise<unknown>` rather than `void` is what
+ * makes tsc reject the block-bodied `=> { save(x); }` form that does this.
+ */
+export type SaveFn<T> = (data: T) => Promise<unknown>;
+
 export type UpdateFn = (dot: string, value?: unknown) => void;
 export type UpdateScalarFn = (dot: string, value: string, lock?: boolean) => void;
 export type ToggleFn = (dot: string) => void;
@@ -14,7 +23,7 @@ export type MutateFn<T> = (fn: (draft: T) => T, immediate?: boolean) => void;
 
 // T is any editable object — a whole Entity (Recipe/Batch) or a sub-object of
 // one (e.g. a Brewable, edited by BrewableEdit and merged back on save).
-export default function useJsonEdit<T extends object>(data: T, onChange: (data: T) => void): [T, UpdateFn, UpdateScalarFn, ToggleFn, AddFn, RemoveFn, MoveFn, MutateFn<T>] {
+export default function useJsonEdit<T extends object>(data: T, onChange: SaveFn<T>): [T, UpdateFn, UpdateScalarFn, ToggleFn, AddFn, RemoveFn, MoveFn, MutateFn<T>] {
     const {beginPendingWrite} = useSignals();
     const [state, setState] = useState<T>(data);
 
@@ -32,7 +41,10 @@ export default function useJsonEdit<T extends object>(data: T, onChange: (data: 
         pending.current = false;
         const release = releaseWrite.current;
         releaseWrite.current = null;
-        return Promise.resolve(onChange(next)).finally(() => release?.());
+        return Promise.resolve()
+            .then(() => onChange(next))
+            .catch(() => undefined)
+            .finally(() => release?.());
     }, [onChange]);
 
     const debouncedSettle = useMemo(() => debounce(settle, 350), [settle]);

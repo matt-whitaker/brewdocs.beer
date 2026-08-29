@@ -23,7 +23,7 @@ export default function RecipeEditDetails({ recipeId }: RecipeEditDetailsProps) 
 
     const onChange = useCallback((r: Recipe) => {
         const {brewable: _brewable, ...rest} = r;
-        patchRecipe(rest);
+        return patchRecipe(rest);
     }, [patchRecipe]);
     const [data, update, updateScalar] = useJsonEdit<Recipe>(recipe, onChange);
 
