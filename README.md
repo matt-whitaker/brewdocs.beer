@@ -39,7 +39,7 @@ BrewDocs is a homebrewing application and info handbook for planning and recordi
 
 A GitHub + [Claude Code](https://claude.com/claude-code) workforce drives a majority of the work, with human oversight supported by frequent check-in phases for course correction and review. I've been having great success with it so far.
 
-The engine lives in [`matt-whitaker/claude-team`](https://github.com/matt-whitaker/claude-team). This repo holds only the consumer side: a [stub workflow](.github/workflows/claude.yml) pinning a version of it (`v4.3` today), and the role overlays in [`.claude-team/prompts/`](/.claude-team/prompts). Prompts, hooks and the job graph are fetched from that repo at the pinned version when a run starts. This repo is the canary — it adopts a new version before the other consumers do.
+The engine lives in [`matt-whitaker/claude-team`](https://github.com/matt-whitaker/claude-team). This repo holds only the consumer side: a [stub workflow](.github/workflows/claude.yml) pinning a version of it (`v4.3` today), and the role overlays in [`.claude-team/prompts/`](/.claude-team/prompts). Prompts, hooks and the job graph are fetched from that repo at the pinned version when a run starts.
 
 Applying the `@claude` label to an issue is the front door; a script reads the issue and picks which of the eight roles takes it.
 
