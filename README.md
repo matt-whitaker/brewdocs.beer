@@ -37,10 +37,16 @@ BrewDocs is a homebrewing application and info handbook for planning and recordi
 
 ### Claude Team
 
-Custom Github / Claude Code AI workforce setup drives a majority of the work, with human oversight supported by frequent check-in phases for course correction and review. I've been having great success with it so far.
+A GitHub + [Claude Code](https://claude.com/claude-code) workforce drives a majority of the work, with human oversight supported by frequent check-in phases for course correction and review. I've been having great success with it so far.
 
-### CLAUDE.md
+The engine lives in [`matt-whitaker/claude-team`](https://github.com/matt-whitaker/claude-team). This repo holds only the consumer side: a [stub workflow](.github/workflows/claude.yml) pinning a version of it (`v4.3` today), and the role overlays in [`.claude-team/prompts/`](/.claude-team/prompts). Prompts, hooks and the job graph are fetched from that repo at the pinned version when a run starts. This repo is the canary — it adopts a new version before the other consumers do.
 
-[Claude Code](https://claude.com/claude-code) enabled with [`@claude` integration](.github/workflows/claude.yaml)
+Applying the `@claude` label to an issue is the front door; a script reads the issue and picks which of the eight roles takes it.
 
-See [Claude.md](/CLAUDE.md)
+### Instructions
+
+| Where | What |
+|--- |--- |
+| [`CLAUDE.md`](/CLAUDE.md) | Repo-wide guidance. Each package carries its own, loaded on demand. |
+| [`.claude/rules/`](/.claude/rules) | Modules installed by claude-team: how a session conducts itself, and how the backlog works. Replaced wholesale on upgrade, never edited here. |
+| [`.claude/skills/`](/.claude/skills) | Named procedures a session can invoke — filing a finding, diagnosing a run, driving a story. |
